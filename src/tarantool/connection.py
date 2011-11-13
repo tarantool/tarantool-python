@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
+'''
+This module provides low-level API for Tarantool
+'''
 
 import socket
 import time
@@ -16,8 +19,20 @@ from tarantool.const import *
 
 
 class Connection(object):
+    '''\
+    Represents low-level interface to the Tarantool server.
+    This class can be used directly or using object-oriented wrappers.
+    '''
 
     def __init__(self, host, port, connect=True):
+        '''\
+        Initialize an connection to the server.
+
+        :param str host: Server hostname or IP-address
+        :param int port: Server port
+        :param bool connect: if True (default) than __init__() actually creates network connection.
+                             if False than you have to call connect() manualy.
+        '''
         self._host = host
         self._port = port
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,6 +42,15 @@ class Connection(object):
 
 
     def connect(self, host=None, port=None):
+        '''\
+        Create connection to the host and port specified in __init__ or in method arguments.
+        Usually there is no need to call this method directly,
+        since it is called when you create an `Connection` instance.
+        If `host` or `port` are passed, then they are stored in the instance.
+
+        :param str host: Server hostname or IP-address
+        :param int port: Server port
+        '''
 
         if host:
             self._host = host
@@ -36,7 +60,15 @@ class Connection(object):
 
 
     def _send_request(self, request):
+        '''\
+        Send the request to the server through the socket.
+        Return an instance of `Response` class.
 
+        :param request: object representing a request
+        :type request: `Request` instance
+
+        :rtype: `Response` instance
+        '''
         assert isinstance(request, Request)
 
         self._socket.sendall(bytes(request))
@@ -45,7 +77,19 @@ class Connection(object):
 
 
     def insert(self, space_no, values, return_tuple=False):
+        '''\
+        Execute INSERT request.
+        Insert single record into a space `space_no`.
 
+        :param int space_no: space id to insert a record
+        :type space_no: int
+        :param values: record to be inserted. The tuple must contain only scalar (integer or strings) values
+        :type values: tuple
+        :param return_tuple: True indicates that it is required to return the inserted tuple back
+        :type return_tuple: bool
+
+        :rtype: `Response` instance
+        '''
         assert isinstance(values, tuple)
 
         request = RequestInsert(space_no, values, return_tuple)
@@ -53,7 +97,19 @@ class Connection(object):
 
 
     def delete(self, space_no, key, return_tuple=False):
+        '''\
+        Execute DELETE request.
+        Delete single record identified by `key` (using primary index).
 
+        :param space_no: space id to delete a record
+        :type space_no: int
+        :param key: key that identifies a record
+        :type key: int or str
+        :param return_tuple: indicates that it is required to return the deleted tuple back
+        :type return_tuple: bool
+
+        :rtype: `Response` instance
+        '''
         assert isinstance(key, (int, basestring))
 
         request = RequestDelete(space_no, key, return_tuple)
@@ -61,7 +117,23 @@ class Connection(object):
 
 
     def update(self, space_no, key, op_list, return_tuple=False):
+        '''\
+        Execute UPDATE request.
+        Update single record identified by `key` (using primary index).
 
+        List of operations allows to update individual fields.
+
+        :param space_no: space id to update a record
+        :type space_no: int
+        :param key: key that identifies a record
+        :type key: int or str
+        :param op_list: list of operations. Each operation is tuple of three values
+        :type op_list: a list of the form [(field_1, symbol_1, arg_1), (field_2, symbol_2, arg_2),...]
+        :param return_tuple: indicates that it is required to return the updated tuple back
+        :type return_tuple: bool
+
+        :rtype: `Response` instance
+        '''
         assert isinstance(key, (int, basestring))
 
         request = RequestUpdate(space_no, key, op_list, return_tuple)
@@ -69,7 +141,13 @@ class Connection(object):
 
 
     def ping(self):
+        '''\
+        Execute PING request.
+        Send empty request and receive empty response from server.
 
+        :return: response time in seconds
+        :rtype: float
+        '''
         t0 = time.time()
         self._socket.sendall(struct_LLL.pack(0xff00, 0, 0))
         request_type, body_length, request_id = struct_LLL.unpack(self._socket.recv(12)) # pylint: disable=W0612
@@ -80,6 +158,22 @@ class Connection(object):
 
 
     def _select(self, space_no, index_no, values, offset=0, limit=0xffffffff):
+        '''\
+        Low level version of select() method.
+
+        :param space_no: space id to select data
+        :type space_no: int
+        :param index_no: index id to use
+        :type index_no: int
+        :param values: list of values to search over the index
+        :type values: list of tuples
+        :param offset: offset in the resulting tuple set
+        :type offset: int
+        :param limit: limits the total number of returned tuples
+        :type limit: int
+
+        :rtype: `Response` instance
+        '''
 
         # 'values' argument must be a list of tuples
         assert isinstance(values, (list, tuple))
@@ -93,6 +187,22 @@ class Connection(object):
 
     def select(self, space_no, index_no, values, offset=0, limit=0xffffffff):
         '''\
+        Execute SELECT request.
+        Select and retrieve data from the database.
+
+        :param space_no: specifies which space to query
+        :type space_no: int
+        :param index_no: specifies which index to use
+        :type index_no: int
+        :param values: list of values to search over the index
+        :type values: list of tuples
+        :param offset: offset in the resulting tuple set
+        :type offset: int
+        :param limit: limits the total number of returned tuples
+        :type limit: int
+
+        :rtype: `Response` instance
+
         Select one single record (from space=0 and using index=0)
         >>> select(0, 0, 1)
 
