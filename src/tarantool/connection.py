@@ -79,7 +79,7 @@ class Connection(object):
         return t1 - t0
 
 
-    def select(self, space_no, index_no, values, offset=0, limit=0xffffffff):
+    def _select(self, space_no, index_no, values, offset=0, limit=0xffffffff):
 
         # 'values' argument must be a list of tuples
         assert isinstance(values, (list, tuple))
@@ -89,3 +89,41 @@ class Connection(object):
         request = RequestSelect(space_no, index_no, values, offset, limit)
         response = self._send_request(request)
         return response
+
+
+    def select(self, space_no, index_no, values, offset=0, limit=0xffffffff):
+        '''\
+        Select one single record (from space=0 and using index=0)
+        >>> select(0, 0, 1)
+
+        Select several records using single-valued index
+        >>> select(0, 0, [1, 2, 3])
+        >>> select(0, 0, [(1,), (2,), (3,)]) # the same as above
+
+        Select serveral records using composite index
+        >>> select(0, 1, [(1,'2'), (2,'3'), (3,'4')])
+
+        Select single record using composite index
+        >>> select(0, 1, [(1,'2')])
+        This is incorrect
+        >>> select(0, 1, (1,'2'))
+        '''
+
+        # Perform smart type cheching (scalar / list of scalars / list of tuples)
+        if isinstance(values, (int, basestring)): # scalar
+            # This request is looking for one single record
+            values = [(values, )]
+        elif isinstance(values, (list, tuple, set, frozenset)):
+            assert len(values) > 0
+            if isinstance(values[0], (int, basestring)): # list of scalars
+                # This request is looking for several records using single-valued index
+                # Ex: select(space_no, index_no, [1, 2, 3])
+                # Transform a list of scalar values to a list of tuples
+                values = [(v, ) for v in values]
+            elif isinstance(values[0], (list, tuple)): # list of tuples
+                # This request is looking for serveral records using composite index
+                pass
+            else:
+                raise ValueError("Invalid value type, expected one of scalar (int or str) / list of scalars / list of tuples ")
+
+        return self._select(space_no, index_no, values, offset, limit)
