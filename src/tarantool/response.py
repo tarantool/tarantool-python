@@ -9,8 +9,23 @@ from tarantool.const import *
 
 
 class Response(object):
+    '''\
+    Represents a single response from the server in compliance with the Tarantool protocol.
+    Responsible for data encapsulation (i.e. received list of tuples) and parses binary
+    packet received from the server.
+    '''
 
     def __init__(self, socket):
+        '''\
+        Create an instance of `Response` using data received from the server.
+
+        __init__() itself reads data from the socket, parses response body and
+        sets appropriate instance attributes.
+
+        :params socket:
+        :type socket: instance of socket.Socket class (from stdlib)
+        '''
+
         self.request_type = None
         self.body_length = None
         self.request_id = None
