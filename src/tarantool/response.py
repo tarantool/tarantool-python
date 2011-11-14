@@ -25,39 +25,38 @@ class Response(list):
         :params socket:
         :type socket: instance of socket.Socket class (from stdlib)
         '''
-
-        self.request_type = None
-        self.body_length = None
-        self.request_id = None
-        self.return_code = None
-        self.return_message = None
-        self.rowcount = None
+        self._body_length = None
+        self._request_id = None
+        self._request_type = None
+        self._return_code = None
+        self._return_message = None
+        self._rowcount = None
 
         # Read response header
         buff = ctypes.create_string_buffer(16)
         socket.recv_into(buff, 16)
-        self.request_type, self.body_length, self.request_id, self.return_code = struct_LLLL.unpack(buff)
-        if self.body_length != 0:
-            self.body_length -= 4 # In the protocol description <body_length> includes 4 bytes of <return_code>
+        self._request_type, self._body_length, self._request_id, self._return_code = struct_LLLL.unpack(buff)
+        if self._body_length != 0:
+            self._body_length -= 4 # In the protocol description <body_length> includes 4 bytes of <return_code>
             # Read response body
-            buff = ctypes.create_string_buffer(self.body_length)
+            buff = ctypes.create_string_buffer(self._body_length)
             socket.recv_into(buff)
 
-            if self.return_code == 0:
+            if self._return_code == 0:
                 # If no errors, unpack response body
-                self.unpack_body(buff)
+                self._unpack_body(buff)
             else:
                 # In case of error unpack body as error message
-                self.unpack_message(buff)
+                self._unpack_message(buff)
                 # Check that the low byte is equal to 0x02 ("error").
                 # Also It can be 0x01 ("try again").
                 # FIXME: Implement support of "try again"
-                if (self.return_code & 0x00ff) == 1:
+                if (self._return_code & 0x00ff) == 1:
                     raise RuntimeError('Got "try again" indicator')
-                raise RuntimeError(self.return_code >> 8, self.return_message)
+                raise RuntimeError(self._return_code >> 8, self._return_message)
 
 
-    def unpack_message(self, buff):
+    def _unpack_message(self, buff):
         '''\
         Extract error message from response body
         Called when return_code! = 0.
@@ -68,11 +67,11 @@ class Response(list):
         :rtype:  str
         '''
 
-        self.return_message = unicode(buff.value, "utf8", "replace")
+        self._return_message = unicode(buff.value, "utf8", "replace")
 
 
     @staticmethod
-    def unpack_int_base128(varint, offset):
+    def _unpack_int_base128(varint, offset):
         """Implement Perl unpack's 'w' option, aka base 128 decoding."""
         res = ord(varint[offset])
         if ord(varint[offset]) >= 0x80:
@@ -91,7 +90,7 @@ class Response(list):
 
 
     @classmethod
-    def unpack_tuple(cls, buff):
+    def _unpack_tuple(cls, buff):
         '''\
         Unpacks the tuple from byte buffer
         <tuple> ::= <cardinality><field>+
@@ -108,7 +107,7 @@ class Response(list):
         _tuple = ['']*cardinality
         offset = 4    # The first 4 bytes in the response body is the <count> we have already read
         for i in xrange(cardinality):
-            field_size, offset = cls.unpack_int_base128(buff, offset)
+            field_size, offset = cls._unpack_int_base128(buff, offset)
             field_data = struct.unpack_from("<%ds"%field_size, buff, offset)[0]
 
             if dummy_int_unpack:
@@ -125,7 +124,7 @@ class Response(list):
         return tuple(_tuple)
 
 
-    def unpack_body(self, buff):
+    def _unpack_body(self, buff):
         '''\
         Parse the response body.
         After body unpacking its data available as python list of tuples
@@ -142,24 +141,35 @@ class Response(list):
         '''
 
         # Unpack <count> (first 4 bytes) - how many records returned
-        self.rowcount = struct_L.unpack_from(buff)[0]
+        self._rowcount = struct_L.unpack_from(buff)[0]
 
         # If the response body contains only <count> - there is no tuples to unpack
-        if self.body_length == 4:
+        if self._body_length == 4:
             return
 
         # Parse response tuples (<fq_tuple>)
-        if self.rowcount > 0:
+        if self._rowcount > 0:
             offset = 4    # The first 4 bytes in the response body is the <count> we have already read
-            for i in xrange(self.rowcount):
+            for i in xrange(self._rowcount):
                 '''
                 # In resonse tuples have the form <size><tuple> (<fq_tuple> ::= <size><tuple>).
-                # Attribute <size> уonly takes into account the size of tuple's <field> payload,
+                # Attribute <size> takes into account only size of tuple's <field> payload,
                 # but does not include 4-byte of <cardinality> field.
                 # Therefore the actual size of the <tuple> is greater to 4 bytes.
                 '''
                 tuple_size = struct.unpack_from("<L", buff, offset)[0] + 4
                 tuple_data = struct.unpack_from("<%ds"%(tuple_size), buff, offset+4)[0]
-                self.append(self.unpack_tuple(tuple_data))
+                self.append(self._unpack_tuple(tuple_data))
                 offset = offset + tuple_size + 4    # This '4' is a size of <size> attribute
 
+    @property
+    def rowcount(self):
+        return self._rowcount
+
+    @property
+    def return_code(self):
+        return self._return_code
+
+    @property
+    def return_message(self):
+        return self._return_message
