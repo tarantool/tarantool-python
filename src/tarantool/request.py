@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
+'''
+Request types definitions
+'''
 
 import struct
 
@@ -7,6 +10,12 @@ from tarantool.const import *
 
 
 class Request(object):
+    '''\
+    Represents a single request to the server in compliance with the Tarantool protocol.
+    Responsible for data encapsulation and builds binary packet to be sent to the server.
+
+    This is the abstract base class. Specific request types are implemented by the inherited classes.
+    '''
     request_type = None
 
     def __init__(self):
@@ -26,7 +35,16 @@ class Request(object):
 
     @staticmethod
     def pack_int(value):
+        '''\
+        Pack integer field
+        <field> ::= <int32_varint><data>
 
+        :param value: integer value to be packed
+        :type value: int
+
+        :return: packed value
+        :rtype: bytes
+        '''
         if __debug__:
             if not isinstance(value, int):
                 raise TypeError("Invalid argument type '%s', 'int' expected"%type(value).__name__)
@@ -51,7 +69,16 @@ class Request(object):
 
     @classmethod
     def pack_str(cls, value):
+        '''\
+        Pack string field
+        <field> ::= <int32_varint><data>
 
+        :param value: string to be packed
+        :type value: bytes or str
+
+        :return: packed value
+        :rtype: bytes
+        '''
         if __debug__:
             if not isinstance(value, basestring):
                 raise TypeError("Invalid argument type '%s', 'str' expected"%type(value).__name__)
@@ -61,7 +88,16 @@ class Request(object):
 
     @classmethod
     def pack_field(cls, value):
+        '''\
+        Pack single field (string or integer value)
+        <field> ::= <int32_varint><data>
 
+        :param value: value to be packed
+        :type value: bytes, str or int
+
+        :return: packed value
+        :rtype: bytes
+        '''
         if isinstance(value, basestring):
             return cls.pack_str(value)
         elif isinstance(value, (int, long)):
@@ -72,7 +108,16 @@ class Request(object):
 
     @classmethod
     def pack_tuple(cls, values):
+        '''\
+        Pack tuple of values
+        <tuple> ::= <cardinality><field>+
 
+        :param value: tuple to be packed
+        :type value: tuple of scalar values (bytes, str or int)
+
+        :return: packed tuple
+        :rtype: bytes
+        '''
         assert isinstance(values, (tuple, list))
         cardinality = struct_L.pack(len(values))
         packed_items = [cls.pack_field(v) for v in values]
@@ -82,7 +127,15 @@ class Request(object):
 
 
 class RequestInsert(Request):
+    '''\
+    Represents INSERT request
 
+    <insert_request_body> ::= <space_no><flags><tuple>
+    |--------------- header ----------------|--------- body ---------|
+     <request_type><body_length><request_id> <space_no><flags><tuple>
+                                                               |
+                          items to add (multiple values)  -----+
+    '''
     request_type = REQUEST_TYPE_INSERT
 
     def __init__(self, space_no, values, return_tuple):    # pylint: disable=W0231
@@ -100,7 +153,16 @@ class RequestInsert(Request):
 
 
 class RequestDelete(Request):
+    '''
+    Represents DELETE request
 
+    <delete_request_body> ::= <space_no><flags><tuple>
+    |--------------- header ----------------|--------- body ---------|
+     <request_type><body_length><request_id> <space_no><flags><tuple>
+                                                               |
+                          key to search in primary index  -----+
+                          (tuple with single value)
+    '''
     request_type = REQUEST_TYPE_DELETE
 
     def __init__(self, space_no, key, return_tuple):    # pylint: disable=W0231
@@ -117,7 +179,20 @@ class RequestDelete(Request):
 
 
 class RequestSelect(Request):
+    '''\
+    Represents SELECT request
 
+    <select_request_body> ::= <space_no><index_no><offset><limit><count><tuple>+
+
+    |--------------- header ----------------|---------------request_body ---------------------...|
+     <request_type><body_length><request_id> <space_no><index_no><offset><limit><count><tuple>+
+                                                        ^^^^^^^^                 ^^^^^^^^^^^^
+                                                            |                          |
+                                           Index to use ----+                          |
+                                                                                       |
+                            List of tuples to search in the index ---------------------+
+                            (tuple cardinality can be > 1 when using composite indexes)
+    '''
     request_type = REQUEST_TYPE_SELECT
 
     def __init__(self, space_no, index_no, tuple_list, offset, limit):    # pylint: disable=W0231
@@ -133,6 +208,16 @@ class RequestSelect(Request):
 
 
 class RequestUpdate(Request):
+    '''
+    <update_request_body> ::= <space_no><flags><tuple><count><operation>+
+    <operation> ::= <field_no><op_code><op_arg>
+
+    |--------------- header ----------------|---------------request_body --------------...|
+     <request_type><body_length><request_id> <space_no><flags><tuple><count><operation>+
+                                                               |      |      |
+                           Key to search in primary index -----+      |      +-- list of operations
+                           (tuple with cardinality=1)                 +-- number of operations
+    '''
 
     request_type = REQUEST_TYPE_UPDATE
 
@@ -169,7 +254,15 @@ class RequestUpdate(Request):
 
 
 class RequestCall(Request):
+    '''
+    <call_request_body> ::= <flags><proc_name><tuple>
+    <proc_name> ::= <field>
 
+    |--------------- header ----------------|-----request_body -------|
+     <request_type><body_length><request_id> <flags><proc_name><tuple>
+                                                                |
+                                    Lua function arguments -----+
+    '''
     request_type = REQUEST_TYPE_CALL
 
     def __init__(self, proc_name, args, return_tuple):    # pylint: disable=W0231
