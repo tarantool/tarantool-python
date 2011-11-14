@@ -8,7 +8,7 @@ import warnings
 from tarantool.const import *
 
 
-class Response(object):
+class Response(list):
     '''\
     Represents a single response from the server in compliance with the Tarantool protocol.
     Responsible for data encapsulation (i.e. received list of tuples) and parses binary
@@ -32,7 +32,6 @@ class Response(object):
         self.return_code = None
         self.return_message = None
         self.rowcount = None
-        self.rows = []
 
         # Read response header
         buff = ctypes.create_string_buffer(16)
@@ -129,7 +128,7 @@ class Response(object):
     def unpack_body(self, buff):
         '''\
         Parse the response body.
-        After body unpacking its data (i.e. list of tuples) available as instance attributes (i.e. rows, rowcount).
+        After body unpacking its data available as python list of tuples
 
         For each request type the response body has the same format:
         <insert_response_body> ::= <count> | <count><fq_tuple>
@@ -151,8 +150,6 @@ class Response(object):
 
         # Parse response tuples (<fq_tuple>)
         if self.rowcount > 0:
-            # Access by the index is 1.5-2 times faster than append(), and the list size is already known
-            rows = [b'']*self.rowcount
             offset = 4    # The first 4 bytes in the response body is the <count> we have already read
             for i in xrange(self.rowcount):
                 '''
@@ -163,22 +160,6 @@ class Response(object):
                 '''
                 tuple_size = struct.unpack_from("<L", buff, offset)[0] + 4
                 tuple_data = struct.unpack_from("<%ds"%(tuple_size), buff, offset+4)[0]
-                rows[i] = self.unpack_tuple(tuple_data)
+                self.append(self.unpack_tuple(tuple_data))
                 offset = offset + tuple_size + 4    # This '4' is a size of <size> attribute
-            self.rows = rows
 
-
-    def __str__(self):
-        '''\
-        Make a string representation of the response (i.e. list of tuples)
-
-        :rtype: str
-        '''
-        return str(self.rows)
-
-
-    def __iter__(self):
-        '''\
-        Return iterator over the list of tuples
-        '''
-        return iter(self.rows)
