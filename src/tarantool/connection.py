@@ -34,8 +34,8 @@ class Connection(object):
         :param bool connect: if True (default) than __init__() actually creates network connection.
                              if False than you have to call connect() manualy.
         '''
-        self._host = host
-        self._port = port
+        self.host = host
+        self.port = port
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         if connect:
@@ -54,10 +54,10 @@ class Connection(object):
         '''
 
         if host:
-            self._host = host
+            self.host = host
         if port:
-            self._port = port
-        self._socket.connect((self._host, self._port))
+            self.port = port
+        self._socket.connect((self.host, self.port))
 
 
     def _send_request(self, request):
