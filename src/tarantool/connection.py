@@ -15,6 +15,7 @@ from tarantool.request import (
                     RequestInsert,
                     RequestSelect,
                     RequestUpdate)
+from tarantool.space import Space
 from tarantool.const import *
 
 
@@ -237,3 +238,18 @@ class Connection(object):
                 raise ValueError("Invalid value type, expected one of scalar (int or str) / list of scalars / list of tuples ")
 
         return self._select(space_no, index_no, values, offset, limit)
+
+
+    def space(self, space_no):
+        '''\
+        Create `Space` instance for particular space
+
+        `Space` instance encapsulates the identifier of the space and provides more convenient syntax
+        for accessing the database space.
+
+        :param space_no: identifier of the space
+        :type space_no: int
+
+        :rtype: `Space` instance
+        '''
+        return Space(self, space_no)

@@ -245,8 +245,8 @@ class RequestUpdate(Request):
             try:
                 op_code = UPDATE_OPERATION_CODE[op_symbol]
             except KeyError:
-                raise ValueError("Invalid operaction symbol '%s'. Expected one of %s"\
-                                %(op_symbol, ' '.join(sorted(UPDATE_OPERATION_CODE.keys()))))
+                raise ValueError("Invalid operaction symbol '%s', expected one of %s"\
+                                %(op_symbol, ', '.join(["'%s'"%c for c in sorted(UPDATE_OPERATION_CODE.keys())])))
             data = b"".join([struct_LB.pack(field_no, op_code), cls.pack_field(op_arg)])
             result.append(data)
         return b"".join(result)
