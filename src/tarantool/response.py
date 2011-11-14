@@ -44,6 +44,15 @@ class Response(object):
 
 
     def unpack_message(self, buff):
+        '''\
+        Extract error message from response body
+        Called when return_code! = 0.
+
+        :param buff: buffer containing request body
+        :type byff: ctypes buffer
+        :return: error message
+        :rtype:  str
+        '''
 
         self.return_message = unicode(buff.value, "utf8", "replace")
 
@@ -69,7 +78,16 @@ class Response(object):
 
     @classmethod
     def unpack_tuple(cls, buff):
+        '''\
+        Unpacks the tuple from byte buffer
+        <tuple> ::= <cardinality><field>+
 
+        :param buff: byte array of the form <cardinality><field>+
+        :type buff: ctypes buffer or bytes
+
+        :return: tuple of unpacked values
+        :rtype: tuple
+        '''
         dummy_int_unpack = True
 
         cardinality = struct_L.unpack_from(buff)[0]
@@ -94,6 +112,20 @@ class Response(object):
 
 
     def unpack_body(self, buff):
+        '''\
+        Parse the response body.
+        After body unpacking its data (i.e. list of tuples) available as instance attributes (i.e. rows, rowcount).
+
+        For each request type the response body has the same format:
+        <insert_response_body> ::= <count> | <count><fq_tuple>
+        <update_response_body> ::= <count> | <count><fq_tuple>
+        <delete_response_body> ::= <count> | <count><fq_tuple>
+        <select_response_body> ::= <count><fq_tuple>*
+        <call_response_body>   ::= <count><fq_tuple>
+
+        :param buff: buffer containing request body
+        :type byff: ctypes buffer
+        '''
 
         # Unpack <count> (first 4 bytes) - how many records returned
         self.rowcount = struct_L.unpack_from(buff)[0]
@@ -122,8 +154,16 @@ class Response(object):
 
 
     def __str__(self):
+        '''\
+        Make a string representation of the response (i.e. list of tuples)
+
+        :rtype: str
+        '''
         return str(self.rows)
 
 
     def __iter__(self):
+        '''\
+        Return iterator over the list of tuples
+        '''
         return iter(self.rows)
