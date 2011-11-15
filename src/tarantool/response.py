@@ -4,6 +4,7 @@
 import ctypes
 import struct
 import warnings
+import string
 
 from tarantool.const import *
 
@@ -15,22 +16,28 @@ class Response(list):
     packet received from the server.
     '''
 
-    def __init__(self, socket):
+    def __init__(self, socket, smart_int_unpack=True):
         '''\
         Create an instance of `Response` using data received from the server.
 
         __init__() itself reads data from the socket, parses response body and
         sets appropriate instance attributes.
 
-        :params socket:
+        :params socket: socket connected to the server
         :type socket: instance of socket.Socket class (from stdlib)
+        :param smart_int_unpack: (default is True) indicates that the field
+                                 of 4 bytes or 8 bytes must be extracted
+                                 as string if it contains printable characters
+        :type smart_int_unpack: bool
         '''
+
         self._body_length = None
         self._request_id = None
         self._request_type = None
         self._return_code = None
         self._return_message = None
         self._rowcount = None
+        self._smart_int_unpack = smart_int_unpack
 
         # Read response header
         buff = ctypes.create_string_buffer(16)
@@ -89,8 +96,25 @@ class Response(list):
         return res, offset + 1
 
 
-    @classmethod
-    def _unpack_tuple(cls, buff):
+    @staticmethod
+    def is_printable(s):
+        '''\
+        Check if argument is printable (i.e. looks like a string and not a number)
+        '''
+        assert isinstance(s, bytes)
+
+        if 32 <= ord(s[0]) < 127:
+            # ascii
+            return True
+        elif (ord(s[0]) >> 5 == 0b110) and (ord(s[1]) >> 6 == 0b10) \
+             and (ord(s[2]) >> 5 == 0b110) and (ord(s[3]) >> 6 == 0b10):
+            # utf8 (110xxxxx 10xxxxxx)
+            return True
+        else:
+            return False
+
+
+    def _unpack_tuple(self, buff):
         '''\
         Unpacks the tuple from byte buffer
         <tuple> ::= <cardinality><field>+
@@ -101,20 +125,22 @@ class Response(list):
         :return: tuple of unpacked values
         :rtype: tuple
         '''
-        dummy_int_unpack = True
 
         cardinality = struct_L.unpack_from(buff)[0]
         _tuple = ['']*cardinality
         offset = 4    # The first 4 bytes in the response body is the <count> we have already read
         for i in xrange(cardinality):
-            field_size, offset = cls._unpack_int_base128(buff, offset)
+            field_size, offset = self._unpack_int_base128(buff, offset)
             field_data = struct.unpack_from("<%ds"%field_size, buff, offset)[0]
 
-            if dummy_int_unpack:
+            if self._smart_int_unpack:
                 # FIXME: Watch out! 4-byte field is an integer, even if it is a string
-                if field_size == 4:
+                if field_size == 4 and not is_printable(field_data):
                     warnings.warn("Using dummy int unpack")
                     _tuple[i] = struct_L.unpack(field_data)[0]
+                elif field_size == 8 and not is_printable(field_data):
+                    warnings.warn("Using dummy int unpack")
+                    _tuple[i] = struct_LL.unpack(field_data)[0]
                 else:
                     _tuple[i] = field_data
             else:
