@@ -135,7 +135,7 @@ class Response(list):
 
             if self._smart_int_unpack:
                 # FIXME: Watch out! 4-byte field is an integer, even if it is a string
-                if field_size == 4 and not is_printable(field_data):
+                if field_size == 4 and not self.is_printable(field_data):
                     warnings.warn("Using dummy int unpack")
                     _tuple[i] = struct_L.unpack(field_data)[0]
                 elif field_size == 8 and not is_printable(field_data):
