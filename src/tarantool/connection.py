@@ -77,6 +77,31 @@ class Connection(object):
         return response
 
 
+    def call(self, func_name, *args, **kwargs):
+        '''\
+        Execute CALL request. Call stored Lua function.
+
+        :param func_name: stored Lua function name
+        :type func_name: str
+        :param args: list of function arguments
+        :type args: list or tuple
+        :param return_tuple: True indicates that it is required to return the inserted tuple back
+        :type return_tuple: bool
+
+        :rtype: `Response` instance
+        '''
+        assert isinstance(func_name, str)
+        assert len(args) != 0
+
+        # This allows to use a tuple or list as an argument
+        if isinstance(args[0], (list, tuple)):
+            args = args[0]
+
+        request = RequestCall(func_name, args, return_tuple=True)
+        response = self._send_request(request)
+        return response
+
+
     def insert(self, space_no, values, return_tuple=False):
         '''\
         Execute INSERT request.
