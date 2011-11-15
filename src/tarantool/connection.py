@@ -6,6 +6,7 @@ This module provides low-level API for Tarantool
 
 import socket
 import time
+from warnings import warn
 
 from tarantool.response import Response
 from tarantool.request import (
@@ -17,6 +18,11 @@ from tarantool.request import (
                     RequestUpdate)
 from tarantool.space import Space
 from tarantool.const import *
+from tarantool.error import *
+
+# strerror is patched on win32 so it must be imported after tarantool.error
+from os import strerror
+
 
 
 class Connection(object):
@@ -36,10 +42,16 @@ class Connection(object):
         '''
         self.host = host
         self.port = port
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        self._socket = None
         if connect:
             self.connect()
+
+
+    @staticmethod
+    def _new_socket():
+        _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        _socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        return _socket
 
 
     def connect(self, host=None, port=None):
@@ -57,7 +69,14 @@ class Connection(object):
             self.host = host
         if port:
             self.port = port
-        self._socket.connect((self.host, self.port))
+        try:
+            # If old socket already exists - close it and re-create
+            if self._socket:
+                self._socket.close()
+            self._socket = self._new_socket()
+            self._socket.connect((self.host, self.port))
+        except socket.error as e:
+            raise NetworkError(e.errno, strerror(e.errno))
 
 
     def _send_request(self, request):
@@ -72,8 +91,23 @@ class Connection(object):
         '''
         assert isinstance(request, Request)
 
-        self._socket.sendall(bytes(request))
-        response = Response(self._socket)
+        attempt = 1
+        MAX_RETRY = 5
+        while True:
+            try:
+                self._socket.sendall(bytes(request))
+                response = Response(self._socket)
+                break
+            except (socket.error, NetworkError) as e:
+                if attempt >= MAX_RETRY:
+                    raise NetworkError(e.errno, strerror(e.errno))
+                warn("Reconnect, attempt %d"%attempt)
+                try:
+                    self.connect()
+                except NetworkError as e:
+                    warn("%s, attempt %d"%(e, attempt))
+            attempt += 1
+
         return response
 
 
