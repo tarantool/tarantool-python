@@ -2,11 +2,13 @@
 # pylint: disable=C0301,W0105,W0401,W0614
 
 import ctypes
+import socket
 import struct
-import warnings
 import string
+import warnings
 
 from tarantool.const import *
+from tarantool.error import *
 
 
 class Response(list):
@@ -16,15 +18,15 @@ class Response(list):
     packet received from the server.
     '''
 
-    def __init__(self, socket, smart_int_unpack=True):
+    def __init__(self, _socket, smart_int_unpack=True):
         '''\
         Create an instance of `Response` using data received from the server.
 
         __init__() itself reads data from the socket, parses response body and
         sets appropriate instance attributes.
 
-        :params socket: socket connected to the server
-        :type socket: instance of socket.Socket class (from stdlib)
+        :params _socket: socket connected to the server
+        :type _socket: instance of socket.socket class (from stdlib)
         :param smart_int_unpack: (default is True) indicates that the field
                                  of 4 bytes or 8 bytes must be extracted
                                  as string if it contains printable characters
@@ -41,14 +43,20 @@ class Response(list):
 
         # Read response header
         buff = ctypes.create_string_buffer(16)
-        socket.recv_into(buff, 16)
+        nbytes = _socket.recv_into(buff, 16, )
+        # Immediately raises an exception if the data cannot be read
+        if nbytes != 16:
+            raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
+        # Unpack header (including <return_code> attribute)
         self._request_type, self._body_length, self._request_id, self._return_code = struct_LLLL.unpack(buff)
         if self._body_length != 0:
             self._body_length -= 4 # In the protocol description <body_length> includes 4 bytes of <return_code>
             # Read response body
             buff = ctypes.create_string_buffer(self._body_length)
-            socket.recv_into(buff)
-
+            nbytes = _socket.recv_into(buff)
+            # Immediately raises an exception if the data cannot be read
+            if nbytes != self._body_length:
+                raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
             if self._return_code == 0:
                 # If no errors, unpack response body
                 self._unpack_body(buff)
