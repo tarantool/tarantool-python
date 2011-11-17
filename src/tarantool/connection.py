@@ -20,9 +20,6 @@ from tarantool.space import Space
 from tarantool.const import *
 from tarantool.error import *
 
-# strerror is patched on win32 so it must be imported after tarantool.error
-from os import strerror
-
 
 
 class Connection(object):
