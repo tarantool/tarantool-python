@@ -185,7 +185,7 @@ class Response(list):
         # Parse response tuples (<fq_tuple>)
         if self._rowcount > 0:
             offset = 4    # The first 4 bytes in the response body is the <count> we have already read
-            for i in xrange(self._rowcount):
+            while offset < self._body_length:
                 '''
                 # In resonse tuples have the form <size><tuple> (<fq_tuple> ::= <size><tuple>).
                 # Attribute <size> takes into account only size of tuple's <field> payload,
