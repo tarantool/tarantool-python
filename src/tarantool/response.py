@@ -32,6 +32,8 @@ class Response(list):
         :type smart_int_unpack: bool
         '''
 
+        super(Response, self).__init__()
+
         self._body_length = None
         self._request_id = None
         self._request_type = None
