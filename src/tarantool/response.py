@@ -4,7 +4,6 @@
 import ctypes
 import socket
 import struct
-import string
 import warnings
 
 from tarantool.const import *
@@ -146,7 +145,7 @@ class Response(list):
                 if field_size == 4 and not self.is_printable(field_data):
                     warnings.warn("Using dummy int unpack")
                     _tuple[i] = struct_L.unpack(field_data)[0]
-                elif field_size == 8 and not is_printable(field_data):
+                elif field_size == 8 and not self.is_printable(field_data):
                     warnings.warn("Using dummy int unpack")
                     _tuple[i] = struct_LL.unpack(field_data)[0]
                 else:
