@@ -5,8 +5,8 @@ This module provides low-level API for Tarantool
 '''
 
 import socket
+import sys
 import time
-from warnings import warn
 
 from tarantool.response import Response
 from tarantool.request import (
@@ -31,52 +31,65 @@ class Connection(object):
     This class can be used directly or using object-oriented wrappers.
     '''
 
-    def __init__(self, host, port, connect=True):
+    def __init__(self, host, port,
+                 socket_timeout=SOCKET_TIMEOUT,
+                 reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
+                 reconnect_delay=RECONNECT_DELAY,
+                 connect_now=True):
         '''\
         Initialize an connection to the server.
 
         :param str host: Server hostname or IP-address
         :param int port: Server port
-        :param bool connect: if True (default) than __init__() actually creates network connection.
+        :param bool connect_now: if True (default) than __init__() actually creates network connection.
                              if False than you have to call connect() manualy.
         '''
         self.host = host
         self.port = port
+        self.socket_timeout = socket_timeout
+        self.reconnect_delay = reconnect_delay
+        self.reconnect_max_attempts = reconnect_max_attempts
         self._socket = None
-        if connect:
+        if connect_now:
             self.connect()
 
 
-    @staticmethod
-    def _new_socket():
-        _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        _socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        return _socket
-
-
-    def connect(self, host=None, port=None):
+    def connect(self):
         '''\
-        Create connection to the host and port specified in __init__ or in method arguments.
+        Create connection to the host and port specified in __init__().
         Usually there is no need to call this method directly,
         since it is called when you create an `Connection` instance.
-        If `host` or `port` are passed, then they are stored in the instance.
 
-        :param str host: Server hostname or IP-address
-        :param int port: Server port
+        :raise: `NetworkError`
         '''
 
-        if host:
-            self.host = host
-        if port:
-            self.port = port
         try:
             # If old socket already exists - close it and re-create
             if self._socket:
                 self._socket.close()
-            self._socket = self._new_socket()
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
             self._socket.connect((self.host, self.port))
+            # It is important to set socket timeout *after* connection.
+            # Otherwise the timeout exception will rised, even if the server does not listen
+            self._socket.settimeout(self.socket_timeout)
         except socket.error as e:
-            raise NetworkError(e.errno, strerror(e.errno))
+            raise NetworkError(e)
+
+
+    def _send_request_wo_reconnect(self, request):
+        '''\
+        :rtype: `Response` instance
+
+        :raise: NetworkError
+        '''
+        assert isinstance(request, Request)
+
+        try:
+            self._socket.sendall(bytes(request))
+            return Response(self._socket)
+        except socket.error as e:
+            raise NetworkError(e)
 
 
     def _send_request(self, request):
@@ -91,24 +104,31 @@ class Connection(object):
         '''
         assert isinstance(request, Request)
 
-        attempt = 1
-        MAX_RETRY = 5
-        while True:
+        connected = True
+        response = None
+        for attempt in xrange(1, self.reconnect_max_attempts+1):
             try:
-                self._socket.sendall(bytes(request))
-                response = Response(self._socket)
+                if not connected:
+                    # Re-raise exception catched from self.conect() below
+                    # This is done just to manage flow control (jump to self.connect() again)
+                    raise exc_info[0], exc_info[1], exc_info[2]
+                response = self._send_request_wo_reconnect(request)
                 break
-            except (socket.error, NetworkError) as e:
-                if attempt >= MAX_RETRY:
-                    raise NetworkError(e.errno, strerror(e.errno))
-                warn("Reconnect, attempt %d"%attempt)
+            except NetworkError as e:
+                exc_info = sys.exc_info()
+                warn("%s : reconnect %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
                 try:
                     self.connect()
+                    connected = True
+                    warn("Successfully reconnected", NetworkWarning)
                 except NetworkError as e:
-                    warn("%s, attempt %d"%(e, attempt))
-            attempt += 1
+                    exc_info = sys.exc_info()
+                    connected = False
 
-        return response
+        if response:
+            return response
+        else:
+            raise exc_info[0], exc_info[1], exc_info[2]
 
 
     def call(self, func_name, *args, **kwargs):

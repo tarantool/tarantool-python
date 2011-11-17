@@ -19,6 +19,12 @@ The PEP-249 says that database related exceptions must be inherited as follows:
           |__NotSupportedError
 '''
 
+import os
+import socket
+import sys
+import warnings
+
+
 class Error(StandardError):
     '''Base class for error exceptions'''
 
@@ -53,16 +59,8 @@ class NotSupportedError(DatabaseError):
     '''Raised in case a method or database API was used which is not supported by the database'''
     pass
 
-class NetworkError(OperationalError):
-    '''Error related to network'''
-    pass
 
-
-
-import sys
-import os
-
-# Monkey patching os.strerror for win32
+# Monkey patch os.strerror for win32
 if sys.platform == "win32":
     # Windows Sockets Error Codes (not all, but related on network errors)
     # http://msdn.microsoft.com/en-us/library/windows/desktop/ms740668(v=vs.85).aspx
@@ -107,7 +105,9 @@ if sys.platform == "win32":
         11004: "Name or service not known"
     }
 
+
     os_strerror_orig = os.strerror
+
     def os_strerror_patched(code):
         '''\
         Return cross-platform message about socket-related errors
@@ -123,4 +123,37 @@ if sys.platform == "win32":
 
     os.strerror = os_strerror_patched
 
-del sys
+
+class NetworkError(OperationalError):
+    '''Error related to network'''
+    def __init__(self, orig_exception=None, *args):
+        if orig_exception:
+            if isinstance(orig_exception, socket.timeout):
+                self.message = "Socket timeout"
+                super(NetworkError, self).__init__(0, self.message)
+            elif isinstance(orig_exception, socket.error):
+                self.message = os.strerror(orig_exception.errno)
+                super(NetworkError, self).__init__(orig_exception.errno, self.message)
+            else:
+                super(NetworkError, self).__init__(orig_exception, *args)
+
+
+class NetworkWarning(UserWarning):
+    '''Warning related to network'''
+    pass
+
+# always print this warnings
+warnings.filterwarnings("always", category=NetworkWarning)
+
+
+def warn(message, warning_class):
+    '''\
+    Emit warinig message.
+    Just like standard warnings.warn() but don't output full filename.
+    '''
+    frame = sys._getframe(2)
+    module_name = frame.f_globals.get("__name__")
+    line_no = frame.f_lineno
+    warnings.warn_explicit(message, warning_class, module_name, line_no)
+
+

@@ -22,3 +22,10 @@ REQUEST_TYPE_UPDATE = 19
 
 
 UPDATE_OPERATION_CODE = {'=': 0, '+': 1, '&': 2, '^': 3, '|': 4, 'splice': 5}
+
+# Default value for socket timeout (seconds)
+SOCKET_TIMEOUT = 1
+# Default maximum number of attempts to reconnect
+RECONNECT_MAX_ATTEMPTS = 10
+# Default delay between attempts to reconnect (seconds)
+RECONNECT_DELAY = 0.1
