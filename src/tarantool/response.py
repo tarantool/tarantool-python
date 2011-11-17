@@ -37,6 +37,7 @@ class Response(list):
         self._body_length = None
         self._request_id = None
         self._request_type = None
+        self._completion_status = None
         self._return_code = None
         self._return_message = None
         self._rowcount = None
@@ -50,6 +51,8 @@ class Response(list):
             raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
         # Unpack header (including <return_code> attribute)
         self._request_type, self._body_length, self._request_id, self._return_code = struct_LLLL.unpack(buff)
+        self._completion_status = self._return_code & 0x00ff
+        self._return_code = self._return_code >> 8
         if self._body_length != 0:
             self._body_length -= 4 # In the protocol description <body_length> includes 4 bytes of <return_code>
             # Read response body
@@ -64,12 +67,10 @@ class Response(list):
             else:
                 # In case of error unpack body as error message
                 self._unpack_message(buff)
-                # Check that the low byte is equal to 0x02 ("error").
-                # Also It can be 0x01 ("try again").
                 # FIXME: Implement support of "try again"
-                if (self._return_code & 0x00ff) == 1:
-                    raise RuntimeError('Got "try again" indicator')
-                raise RuntimeError(self._return_code >> 8, self._return_message)
+                if self._completion_status == 1:
+                    raise RuntimeError(self._return_code, 'Got "try again" indicator')
+                raise DatabaseError(self._return_code, self._return_message)
 
 
     def _unpack_message(self, buff):
