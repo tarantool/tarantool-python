@@ -151,7 +151,7 @@ def warn(message, warning_class):
     Emit warinig message.
     Just like standard warnings.warn() but don't output full filename.
     '''
-    frame = sys._getframe(2)
+    frame = sys._getframe(2) # pylint: disable=W0212
     module_name = frame.f_globals.get("__name__")
     line_no = frame.f_lineno
     warnings.warn_explicit(message, warning_class, module_name, line_no)
