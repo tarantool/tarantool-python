@@ -102,30 +102,29 @@ class Connection(object):
         assert isinstance(request, Request)
 
         connected = True
-        response = None
-        for attempt in xrange(1, self.reconnect_max_attempts+1):
+        attempt = 1
+        exc_info = None
+        while True:
+            if attempt > self.reconnect_max_attempts:
+                break
             try:
                 if not connected:
-                    # Re-raise exception catched from self.conect() below
-                    # This is done just to manage flow control (jump to self.connect() again)
-                    raise exc_info[0], exc_info[1], exc_info[2]
-                response = self._send_request_wo_reconnect(request)
-                break
-            except NetworkError as e:
-                exc_info = sys.exc_info()
-                warn("%s : reconnect %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
-                try:
+                    time.sleep(self.reconnect_delay)
                     self.connect()
                     connected = True
                     warn("Successfully reconnected", NetworkWarning)
-                except NetworkError as e:
-                    exc_info = sys.exc_info()
-                    connected = False
+                response = self._send_request_wo_reconnect(request)
+                return response
+            except NetworkError as e:
+                exc_info = sys.exc_info()
+                warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
+                connected = False
+                attempt += 1
 
-        if response:
-            return response
-        else:
+        if exc_info:
             raise exc_info[0], exc_info[1], exc_info[2]
+        else:
+            raise RuntimeError("Unexpected state")
 
 
     def call(self, func_name, *args, **kwargs):
