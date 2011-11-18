@@ -82,11 +82,20 @@ class Connection(object):
         '''
         assert isinstance(request, Request)
 
-        try:
-            self._socket.sendall(bytes(request))
-            return Response(self._socket)
-        except socket.error as e:
-            raise NetworkError(e)
+        # Repeat request in a loop if the server returns completion_status == 1 (try again)
+        for i in xrange(RETRY_MAX_ATTEMPTS):
+            try:
+                self._socket.sendall(bytes(request))
+                response = Response(self._socket)
+            except socket.error as e:
+                raise NetworkError(e)
+
+            if response.completion_status != 1:
+                return response
+            warn(response.return_message, RetryWarning)
+
+        # Raise an error if the maximum number of attempts have been made
+        raise DatabaseError(response.return_code, response.return_message)
 
 
     def _send_request(self, request):

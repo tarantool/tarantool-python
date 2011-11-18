@@ -29,3 +29,5 @@ SOCKET_TIMEOUT = 1
 RECONNECT_MAX_ATTEMPTS = 10
 # Default delay between attempts to reconnect (seconds)
 RECONNECT_DELAY = 0.1
+# Number of reattempts in case of server return completion_status == 1 (try again)
+RETRY_MAX_ATTEMPTS = 10

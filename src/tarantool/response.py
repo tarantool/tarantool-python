@@ -51,8 +51,10 @@ class Response(list):
             raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
         # Unpack header (including <return_code> attribute)
         self._request_type, self._body_length, self._request_id, self._return_code = struct_LLLL.unpack(buff)
+        # Separate return_code and completion_code
         self._completion_status = self._return_code & 0x00ff
         self._return_code = self._return_code >> 8
+        # Unpack body if there is one (i.e. not PING)
         if self._body_length != 0:
             self._body_length -= 4 # In the protocol description <body_length> includes 4 bytes of <return_code>
             # Read response body
@@ -67,10 +69,8 @@ class Response(list):
             else:
                 # In case of error unpack body as error message
                 self._unpack_message(buff)
-                # FIXME: Implement support of "try again"
-                if self._completion_status == 1:
-                    raise RuntimeError(self._return_code, 'Got "try again" indicator')
-                raise DatabaseError(self._return_code, self._return_message)
+                if self._completion_status == 2:
+                    raise DatabaseError(self._return_code, self._return_message)
 
 
     def _unpack_message(self, buff):
@@ -197,6 +197,11 @@ class Response(list):
                 tuple_data = struct.unpack_from("<%ds"%(tuple_size), buff, offset+4)[0]
                 self.append(self._unpack_tuple(tuple_data))
                 offset = offset + tuple_size + 4    # This '4' is a size of <size> attribute
+
+
+    @property
+    def completion_status(self):
+        return self._completion_status
 
     @property
     def rowcount(self):

@@ -37,28 +37,6 @@ class InterfaceError(Error):
     '''Error related to the database interface rather than the database itself'''
 
 
-class DataError(DatabaseError):
-    '''Error related to problems with the processed data'''
-
-
-class OperationalError(DatabaseError):
-    '''Error related to database operation (disconnect, memory allocation etc)'''
-
-
-class InternalError(DatabaseError):
-    '''Raised when the database encounters an internal error'''
-
-
-class ProgrammingError(DatabaseError):
-    '''Error related to database programming'''
-    # e.g. table not found or already exists, syntax error in the query
-    # statement, wrong number of parameters specified, etc
-
-
-class NotSupportedError(DatabaseError):
-    '''Raised in case a method or database API was used which is not supported by the database'''
-    pass
-
 
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":
@@ -124,7 +102,7 @@ if sys.platform == "win32":
     os.strerror = os_strerror_patched
 
 
-class NetworkError(OperationalError):
+class NetworkError(DatabaseError):
     '''Error related to network'''
     def __init__(self, orig_exception=None, *args):
         if orig_exception:
@@ -142,8 +120,15 @@ class NetworkWarning(UserWarning):
     '''Warning related to network'''
     pass
 
+
+class RetryWarning(UserWarning):
+    '''Warning is emited in case of server return completion_status == 1 (try again)'''
+    pass
+
+
 # always print this warnings
 warnings.filterwarnings("always", category=NetworkWarning)
+warnings.filterwarnings("always", category=RetryWarning)
 
 
 def warn(message, warning_class):
@@ -155,5 +140,4 @@ def warn(message, warning_class):
     module_name = frame.f_globals.get("__name__")
     line_no = frame.f_lineno
     warnings.warn_explicit(message, warning_class, module_name, line_no)
-
 
