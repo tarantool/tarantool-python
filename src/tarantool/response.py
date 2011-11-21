@@ -4,6 +4,7 @@
 import ctypes
 import socket
 import struct
+import sys
 
 from tarantool.const import *
 from tarantool.error import *
