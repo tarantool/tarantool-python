@@ -85,7 +85,7 @@ class Response(list):
         :params _socket: socket connected to the server
         :type _socket: instance of socket.socket class (from stdlib)
         '''
-
+        # This is not necessary, because underlying list data structures are created in the __new__(). But let it be.
         super(Response, self).__init__()
 
         self._body_length = None
@@ -100,23 +100,32 @@ class Response(list):
         # Read response header
         buff = ctypes.create_string_buffer(16)
         nbytes = _socket.recv_into(buff, 16, )
+
         # Immediately raises an exception if the data cannot be read
         if nbytes != 16:
             raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
+
         # Unpack header (including <return_code> attribute)
         self._request_type, self._body_length, self._request_id, self._return_code = struct_LLLL.unpack(buff)
+
         # Separate return_code and completion_code
         self._completion_status = self._return_code & 0x00ff
         self._return_code = self._return_code >> 8
+
         # Unpack body if there is one (i.e. not PING)
         if self._body_length != 0:
-            self._body_length -= 4 # In the protocol description <body_length> includes 4 bytes of <return_code>
+
+            # In the protocol description <body_length> includes 4 bytes of <return_code>
+            self._body_length -= 4
+
             # Read response body
             buff = ctypes.create_string_buffer(self._body_length)
             nbytes = _socket.recv_into(buff)
+
             # Immediately raises an exception if the data cannot be read
             if nbytes != self._body_length:
                 raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
+
             if self._return_code == 0:
                 # If no errors, unpack response body
                 self._unpack_body(buff)
