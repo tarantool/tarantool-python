@@ -3,6 +3,8 @@
 '''
 This module provides object-oriented wrapper for accessing a particular Tarantool space
 '''
+import sys
+
 
 
 class Space(object):
@@ -13,9 +15,10 @@ class Space(object):
     '''
     def __init__(self, connection, space_no, field_types=None):
         if __debug__:
-            if not all([(type(t) is type) or (t is None) or (t is any) for t in field_types]):
-                # FIXME: [py3] explicit unicode usage
-                raise TypeError, "Argument field_types can contain only any, bytes, int, unicode or None"
+            if field_types and not all([(t is bytes) or (t is int) or (t is unicode) for t in field_types]):
+                raise TypeError("Argument field_types can contain only bytes, int or %s"\
+                                %('str' if sys.version_info.major > 2 else 'unicode'))
+
         self.connection = connection
         self.space_no = space_no
         self.field_types = field_types
