@@ -10,6 +10,64 @@ from tarantool.const import *
 from tarantool.error import *
 
 
+
+if sys.version_info < (2, 6):
+    bytes = str
+
+class field(bytes):
+    '''\
+    Represents a single element of the Tarantool's tuple
+    '''
+    def __new__(cls, value):
+        '''\
+        Create new instance of Tarantool field (single tuple element)
+        '''
+        # Since parent class is immutable, we should override __new__, not __init__
+
+        if isinstance(value, unicode):
+            return super(field, cls).__new__(cls, value.encode("utf-8", "replace"))
+        if sys.version_info.major < 3 and isinstance(value, str):
+            return super(field, cls).__new__(cls, value)
+        if isinstance(value, (bytearray, bytes)):
+            return super(field, cls).__new__(cls, value)
+        if isinstance(value, int):
+            if value <= 0xFFFFFFFF:
+                # 32 bit integer
+                return super(field, cls).__new__(cls, struct_L.pack(value))
+            else:
+                # 64 bit integer
+                return super(field, cls).__new__(cls, struct_Q.pack(value))
+        # NOTE: It is posible to implement float
+        raise TypeError("Unsupported argument type '%s'"%(type(value).__name__))
+
+
+    def __int__(self):
+        '''\
+        Cast filed to int
+        '''
+        if len(self) == 4:
+            return struct_L.unpack(self)[0]
+        elif len(self) == 8:
+            return struct_Q.unpack(self)[0]
+        else:
+            raise ValueError("Unable to cast field to int: length must be 4 or 8 bytes, field length is %d"%len(self))
+
+
+    if sys.version_info.major > 2:
+        def __str__(self):
+            '''\
+            Cast filed to str
+            '''
+            return self.decode("utf-8", "replace")
+    else:
+        def __unicode__(self):
+            '''\
+            Cast filed to unicode
+            '''
+            return self.decode("utf-8", "replace")
+
+
+
 class Response(list):
     '''\
     Represents a single response from the server in compliance with the Tarantool protocol.
