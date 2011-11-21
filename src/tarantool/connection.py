@@ -112,10 +112,7 @@ class Connection(object):
 
         connected = True
         attempt = 1
-        exc_info = None
         while True:
-            if attempt > self.reconnect_max_attempts:
-                break
             try:
                 if not connected:
                     time.sleep(self.reconnect_delay)
@@ -123,18 +120,15 @@ class Connection(object):
                     connected = True
                     warn("Successfully reconnected", NetworkWarning)
                 response = self._send_request_wo_reconnect(request, field_types)
-                return response
+                break
             except NetworkError as e:
-                exc_info = sys.exc_info()
+                if attempt > self.reconnect_max_attempts:
+                    raise
                 warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
-                connected = False
                 attempt += 1
+                connected = False
 
-        if exc_info:
-            raise exc_info[0], exc_info[1], exc_info[2]
-        else:
-            raise RuntimeError("Unexpected state")
-
+        return response
 
     def call(self, func_name, *args, **kwargs):
         '''\
