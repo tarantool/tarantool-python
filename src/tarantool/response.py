@@ -4,7 +4,6 @@
 import ctypes
 import socket
 import struct
-import warnings
 
 from tarantool.const import *
 from tarantool.error import *
@@ -12,7 +11,7 @@ from tarantool.error import *
 
 
 if sys.version_info < (2, 6):
-    bytes = str
+    bytes = str    # pylint: disable=W0622
 
 class field(bytes):
     '''\

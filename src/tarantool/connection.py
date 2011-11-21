@@ -83,7 +83,7 @@ class Connection(object):
         assert isinstance(request, Request)
 
         # Repeat request in a loop if the server returns completion_status == 1 (try again)
-        for i in xrange(RETRY_MAX_ATTEMPTS):
+        for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             try:
                 self._socket.sendall(bytes(request))
                 response = Response(self._socket, field_types)
