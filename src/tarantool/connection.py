@@ -74,7 +74,7 @@ class Connection(object):
             raise NetworkError(e)
 
 
-    def _send_request_wo_reconnect(self, request):
+    def _send_request_wo_reconnect(self, request, field_types=None):
         '''\
         :rtype: `Response` instance
 
@@ -83,10 +83,10 @@ class Connection(object):
         assert isinstance(request, Request)
 
         # Repeat request in a loop if the server returns completion_status == 1 (try again)
-        for i in xrange(RETRY_MAX_ATTEMPTS):
+        for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             try:
                 self._socket.sendall(bytes(request))
-                response = Response(self._socket)
+                response = Response(self._socket, field_types)
             except socket.error as e:
                 raise NetworkError(e)
 
@@ -98,7 +98,7 @@ class Connection(object):
         raise DatabaseError(response.return_code, response.return_message)
 
 
-    def _send_request(self, request):
+    def _send_request(self, request, field_types=None):
         '''\
         Send the request to the server through the socket.
         Return an instance of `Response` class.
@@ -112,29 +112,23 @@ class Connection(object):
 
         connected = True
         attempt = 1
-        exc_info = None
         while True:
-            if attempt > self.reconnect_max_attempts:
-                break
             try:
                 if not connected:
                     time.sleep(self.reconnect_delay)
                     self.connect()
                     connected = True
                     warn("Successfully reconnected", NetworkWarning)
-                response = self._send_request_wo_reconnect(request)
-                return response
+                response = self._send_request_wo_reconnect(request, field_types)
+                break
             except NetworkError as e:
-                exc_info = sys.exc_info()
+                if attempt > self.reconnect_max_attempts:
+                    raise
                 warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
-                connected = False
                 attempt += 1
+                connected = False
 
-        if exc_info:
-            raise exc_info[0], exc_info[1], exc_info[2]
-        else:
-            raise RuntimeError("Unexpected state")
-
+        return response
 
     def call(self, func_name, *args, **kwargs):
         '''\
@@ -156,12 +150,15 @@ class Connection(object):
         if isinstance(args[0], (list, tuple)):
             args = args[0]
 
+        # Check if 'field_types' keyword argument is passed
+        field_types = kwargs.get("field_types", None)
+
         request = RequestCall(func_name, args, return_tuple=True)
-        response = self._send_request(request)
+        response = self._send_request(request, field_types=field_types)
         return response
 
 
-    def insert(self, space_no, values, return_tuple=False):
+    def insert(self, space_no, values, return_tuple=False, field_types=None):
         '''\
         Execute INSERT request.
         Insert single record into a space `space_no`.
@@ -178,10 +175,10 @@ class Connection(object):
         assert isinstance(values, tuple)
 
         request = RequestInsert(space_no, values, return_tuple)
-        return self._send_request(request)
+        return self._send_request(request, field_types=field_types)
 
 
-    def delete(self, space_no, key, return_tuple=False):
+    def delete(self, space_no, key, return_tuple=False, field_types=None):
         '''\
         Execute DELETE request.
         Delete single record identified by `key` (using primary index).
@@ -198,10 +195,10 @@ class Connection(object):
         assert isinstance(key, (int, basestring))
 
         request = RequestDelete(space_no, key, return_tuple)
-        return self._send_request(request)
+        return self._send_request(request, field_types=field_types)
 
 
-    def update(self, space_no, key, op_list, return_tuple=False):
+    def update(self, space_no, key, op_list, return_tuple=False, field_types=None):
         '''\
         Execute UPDATE request.
         Update single record identified by `key` (using primary index).
@@ -222,7 +219,7 @@ class Connection(object):
         assert isinstance(key, (int, basestring))
 
         request = RequestUpdate(space_no, key, op_list, return_tuple)
-        return self._send_request(request)
+        return self._send_request(request, field_types=field_types)
 
 
     def ping(self):
@@ -242,7 +239,7 @@ class Connection(object):
         return t1 - t0
 
 
-    def _select(self, space_no, index_no, values, offset=0, limit=0xffffffff):
+    def _select(self, space_no, index_no, values, offset=0, limit=0xffffffff, field_types=None):
         '''\
         Low level version of select() method.
 
@@ -266,11 +263,11 @@ class Connection(object):
         assert isinstance(values[0], (list, tuple))
 
         request = RequestSelect(space_no, index_no, values, offset, limit)
-        response = self._send_request(request)
+        response = self._send_request(request, field_types=field_types)
         return response
 
 
-    def select(self, space_no, index_no, values, offset=0, limit=0xffffffff):
+    def select(self, space_no, index_no, values, offset=0, limit=0xffffffff, field_types=None):
         '''\
         Execute SELECT request.
         Select and retrieve data from the database.
@@ -321,10 +318,10 @@ class Connection(object):
             else:
                 raise ValueError("Invalid value type, expected one of scalar (int or str) / list of scalars / list of tuples ")
 
-        return self._select(space_no, index_no, values, offset, limit)
+        return self._select(space_no, index_no, values, offset, limit, field_types=field_types)
 
 
-    def space(self, space_no):
+    def space(self, space_no, field_types=None):
         '''\
         Create `Space` instance for particular space
 
@@ -336,4 +333,5 @@ class Connection(object):
 
         :rtype: `Space` instance
         '''
-        return Space(self, space_no)
+        return Space(self, space_no, field_types)
+
