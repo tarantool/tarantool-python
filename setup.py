@@ -11,5 +11,14 @@ setup(
     author = "Konstantin Cherkasoff",
     author_email = "k.cherkasoff@gmail.com",
     url = "https://github.com/coxx/tarantool-python",
+    license = "BSD",
     description = "Python client library for Tarantool Database",
+    long_description = open("README.rst").read(),
+    classifiers = [
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Topic :: Database :: Front-Ends"
+    ]
 )
