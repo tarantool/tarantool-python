@@ -6,7 +6,7 @@ setup(
     name = "tarantool-python",
     packages = ["tarantool"],
     package_dir = {"tarantool": os.path.join("src", "tarantool")},
-    version = "0.2.0",
+    version = "0.2.1",
     platforms = ["all"],
     author = "Konstantin Cherkasoff",
     author_email = "k.cherkasoff@gmail.com",
