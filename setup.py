@@ -6,10 +6,19 @@ setup(
     name = "tarantool-python",
     packages = ["tarantool"],
     package_dir = {"tarantool": os.path.join("src", "tarantool")},
-    version = "0.2.0",
+    version = "0.2.1",
     platforms = ["all"],
     author = "Konstantin Cherkasoff",
     author_email = "k.cherkasoff@gmail.com",
     url = "https://github.com/coxx/tarantool-python",
-    description = "Python client library for the Tarantool Database",
+    license = "BSD",
+    description = "Python client library for Tarantool Database",
+    long_description = open("README.rst").read(),
+    classifiers = [
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Topic :: Database :: Front-Ends"
+    ]
 )
