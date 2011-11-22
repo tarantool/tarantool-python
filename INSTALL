@@ -1,0 +1,17 @@
+Installing tarantool-python
+===========================
+
+The simplest (and recommended) way to install tarantool-python
+
+using `pip`::
+
+    $ pip install Celery
+
+or `easy_install`::
+
+    $ easy_install Celery
+
+
+You can also download a source tarball and install the package using distutils script::
+
+    # python setup.py install
