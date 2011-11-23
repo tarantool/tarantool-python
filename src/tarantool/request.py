@@ -53,18 +53,47 @@ class Request(object):
 
     @staticmethod
     def pack_int_base128(value):
-        """Implement Perl pack's 'w' option, aka base 128 encoding."""
-        res = ''
-        if value >= 1 << 7:
-            if value >= 1 << 14:
-                if value >= 1 << 21:
-                    if value >= 1 << 28:
-                        res += chr(value >> 28 & 0xff | 0x80)
-                    res += chr(value >> 21 & 0xff | 0x80)
-                res += chr(value >> 14 & 0xff | 0x80)
-            res += chr(value >> 7 & 0xff | 0x80)
-        res += chr(value & 0x7F)
-        return res
+        '''\
+        Pack integer value using LEB128 encoding
+        :param value: integer value to encode
+        :type value: int
+
+        :return: encoded value
+        :rtype: bytes
+        '''
+
+        if value < 1 << 7:
+            return struct_B.pack(value)
+
+        if value < 1 << 14:
+            return struct_BB.pack(
+                        value >> 7 & 0xff | 0x80,
+                        value & 0x7F
+            )
+
+        if value < 1 << 21:
+            return struct_BBB.pack(
+                        value >> 14 & 0xff | 0x80,
+                        value >> 7 & 0xff | 0x80,
+                        value & 0x7F
+            )
+
+        if value < 1 << 28:
+            return struct_BBBB.pack(
+                        value >> 21 & 0xff | 0x80,
+                        value >> 14 & 0xff | 0x80,
+                        value >> 7 & 0xff | 0x80,
+                        value & 0x7F
+            )
+
+        if value < 1 << 35:
+            return struct_BBBBB.pack(
+                        value >> 28 & 0xff | 0x80,
+                        value >> 21 & 0xff | 0x80,
+                        value >> 14 & 0xff | 0x80,
+                        value >> 7 & 0xff | 0x80,
+                        value & 0x7F
+            )
 
 
     @classmethod
@@ -123,6 +152,8 @@ class Request(object):
         packed_items = [cls.pack_field(v) for v in values]
         packed_items.insert(0, cardinality)
         return b"".join(packed_items)
+
+
 
 
 
