@@ -18,6 +18,14 @@ class Request(object):
     '''
     request_type = None
 
+    # Pre-generated results of pack_int_base128() for small arguments (0..16383)
+    _int_base128 = tuple(
+        (
+            struct_B.pack(val) if val < 128 else struct_BB.pack(val >> 7 & 0xff | 0x80, val & 0x7F) \
+            for val in xrange(0x4000)
+        )
+    )
+
     def __init__(self):
         self._bytes = None
         raise NotImplementedError("Abstract method must be overridden")
@@ -51,8 +59,8 @@ class Request(object):
         return struct_BL.pack(4, value)
 
 
-    @staticmethod
-    def pack_int_base128(value):
+    @classmethod
+    def pack_int_base128(cls, value):
         '''\
         Pack integer value using LEB128 encoding
         :param value: integer value to encode
@@ -62,14 +70,8 @@ class Request(object):
         :rtype: bytes
         '''
 
-        if value < 1 << 7:
-            return struct_B.pack(value)
-
         if value < 1 << 14:
-            return struct_BB.pack(
-                        value >> 7 & 0xff | 0x80,
-                        value & 0x7F
-            )
+            return cls._int_base128[value]
 
         if value < 1 << 21:
             return struct_BBB.pack(
