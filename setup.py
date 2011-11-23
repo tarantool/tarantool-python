@@ -3,7 +3,7 @@ from distutils.core import setup
 import os.path
 
 setup(
-    name = "tarantool-python",
+    name = "tarantool",
     packages = ["tarantool"],
     package_dir = {"tarantool": os.path.join("src", "tarantool")},
     version = "0.2.1",
