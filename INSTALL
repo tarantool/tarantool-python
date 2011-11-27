@@ -5,11 +5,11 @@ The simplest (and recommended) way to install tarantool-python
 
 using `pip`::
 
-    $ pip install Celery
+    $ pip install tarantool
 
 or `easy_install`::
 
-    $ easy_install Celery
+    $ easy_install tarantool
 
 
 You can also download a source tarball and install the package using distutils script::
