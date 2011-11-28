@@ -34,3 +34,6 @@ class Space(object):
 
     def select(self, index_no, values, offset=0, limit=0xffffffff):
         return self.connection.select(self.space_no, index_no, values, offset, limit, self.field_types)
+
+    def call(self, func_name, *args, **kwargs):
+        return self.connection.call(func_name, *args, **kwargs)
