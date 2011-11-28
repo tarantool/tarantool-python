@@ -97,6 +97,8 @@ class Request(object):
                         value & 0x7F
             )
 
+        raise OverflowError("Number too large to be packed")
+
 
     @classmethod
     def pack_str(cls, value):
