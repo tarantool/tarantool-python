@@ -267,17 +267,17 @@ class Connection(object):
         return response
 
 
-    def select(self, space_no, index_no, values, offset=0, limit=0xffffffff, field_types=None):
+    def select(self, space_no, values, **kwargs):
         '''\
         Execute SELECT request.
         Select and retrieve data from the database.
 
         :param space_no: specifies which space to query
         :type space_no: int
-        :param index_no: specifies which index to use
-        :type index_no: int
         :param values: list of values to search over the index
         :type values: list of tuples
+        :param index: specifies which index to use (default is **0** which means that the **primary index** will be used)
+        :type index: int
         :param offset: offset in the resulting tuple set
         :type offset: int
         :param limit: limits the total number of returned tuples
@@ -301,6 +301,12 @@ class Connection(object):
         >>> select(0, 1, (1,'2'))
         '''
 
+        # Initialize arguments and its defaults from **kwargs
+        offset = kwargs.get("offset", 0)
+        limit = kwargs.get("limit", 0xffffffff)
+        field_types = kwargs.get("field_types", None)
+        index = kwargs.get("index", 0)
+
         # Perform smart type cheching (scalar / list of scalars / list of tuples)
         if isinstance(values, (int, basestring)): # scalar
             # This request is looking for one single record
@@ -318,7 +324,7 @@ class Connection(object):
             else:
                 raise ValueError("Invalid value type, expected one of scalar (int or str) / list of scalars / list of tuples ")
 
-        return self._select(space_no, index_no, values, offset, limit, field_types=field_types)
+        return self._select(space_no, index, values, offset, limit, field_types=field_types)
 
 
     def space(self, space_no, field_types=None):
