@@ -5,6 +5,11 @@ import struct
 
 
 # pylint: disable=C0103
+struct_B = struct.Struct('<B')
+struct_BB = struct.Struct('<BB')
+struct_BBB = struct.Struct('<BBB')
+struct_BBBB = struct.Struct('<BBBB')
+struct_BBBBB = struct.Struct('<BBBBB')
 struct_BL = struct.Struct("<BL")
 struct_LB = struct.Struct("<LB")
 struct_L = struct.Struct("<L")

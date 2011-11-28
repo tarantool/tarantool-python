@@ -18,6 +18,14 @@ class Request(object):
     '''
     request_type = None
 
+    # Pre-generated results of pack_int_base128() for small arguments (0..16383)
+    _int_base128 = tuple(
+        (
+            struct_B.pack(val) if val < 128 else struct_BB.pack(val >> 7 & 0xff | 0x80, val & 0x7F) \
+            for val in xrange(0x4000)
+        )
+    )
+
     def __init__(self):
         self._bytes = None
         raise NotImplementedError("Abstract method must be overridden")
@@ -51,20 +59,45 @@ class Request(object):
         return struct_BL.pack(4, value)
 
 
-    @staticmethod
-    def pack_int_base128(value):
-        """Implement Perl pack's 'w' option, aka base 128 encoding."""
-        res = ''
-        if value >= 1 << 7:
-            if value >= 1 << 14:
-                if value >= 1 << 21:
-                    if value >= 1 << 28:
-                        res += chr(value >> 28 & 0xff | 0x80)
-                    res += chr(value >> 21 & 0xff | 0x80)
-                res += chr(value >> 14 & 0xff | 0x80)
-            res += chr(value >> 7 & 0xff | 0x80)
-        res += chr(value & 0x7F)
-        return res
+    @classmethod
+    def pack_int_base128(cls, value):
+        '''\
+        Pack integer value using LEB128 encoding
+        :param value: integer value to encode
+        :type value: int
+
+        :return: encoded value
+        :rtype: bytes
+        '''
+
+        if value < 1 << 14:
+            return cls._int_base128[value]
+
+        if value < 1 << 21:
+            return struct_BBB.pack(
+                        value >> 14 & 0xff | 0x80,
+                        value >> 7 & 0xff | 0x80,
+                        value & 0x7F
+            )
+
+        if value < 1 << 28:
+            return struct_BBBB.pack(
+                        value >> 21 & 0xff | 0x80,
+                        value >> 14 & 0xff | 0x80,
+                        value >> 7 & 0xff | 0x80,
+                        value & 0x7F
+            )
+
+        if value < 1 << 35:
+            return struct_BBBBB.pack(
+                        value >> 28 & 0xff | 0x80,
+                        value >> 21 & 0xff | 0x80,
+                        value >> 14 & 0xff | 0x80,
+                        value >> 7 & 0xff | 0x80,
+                        value & 0x7F
+            )
+
+        raise OverflowError("Number too large to be packed")
 
 
     @classmethod
@@ -123,6 +156,8 @@ class Request(object):
         packed_items = [cls.pack_field(v) for v in values]
         packed_items.insert(0, cardinality)
         return b"".join(packed_items)
+
+
 
 
 
