@@ -51,6 +51,14 @@ class Connection(object):
             self.connect()
 
 
+    def close(self):
+        '''\
+        Close connection to the server
+        '''
+        self._socket.close()
+        self._socket = None
+
+
     def connect(self):
         '''\
         Create connection to the host and port specified in __init__().
