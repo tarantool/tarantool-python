@@ -287,10 +287,10 @@ class Response(list):
         :rtype: value of native python types (bytes, int, unicode (or str for py3k))
         '''
         result = []
-        for i in xrange(len(values)):
+        for i, value in enumerate(values):
             if i < len(self.field_types):
-                result.append(self._cast_field(self.field_types[i], values[i]))
+                result.append(self._cast_field(self.field_types[i], value))
             else:
-                result.append(self._cast_field(self.field_types[-1], values[i]))
+                result.append(self._cast_field(self.field_types[-1], value))
 
         return tuple(result)
