@@ -17,7 +17,7 @@ except ImportError:
     pass
 
 
-# Upload Sphinx documentation to PyPI
+# Upload Sphinx documentation to PyPI (using Sphinx-PyPI-upload)
 # python setup.py build_sphinx
 # updates documentation at http://packages.python.org/tarantool/
 try:
