@@ -24,8 +24,10 @@ from tarantool.error import *
 
 class Connection(object):
     '''\
-    Represents low-level interface to the Tarantool server.
-    This class can be used directly or using object-oriented wrappers.
+    Represents connection to the Tarantool server.
+    
+    This class is responsible for connection and network exchange with the server.
+    Also this class provides low-level interface to data manipulation (insert/delete/update/select).
     '''
 
     def __init__(self, host, port,
@@ -34,7 +36,7 @@ class Connection(object):
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True):
         '''\
-        Initialize an connection to the server.
+        Initialize a connection to the server.
 
         :param str host: Server hostname or IP-address
         :param int port: Server port
