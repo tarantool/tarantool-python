@@ -324,3 +324,26 @@ class Response(list):
                 result.append(self._cast_field(self.field_types[-1], value))
 
         return tuple(result)
+
+
+    def __repr__(self):
+        '''\
+        Return user friendy string representation of the object.
+        Useful for the interactive sessions and debuging.
+
+        :rtype: str or None
+        '''
+        # If response is not empty then return default list representation
+        # If there was an SELECT request - return list representation even it is empty
+        if(self._request_type == REQUEST_TYPE_SELECT or len(self)):
+            return super(Response, self).__repr__()
+
+        # Return string of form "N records affected"
+        affected = str(self.rowcount) + " record" if self.rowcount == 1 else " records"
+        if(self._request_type == REQUEST_TYPE_DELETE):
+            return affected + " deleted"
+        if(self._request_type == REQUEST_TYPE_INSERT):
+            return affected + " inserted"
+        if(self._request_type == REQUEST_TYPE_UPDATE):
+            return affected + " updated"
+        return affected + " affected"
