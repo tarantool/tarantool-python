@@ -2,11 +2,39 @@
 from distutils.core import setup
 import os.path
 
+
+# Extra commands for documentation management
+cmdclass = {}
+command_options = {}
+
+# Build Sphinx documentation (html)
+# python setup.py build_sphinx
+# generates files into build/sphinx/html
+try:
+    from sphinx.setup_command import BuildDoc
+    cmdclass["build_sphinx"] = BuildDoc
+except ImportError:
+    pass
+
+
+# Upload Sphinx documentation to PyPI (using Sphinx-PyPI-upload)
+# python setup.py build_sphinx
+# updates documentation at http://packages.python.org/tarantool/
+try:
+    from sphinx_pypi_upload import UploadDoc
+    cmdclass["upload_sphinx"] = UploadDoc
+    command_options["upload_sphinx"] = {
+            'upload_dir': ('setup.py', os.path.join(os.path.dirname(__file__), "build", "sphinx", "html"))
+    }
+except ImportError:
+    pass
+
+
 setup(
     name = "tarantool",
     packages = ["tarantool"],
     package_dir = {"tarantool": os.path.join("src", "tarantool")},
-    version = "0.2.2",
+    version = "0.3.0",
     platforms = ["all"],
     author = "Konstantin Cherkasoff",
     author_email = "k.cherkasoff@gmail.com",
@@ -20,5 +48,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Topic :: Database :: Front-Ends"
-    ]
+    ],
+    cmdclass = cmdclass,
+    command_options = command_options
 )
