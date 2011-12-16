@@ -34,7 +34,7 @@ setup(
     name = "tarantool",
     packages = ["tarantool"],
     package_dir = {"tarantool": os.path.join("src", "tarantool")},
-    version = "0.2.2",
+    version = "0.3.0",
     platforms = ["all"],
     author = "Konstantin Cherkasoff",
     author_email = "k.cherkasoff@gmail.com",
