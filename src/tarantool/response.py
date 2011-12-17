@@ -241,13 +241,15 @@ class Response(list):
     def completion_status(self):
         '''\
         :type: int
-        
+
         Request completion status.
+
         There are only three completion status codes in use:
-            * ``0`` "success"; the only possible :attr:`return_code` with this status is ``0``
-            * ``1`` "try again"; an indicator of an intermittent error.
+
+            * ``0`` -- "success"; the only possible :attr:`return_code` with this status is ``0``
+            * ``1`` -- "try again"; an indicator of an intermittent error.
                     This status is handled automatically by this module.
-            * ``2`` "error"; in this case :attr:`return_code` holds the actual error.
+            * ``2`` -- "error"; in this case :attr:`return_code` holds the actual error.
         '''
         return self._completion_status
 
@@ -256,7 +258,7 @@ class Response(list):
     def rowcount(self):
         '''\
         :type: int
-        
+
         Number of rows affected or returned by a query.
         '''
         return self._rowcount
@@ -266,7 +268,7 @@ class Response(list):
     def return_code(self):
         '''\
         :type: int
-        
+
         Required field in the server response.
         Value of :attr:`return_code` can be ``0`` if request was sucessfull or contains an error code.
         If :attr:`return_code` is non-zero than :attr:`return_message` contains an error message.
@@ -278,7 +280,7 @@ class Response(list):
     def return_message(self):
         '''\
         :type: str
-        
+
         The error message returned by the server in case of :attr:`return_code` is non-zero.
         '''
         return self._return_message
