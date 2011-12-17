@@ -3,6 +3,12 @@ from distutils.core import setup
 import os.path
 
 
+# Read package version without importing it
+for line in open(os.path.join(os.path.dirname(__file__), "src", "tarantool", "__init__.py")):
+    if line.startswith("__version__"):
+        exec line
+        break
+
 # Extra commands for documentation management
 cmdclass = {}
 command_options = {}
@@ -34,7 +40,7 @@ setup(
     name = "tarantool",
     packages = ["tarantool"],
     package_dir = {"tarantool": os.path.join("src", "tarantool")},
-    version = "0.3.0",
+    version = __version__,
     platforms = ["all"],
     author = "Konstantin Cherkasoff",
     author_email = "k.cherkasoff@gmail.com",
