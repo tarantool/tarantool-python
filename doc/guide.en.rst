@@ -30,13 +30,13 @@ Field types
 ^^^^^^^^^^^
 
 Three field types are supported in Tarantool: ``STR``, ``NUM`` and ``NUM64``.
-These types are used only for index configuration 
+These types are used only for index configuration
 but not saved in tuple's data and not transferred between the client and server.
-Thus, from the client point of view, fields are raw byte arrays 
+Thus, from the client point of view, fields are raw byte arrays
 without explicitly definde types.
 
 It is much easier to use native types for python developer:
-``int``, ``long``, ``unicode`` (``int`` and ``str`` for Python 3.x). 
+``int``, ``long``, ``unicode`` (``int`` and ``str`` for Python 3.x).
 For raw binary data ``bytes`` should be used
 (in this case the type casting is not performed).
 
@@ -77,15 +77,13 @@ Raw byte fields should be used if the application uses binary data
 (eg, images or python objects packed with ``picke``).
 
 
-.. note:: 
+.. note::
 
    Python 2.6 adds :class:`bytes` as a synonym for the :class:`str` type, and it also supports the ``b''`` notation.
 
 
-.. note::
+.. note:: **utf-8** allways used for type conversion between ``unicode`` and ``bytes``
 
-To decode ``unicode`` from ``bytes`` and encode ``unicode`` to ``bytes``
-**utf-8** allways used.
 
 
 Request response
@@ -97,7 +95,7 @@ Requests (:meth:`insert() <tarantool.space.Space.insert>`,
 :meth:`select() <tarantool.space.Space.select>`) return a
 :class:`~tarantool.response.Response` instance.
 
-Class :class:`~tarantool.response.Response` inherited from `list`, 
+Class :class:`~tarantool.response.Response` inherited from `list`,
 so in fact response can be used as a list of a tuples.
 
 In addition :class:`~tarantool.response.Response` instance has the ``rowcount`` attribute.
@@ -125,7 +123,7 @@ Example::
 Data manipulation
 -----------------
 
-There are four basic operations supported by Tarantool: 
+There are four basic operations supported by Tarantool:
 **insert**, **delete**, **update** and **select**.
 
 .. Note:: НЕОБХОДИМО ОБЪЯСНИТЬ КАКИЕ ДАННЫЕ ИСПОЛЬЗУЮТСЯ ДЛЯ ПРИМЕРА
@@ -174,7 +172,7 @@ Example::
 
 In this example new values for fields ``1`` and ``2`` are assigned.
 
-:meth:`Space.update() <tarantool.space.Space.update>` method allows to change 
+:meth:`Space.update() <tarantool.space.Space.update>` method allows to change
 multiple fields of the tuple at a time.
 
 The following update operations are supported by Tarantool:
@@ -211,6 +209,8 @@ Select a record using its primary key ``3800``::
 
 
 .. rubric:: Select using secondary index
+
+::
 
     >>> world.select('USA', index=1)
     [(3796, u'USA', u'Texas', u'Houston', 1953631),
@@ -250,7 +250,7 @@ Select data on cities in Texas::
 .. rubric:: Select records explicitly specifying field types
 
 Tarantool has no strict schema so all fields are raw binary byte arrays.
-You can specify field types in directly in 
+You can specify field types in directly in
 :meth:`Space.select() <tarantool.space.Space.select>` method
 using ``field_types`` keyword argument::
 
@@ -276,7 +276,7 @@ Example::
 
     >>> server.call("box.select_range", (1, 3, 2, 'AAAA'))
     [(3800, u'USA', u'Texas', u'Dallas', 1188580), (3794, u'USA', u'California', u'Los Angeles', 3694820)]
-    
+
 .. seealso::
 
     Tarantool/Box User Guide » `Writing stored procedures in Lua <http://tarantool.org/tarantool_user_guide.html#stored-programs>`_
