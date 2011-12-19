@@ -179,6 +179,8 @@ class Connection(object):
         :type values: tuple
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
+        :param field_types: Data types to be used for type conversion.
+        :type field_types: tuple
 
         :rtype: `Response` instance
         '''
