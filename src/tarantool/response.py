@@ -75,16 +75,19 @@ class Response(list):
     packet received from the server.
     '''
 
-    def __init__(self, _socket, field_types=None):
+    def __init__(self, header, body, field_types=None):
         '''\
         Create an instance of `Response` using data received from the server.
 
         __init__() itself reads data from the socket, parses response body and
         sets appropriate instance attributes.
 
-        :params _socket: socket connected to the server
-        :type _socket: instance of socket.socket class (from stdlib)
+        :param header: header of the response
+        :type header: array of bytes
+        :param body: body of the response
+        :type body: array of bytes
         '''
+
         # This is not necessary, because underlying list data structures are created in the __new__(). But let it be.
         super(Response, self).__init__()
 
@@ -97,57 +100,10 @@ class Response(list):
         self._rowcount = None
         self.field_types = field_types
 
-        # Read response header
-        buff = ctypes.create_string_buffer(16)
-        nbytes = _socket.recv_into(buff, 16, )
-
-        # Immediately raises an exception if the data cannot be read
-        if nbytes != 16:
-            raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
-
-        # Unpack header (including <return_code> attribute)
-        self._request_type, self._body_length, self._request_id, self._return_code = struct_LLLL.unpack(buff)
-
-        # Separate return_code and completion_code
-        self._completion_status = self._return_code & 0x00ff
-        self._return_code = self._return_code >> 8
-
-        # Unpack body if there is one (i.e. not PING)
-        if self._body_length != 0:
-
-            # In the protocol description <body_length> includes 4 bytes of <return_code>
-            self._body_length -= 4
-
-            # Read response body
-            buff = ctypes.create_string_buffer(self._body_length)
-            nbytes = _socket.recv_into(buff)
-
-            # Immediately raises an exception if the data cannot be read
-            if nbytes != self._body_length:
-                raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
-
-            if self._return_code == 0:
-                # If no errors, unpack response body
-                self._unpack_body(buff)
-            else:
-                # In case of error unpack body as error message
-                self._unpack_message(buff)
-                if self._completion_status == 2:
-                    raise DatabaseError(self._return_code, self._return_message)
-
-
-    def _unpack_message(self, buff):
-        '''\
-        Extract error message from response body
-        Called when return_code! = 0.
-
-        :param buff: buffer containing request body
-        :type byff: ctypes buffer
-        :return: error message
-        :rtype:  str
-        '''
-
-        self._return_message = unicode(buff.value, "utf8", "replace")
+        # Unpack header
+        self._request_type, self._body_length, self._request_id  = struct_LLL.unpack(header)
+        if body:
+            self._unpack_body(body)
 
 
     @staticmethod
@@ -209,16 +165,26 @@ class Response(list):
         :type byff: ctypes buffer
         '''
 
-        # Unpack <count> (first 4 bytes) - how many records returned
-        self._rowcount = struct_L.unpack_from(buff)[0]
+        # Unpack <return_code> and <count> (how many records affected or selected)
+        self._return_code, self._rowcount = struct_LL.unpack_from(buff, offset=0)
 
-        # If the response body contains only <count> - there is no tuples to unpack
-        if self._body_length == 4:
+        # Separate return_code and completion_code
+        self._completion_status = self._return_code & 0x00ff
+        self._return_code = self._return_code >> 8
+
+        # In case of an error unpack the body as an error message
+        if self._return_code != 0:
+            self._return_message = unicode(buff.value, "utf8", "replace")
+            if self._completion_status == 2:
+                raise DatabaseError(self._return_code, self._return_message)
+
+        # If the response don't contains any tuples - there is no tuples to unpack
+        if self._body_length == 8:
             return
 
         # Parse response tuples (<fq_tuple>)
         if self._rowcount > 0:
-            offset = 4    # The first 4 bytes in the response body is the <count> we have already read
+            offset = 8    # The first 4 bytes in the response body is the <count> we have already read
             while offset < self._body_length:
                 '''
                 # In resonse tuples have the form <size><tuple> (<fq_tuple> ::= <size><tuple>).
