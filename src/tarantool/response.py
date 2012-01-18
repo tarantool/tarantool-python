@@ -205,18 +205,50 @@ class Response(list):
 
     @property
     def completion_status(self):
+        '''\
+        :type: int
+
+        Request completion status.
+
+        There are only three completion status codes in use:
+
+            * ``0`` -- "success"; the only possible :attr:`return_code` with this status is ``0``
+            * ``1`` -- "try again"; an indicator of an intermittent error.
+                    This status is handled automatically by this module.
+            * ``2`` -- "error"; in this case :attr:`return_code` holds the actual error.
+        '''
         return self._completion_status
+
 
     @property
     def rowcount(self):
+        '''\
+        :type: int
+
+        Number of rows affected or returned by a query.
+        '''
         return self._rowcount
+
 
     @property
     def return_code(self):
+        '''\
+        :type: int
+
+        Required field in the server response.
+        Value of :attr:`return_code` can be ``0`` if request was sucessfull or contains an error code.
+        If :attr:`return_code` is non-zero than :attr:`return_message` contains an error message.
+        '''
         return self._return_code
+
 
     @property
     def return_message(self):
+        '''\
+        :type: str
+
+        The error message returned by the server in case of :attr:`return_code` is non-zero.
+        '''
         return self._return_message
 
 
@@ -253,10 +285,33 @@ class Response(list):
         :rtype: value of native python types (bytes, int, unicode (or str for py3k))
         '''
         result = []
-        for i in xrange(len(values)):
+        for i, value in enumerate(values):
             if i < len(self.field_types):
-                result.append(self._cast_field(self.field_types[i], values[i]))
+                result.append(self._cast_field(self.field_types[i], value))
             else:
-                result.append(self._cast_field(self.field_types[-1], values[i]))
+                result.append(self._cast_field(self.field_types[-1], value))
 
         return tuple(result)
+
+
+    def __repr__(self):
+        '''\
+        Return user friendy string representation of the object.
+        Useful for the interactive sessions and debuging.
+
+        :rtype: str or None
+        '''
+        # If response is not empty then return default list representation
+        # If there was an SELECT request - return list representation even it is empty
+        if(self._request_type == REQUEST_TYPE_SELECT or len(self)):
+            return super(Response, self).__repr__()
+
+        # Return string of form "N records affected"
+        affected = str(self.rowcount) + " record" if self.rowcount == 1 else " records"
+        if(self._request_type == REQUEST_TYPE_DELETE):
+            return affected + " deleted"
+        if(self._request_type == REQUEST_TYPE_INSERT):
+            return affected + " inserted"
+        if(self._request_type == REQUEST_TYPE_UPDATE):
+            return affected + " updated"
+        return affected + " affected"

@@ -25,8 +25,10 @@ from tarantool.error import *
 
 class Connection(object):
     '''\
-    Represents low-level interface to the Tarantool server.
-    This class can be used directly or using object-oriented wrappers.
+    Represents connection to the Tarantool server.
+    
+    This class is responsible for connection and network exchange with the server.
+    Also this class provides low-level interface to data manipulation (insert/delete/update/select).
     '''
 
     def __init__(self, host, port,
@@ -35,7 +37,7 @@ class Connection(object):
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True):
         '''\
-        Initialize an connection to the server.
+        Initialize a connection to the server.
 
         :param str host: Server hostname or IP-address
         :param int port: Server port
@@ -50,6 +52,14 @@ class Connection(object):
         self._socket = None
         if connect_now:
             self.connect()
+
+
+    def close(self):
+        '''\
+        Close connection to the server
+        '''
+        self._socket.close()
+        self._socket = None
 
 
     def connect(self):
@@ -203,6 +213,8 @@ class Connection(object):
         :type values: tuple
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
+        :param field_types: Data types to be used for type conversion.
+        :type field_types: tuple
 
         :rtype: `Response` instance
         '''
@@ -301,17 +313,17 @@ class Connection(object):
         return response
 
 
-    def select(self, space_no, index_no, values, offset=0, limit=0xffffffff, field_types=None):
+    def select(self, space_no, values, **kwargs):
         '''\
         Execute SELECT request.
         Select and retrieve data from the database.
 
         :param space_no: specifies which space to query
         :type space_no: int
-        :param index_no: specifies which index to use
-        :type index_no: int
         :param values: list of values to search over the index
         :type values: list of tuples
+        :param index: specifies which index to use (default is **0** which means that the **primary index** will be used)
+        :type index: int
         :param offset: offset in the resulting tuple set
         :type offset: int
         :param limit: limits the total number of returned tuples
@@ -335,6 +347,12 @@ class Connection(object):
         >>> select(0, 1, (1,'2'))
         '''
 
+        # Initialize arguments and its defaults from **kwargs
+        offset = kwargs.get("offset", 0)
+        limit = kwargs.get("limit", 0xffffffff)
+        field_types = kwargs.get("field_types", None)
+        index = kwargs.get("index", 0)
+
         # Perform smart type cheching (scalar / list of scalars / list of tuples)
         if isinstance(values, (int, basestring)): # scalar
             # This request is looking for one single record
@@ -352,7 +370,7 @@ class Connection(object):
             else:
                 raise ValueError("Invalid value type, expected one of scalar (int or str) / list of scalars / list of tuples ")
 
-        return self._select(space_no, index_no, values, offset, limit, field_types=field_types)
+        return self._select(space_no, index, values, offset, limit, field_types=field_types)
 
 
     def space(self, space_no, field_types=None):

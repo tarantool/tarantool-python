@@ -1,4 +1,4 @@
 include README.rst
 include README.txt
 include setup.py
-recursive-include src\tarantool\ *.py
+recursive-include src/tarantool/ *.py
