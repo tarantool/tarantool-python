@@ -4,6 +4,7 @@
 This module provides low-level API for Tarantool
 '''
 
+import ctypes
 import socket
 import sys
 import time
@@ -84,6 +85,38 @@ class Connection(object):
             raise NetworkError(e)
 
 
+    def _read_response(self):
+        '''
+        Read response from the transport (socket)
+
+        :return: tuple of the form (header, body)
+        :rtype: tuple of two byte arrays
+        '''
+        # Read response header
+        buff_header = ctypes.create_string_buffer(12)
+        nbytes = self._socket.recv_into(buff_header, 12)
+
+        # Immediately raises an exception if the data cannot be read
+        if nbytes != 12:
+            raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
+
+        # Extract body lenght from header
+        body_length = struct_L.unpack(buff_header[4:8])[0]
+
+        # Unpack body if it is not empty (i.e. not PING)
+        if body_length != 0:
+            buff_body = ctypes.create_string_buffer(body_length)
+            nbytes = self._socket.recv_into(buff_body)
+            # Immediately raises an exception if the data cannot be read
+            if nbytes != body_length:
+                raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
+        else:
+            buff_body = b""
+
+        return buff_header, buff_body
+
+
+
     def _send_request_wo_reconnect(self, request, field_types=None):
         '''\
         :rtype: `Response` instance
@@ -96,7 +129,8 @@ class Connection(object):
         for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             try:
                 self._socket.sendall(bytes(request))
-                response = Response(self._socket, field_types)
+                header, body = self._read_response()
+                response = Response(header, body, field_types)
             except socket.error as e:
                 raise NetworkError(e)
 
