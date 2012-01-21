@@ -55,7 +55,7 @@ class Request(object):
         '''
         if __debug__:
             if not isinstance(value, int):
-                raise TypeError("Invalid argument type '%s', 'int' expected"%type(value).__name__)
+                raise TypeError("Invalid argument type '%s'. Only 'int' expected"%type(value).__name__)
         return struct_BL.pack(4, value)
 
 
