@@ -36,6 +36,12 @@ except ImportError:
     pass
 
 
+# Test runner
+# python setup.py test
+from tests.setup_command import test
+cmdclass["test"] = test
+
+
 setup(
     name = "tarantool",
     packages = ["tarantool"],
