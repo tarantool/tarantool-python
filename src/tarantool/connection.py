@@ -6,7 +6,6 @@ This module provides low-level API for Tarantool
 
 import ctypes
 import socket
-import sys
 import time
 
 from tarantool.response import Response
@@ -26,7 +25,7 @@ from tarantool.error import *
 class Connection(object):
     '''\
     Represents connection to the Tarantool server.
-    
+
     This class is responsible for connection and network exchange with the server.
     Also this class provides low-level interface to data manipulation (insert/delete/update/select).
     '''
