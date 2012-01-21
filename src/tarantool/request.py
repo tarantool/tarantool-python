@@ -136,7 +136,7 @@ class Request(object):
         elif isinstance(value, (int, long)):
             return cls.pack_int(value)
         else:
-            raise TypeError("Invalid argument type '%s', 'str' or 'int' expected"%type(value).__name__)
+            raise TypeError("Invalid argument type '%s'. Only 'str' or 'int' expected"%type(value).__name__)
 
 
     @classmethod
