@@ -24,17 +24,23 @@ class field(bytes):
 
         if isinstance(value, unicode):
             return super(field, cls).__new__(cls, value.encode("utf-8", "replace"))
+
         if sys.version_info.major < 3 and isinstance(value, str):
             return super(field, cls).__new__(cls, value)
+
         if isinstance(value, (bytearray, bytes)):
             return super(field, cls).__new__(cls, value)
-        if isinstance(value, int):
-            if value <= 0xFFFFFFFF:
+
+        if isinstance(value, (int, long)):
+            if 0 <= value <= 0xFFFFFFFF:
                 # 32 bit integer
                 return super(field, cls).__new__(cls, struct_L.pack(value))
-            else:
+            elif 0xFFFFFFFF < value <= 0xFFFFFFFFFFFFFFFF:
                 # 64 bit integer
                 return super(field, cls).__new__(cls, struct_Q.pack(value))
+            else:
+                raise ValueError("Integer argument out of range")
+
         # NOTE: It is posible to implement float
         raise TypeError("Unsupported argument type '%s'"%(type(value).__name__))
 
