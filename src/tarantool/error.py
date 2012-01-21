@@ -100,6 +100,7 @@ if sys.platform == "win32":
             return _code2str.get(code, "Unknown error %s"%code)
 
     os.strerror = os_strerror_patched
+    del os_strerror_patched
 
 
 class NetworkError(DatabaseError):
