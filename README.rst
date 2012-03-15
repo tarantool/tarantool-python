@@ -9,7 +9,7 @@ This package is a pure-python client library for `Tarantool Database`_.
 .. _`Downloads`: http://pypi.python.org/pypi/tarantool#downloads
 .. _`PyPI`: http://pypi.python.org/pypi/tarantool
 .. _`GitHub`: https://github.com/mailru/tarantool-python
-.. _`Issue tracker`: https://github.com/coxx/tarantool-python/issues
+.. _`Issue tracker`: https://github.com/mailru/tarantool-python/issues
 
 
 Download and Install
