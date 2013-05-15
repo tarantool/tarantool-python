@@ -178,7 +178,7 @@ class Response(list):
 
         # In case of an error unpack the body as an error message
         if self._return_code != 0:
-            self._return_message = unicode(buff.value, "utf8", "replace")
+            self._return_message = unicode(buff[4:-1], "utf8", "replace")
             if self._completion_status == 2:
                 raise DatabaseError(self._return_code, self._return_message)
 
