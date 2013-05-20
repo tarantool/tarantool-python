@@ -4,8 +4,6 @@
 This module provides :class:`~tarantool.space.Space` class. 
 It is an object-oriented wrapper for request over Tarantool space.
 '''
-import sys
-
 
 
 class Space(object):
@@ -14,26 +12,18 @@ class Space(object):
     Encapsulates the identifier of the space and provides more convenient syntax
     for database operations.
     '''
-    def __init__(self, connection, space_no, field_types=None):
+    def __init__(self, connection, space_name):
         '''\
         Create Space instance.
         
         :param connection: Object representing connection to the server
         :type connection: :class:`~tarantool.connection.Connection` instance
-        :param int space_no: space id to insert a record
-        :type space_no: int
-        :param field_types: Data types to be used for type conversion
-        :type field_types: tuple
+        :param int space_no: space no or name to insert a record
+        :type space_name: int or str
         '''
         
-        if __debug__:
-            if field_types and not all([(t is bytes) or (t is int) or (t is unicode) for t in field_types]):
-                raise TypeError("Argument field_types can contain only bytes, int or %s"\
-                                %('str' if sys.version_info.major > 2 else 'unicode'))
-
         self.connection = connection
-        self.space_no = space_no
-        self.field_types = field_types
+        self.space_no = connection.schema.space_no(space_name)
 
 
     def insert(self, values, return_tuple=False):
@@ -47,28 +37,26 @@ class Space(object):
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
-        return self.connection.insert(self.space_no, values, return_tuple, self.field_types)
+        return self.connection.insert(self.space_no, values, return_tuple)
 
 
     def delete(self, key, return_tuple=False):
-        return self.connection.delete(self.space_no, key, return_tuple, self.field_types)
+        return self.connection.delete(self.space_no, key, return_tuple)
 
 
     def update(self, key, op_list, return_tuple=False):
-        return self.connection.update(self.space_no, key, op_list, return_tuple, self.field_types)
+        return self.connection.update(self.space_no, key, op_list, return_tuple)
 
 
     def select(self, values, **kwargs):
-
         # Initialize arguments and its defaults from **kwargs
         # I use the explicit argument initialization from the kwargs
         # to make it impossible to pass positional arguments
         index = kwargs.get("index", 0)
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 0xffffffff)
-        field_types = kwargs.get("field_types", self.field_types)
 
-        return self.connection.select(self.space_no, values, index=index, offset=offset, limit=limit, field_types=field_types)
+        return self.connection.select(self.space_no, values, index=index, offset=offset, limit=limit)
 
 
     def call(self, func_name, *args, **kwargs):

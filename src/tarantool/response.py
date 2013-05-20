@@ -79,7 +79,7 @@ class Response(list):
     packet received from the server.
     '''
 
-    def __init__(self, header, body, field_types=None):
+    def __init__(self, conn, header, body, space_name = None, field_defs = None, default_type = None):
         '''\
         Create an instance of `Response` using data received from the server.
 
@@ -102,7 +102,13 @@ class Response(list):
         self._return_code = None
         self._return_message = None
         self._rowcount = None
-        self.field_types = field_types
+        self.conn = conn
+        if space_name is not None:
+            self.space_no = conn.schema.space_no(space_name)
+        else:
+            self.space_no = None
+        self.field_defs = field_defs
+        self.default_type = default_type
 
         # Unpack header
         self._request_type, self._body_length, self._request_id  = struct_LLL.unpack(header)
@@ -178,7 +184,7 @@ class Response(list):
 
         # In case of an error unpack the body as an error message
         if self._return_code != 0:
-            self._return_message = unicode(buff.value, "utf8", "replace")
+            self._return_message = unicode(buff[4:-1], "utf8", "replace")
             if self._completion_status == 2:
                 raise DatabaseError(self._return_code, self._return_message)
 
@@ -199,10 +205,9 @@ class Response(list):
                 tuple_size = struct.unpack_from("<L", buff, offset)[0] + 4
                 tuple_data = struct.unpack_from("<%ds"%(tuple_size), buff, offset+4)[0]
                 tuple_value = self._unpack_tuple(tuple_data)
-                if self.field_types:
-                    self.append(self._cast_tuple(tuple_value))
-                else:
-                    self.append(tuple_value)
+                tuple_value = self.conn.schema.unpack_values(tuple_value,
+                                self.space_no, self.field_defs, self.default_type)
+                self.append(tuple_value)
 
                 offset = offset + tuple_size + 4    # This '4' is a size of <size> attribute
 
@@ -254,49 +259,6 @@ class Response(list):
         The error message returned by the server in case of :attr:`return_code` is non-zero.
         '''
         return self._return_message
-
-
-    @staticmethod
-    def _cast_field(cast_to, value):
-        '''\
-        Convert field type from raw bytes to native python type
-
-        :param cast_to: native python type to cast to
-        :type cast_to: a type object (one of bytes, int, unicode (str for py3k))
-        :param value: raw value from the database
-        :type value: bytes
-
-        :return: converted value
-        :rtype: value of native python type (one of bytes, int, unicode (str for py3k))
-        '''
-
-        if cast_to in (int, unicode):
-            return cast_to(value)
-        elif cast_to in (any, bytes):
-            return value
-        else:
-            raise TypeError("Invalid field type %s"%(cast_to))
-
-
-    def _cast_tuple(self, values):
-        '''\
-        Convert values of the tuple from raw bytes to native python types
-
-        :param values: tuple of the raw database values
-        :type value: tuple of bytes
-
-        :return: converted tuple value
-        :rtype: value of native python types (bytes, int, unicode (or str for py3k))
-        '''
-        result = []
-        for i, value in enumerate(values):
-            if i < len(self.field_types):
-                result.append(self._cast_field(self.field_types[i], value))
-            else:
-                result.append(self._cast_field(self.field_types[-1], value))
-
-        return tuple(result)
-
 
     def __repr__(self):
         '''\

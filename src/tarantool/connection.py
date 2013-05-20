@@ -19,6 +19,7 @@ from tarantool.request import (
 from tarantool.space import Space
 from tarantool.const import *
 from tarantool.error import *
+from tarantool.schema import *
 
 
 
@@ -34,7 +35,8 @@ class Connection(object):
                  socket_timeout=SOCKET_TIMEOUT,
                  reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                  reconnect_delay=RECONNECT_DELAY,
-                 connect_now=True):
+                 connect_now=True,
+                 schema = None):
         '''\
         Initialize a connection to the server.
 
@@ -42,12 +44,18 @@ class Connection(object):
         :param int port: Server port
         :param bool connect_now: if True (default) than __init__() actually creates network connection.
                              if False than you have to call connect() manualy.
+        :param schema: Data schema (see Developer guide and :class:`~tarantool.schema.Schema`)
+        :type schema: :class:`~tarantool.schema.Schema` or dict
         '''
         self.host = host
         self.port = port
         self.socket_timeout = socket_timeout
         self.reconnect_delay = reconnect_delay
         self.reconnect_max_attempts = reconnect_max_attempts
+        if isinstance(schema, Schema):
+            self.schema = schema
+        else:
+            self.schema = Schema(schema)
         self._socket = None
         if connect_now:
             self.connect()
@@ -116,7 +124,7 @@ class Connection(object):
 
 
 
-    def _send_request_wo_reconnect(self, request, field_types=None):
+    def _send_request_wo_reconnect(self, request, space_name = None, field_defs = None, default_type = None):
         '''\
         :rtype: `Response` instance
 
@@ -129,7 +137,7 @@ class Connection(object):
             try:
                 self._socket.sendall(bytes(request))
                 header, body = self._read_response()
-                response = Response(header, body, field_types)
+                response = Response(self, header, body, space_name, field_defs, default_type)
             except socket.error as e:
                 raise NetworkError(e)
 
@@ -141,7 +149,7 @@ class Connection(object):
         raise DatabaseError(response.return_code, response.return_message)
 
 
-    def _send_request(self, request, field_types=None):
+    def _send_request(self, request, space_name = None, field_defs = None, default_type = None):
         '''\
         Send the request to the server through the socket.
         Return an instance of `Response` class.
@@ -162,7 +170,7 @@ class Connection(object):
                     self.connect()
                     connected = True
                     warn("Successfully reconnected", NetworkWarning)
-                response = self._send_request_wo_reconnect(request, field_types)
+                response = self._send_request_wo_reconnect(request, space_name, field_defs, default_type)
                 break
             except NetworkError as e:
                 if attempt > self.reconnect_max_attempts:
@@ -183,6 +191,13 @@ class Connection(object):
         :type args: list or tuple
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
+        :param field_defs: field definitions used for types conversion,
+               e.g. [('field0', tarantool.NUM), ('field1', tarantool.STR)]
+        :type field_defs: None or  [(name, type) or None]
+        :param default_type: None a default type used for result conversion, as defined in ``schema[space_no]['default_type']``
+        :type default_type: None or int
+        :param space_name: space number or name. A schema for the space will be used for type conversion.
+        :type space_name: None or int or str
 
         :rtype: `Response` instance
         '''
@@ -193,43 +208,45 @@ class Connection(object):
         if isinstance(args[0], (list, tuple)):
             args = args[0]
 
-        # Check if 'field_types' keyword argument is passed
-        field_types = kwargs.get("field_types", None)
+        # Check if 'field_defs' and 'default_type' keyword arguments are passed
+        field_defs = kwargs.get("field_defs", None)
+        default_type = kwargs.get("default_type", None)
+        space_name = kwargs.get("space_name", None)
 
-        request = RequestCall(func_name, args, return_tuple=True)
-        response = self._send_request(request, field_types=field_types)
+        request = RequestCall(self, func_name, args, return_tuple=True)
+        response = self._send_request(request, space_name = space_name,
+                                      field_defs = field_defs,
+                                      default_type = default_type)
         return response
 
 
-    def insert(self, space_no, values, return_tuple=False, field_types=None):
+    def insert(self, space_name, values, return_tuple=False):
         '''\
         Execute INSERT request.
-        Insert single record into a space `space_no`.
+        Insert single record into a space `space_name`.
 
-        :param int space_no: space id to insert a record
-        :type space_no: int
+        :param int space_name: space id to insert a record
+        :type space_name: int or str
         :param values: record to be inserted. The tuple must contain only scalar (integer or strings) values
         :type values: tuple
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
-        :param field_types: Data types to be used for type conversion.
-        :type field_types: tuple
 
         :rtype: `Response` instance
         '''
         assert isinstance(values, tuple)
 
-        request = RequestInsert(space_no, values, return_tuple)
-        return self._send_request(request, field_types=field_types)
+        request = RequestInsert(self, space_name, values, return_tuple)
+        return self._send_request(request, space_name)
 
 
-    def delete(self, space_no, key, return_tuple=False, field_types=None):
+    def delete(self, space_name, key, return_tuple=False):
         '''\
         Execute DELETE request.
         Delete single record identified by `key` (using primary index).
 
-        :param space_no: space id to delete a record
-        :type space_no: int
+        :param space_name: space number or name to delete a record
+        :type space_name: int or name
         :param key: key that identifies a record
         :type key: int or str
         :param return_tuple: indicates that it is required to return the deleted tuple back
@@ -237,21 +254,21 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        assert isinstance(key, (int, basestring))
+        assert isinstance(key, (int, long, basestring))
 
-        request = RequestDelete(space_no, key, return_tuple)
-        return self._send_request(request, field_types=field_types)
+        request = RequestDelete(self, space_name, key, return_tuple)
+        return self._send_request(request, space_name)
 
 
-    def update(self, space_no, key, op_list, return_tuple=False, field_types=None):
+    def update(self, space_name, key, op_list, return_tuple=False):
         '''\
         Execute UPDATE request.
         Update single record identified by `key` (using primary index).
 
         List of operations allows to update individual fields.
 
-        :param space_no: space id to update a record
-        :type space_no: int
+        :param space_name: space number or name to update a record
+        :type space_name: int or str
         :param key: key that identifies a record
         :type key: int or str
         :param op_list: list of operations. Each operation is tuple of three values
@@ -263,8 +280,8 @@ class Connection(object):
         '''
         assert isinstance(key, (int, basestring))
 
-        request = RequestUpdate(space_no, key, op_list, return_tuple)
-        return self._send_request(request, field_types=field_types)
+        request = RequestUpdate(space_name, key, op_list, return_tuple)
+        return self._send_request(request, space_name)
 
 
     def ping(self):
@@ -284,14 +301,14 @@ class Connection(object):
         return t1 - t0
 
 
-    def _select(self, space_no, index_no, values, offset=0, limit=0xffffffff, field_types=None):
+    def _select(self, space_name, index_name, values, offset=0, limit=0xffffffff):
         '''\
         Low level version of select() method.
 
-        :param space_no: space id to select data
-        :type space_no: int
-        :param index_no: index id to use
-        :type index_no: int
+        :param space_name: space number of name to select data
+        :type space_name: int or str
+        :param index_name: index id to use
+        :type index_name: int or str
         :param values: list of values to search over the index
         :type values: list of tuples
         :param offset: offset in the resulting tuple set
@@ -307,18 +324,18 @@ class Connection(object):
         assert len(values) != 0
         assert isinstance(values[0], (list, tuple))
 
-        request = RequestSelect(space_no, index_no, values, offset, limit)
-        response = self._send_request(request, field_types=field_types)
+        request = RequestSelect(self, space_name, index_name, values, offset, limit)
+        response = self._send_request(request, space_name)
         return response
 
 
-    def select(self, space_no, values, **kwargs):
+    def select(self, space_name, values, **kwargs):
         '''\
         Execute SELECT request.
         Select and retrieve data from the database.
 
-        :param space_no: specifies which space to query
-        :type space_no: int
+        :param space_name: specifies which space to query
+        :type space_name: int or str
         :param values: list of values to search over the index
         :type values: list of tuples
         :param index: specifies which index to use (default is **0** which means that the **primary index** will be used)
@@ -349,16 +366,15 @@ class Connection(object):
         # Initialize arguments and its defaults from **kwargs
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 0xffffffff)
-        field_types = kwargs.get("field_types", None)
         index = kwargs.get("index", 0)
 
         # Perform smart type cheching (scalar / list of scalars / list of tuples)
-        if isinstance(values, (int, basestring)): # scalar
+        if isinstance(values, (int, long, basestring)): # scalar
             # This request is looking for one single record
             values = [(values, )]
         elif isinstance(values, (list, tuple, set, frozenset)):
             assert len(values) > 0
-            if isinstance(values[0], (int, basestring)): # list of scalars
+            if isinstance(values[0], (int, long, basestring)): # list of scalars
                 # This request is looking for several records using single-valued index
                 # Ex: select(space_no, index_no, [1, 2, 3])
                 # Transform a list of scalar values to a list of tuples
@@ -369,20 +385,20 @@ class Connection(object):
             else:
                 raise ValueError("Invalid value type, expected one of scalar (int or str) / list of scalars / list of tuples ")
 
-        return self._select(space_no, index, values, offset, limit, field_types=field_types)
+        return self._select(space_name, index, values, offset, limit)
 
 
-    def space(self, space_no, field_types=None):
+    def space(self, space_name):
         '''\
         Create `Space` instance for particular space
 
         `Space` instance encapsulates the identifier of the space and provides more convenient syntax
         for accessing the database space.
 
-        :param space_no: identifier of the space
-        :type space_no: int
+        :param space_name: identifier of the space
+        :type space_name: int or str
 
         :rtype: `Space` instance
         '''
-        return Space(self, space_no, field_types)
+        return Space(self, space_name)
 

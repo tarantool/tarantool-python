@@ -18,6 +18,7 @@ struct_LLL = struct.Struct("<LLL")
 struct_LLLL = struct.Struct("<LLLL")
 struct_LLLLL = struct.Struct("<LLLLL")
 struct_Q = struct.Struct("<Q")
+struct_BQ = struct.Struct("<BQ")
 
 
 REQUEST_TYPE_CALL = 22
