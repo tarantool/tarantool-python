@@ -40,42 +40,58 @@ It is much easier to use native types for python developer:
 For raw binary data ``bytes`` should be used
 (in this case the type casting is not performed).
 
-Pass field types using argument ``field_types`` for automatic type casting::
+Tarantool data types corresponds to the following Python types:
+    • ``RAW`` - ``bytes``
+    • ``STR`` - ``unicode`` (``str`` for Python 3.x)
+    • ``NUM`` - ``int``
+    • ``NUM64`` - ``int`` or ``long`` (``int`` for Python 3.x)
 
-    >>> demo = connection.space(0, field_types=(int, unicode))
-    >>> demo.insert((0, u'this is unicode string'))
+Please define spaces schema to enable automatic type casting:
+
+    >>> import tarantool
+    >>> schema = {
+            0: { # Space description
+                'name': 'users', # Space name
+                'default_type': tarantool.STR, # Type that used to decode fields that are not listed below
+                'fields': {
+                    0: ('numfield', tarantool.NUM), # (field name, field type)
+                    1: ('num64field', tarantool.NUM64),
+                    2: ('strfield', tarantool.STR),
+                    #2: { 'name': 'strfield', 'type': tarantool.STR }, # Alternative syntax
+                    #2: tarantool.STR # Alternative syntax
+                },
+                'indexes': {
+                    0: ('pk', [0]), # (name, [field_no])
+                    #0: { 'name': 'pk', 'fields': [0]}, # Alternative syntax
+                    #0: [0], # Alternative syntax
+                }
+            }
+        }
+    >>> connection = tarantool.connect(host = 'localhost', port=33013, schema = schema)
+    >>> demo = connection.space('users')
+    >>> demo.insert((0, 12, u'this is unicode string'))
     >>> demo.select(0)
-    [(0, u'this is unicode string')]
+    [(0, 12, u'this is unicode string')]
 
-As you can see, a tuple of types is passed with ``field_types``.
-Original "raw" fields will be casted to these native types.
+As you can see, original "raw" fields were casted to native types as defined in the schema.
 
 Tarantool's tuple can contain any number of fields.
+If some fields are not defined then ``default_type`` will be used.
 
-If the tuple contains more fields than types listed in ``field_types``,
-the latest type from ``field_types`` will be applied to all the remaining fields of the tuple.
-
-Example::
-
-    >>> demo = connection.space(0, field_types=(int, unicode))
-    >>> demo.insert((0, u'I am the Alpha (Α) and Omega (Ω)', b'AAAA', b'BBBB', b'CCCC', b'DDDD'))
-    >>> demo.select(0)
-    [(0, u'I am the Α and Ω', u'AAAA', u'BBBB', u'CCCC', u'DDDD')]
-
-As you can see, all values was converted to unicode-strings.
-
-To prevent such implicit type casting it is enough to add ``bytes``
-as the last element of ``field_types`` tuple::
-
-    >>> demo = connection.space(0, field_types=(int, unicode, bytes))
-    >>> demo.insert((0, u'I am the Alpha (Α) and Omega (Ω)', b'AAAA', b'BBBB', b'CCCC', b'DDDD'))
-    >>> demo.select(0)
-    [(0, u'I am the Α and Ω', 'AAAA', 'BBBB', 'CCCC', 'DDDD')]
-
-
+To prevent implicit type casting for strings use ``RAW`` type.
 Raw byte fields should be used if the application uses binary data
 (eg, images or python objects packed with ``picke``).
 
+You can also specify schema for CALL results:
+
+    >>> ...
+    # Copy schema decription from 'users' space
+    >>> connection.call("box.select", '0', '0', 0L, space_name='users');
+    [(0, 12, u'this is unicode string')]
+    # Provide schema description explicitly
+    >>> field_defs = [('numfield', tarantool.NUM), ('num64field', tarantool.NUM)]
+    >>> connection.call("box.select", '0', '1', 184L, field_defs = field_defs, default_type = tarantool.STR);
+    [(0, 12, u'this is unicode string')]
 
 .. note::
 
@@ -250,16 +266,7 @@ Select data on cities in Texas::
 .. rubric:: Select records explicitly specifying field types
 
 Tarantool has no strict schema so all fields are raw binary byte arrays.
-You can specify field types in directly in
-:meth:`Space.select() <tarantool.space.Space.select>` method
-using ``field_types`` keyword argument::
-
-    >>> world.select(3800, field_types=(bytes, str, str, str, bytes))
-    [('\xd8\x0e\x00\x00', 'USA', 'Texas', 'Dallas', '\xe4"\x12\x00')]
-
-As you can see, ``3800`` returned
-as 4-byte array (string) instead of integer.
-
+You can specify field types in the ``schema`` parameter to a connection.
 
 Call server-side functions
 --------------------------

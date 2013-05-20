@@ -26,10 +26,9 @@ class Request(object):
         )
     )
 
-    def __init__(self):
+    def __init__(self, conn):
         self._bytes = None
-        raise NotImplementedError("Abstract method must be overridden")
-
+        self.conn = conn
 
     def __bytes__(self):
         return self._bytes
@@ -39,25 +38,6 @@ class Request(object):
     @classmethod
     def header(cls, body_length):
         return struct_LLL.pack(cls.request_type, body_length, 0)
-
-
-    @staticmethod
-    def pack_int(value):
-        '''\
-        Pack integer field
-        <field> ::= <int32_varint><data>
-
-        :param value: integer value to be packed
-        :type value: int
-
-        :return: packed value
-        :rtype: bytes
-        '''
-        if __debug__:
-            if not isinstance(value, int):
-                raise TypeError("Invalid argument type '%s'. Only 'int' expected"%type(value).__name__)
-        return struct_BL.pack(4, value)
-
 
     @classmethod
     def pack_int_base128(cls, value):
@@ -100,47 +80,12 @@ class Request(object):
         raise OverflowError("Number too large to be packed")
 
 
-    @classmethod
-    def pack_str(cls, value):
-        '''\
-        Pack string field
-        <field> ::= <int32_varint><data>
-
-        :param value: string to be packed
-        :type value: bytes or str
-
-        :return: packed value
-        :rtype: bytes
-        '''
-        if __debug__:
-            if not isinstance(value, basestring):
-                raise TypeError("Invalid argument type '%s', 'str' expected"%type(value).__name__)
-        value_len_packed = cls.pack_int_base128(len(value))
+    def pack_field(self, value):
+        value_len_packed = Request.pack_int_base128(len(value))
         return struct.pack("<%ds%ds"%(len(value_len_packed), len(value)), value_len_packed,  value)
 
 
-    @classmethod
-    def pack_field(cls, value):
-        '''\
-        Pack single field (string or integer value)
-        <field> ::= <int32_varint><data>
-
-        :param value: value to be packed
-        :type value: bytes, str or int
-
-        :return: packed value
-        :rtype: bytes
-        '''
-        if isinstance(value, basestring):
-            return cls.pack_str(value)
-        elif isinstance(value, (int, long)):
-            return cls.pack_int(value)
-        else:
-            raise TypeError("Invalid argument type '%s'. Only 'str' or 'int' expected"%type(value).__name__)
-
-
-    @classmethod
-    def pack_tuple(cls, values):
+    def pack_fields(self, packed_values):
         '''\
         Pack tuple of values
         <tuple> ::= <cardinality><field>+
@@ -151,15 +96,41 @@ class Request(object):
         :return: packed tuple
         :rtype: bytes
         '''
-        assert isinstance(values, (tuple, list))
-        cardinality = struct_L.pack(len(values))
-        packed_items = [cls.pack_field(v) for v in values]
-        packed_items.insert(0, cardinality)
+        assert isinstance(packed_values, (tuple, list))
+        cardinality = struct_L.pack(len(packed_values))
+        packed_items = []
+        packed_items.append(cardinality)
+        for value in packed_values:
+            packed_items.append(self.pack_field(value))
         return b"".join(packed_items)
 
 
+    def pack_tuple(self, values, space_no = None):
+        '''\
+        Pack tuple of values
+        <tuple> ::= <cardinality><field>+
+
+        :param value: tuple to be packed
+        :type value: tuple of scalar values (bytes, str or int)
+
+        :return: packed tuple
+        :rtype: bytes
+        '''
+        return self.pack_fields(self.conn.schema.pack_values(values, space_no))
 
 
+    def pack_key_tuple(self, values, space_no = None, index_no = None):
+        '''\
+        Pack key tuple
+        <tuple> ::= <cardinality><field>+
+
+        :param value: key tuple to be packed
+        :type value: tuple of scalar values (bytes, str or int)
+
+        :return: packed tuple
+        :rtype: bytes
+        '''
+        return self.pack_fields(self.conn.schema.pack_key(values, space_no, index_no))
 
 class RequestInsert(Request):
     '''\
@@ -173,15 +144,18 @@ class RequestInsert(Request):
     '''
     request_type = REQUEST_TYPE_INSERT
 
-    def __init__(self, space_no, values, return_tuple):    # pylint: disable=W0231
+    def __init__(self, conn, space_name, values, return_tuple): # pylint: disable=W0231
         '''\
         '''
+        super(RequestInsert, self).__init__(conn)
+
         assert isinstance(values, (tuple, list))
         flags = 1 if return_tuple else 0
 
+        space_no = self.conn.schema.space_no(space_name)
         request_body = \
             struct_LL.pack(space_no, flags) + \
-            self.pack_tuple(values)
+            self.pack_tuple(values, space_no)
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -200,17 +174,18 @@ class RequestDelete(Request):
     '''
     request_type = REQUEST_TYPE_DELETE
 
-    def __init__(self, space_no, key, return_tuple):    # pylint: disable=W0231
+    def __init__(self, conn, space_name, key, return_tuple):    # pylint: disable=W0231
         '''
         '''
+        super(RequestDelete, self).__init__(conn)
         flags = 1 if return_tuple else 0
 
+        space_no = self.conn.schema.space_no(space_name)
         request_body = \
             struct_LL.pack(space_no, flags) + \
-            self.pack_tuple((key,))
+            self.pack_key_tuple((key,), space_no, 0)
 
         self._bytes = self.header(len(request_body)) + request_body
-
 
 
 class RequestSelect(Request):
@@ -230,13 +205,15 @@ class RequestSelect(Request):
     '''
     request_type = REQUEST_TYPE_SELECT
 
-    def __init__(self, space_no, index_no, tuple_list, offset, limit):    # pylint: disable=W0231
-
+    def __init__(self, conn, space_name, index_name, tuple_list, offset, limit):    # pylint: disable=W0231
+        super(RequestSelect, self).__init__(conn)
         assert isinstance(tuple_list, (list, tuple))
 
+        space_no = self.conn.schema.space_no(space_name)
+        index_no = self.conn.schema.index_no(space_no, index_name)
         request_body = \
             struct_LLLLL.pack(space_no, index_no, offset, limit, len(tuple_list)) + \
-            b"".join([self.pack_tuple(t) for t in tuple_list])
+            b"".join([self.pack_key_tuple(t, space_no, index_no) for t in tuple_list])
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -256,18 +233,19 @@ class RequestUpdate(Request):
 
     request_type = REQUEST_TYPE_UPDATE
 
-    def __init__(self, space_no, key, op_list, return_tuple):    # pylint: disable=W0231
+    def __init__(self, conn, space_name, key, op_list, return_tuple):    # pylint: disable=W0231
+        super(RequestUpdate, self).__init__(conn)
         flags = 1 if return_tuple else 0
         assert isinstance(key, (int, basestring))
 
+        space_no = self.conn.schema.space_no(space_name)
         request_body = \
             struct_LL.pack(space_no, flags) + \
-            self.pack_tuple((key,)) + \
+            self.pack_key_tuple((key,), space_no, 0) + \
             struct_L.pack(len(op_list)) +\
             self.pack_operations(op_list)
 
         self._bytes = self.header(len(request_body)) + request_body
-
 
     @classmethod
     def pack_operations(cls, op_list):
@@ -300,13 +278,14 @@ class RequestCall(Request):
     '''
     request_type = REQUEST_TYPE_CALL
 
-    def __init__(self, proc_name, args, return_tuple):    # pylint: disable=W0231
+    def __init__(self, conn, proc_name, args, return_tuple):    # pylint: disable=W0231
+        super(RequestCall, self).__init__(conn)
         flags = 1 if return_tuple else 0
         assert isinstance(args, (list, tuple))
 
         request_body = \
             struct_L.pack(flags) + \
             self.pack_field(proc_name) +\
-            self.pack_tuple(args)
+            self.pack_tuple([k for k in args])
 
         self._bytes = self.header(len(request_body)) + request_body
