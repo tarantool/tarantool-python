@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ### pylint: disable=C0301,W0105,W0401,W0614
 '''
-This module provides :class:`~tarantool.schema.Schema` class. 
+This module provides :class:`~tarantool.schema.Schema` class.
 It is a Tarantool schema description.
 '''
 
@@ -245,7 +245,7 @@ class Schema(object):
                 if value > 4294967295:
                     return self._pack_value_int64(value)
                 else:
-                    return self.pack_value_int(value)
+                    return self._pack_value_int(value)
             elif isinstance(value, long):
                 return self._pack_value_int64(value)
             else:
