@@ -99,28 +99,21 @@ class Connection(object):
         :return: tuple of the form (header, body)
         :rtype: tuple of two byte arrays
         '''
-        # Read response header
-        buff_header = ctypes.create_string_buffer(12)
-        nbytes = self._socket.recv_into(buff_header, 12)
 
-        # Immediately raises an exception if the data cannot be read
-        if nbytes != 12:
-            raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
+        buf = ''
+        l = 12
 
-        # Extract body lenght from header
-        body_length = struct_L.unpack(buff_header[4:8])[0]
+        while 1:
+            buf  += self._socket.recv(l - len(buf))
+            if len(buf) < l:
+                continue
 
-        # Unpack body if it is not empty (i.e. not PING)
-        if body_length != 0:
-            buff_body = ctypes.create_string_buffer(body_length)
-            nbytes = self._socket.recv_into(buff_body)
-            # Immediately raises an exception if the data cannot be read
-            if nbytes != body_length:
-                raise socket.error(socket.errno.ECONNABORTED, "Software caused connection abort")
-        else:
-            buff_body = b""
+            l = 12 + struct_L.unpack(buf[4:8])[0]
 
-        return buff_header, buff_body
+            if len(buf) < l:
+                continue
+
+            return buf[0:12], buf[12:]
 
 
 
