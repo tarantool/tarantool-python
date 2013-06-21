@@ -273,7 +273,7 @@ class Connection(object):
         '''
         assert isinstance(key, (int, basestring))
 
-        request = RequestUpdate(space_name, key, op_list, return_tuple)
+        request = RequestUpdate(self, space_name, key, op_list, return_tuple)
         return self._send_request(request, space_name)
 
 

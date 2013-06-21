@@ -247,8 +247,7 @@ class RequestUpdate(Request):
 
         self._bytes = self.header(len(request_body)) + request_body
 
-    @classmethod
-    def pack_operations(cls, op_list):
+    def pack_operations(self, op_list):
         result = []
         for op in op_list:
             try:
@@ -260,7 +259,8 @@ class RequestUpdate(Request):
             except KeyError:
                 raise ValueError("Invalid operaction symbol '%s', expected one of %s"\
                                 %(op_symbol, ', '.join(["'%s'"%c for c in sorted(UPDATE_OPERATION_CODE.keys())])))
-            data = b"".join([struct_LB.pack(field_no, op_code), cls.pack_field(op_arg)])
+            op_arg = self.conn.schema.pack_value(op_arg)
+            data = b"".join([struct_LB.pack(field_no, op_code), self.pack_field(op_arg)])
             result.append(data)
         return b"".join(result)
 
