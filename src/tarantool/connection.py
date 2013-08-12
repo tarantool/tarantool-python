@@ -127,12 +127,9 @@ class Connection(object):
 
         # Repeat request in a loop if the server returns completion_status == 1 (try again)
         for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
-            try:
-                self._socket.sendall(bytes(request))
-                header, body = self._read_response()
-                response = Response(self, header, body, space_name, field_defs, default_type)
-            except socket.error as e:
-                raise NetworkError(e)
+            self._socket.sendall(bytes(request))
+            header, body = self._read_response()
+            response = Response(self, header, body, space_name, field_defs, default_type)
 
             if response.completion_status != 1:
                 return response
@@ -140,6 +137,24 @@ class Connection(object):
 
         # Raise an error if the maximum number of attempts have been made
         raise DatabaseError(response.return_code, response.return_message)
+
+    def _opt_reconnect(self):
+        attempt = 0
+        while True:
+            try:
+                if not self._socket or not self._socket.recv(0, socket.MSG_DONTWAIT):
+                    time.sleep(self.reconnect_delay)
+                    self.connect()
+            except socket.error as e:
+                if e.errno == errno.EAGAIN:
+                    break
+                else:
+                    time.slelep(self.reconnect_delay)
+                    self.connect()
+            if attempt == self.reconnect_max_attempts:
+                raise
+            attempt += 1
+            warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
 
 
     def _send_request(self, request, space_name = None, field_defs = None, default_type = None):
@@ -156,21 +171,8 @@ class Connection(object):
 
         connected = True
         attempt = 1
-        while True:
-            try:
-                if not connected:
-                    time.sleep(self.reconnect_delay)
-                    self.connect()
-                    connected = True
-                    warn("Successfully reconnected", NetworkWarning)
-                response = self._send_request_wo_reconnect(request, space_name, field_defs, default_type)
-                break
-            except NetworkError as e:
-                if attempt > self.reconnect_max_attempts:
-                    raise
-                warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
-                attempt += 1
-                connected = False
+        self._opt_reconnect()
+        response = self._send_request_wo_reconnect(request, space_name, field_defs, default_type)
 
         return response
 
@@ -213,7 +215,7 @@ class Connection(object):
         return response
 
 
-    def insert(self, space_name, values, return_tuple=False):
+    def insert(self, space_name, values, return_tuple=False, not_presented=False, presented=False):
         '''\
         Execute INSERT request.
         Insert single record into a space `space_name`.
@@ -222,14 +224,19 @@ class Connection(object):
         :type space_name: int or str
         :param values: record to be inserted. The tuple must contain only scalar (integer or strings) values
         :type values: tuple
+        
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
-
+        :param not_presented: True indicates that there's must be no tuple with same primary key
+        :type not_presented: bool
+        :param presented: True indicates that there's must be tuple with same primary key
+        :type presented: bool
+  
         :rtype: `Response` instance
         '''
         assert isinstance(values, tuple)
 
-        request = RequestInsert(self, space_name, values, return_tuple)
+        request = RequestInsert(self, space_name, values, return_tuple, not_presented, presented)
         return self._send_request(request, space_name)
 
 
@@ -277,7 +284,7 @@ class Connection(object):
         return self._send_request(request, space_name)
 
 
-    def ping(self):
+    def ping(self, notime = False):
         '''\
         Execute PING request.
         Send empty request and receive empty response from server.
@@ -285,12 +292,15 @@ class Connection(object):
         :return: response time in seconds
         :rtype: float
         '''
+        self._opt_reconnect()
         t0 = time.time()
         self._socket.sendall(struct_LLL.pack(0xff00, 0, 0))
         request_type, body_length, request_id = struct_LLL.unpack(self._socket.recv(12)) # pylint: disable=W0612
         t1 = time.time()
         assert request_type == 0xff00
         assert body_length == 0
+        if no_time:
+            return "Success"
         return t1 - t0
 
 

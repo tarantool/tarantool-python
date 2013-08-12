@@ -144,13 +144,15 @@ class RequestInsert(Request):
     '''
     request_type = REQUEST_TYPE_INSERT
 
-    def __init__(self, conn, space_name, values, return_tuple): # pylint: disable=W0231
+    def __init__(self, conn, space_name, values, return_tuple, not_presented, presented): # pylint: disable=W0231
         '''\
         '''
         super(RequestInsert, self).__init__(conn)
 
         assert isinstance(values, (tuple, list))
-        flags = 1 if return_tuple else 0
+        flags  = 1 if return_tuple  else 0
+        flags += 2 if not_presented else 0
+        flags += 4 if presented     else 0
 
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
