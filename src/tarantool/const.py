@@ -21,17 +21,18 @@ struct_Q = struct.Struct("<Q")
 struct_BQ = struct.Struct("<BQ")
 
 
-REQUEST_TYPE_CALL = 22
-REQUEST_TYPE_DELETE = 21
 REQUEST_TYPE_INSERT = 13
 REQUEST_TYPE_SELECT = 17
 REQUEST_TYPE_UPDATE = 19
+REQUEST_TYPE_DELETE = 21
+REQUEST_TYPE_CALL   = 22
+REQUEST_TYPE_PING   = 65280
 
 
 UPDATE_OPERATION_CODE = {'=': 0, '+': 1, '&': 2, '^': 3, '|': 4, 'splice': 5}
 
 # Default value for socket timeout (seconds)
-SOCKET_TIMEOUT = 1
+SOCKET_TIMEOUT = None
 # Default maximum number of attempts to reconnect
 RECONNECT_MAX_ATTEMPTS = 10
 # Default delay between attempts to reconnect (seconds)

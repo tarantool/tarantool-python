@@ -284,7 +284,7 @@ class Connection(object):
         return self._send_request(request, space_name)
 
 
-    def ping(self, notime = False):
+    def ping(self, notime=False):
         '''\
         Execute PING request.
         Send empty request and receive empty response from server.
@@ -292,14 +292,16 @@ class Connection(object):
         :return: response time in seconds
         :rtype: float
         '''
-        self._opt_reconnect()
+
+        request = RequestPing(self)
         t0 = time.time()
-        self._socket.sendall(struct_LLL.pack(0xff00, 0, 0))
-        request_type, body_length, request_id = struct_LLL.unpack(self._socket.recv(12)) # pylint: disable=W0612
+        response = self._send_request(request)
         t1 = time.time()
-        assert request_type == 0xff00
-        assert body_length == 0
-        if no_time:
+
+        assert response._request_type == REQUEST_TYPE_PING
+        assert response._body_length == 0
+
+        if notime:
             return "Success"
         return t1 - t0
 

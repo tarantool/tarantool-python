@@ -291,3 +291,15 @@ class RequestCall(Request):
             self.pack_tuple([k for k in args])
 
         self._bytes = self.header(len(request_body)) + request_body
+
+class RequestPing(Request):
+    '''
+    Ping body is empty, so body_length == 0 and there's no body
+    |--------------- header ----------------|
+     <request_type><body_length><request_id>
+    '''
+    request_typle = REQUEST_TYPE_PING
+
+    def __init__(self, conn, notime):
+        super(RequestPing, self).__init__(conn)
+        self._bytes = self.header(0)
