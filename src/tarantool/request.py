@@ -300,6 +300,6 @@ class RequestPing(Request):
     '''
     request_typle = REQUEST_TYPE_PING
 
-    def __init__(self, conn, notime):
+    def __init__(self, conn):
         super(RequestPing, self).__init__(conn)
-        self._bytes = self.header(0)
+        self._bytes = struct_LLL.pack(REQUEST_TYPE_PING, 0, 0) 

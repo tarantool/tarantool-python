@@ -5,6 +5,7 @@ This module provides low-level API for Tarantool
 '''
 
 import ctypes
+import errno
 import socket
 import time
 
@@ -14,6 +15,7 @@ from tarantool.request import (
                     RequestCall,
                     RequestDelete,
                     RequestInsert,
+                    RequestPing,
                     RequestSelect,
                     RequestUpdate)
 from tarantool.space import Space
@@ -145,16 +147,18 @@ class Connection(object):
                 if not self._socket or not self._socket.recv(0, socket.MSG_DONTWAIT):
                     time.sleep(self.reconnect_delay)
                     self.connect()
+                warn("Reconnect attempt %d of %d"%(attempt, self.reconnect_max_attempts), NetworkWarning)
             except socket.error as e:
                 if e.errno == errno.EAGAIN:
                     break
                 else:
                     time.slelep(self.reconnect_delay)
                     self.connect()
+                warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
                 raise
             attempt += 1
-            warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
+
 
 
     def _send_request(self, request, space_name = None, field_defs = None, default_type = None):
@@ -326,15 +330,13 @@ class Connection(object):
 
         # 'values' argument must be a list of tuples
         assert isinstance(values, (list, tuple))
-        assert len(values) != 0
-        assert isinstance(values[0], (list, tuple))
 
         request = RequestSelect(self, space_name, index_name, values, offset, limit)
         response = self._send_request(request, space_name)
         return response
 
 
-    def select(self, space_name, values, **kwargs):
+    def select(self, space_name, values=None, **kwargs):
         '''\
         Execute SELECT request.
         Select and retrieve data from the database.
@@ -374,11 +376,12 @@ class Connection(object):
         index = kwargs.get("index", 0)
 
         # Perform smart type cheching (scalar / list of scalars / list of tuples)
-        if isinstance(values, (int, long, basestring)): # scalar
+        if values == None:
+            values = [[]]
+        elif isinstance(values, (int, long, basestring)): # scalar
             # This request is looking for one single record
             values = [(values, )]
         elif isinstance(values, (list, tuple, set, frozenset)):
-            assert len(values) > 0
             if isinstance(values[0], (int, long, basestring)): # list of scalars
                 # This request is looking for several records using single-valued index
                 # Ex: select(space_no, index_no, [1, 2, 3])
