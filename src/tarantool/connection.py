@@ -7,6 +7,7 @@ from collections import Iterable
 import ctypes
 import socket
 import time
+import types
 
 from tarantool.response import Response
 from tarantool.request import (
@@ -359,6 +360,10 @@ class Connection(object):
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 0xffffffff)
         index = kwargs.get("index", 0)
+
+        # Convert generator to set
+        if isinstance(values, types.GeneratorType):
+            values = set(values)
 
         # Perform smart type cheching (scalar / list of scalars / list of tuples)
         if isinstance(values, (int, long, basestring)): # scalar
