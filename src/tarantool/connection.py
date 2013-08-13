@@ -313,7 +313,7 @@ class Connection(object):
         '''
 
         # 'values' argument must be a list of tuples
-        assert isinstance(values[0], (list, tuple))
+        assert isinstance(next(iter(values)), (list, tuple))
         assert isinstance(values, Iterable)
 
         request = RequestSelect(self, space_name, index_name, values, offset, limit)
@@ -364,14 +364,14 @@ class Connection(object):
         if isinstance(values, (int, long, basestring)): # scalar
             # This request is looking for one single record
             values = [(values, )]
-            assert len(values) > 0
-            if isinstance(values[0], (int, long, basestring)): # list of scalars
         elif isinstance(values, Iterable):
+            any_value = next(iter(values))
+            if isinstance(any_value, (int, long, basestring)): # list of scalars
                 # This request is looking for several records using single-valued index
                 # Ex: select(space_no, index_no, [1, 2, 3])
                 # Transform a list of scalar values to a list of tuples
                 values = [(v, ) for v in values]
-            elif isinstance(values[0], (list, tuple)): # list of tuples
+            elif isinstance(any_value, (list, tuple)): # list of tuples
                 # This request is looking for serveral records using composite index
                 pass
             else:
