@@ -3,7 +3,7 @@
 '''
 Request types definitions
 '''
-
+from collections import Iterable
 import struct
 
 from tarantool.const import *
@@ -205,15 +205,17 @@ class RequestSelect(Request):
     '''
     request_type = REQUEST_TYPE_SELECT
 
-    def __init__(self, conn, space_name, index_name, tuple_list, offset, limit):    # pylint: disable=W0231
+    def __init__(self, conn, space_name, index_name, tuples, offset, limit):    # pylint: disable=W0231
         super(RequestSelect, self).__init__(conn)
-        assert isinstance(tuple_list, (list, tuple))
+        assert isinstance(tuples, Iterable)
 
         space_no = self.conn.schema.space_no(space_name)
         index_no = self.conn.schema.index_no(space_no, index_name)
+
+        data_list = [self.pack_key_tuple(t, space_no, index_no) for t in tuples]
         request_body = \
-            struct_LLLLL.pack(space_no, index_no, offset, limit, len(tuple_list)) + \
-            b"".join([self.pack_key_tuple(t, space_no, index_no) for t in tuple_list])
+            struct_LLLLL.pack(space_no, index_no, offset, limit, len(data_list)) + \
+            b"".join(data_list)
 
         self._bytes = self.header(len(request_body)) + request_body
 
