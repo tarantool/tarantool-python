@@ -3,7 +3,7 @@
 '''
 This module provides low-level API for Tarantool
 '''
-
+from collections import Iterable
 import ctypes
 import socket
 import time
@@ -313,9 +313,8 @@ class Connection(object):
         '''
 
         # 'values' argument must be a list of tuples
-        assert isinstance(values, (list, tuple))
-        assert len(values) != 0
         assert isinstance(values[0], (list, tuple))
+        assert isinstance(values, Iterable)
 
         request = RequestSelect(self, space_name, index_name, values, offset, limit)
         response = self._send_request(request, space_name)
@@ -329,8 +328,8 @@ class Connection(object):
 
         :param space_name: specifies which space to query
         :type space_name: int or str
-        :param values: list of values to search over the index
-        :type values: list of tuples
+        :param values: iterable with values to search over the index
+        :type values: Iterable with tuples
         :param index: specifies which index to use (default is **0** which means that the **primary index** will be used)
         :type index: int
         :param offset: offset in the resulting tuple set
@@ -365,9 +364,9 @@ class Connection(object):
         if isinstance(values, (int, long, basestring)): # scalar
             # This request is looking for one single record
             values = [(values, )]
-        elif isinstance(values, (list, tuple, set, frozenset)):
             assert len(values) > 0
             if isinstance(values[0], (int, long, basestring)): # list of scalars
+        elif isinstance(values, Iterable):
                 # This request is looking for several records using single-valued index
                 # Ex: select(space_no, index_no, [1, 2, 3])
                 # Transform a list of scalar values to a list of tuples
