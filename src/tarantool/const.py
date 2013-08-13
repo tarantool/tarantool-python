@@ -28,6 +28,10 @@ REQUEST_TYPE_DELETE = 21
 REQUEST_TYPE_CALL   = 22
 REQUEST_TYPE_PING   = 65280
 
+BOX_RETURN_TUPLE    = 1
+BOX_ADD             = 2
+BOX_REPLACE         = 4
+
 
 UPDATE_OPERATION_CODE = {'=': 0, '+': 1, '&': 2, '^': 3, '|': 4, 'splice': 5}
 

@@ -218,30 +218,60 @@ class Connection(object):
                                       default_type = default_type)
         return response
 
+    def _insert(self, space_name, values, flags):
+        assert isinstance(values, tuple)
+        assert (flags & (BOX_RETURN_TUPLE | BOX_ADD | BOX_REPLACE)) == flags
 
-    def insert(self, space_name, values, return_tuple=False, not_presented=False, presented=False):
-        '''\
-        Execute INSERT request.
-        Insert single record into a space `space_name`.
+        request = RequestInsert(self, space_name, values, flags)
+        return self._send_request(request, space_name)
+
+    def replace(self, space_name, values, return_tuple):
+        '''
+        Execute REPLACE request.
+        It will throw error if there's no tuple with this PK exists
 
         :param int space_name: space id to insert a record
         :type space_name: int or str
         :param values: record to be inserted. The tuple must contain only scalar (integer or strings) values
         :type values: tuple
-        
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
-        :param not_presented: True indicates that there's must be no tuple with same primary key
-        :type not_presented: bool
-        :param presented: True indicates that there's must be tuple with same primary key
-        :type presented: bool
-  
+        
         :rtype: `Response` instance
         '''
-        assert isinstance(values, tuple)
+        self._insert(space_name, values, (BOX_REPLACE_TUPLE if return_tuple else 0) | BOX_REPLACE)
 
-        request = RequestInsert(self, space_name, values, return_tuple, not_presented, presented)
-        return self._send_request(request, space_name)
+    def store(self, space_name, values, return_tuple):
+        '''
+        Execute STORE request.
+        It will overwrite tuple with the same PK, if it exists, or inserts if not
+
+        :param int space_name: space id to insert a record
+        :type space_name: int or str
+        :param values: record to be inserted. The tuple must contain only scalar (integer or strings) values
+        :type values: tuple
+        :param return_tuple: True indicates that it is required to return the inserted tuple back
+        :type return_tuple: bool
+
+        :rtype: `Response` instance
+        '''
+        self._insert(space_name, values, (BOX_REPLACE_TUPLE if return_tuple else 0)) 
+
+    def insert(self, space_name, values, return_tuple):
+        '''
+        Execute INSERT request.
+        It will throw error if there's tuple with same PK exists.
+
+        :param int space_name: space id to insert a record
+        :type space_name: int or str
+        :param values: record to be inserted. The tuple must contain only scalar (integer or strings) values
+        :type values: tuple
+        :param return_tuple: True indicates that it is required to return the inserted tuple back
+        :type return_tuple: bool
+
+        :rtype: `Response` instance
+        '''
+        self._insert(space_name, values, (BOX_REPLACE_TUPLE if return_tuple else 0) | BOX_ADD)
 
 
     def delete(self, space_name, key, return_tuple=False):
