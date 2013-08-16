@@ -11,8 +11,10 @@ NUM = 1
 NUM64 = 2
 STR = 3
 
-from tarantool.const import *
-from tarantool.request import Request
+from tarantool.const import (
+                            struct_L,
+                            struct_Q
+                            )
 
 class Schema(object):
     '''\
@@ -59,7 +61,7 @@ class Schema(object):
 
         for (space_no, space_descr) in schema.iteritems():
             if not isinstance(space_no, (int, long)):
-                ValueError('Invalid space_no: %s'%field_no)
+                ValueError('Invalid space_no: %s' % space_no)
 
             # Space name
             space_name = space_descr.get('name', None)
@@ -176,7 +178,7 @@ class Schema(object):
         for (index_no, (index_name2, _indexed_fields)) in enumerate(index_defs):
             if index_name2 == index_name:
                 return index_no
-        raise KeyError(index_no)
+        raise KeyError(index_name)
 
     def _pack_value_int(self, value):
         if __debug__:

@@ -4,10 +4,26 @@
 __version__ = "0.3.1"
 
 from tarantool.connection import Connection
-from tarantool.const import *
-from tarantool.error import *
-from tarantool.schema import *
+from tarantool.const import (
+                            SOCKET_TIMEOUT,
+                            RECONNECT_MAX_ATTEMPTS,
+                            RECONNECT_DELAY
+                            )
 
+from tarantool.schema import (
+                             Schema,
+                             RAW,
+                             STR,
+                             NUM,
+                             NUM64
+                             )
+from tarantool.error import (
+                            Error,
+                            DatabaseError,
+                            NetworkError,
+                            NetworkWarning,
+                            RetryWarning
+                            )
 
 def connect(host="localhost", port=33013, schema=None):
     '''\
@@ -28,3 +44,6 @@ def connect(host="localhost", port=33013, schema=None):
                       reconnect_delay=RECONNECT_DELAY,
                       connect_now=True,
                       schema=schema)
+
+__all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError', 'NetworkError', 'NetworkWarning', 'RetryWarning', 'RAW', 'STR', 'NUM', 'NUM64']
+

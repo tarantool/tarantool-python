@@ -4,8 +4,17 @@
 import struct
 import sys
 
-from tarantool.const import *
-from tarantool.error import *
+from tarantool.const import (
+                            REQUEST_TYPE_INSERT,
+                            REQUEST_TYPE_SELECT,
+                            REQUEST_TYPE_UPDATE,
+                            REQUEST_TYPE_DELETE,
+                            struct_L,
+                            struct_LL,
+                            struct_LLL,
+                            struct_Q
+                            )
+from tarantool.error import DatabaseError
 
 
 

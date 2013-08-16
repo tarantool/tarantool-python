@@ -6,8 +6,25 @@ Request types definitions
 
 import struct
 
-from tarantool.const import *
-
+from tarantool.const import (
+                            struct_B,
+                            struct_BB,
+                            struct_BBB,
+                            struct_BBBB,
+                            struct_BBBBB,
+                            struct_L,
+                            struct_LL,
+                            struct_LLL,
+                            struct_LLLLL,
+                            struct_LB,
+                            UPDATE_OPERATION_CODE,
+                            REQUEST_TYPE_INSERT,
+                            REQUEST_TYPE_DELETE,
+                            REQUEST_TYPE_SELECT,
+                            REQUEST_TYPE_UPDATE,
+                            REQUEST_TYPE_PING,
+                            REQUEST_TYPE_CALL
+                            )
 
 class Request(object):
     '''\
@@ -79,11 +96,9 @@ class Request(object):
 
         raise OverflowError("Number too large to be packed")
 
-
     def pack_field(self, value):
         value_len_packed = Request.pack_int_base128(len(value))
         return struct.pack("<%ds%ds"%(len(value_len_packed), len(value)), value_len_packed,  value)
-
 
     def pack_fields(self, packed_values):
         '''\
@@ -104,7 +119,6 @@ class Request(object):
             packed_items.append(self.pack_field(value))
         return b"".join(packed_items)
 
-
     def pack_tuple(self, values, space_no = None):
         '''\
         Pack tuple of values
@@ -117,7 +131,6 @@ class Request(object):
         :rtype: bytes
         '''
         return self.pack_fields(self.conn.schema.pack_values(values, space_no))
-
 
     def pack_key_tuple(self, values, space_no = None, index_no = None):
         '''\
@@ -157,7 +170,6 @@ class RequestInsert(Request):
             self.pack_tuple(values, space_no)
 
         self._bytes = self.header(len(request_body)) + request_body
-
 
 
 class RequestDelete(Request):
@@ -217,7 +229,6 @@ class RequestSelect(Request):
         self._bytes = self.header(len(request_body)) + request_body
 
 
-
 class RequestUpdate(Request):
     '''
     <update_request_body> ::= <space_no><flags><tuple><count><operation>+
@@ -264,7 +275,6 @@ class RequestUpdate(Request):
         return b"".join(result)
 
 
-
 class RequestCall(Request):
     '''
     <call_request_body> ::= <flags><proc_name><tuple>
@@ -289,6 +299,7 @@ class RequestCall(Request):
 
         self._bytes = self.header(len(request_body)) + request_body
 
+
 class RequestPing(Request):
     '''
     Ping body is empty, so body_length == 0 and there's no body
@@ -299,4 +310,4 @@ class RequestPing(Request):
 
     def __init__(self, conn):
         super(RequestPing, self).__init__(conn)
-        self._bytes = struct_LLL.pack(REQUEST_TYPE_PING, 0, 0) 
+        self._bytes = struct_LLL.pack(REQUEST_TYPE_PING, 0, 0)

@@ -4,7 +4,6 @@
 This module provides low-level API for Tarantool
 '''
 
-import ctypes
 import errno
 import socket
 import time
@@ -18,12 +17,27 @@ from tarantool.request import (
                     RequestPing,
                     RequestSelect,
                     RequestUpdate)
+
 from tarantool.space import Space
-from tarantool.const import *
-from tarantool.error import *
-from tarantool.schema import *
-
-
+from tarantool.const import (
+                            struct_L,
+                            SOCKET_TIMEOUT,
+                            RECONNECT_MAX_ATTEMPTS,
+                            RECONNECT_DELAY,
+                            RETRY_MAX_ATTEMPTS,
+                            BOX_RETURN_TUPLE,
+                            BOX_ADD,
+                            BOX_REPLACE,
+                            REQUEST_TYPE_PING
+                            )
+from tarantool.error import (
+                            NetworkError,
+                            DatabaseError,
+                            warn,
+                            RetryWarning,
+                            NetworkWarning
+                            )
+from tarantool.schema import Schema
 
 class Connection(object):
     '''\
@@ -62,14 +76,12 @@ class Connection(object):
         if connect_now:
             self.connect()
 
-
     def close(self):
         '''\
         Close connection to the server
         '''
         self._socket.close()
         self._socket = None
-
 
     def connect(self):
         '''\
@@ -93,7 +105,6 @@ class Connection(object):
         except socket.error as e:
             raise NetworkError(e)
 
-
     def _read_response(self):
         '''
         Read response from the transport (socket)
@@ -116,8 +127,6 @@ class Connection(object):
                 continue
 
             return buf[0:12], buf[12:]
-
-
 
     def _send_request_wo_reconnect(self, request, space_name = None, field_defs = None, default_type = None):
         '''\
@@ -152,14 +161,12 @@ class Connection(object):
                 if e.errno == errno.EAGAIN:
                     break
                 else:
-                    time.slelep(self.reconnect_delay)
+                    time.sleep(self.reconnect_delay)
                     self.connect()
                 warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
                 raise
             attempt += 1
-
-
 
     def _send_request(self, request, space_name = None, field_defs = None, default_type = None):
         '''\
@@ -173,8 +180,7 @@ class Connection(object):
         '''
         assert isinstance(request, Request)
 
-        connected = True
-        attempt = 1
+
         self._opt_reconnect()
         response = self._send_request_wo_reconnect(request, space_name, field_defs, default_type)
 
@@ -236,10 +242,10 @@ class Connection(object):
         :type values: tuple
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
-        
+ 
         :rtype: `Response` instance
         '''
-        self._insert(space_name, values, (BOX_REPLACE_TUPLE if return_tuple else 0) | BOX_REPLACE)
+        self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0) | BOX_REPLACE)
 
     def store(self, space_name, values, return_tuple):
         '''
@@ -255,7 +261,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        self._insert(space_name, values, (BOX_REPLACE_TUPLE if return_tuple else 0)) 
+        self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0))
 
     def insert(self, space_name, values, return_tuple):
         '''
@@ -271,8 +277,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        self._insert(space_name, values, (BOX_REPLACE_TUPLE if return_tuple else 0) | BOX_ADD)
-
+        self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0) | BOX_ADD)
 
     def delete(self, space_name, key, return_tuple=False):
         '''\
@@ -292,7 +297,6 @@ class Connection(object):
 
         request = RequestDelete(self, space_name, key, return_tuple)
         return self._send_request(request, space_name)
-
 
     def update(self, space_name, key, op_list, return_tuple=False):
         '''\
@@ -317,7 +321,6 @@ class Connection(object):
         request = RequestUpdate(self, space_name, key, op_list, return_tuple)
         return self._send_request(request, space_name)
 
-
     def ping(self, notime=False):
         '''\
         Execute PING request.
@@ -338,7 +341,6 @@ class Connection(object):
         if notime:
             return "Success"
         return t1 - t0
-
 
     def _select(self, space_name, index_name, values, offset=0, limit=0xffffffff):
         '''\
@@ -365,7 +367,6 @@ class Connection(object):
         response = self._send_request(request, space_name)
         return response
 
-
     def select(self, space_name, values=None, **kwargs):
         '''\
         Execute SELECT request.
@@ -383,7 +384,7 @@ class Connection(object):
         :type limit: int
 
         :rtype: `Response` instance
-
+ 
         Select one single record (from space=0 and using index=0)
         >>> select(0, 0, 1)
 
@@ -425,7 +426,6 @@ class Connection(object):
 
         return self._select(space_name, index, values, offset, limit)
 
-
     def space(self, space_name):
         '''\
         Create `Space` instance for particular space
@@ -439,4 +439,3 @@ class Connection(object):
         :rtype: `Space` instance
         '''
         return Space(self, space_name)
-
