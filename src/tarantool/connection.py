@@ -231,7 +231,7 @@ class Connection(object):
         request = RequestInsert(self, space_name, values, flags)
         return self._send_request(request, space_name)
 
-    def replace(self, space_name, values, return_tuple):
+    def replace(self, space_name, values, return_tuple=True):
         '''
         Execute REPLACE request.
         It will throw error if there's no tuple with this PK exists
@@ -247,7 +247,7 @@ class Connection(object):
         '''
         self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0) | BOX_REPLACE)
 
-    def store(self, space_name, values, return_tuple):
+    def store(self, space_name, values, return_tuple=True):
         '''
         Execute STORE request.
         It will overwrite tuple with the same PK, if it exists, or inserts if not
@@ -263,7 +263,7 @@ class Connection(object):
         '''
         self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0))
 
-    def insert(self, space_name, values, return_tuple):
+    def insert(self, space_name, values, return_tuple=True):
         '''
         Execute INSERT request.
         It will throw error if there's tuple with same PK exists.
@@ -279,7 +279,7 @@ class Connection(object):
         '''
         self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0) | BOX_ADD)
 
-    def delete(self, space_name, key, return_tuple=False):
+    def delete(self, space_name, key, return_tuple=True):
         '''\
         Execute DELETE request.
         Delete single record identified by `key` (using primary index).
@@ -298,7 +298,7 @@ class Connection(object):
         request = RequestDelete(self, space_name, key, return_tuple)
         return self._send_request(request, space_name)
 
-    def update(self, space_name, key, op_list, return_tuple=False):
+    def update(self, space_name, key, op_list, return_tuple=True):
         '''\
         Execute UPDATE request.
         Update single record identified by `key` (using primary index).
