@@ -61,7 +61,7 @@ class Schema(object):
 
         for (space_no, space_descr) in schema.iteritems():
             if not isinstance(space_no, (int, long)):
-                ValueError('Invalid space_no: %s' % space_no)
+                raise ValueError('Invalid space_no: %s' % space_no)
 
             # Space name
             space_name = space_descr.get('name', None)
@@ -75,7 +75,7 @@ class Schema(object):
             max_fieldno = 0
             for field_no in field_descrs.iterkeys():
                 if not isinstance(field_no, (int, long)):
-                    ValueError('Invalid field_no: %s'%field_no)
+                    raise ValueError('Invalid field_no: %s'%field_no)
                 max_fieldno = max(max_fieldno, field_no)
 
             field_defs = [None] * (max_fieldno + 1)
@@ -98,7 +98,7 @@ class Schema(object):
             max_indexno = 0
             for index_no in index_descrs.iterkeys():
                 if not isinstance(index_no, (int, long)):
-                    ValueError('Invalid index_no: %s'%index_no)
+                    raise ValueError('Invalid index_no: %s'%index_no)
                 max_indexno = max(max_indexno, index_no)
 
             index_defs = [None] * (max_indexno + 1)
