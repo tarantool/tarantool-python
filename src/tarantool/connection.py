@@ -407,7 +407,7 @@ class Connection(object):
         index = kwargs.get("index", 0)
 
         # Perform smart type cheching (scalar / list of scalars / list of tuples)
-        if values == None:
+        if values is None:
             values = [[]]
         elif isinstance(values, (int, long, basestring)): # scalar
             # This request is looking for one single record

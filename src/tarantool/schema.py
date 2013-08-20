@@ -132,7 +132,7 @@ class Schema(object):
     def _check_datatype(self, dtype):
         if dtype in (NUM, NUM64, RAW, STR):
             return dtype
-        elif dtype == None:
+        elif dtype is None:
             return RAW
         elif dtype == int:
             return NUM
