@@ -52,7 +52,8 @@ class Connection(object):
                  reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True,
-                 schema = None):
+                 schema=None,
+                 return_tuple=True):
         '''\
         Initialize a connection to the server.
 
@@ -68,6 +69,7 @@ class Connection(object):
         self.socket_timeout = socket_timeout
         self.reconnect_delay = reconnect_delay
         self.reconnect_max_attempts = reconnect_max_attempts
+        self.return_tuple = return_tuple
         if isinstance(schema, Schema):
             self.schema = schema
         else:
@@ -217,8 +219,9 @@ class Connection(object):
         field_defs = kwargs.get("field_defs", None)
         default_type = kwargs.get("default_type", None)
         space_name = kwargs.get("space_name", None)
+        return_tuple = kwargs.get("return_tuple", self.return_tuple)
 
-        request = RequestCall(self, func_name, args, return_tuple=True)
+        request = RequestCall(self, func_name, args, return_tuple)
         response = self._send_request(request, space_name = space_name,
                                       field_defs = field_defs,
                                       default_type = default_type)
@@ -231,7 +234,7 @@ class Connection(object):
         request = RequestInsert(self, space_name, values, flags)
         return self._send_request(request, space_name)
 
-    def replace(self, space_name, values, return_tuple=True):
+    def replace(self, space_name, values, return_tuple=None):
         '''
         Execute REPLACE request.
         It will throw error if there's no tuple with this PK exists
@@ -245,9 +248,11 @@ class Connection(object):
  
         :rtype: `Response` instance
         '''
+        if return_tuple is None:
+            return_tuple = self.return_tuple
         self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0) | BOX_REPLACE)
 
-    def store(self, space_name, values, return_tuple=True):
+    def store(self, space_name, values, return_tuple=None):
         '''
         Execute STORE request.
         It will overwrite tuple with the same PK, if it exists, or inserts if not
@@ -261,9 +266,11 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
+        if return_tuple is None:
+            return_tuple = self.return_tuple
         self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0))
 
-    def insert(self, space_name, values, return_tuple=True):
+    def insert(self, space_name, values, return_tuple=None):
         '''
         Execute INSERT request.
         It will throw error if there's tuple with same PK exists.
@@ -277,9 +284,11 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
+        if return_tuple is None:
+            return_tuple = self.return_tuple
         self._insert(space_name, values, (BOX_RETURN_TUPLE if return_tuple else 0) | BOX_ADD)
 
-    def delete(self, space_name, key, return_tuple=True):
+    def delete(self, space_name, key, return_tuple=None):
         '''\
         Execute DELETE request.
         Delete single record identified by `key` (using primary index).
@@ -295,10 +304,12 @@ class Connection(object):
         '''
         assert isinstance(key, (int, long, basestring))
 
+        if return_tuple is None:
+            return_tuple = self.return_tuple
         request = RequestDelete(self, space_name, key, return_tuple)
         return self._send_request(request, space_name)
 
-    def update(self, space_name, key, op_list, return_tuple=True):
+    def update(self, space_name, key, op_list, return_tuple=None):
         '''\
         Execute UPDATE request.
         Update single record identified by `key` (using primary index).
@@ -318,6 +329,8 @@ class Connection(object):
         '''
         assert isinstance(key, (int, basestring))
 
+        if return_tuple is None:
+            return_tuple = self.return_tuple
         request = RequestUpdate(self, space_name, key, op_list, return_tuple)
         return self._send_request(request, space_name)
 
