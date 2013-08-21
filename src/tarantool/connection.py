@@ -316,7 +316,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        assert isinstance(key, (int, basestring))
+        assert isinstance(key, (int, long, basestring))
 
         request = RequestUpdate(self, space_name, key, op_list, return_tuple)
         return self._send_request(request, space_name)
