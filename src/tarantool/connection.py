@@ -4,9 +4,11 @@
 This module provides low-level API for Tarantool
 '''
 
-import errno
-import socket
 import time
+import errno
+import ctypes
+import ctypes.util
+import socket
 
 from tarantool.response import Response
 from tarantool.request import (
@@ -77,6 +79,9 @@ class Connection(object):
         self._socket = None
         if connect_now:
             self.connect()
+        self._libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+        self._recv_type = ctypes.CFUNCTYPE(ctypes.c_ssize_t, *[ctypes.c_int, ctypes.c_void_p, ctypes.c_ssize_t, ctypes.c_int], use_errno=True)
+        self._recv = self._recv_type(self._libc.recv)
 
     def close(self):
         '''\
@@ -153,19 +158,16 @@ class Connection(object):
 
     def _opt_reconnect(self):
         attempt = 0
+        if not self._socket:
+            self.connect()
         while True:
-            try:
-                if not self._socket or not self._socket.recv(0, socket.MSG_DONTWAIT):
-                    time.sleep(self.reconnect_delay)
-                    self.connect()
-                warn("Reconnect attempt %d of %d"%(attempt, self.reconnect_max_attempts), NetworkWarning)
-            except socket.error as e:
-                if e.errno == errno.EAGAIN:
-                    break
-                else:
-                    time.sleep(self.reconnect_delay)
-                    self.connect()
-                warn("%s : Reconnect attempt %d of %d"%(e.message, attempt, self.reconnect_max_attempts), NetworkWarning)
+            rc = self._recv(self._socket.fileno(), '', 0, socket.MSG_DONTWAIT)
+            if ctypes.get_errno() == errno.EAGAIN:
+                ctypes.set_errno(0)
+                break
+            time.sleep(self.reconnect_delay)
+            self.connect()
+            warn("Reconnect attempt %d of %d"%(attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
                 raise
             attempt += 1
