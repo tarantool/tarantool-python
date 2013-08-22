@@ -77,10 +77,11 @@ class Connection(object):
         else:
             self.schema = Schema(schema)
         self._socket = None
+        self.connected = False
         if connect_now:
             self.connect()
         self._libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-        self._recv_type = ctypes.CFUNCTYPE(ctypes.c_ssize_t, *[ctypes.c_int, ctypes.c_void_p, ctypes.c_ssize_t, ctypes.c_int], use_errno=True)
+        self._recv_type = ctypes.CFUNCTYPE(ctypes.c_ssize_t, ctypes.c_int, ctypes.c_void_p, ctypes.c_ssize_t, ctypes.c_int, use_errno=True)
         self._recv = self._recv_type(self._libc.recv)
 
     def close(self):
@@ -101,6 +102,7 @@ class Connection(object):
 
         try:
             # If old socket already exists - close it and re-create
+            self.connected = True
             if self._socket:
                 self._socket.close()
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,6 +112,7 @@ class Connection(object):
             # Otherwise the timeout exception will rised, even if the server does not listen
             self._socket.settimeout(self.socket_timeout)
         except socket.error as e:
+            self.connected = False
             raise NetworkError(e)
 
     def _read_response(self):
@@ -157,19 +160,33 @@ class Connection(object):
         raise DatabaseError(response.return_code, response.return_message)
 
     def _opt_reconnect(self):
-        attempt = 0
-        if not self._socket:
-            self.connect()
-        while True:
+        '''\
+        Check that connection is alive using low-level recv from libc(ctypes)
+        **Due to bug in python - timeout is internal python construction.
+        '''
+        def check(): # Check that connection is alive
             rc = self._recv(self._socket.fileno(), '', 0, socket.MSG_DONTWAIT)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
+                return errno.EAGAIN
+            return ctypes.get_errno()
+
+        attempt = 0
+        last_errno = 0
+        if not self._socket:
+            self.connect()
+        while True:
+            last_errno = check()
+            if self.connected and last_errno == errno.EAGAIN:
                 break
             time.sleep(self.reconnect_delay)
-            self.connect()
+            try:
+                self.connect()
+            except NetworkError as e:
+                last_errno = e.errno
             warn("Reconnect attempt %d of %d"%(attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
-                raise
+                raise socket.error((last_errno, errno.errorcode[last_errno]))
             attempt += 1
 
     def _send_request(self, request, space_name = None, field_defs = None, default_type = None):
@@ -247,7 +264,7 @@ class Connection(object):
         :type values: tuple
         :param return_tuple: True indicates that it is required to return the inserted tuple back
         :type return_tuple: bool
- 
+
         :rtype: `Response` instance
         '''
         if return_tuple is None:
@@ -399,7 +416,7 @@ class Connection(object):
         :type limit: int
 
         :rtype: `Response` instance
- 
+
         Select one single record (from space=0 and using index=0)
         >>> select(0, 0, 1)
 

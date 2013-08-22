@@ -106,6 +106,9 @@ if sys.platform == "win32":
 class NetworkError(DatabaseError):
     '''Error related to network'''
     def __init__(self, orig_exception=None, *args):
+        self.errno = 0;
+        if hasattr(orig_exception, 'errno'):
+            self.errno = orig_exception.errno
         if orig_exception:
             if isinstance(orig_exception, socket.timeout):
                 self.message = "Socket timeout"
