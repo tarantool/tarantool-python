@@ -346,7 +346,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        assert isinstance(key, (int, basestring))
+        assert isinstance(key, (int, long, basestring))
 
         if return_tuple is None:
             return_tuple = self.return_tuple
@@ -382,8 +382,8 @@ class Connection(object):
         :type space_name: int or str
         :param index_name: index id to use
         :type index_name: int or str
-        :param values: list of values to search over the index
-        :type values: list of tuples
+        :param values: values to search over the index
+        :type values: list, tuple, set, frozenset of tuples
         :param offset: offset in the resulting tuple set
         :type offset: int
         :param limit: limits the total number of returned tuples
@@ -392,8 +392,8 @@ class Connection(object):
         :rtype: `Response` instance
         '''
 
-        # 'values' argument must be a list of tuples
-        assert isinstance(values, (list, tuple))
+        # 'values' argument must be a collection with tuples
+        assert isinstance(values, (list, tuple, set, frozenset))
 
         request = RequestSelect(self, space_name, index_name, values, offset, limit)
         response = self._send_request(request, space_name)
@@ -406,8 +406,8 @@ class Connection(object):
 
         :param space_name: specifies which space to query
         :type space_name: int or str
-        :param values: list of values to search over the index
-        :type values: list of tuples
+        :param values: values to search over the index
+        :type values: list, tuple, set, frozenset of tuples
         :param index: specifies which index to use (default is **0** which means that the **primary index** will be used)
         :type index: int
         :param offset: offset in the resulting tuple set
@@ -439,18 +439,19 @@ class Connection(object):
         index = kwargs.get("index", 0)
 
         # Perform smart type cheching (scalar / list of scalars / list of tuples)
-        if values == None:
+        if values is None:
             values = [[]]
         elif isinstance(values, (int, long, basestring)): # scalar
             # This request is looking for one single record
             values = [(values, )]
         elif isinstance(values, (list, tuple, set, frozenset)):
-            if isinstance(values[0], (int, long, basestring)): # list of scalars
+            any_item = next(iter(values))
+            if isinstance(any_item, (int, long, basestring)): # list of scalars
                 # This request is looking for several records using single-valued index
                 # Ex: select(space_no, index_no, [1, 2, 3])
                 # Transform a list of scalar values to a list of tuples
                 values = [(v, ) for v in values]
-            elif isinstance(values[0], (list, tuple)): # list of tuples
+            elif isinstance(any_item, (list, tuple)): # list of tuples
                 # This request is looking for serveral records using composite index
                 pass
             else:

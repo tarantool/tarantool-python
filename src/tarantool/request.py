@@ -218,7 +218,7 @@ class RequestSelect(Request):
 
     def __init__(self, conn, space_name, index_name, tuple_list, offset, limit):    # pylint: disable=W0231
         super(RequestSelect, self).__init__(conn)
-        assert isinstance(tuple_list, (list, tuple))
+        assert isinstance(tuple_list, (list, tuple, set, frozenset))
 
         space_no = self.conn.schema.space_no(space_name)
         index_no = self.conn.schema.index_no(space_no, index_name)
@@ -246,7 +246,7 @@ class RequestUpdate(Request):
     def __init__(self, conn, space_name, key, op_list, return_tuple):    # pylint: disable=W0231
         super(RequestUpdate, self).__init__(conn)
         flags = 1 if return_tuple else 0
-        assert isinstance(key, (int, basestring))
+        assert isinstance(key, (int, long, basestring))
 
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
