@@ -11,9 +11,25 @@ py3 = sys.version_info.major >= 3
 from_hex = lambda x: binascii.unhexlify(''.join(x.split()))
 to_hex = lambda x: binascii.hexlify(x)
 
-
 import tarantool.response
+from tarantool.schema import Schema
 
+class ConnectionMock(object):
+    def __init__(self, default_type):
+        self.schema = Schema({
+            1: {
+                'name': 'users',
+                'default_type': default_type,
+                'fields': {
+                    0: ('f1', default_type),
+                    1: ('f2', default_type),
+                    2: ('f3', default_type),
+                },
+                'indexes': {
+                    0: ('pk', [0, 0]),
+                },
+            }
+        })
 
 class field(unittest.TestCase):
     '''
@@ -168,7 +184,7 @@ class Response(unittest.TestCase):
             "04 01000000" + "05 4a4b4c4d4e")
 
         self.assertEqual(
-            tarantool.response.Response(header, body),
+            tarantool.response.Response(ConnectionMock(tarantool.STR), header, body),
             [(b"\x01\x00\x00\x00", b"JKLMN")],
             "Create Response instance: single record"
         )
@@ -200,7 +216,7 @@ class Response(unittest.TestCase):
         )
 
         self.assertEqual(
-            tarantool.response.Response(header, body),
+            tarantool.response.Response(ConnectionMock(tarantool.STR), header, body),
             [(b"\x01\x00\x00\x00", b"1111111111"),
             (b"\x02\x00\x00\x00", b"2222222222"),
             (b"\x03\x00\x00\x00", b"LLL", b"MMM", b"NNN")],
@@ -213,7 +229,7 @@ class Response(unittest.TestCase):
 
         header = from_hex("0d00000014000000 11223344")
         body = from_hex("00000000010000000400000002000000014b015a")
-        r = tarantool.response.Response(header, body)
+        r = tarantool.response.Response(ConnectionMock(tarantool.STR), header, body)
 
         self.assertEqual(r.return_code, 0, "Check return_code property")
         self.assertIsNone(r.return_message, "Check return_message property")

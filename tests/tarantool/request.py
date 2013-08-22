@@ -3,14 +3,11 @@
 '''
 Tests for tarantool.request module
 '''
-
 import binascii
 import unittest
 
-
 import tarantool.request
 from tarantool.schema import Schema
-
 
 class ConnectionMock(object):
     def __init__(self, default_type):
@@ -28,7 +25,6 @@ class ConnectionMock(object):
                 },
             }
         })
-
 
 class RequestInsert(unittest.TestCase):
     def setUp(self):
@@ -48,7 +44,6 @@ class RequestInsert(unittest.TestCase):
             bytes(tarantool.request.RequestInsert(self.conn2, 1, (b"AAA", b"BBBB", b"CCCCCC"), False)),
             binascii.unhexlify("0d0000001c0000000000000001000000000000000300000003414141044242424206434343434343")
         )
-
 
 class RequestDelete(unittest.TestCase):
     def setUp(self):
