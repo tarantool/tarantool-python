@@ -25,12 +25,12 @@ REQUEST_TYPE_INSERT = 13
 REQUEST_TYPE_SELECT = 17
 REQUEST_TYPE_UPDATE = 19
 REQUEST_TYPE_DELETE = 21
-REQUEST_TYPE_CALL   = 22
-REQUEST_TYPE_PING   = 65280
+REQUEST_TYPE_CALL = 22
+REQUEST_TYPE_PING = 65280
 
-BOX_RETURN_TUPLE    = 1
-BOX_ADD             = 2
-BOX_REPLACE         = 4
+BOX_RETURN_TUPLE = 1
+BOX_ADD = 2
+BOX_REPLACE = 4
 
 
 UPDATE_OPERATION_CODE = {'=': 0, '+': 1, '&': 2, '^': 3, '|': 4, 'splice': 5}
@@ -41,5 +41,6 @@ SOCKET_TIMEOUT = None
 RECONNECT_MAX_ATTEMPTS = 10
 # Default delay between attempts to reconnect (seconds)
 RECONNECT_DELAY = 0.1
-# Number of reattempts in case of server return completion_status == 1 (try again)
+# Number of reattempts in case of server
+# return completion_status == 1 (try again)
 RETRY_MAX_ATTEMPTS = 10

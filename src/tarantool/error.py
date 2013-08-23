@@ -26,16 +26,20 @@ import warnings
 
 
 class Error(StandardError):
+
     '''Base class for error exceptions'''
 
 
 class DatabaseError(Error):
+
     '''Error related to the database engine'''
 
 
 class InterfaceError(Error):
-    '''Error related to the database interface rather than the database itself'''
 
+    '''\
+    Error related to the database interface rather than the database itself
+    '''
 
 
 # Monkey patch os.strerror for win32
@@ -83,30 +87,32 @@ if sys.platform == "win32":
         11004: "Name or service not known"
     }
 
-
     os_strerror_orig = os.strerror
 
     def os_strerror_patched(code):
         '''\
         Return cross-platform message about socket-related errors
 
-        This function exists because under Windows os.strerror returns 'Unknown error' on all socket-related errors.
+        This function exists because under Windows os.strerror returns
+        'Unknown error' on all socket-related errors.
         And socket-related exception contain broken non-ascii encoded messages.
         '''
         message = os_strerror_orig(code)
         if not message.startswith("Unknown"):
             return message
         else:
-            return _code2str.get(code, "Unknown error %s"%code)
+            return _code2str.get(code, "Unknown error %s" % code)
 
     os.strerror = os_strerror_patched
     del os_strerror_patched
 
 
 class NetworkError(DatabaseError):
+
     '''Error related to network'''
+
     def __init__(self, orig_exception=None, *args):
-        self.errno = 0;
+        self.errno = 0
         if hasattr(orig_exception, 'errno'):
             self.errno = orig_exception.errno
         if orig_exception:
@@ -115,18 +121,24 @@ class NetworkError(DatabaseError):
                 super(NetworkError, self).__init__(0, self.message)
             elif isinstance(orig_exception, socket.error):
                 self.message = os.strerror(orig_exception.errno)
-                super(NetworkError, self).__init__(orig_exception.errno, self.message)
+                super(NetworkError, self).__init__(
+                    orig_exception.errno, self.message)
             else:
                 super(NetworkError, self).__init__(orig_exception, *args)
 
 
 class NetworkWarning(UserWarning):
+
     '''Warning related to network'''
     pass
 
 
 class RetryWarning(UserWarning):
-    '''Warning is emited in case of server return completion_status == 1 (try again)'''
+
+    '''\
+    Warning is emited in case of server return completion_status == 1
+    (try again)
+    '''
     pass
 
 
@@ -140,8 +152,7 @@ def warn(message, warning_class):
     Emit warinig message.
     Just like standard warnings.warn() but don't output full filename.
     '''
-    frame = sys._getframe(2) # pylint: disable=W0212
+    frame = sys._getframe(2)  # pylint: disable=W0212
     module_name = frame.f_globals.get("__name__")
     line_no = frame.f_lineno
     warnings.warn_explicit(message, warning_class, module_name, line_no)
-

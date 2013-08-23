@@ -5,25 +5,26 @@ __version__ = "0.3.2"
 
 from tarantool.connection import Connection
 from tarantool.const import (
-                            SOCKET_TIMEOUT,
-                            RECONNECT_MAX_ATTEMPTS,
-                            RECONNECT_DELAY
-                            )
+    SOCKET_TIMEOUT,
+    RECONNECT_MAX_ATTEMPTS,
+    RECONNECT_DELAY
+)
 
 from tarantool.schema import (
-                             Schema,
-                             RAW,
-                             STR,
-                             NUM,
-                             NUM64
-                             )
+    Schema,
+    RAW,
+    STR,
+    NUM,
+    NUM64
+)
 from tarantool.error import (
-                            Error,
-                            DatabaseError,
-                            NetworkError,
-                            NetworkWarning,
-                            RetryWarning
-                            )
+    Error,
+    DatabaseError,
+    NetworkError,
+    NetworkWarning,
+    RetryWarning
+)
+
 
 def connect(host="localhost", port=33013, schema=None):
     '''\
@@ -31,7 +32,8 @@ def connect(host="localhost", port=33013, schema=None):
 
     :param str host: Server hostname or IP-address
     :param int port: Server port
-    :param schema: Data schema (see Developer guide and :class:`~tarantool.schema.Schema`)
+    :param schema: Data schema (see Developer guide
+        and :class:`~tarantool.schema.Schema`)
     :type schema: :class:`~tarantool.schema.Schema` or dict
 
     :rtype: :class:`~tarantool.connection.Connection`
@@ -45,5 +47,6 @@ def connect(host="localhost", port=33013, schema=None):
                       connect_now=True,
                       schema=schema)
 
-__all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError', 'NetworkError', 'NetworkWarning', 'RetryWarning', 'RAW', 'STR', 'NUM', 'NUM64']
-
+__all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError',
+           'NetworkError', 'NetworkWarning', 'RetryWarning', 'RAW', 'STR',
+           'NUM', 'NUM64']

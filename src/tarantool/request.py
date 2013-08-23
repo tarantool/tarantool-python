@@ -7,38 +7,45 @@ Request types definitions
 import struct
 
 from tarantool.const import (
-                            struct_B,
-                            struct_BB,
-                            struct_BBB,
-                            struct_BBBB,
-                            struct_BBBBB,
-                            struct_L,
-                            struct_LL,
-                            struct_LLL,
-                            struct_LLLLL,
-                            struct_LB,
-                            UPDATE_OPERATION_CODE,
-                            REQUEST_TYPE_INSERT,
-                            REQUEST_TYPE_DELETE,
-                            REQUEST_TYPE_SELECT,
-                            REQUEST_TYPE_UPDATE,
-                            REQUEST_TYPE_PING,
-                            REQUEST_TYPE_CALL
-                            )
+    struct_B,
+    struct_BB,
+    struct_BBB,
+    struct_BBBB,
+    struct_BBBBB,
+    struct_L,
+    struct_LL,
+    struct_LLL,
+    struct_LLLLL,
+    struct_LB,
+    UPDATE_OPERATION_CODE,
+    REQUEST_TYPE_INSERT,
+    REQUEST_TYPE_DELETE,
+    REQUEST_TYPE_SELECT,
+    REQUEST_TYPE_UPDATE,
+    REQUEST_TYPE_PING,
+    REQUEST_TYPE_CALL
+)
+
 
 class Request(object):
-    '''\
-    Represents a single request to the server in compliance with the Tarantool protocol.
-    Responsible for data encapsulation and builds binary packet to be sent to the server.
 
-    This is the abstract base class. Specific request types are implemented by the inherited classes.
+    '''\
+    Represents a single request to the server in compliance with the
+    Tarantool protocol.
+    Responsible for data encapsulation and builds binary packet
+    to be sent to the server.
+
+    This is the abstract base class. Specific request types
+    are implemented by the inherited classes.
     '''
     request_type = None
 
-    # Pre-generated results of pack_int_base128() for small arguments (0..16383)
+    # Pre-generated results of pack_int_base128() for small arguments
+    # (0..16383)
     _int_base128 = tuple(
         (
-            struct_B.pack(val) if val < 128 else struct_BB.pack(val >> 7 & 0xff | 0x80, val & 0x7F) \
+            struct_B.pack(val) if val < 128 else struct_BB.pack(
+                val >> 7 & 0xff | 0x80, val & 0x7F)
             for val in xrange(0x4000)
         )
     )
@@ -50,7 +57,6 @@ class Request(object):
     def __bytes__(self):
         return self._bytes
     __str__ = __bytes__
-
 
     @classmethod
     def header(cls, body_length):
@@ -72,33 +78,35 @@ class Request(object):
 
         if value < 1 << 21:
             return struct_BBB.pack(
-                        value >> 14 & 0xff | 0x80,
-                        value >> 7 & 0xff | 0x80,
-                        value & 0x7F
+                value >> 14 & 0xff | 0x80,
+                value >> 7 & 0xff | 0x80,
+                value & 0x7F
             )
 
         if value < 1 << 28:
             return struct_BBBB.pack(
-                        value >> 21 & 0xff | 0x80,
-                        value >> 14 & 0xff | 0x80,
-                        value >> 7 & 0xff | 0x80,
-                        value & 0x7F
+                value >> 21 & 0xff | 0x80,
+                value >> 14 & 0xff | 0x80,
+                value >> 7 & 0xff | 0x80,
+                value & 0x7F
             )
 
         if value < 1 << 35:
             return struct_BBBBB.pack(
-                        value >> 28 & 0xff | 0x80,
-                        value >> 21 & 0xff | 0x80,
-                        value >> 14 & 0xff | 0x80,
-                        value >> 7 & 0xff | 0x80,
-                        value & 0x7F
+                value >> 28 & 0xff | 0x80,
+                value >> 21 & 0xff | 0x80,
+                value >> 14 & 0xff | 0x80,
+                value >> 7 & 0xff | 0x80,
+                value & 0x7F
             )
 
         raise OverflowError("Number too large to be packed")
 
     def pack_field(self, value):
         value_len_packed = Request.pack_int_base128(len(value))
-        return struct.pack("<%ds%ds"%(len(value_len_packed), len(value)), value_len_packed,  value)
+        return struct.pack(
+            "<%ds%ds" % (len(value_len_packed), len(value)), value_len_packed,
+            value)
 
     def pack_fields(self, packed_values):
         '''\
@@ -119,7 +127,7 @@ class Request(object):
             packed_items.append(self.pack_field(value))
         return b"".join(packed_items)
 
-    def pack_tuple(self, values, space_no = None):
+    def pack_tuple(self, values, space_no=None):
         '''\
         Pack tuple of values
         <tuple> ::= <cardinality><field>+
@@ -132,7 +140,7 @@ class Request(object):
         '''
         return self.pack_fields(self.conn.schema.pack_values(values, space_no))
 
-    def pack_key_tuple(self, values, space_no = None, index_no = None):
+    def pack_key_tuple(self, values, space_no=None, index_no=None):
         '''\
         Pack key tuple
         <tuple> ::= <cardinality><field>+
@@ -143,9 +151,12 @@ class Request(object):
         :return: packed tuple
         :rtype: bytes
         '''
-        return self.pack_fields(self.conn.schema.pack_key(values, space_no, index_no))
+        return self.pack_fields(
+            self.conn.schema.pack_key(values, space_no, index_no))
+
 
 class RequestInsert(Request):
+
     '''\
     Represents INSERT request
 
@@ -157,7 +168,8 @@ class RequestInsert(Request):
     '''
     request_type = REQUEST_TYPE_INSERT
 
-    def __init__(self, conn, space_name, values, flags): # pylint: disable=W0231
+    # pylint: disable=W0231
+    def __init__(self, conn, space_name, values, flags):
         '''\
         '''
         super(RequestInsert, self).__init__(conn)
@@ -173,6 +185,7 @@ class RequestInsert(Request):
 
 
 class RequestDelete(Request):
+
     '''
     Represents DELETE request
 
@@ -185,7 +198,8 @@ class RequestDelete(Request):
     '''
     request_type = REQUEST_TYPE_DELETE
 
-    def __init__(self, conn, space_name, key, return_tuple):    # pylint: disable=W0231
+    # pylint: disable=W0231
+    def __init__(self, conn, space_name, key, return_tuple):
         '''
         '''
         super(RequestDelete, self).__init__(conn)
@@ -200,6 +214,7 @@ class RequestDelete(Request):
 
 
 class RequestSelect(Request):
+
     '''\
     Represents SELECT request
 
@@ -216,7 +231,8 @@ class RequestSelect(Request):
     '''
     request_type = REQUEST_TYPE_SELECT
 
-    def __init__(self, conn, space_name, index_name, tuple_list, offset, limit):    # pylint: disable=W0231
+    # pylint: disable=W0231
+    def __init__(self, conn, space_name, index_name, tuple_list, offset, limit):
         super(RequestSelect, self).__init__(conn)
         assert isinstance(tuple_list, (list, tuple, set, frozenset))
 
@@ -224,12 +240,14 @@ class RequestSelect(Request):
         index_no = self.conn.schema.index_no(space_no, index_name)
         request_body = \
             struct_LLLLL.pack(space_no, index_no, offset, limit, len(tuple_list)) + \
-            b"".join([self.pack_key_tuple(t, space_no, index_no) for t in tuple_list])
+            b"".join([self.pack_key_tuple(t, space_no, index_no)
+                     for t in tuple_list])
 
         self._bytes = self.header(len(request_body)) + request_body
 
 
 class RequestUpdate(Request):
+
     '''
     <update_request_body> ::= <space_no><flags><tuple><count><operation>+
     <operation> ::= <field_no><op_code><op_arg>
@@ -243,7 +261,8 @@ class RequestUpdate(Request):
 
     request_type = REQUEST_TYPE_UPDATE
 
-    def __init__(self, conn, space_name, key, op_list, return_tuple):    # pylint: disable=W0231
+    # pylint: disable=W0231
+    def __init__(self, conn, space_name, key, op_list, return_tuple):
         super(RequestUpdate, self).__init__(conn)
         flags = 1 if return_tuple else 0
         assert isinstance(key, (int, long, basestring))
@@ -263,19 +282,26 @@ class RequestUpdate(Request):
             try:
                 field_no, op_symbol, op_arg = op
             except ValueError:
-                raise ValueError("Operation must be a tuple of 3 elements (field_id, op, value)")
+                raise ValueError(
+                    "Operation must be a tuple of 3 elements "
+                    "(field_id, op, value)")
             try:
                 op_code = UPDATE_OPERATION_CODE[op_symbol]
             except KeyError:
-                raise ValueError("Invalid operaction symbol '%s', expected one of %s"\
-                                %(op_symbol, ', '.join(["'%s'"%c for c in sorted(UPDATE_OPERATION_CODE.keys())])))
+                raise ValueError(
+                    "Invalid operaction symbol '%s', expected one of %s" % (
+                        op_symbol,
+                        ', '.join(["'%s'" % c for c in sorted(
+                            UPDATE_OPERATION_CODE.keys())])))
             op_arg = self.conn.schema.pack_value(op_arg)
-            data = b"".join([struct_LB.pack(field_no, op_code), self.pack_field(op_arg)])
+            data = b"".join(
+                [struct_LB.pack(field_no, op_code), self.pack_field(op_arg)])
             result.append(data)
         return b"".join(result)
 
 
 class RequestCall(Request):
+
     '''
     <call_request_body> ::= <flags><proc_name><tuple>
     <proc_name> ::= <field>
@@ -287,7 +313,8 @@ class RequestCall(Request):
     '''
     request_type = REQUEST_TYPE_CALL
 
-    def __init__(self, conn, proc_name, args, return_tuple):    # pylint: disable=W0231
+    # pylint: disable=W0231
+    def __init__(self, conn, proc_name, args, return_tuple):
         super(RequestCall, self).__init__(conn)
         flags = 1 if return_tuple else 0
         assert isinstance(args, (list, tuple))
@@ -301,6 +328,7 @@ class RequestCall(Request):
 
 
 class RequestPing(Request):
+
     '''
     Ping body is empty, so body_length == 0 and there's no body
     |--------------- header ----------------|
