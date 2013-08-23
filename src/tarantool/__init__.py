@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 from tarantool.connection import Connection
 from tarantool.const import (
