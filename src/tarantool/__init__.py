@@ -26,7 +26,7 @@ from tarantool.error import (
 )
 
 
-def connect(host="localhost", port=33013, schema=None):
+def connect(host="localhost", port=33013, schema=None, return_tup=True):
     '''\
     Create a connection to the Tarantool server.
 
@@ -45,7 +45,8 @@ def connect(host="localhost", port=33013, schema=None):
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,
                       connect_now=True,
-                      schema=schema)
+                      schema=schema,
+                      return_tuple=return_tup)
 
 __all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError',
            'NetworkError', 'NetworkWarning', 'RetryWarning', 'RAW', 'STR',
