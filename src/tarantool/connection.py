@@ -50,6 +50,10 @@ class Connection(object):
     Also this class provides low-level interface to data manipulation
     (insert/delete/update/select).
     '''
+    _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+    _recv = ctypes.CFUNCTYPE(ctypes.c_ssize_t, ctypes.c_int, 
+            ctypes.c_void_p, ctypes.c_ssize_t, ctypes.c_int, 
+            use_errno=True)(_libc.recv)
 
     def __init__(self, host, port,
                  socket_timeout=SOCKET_TIMEOUT,
@@ -84,11 +88,7 @@ class Connection(object):
         self.connected = False
         if connect_now:
             self.connect()
-        self._libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-        self._recv_type = ctypes.CFUNCTYPE(
-            ctypes.c_ssize_t, ctypes.c_int, ctypes.c_void_p, ctypes.c_ssize_t,
-            ctypes.c_int, use_errno=True)
-        self._recv = self._recv_type(self._libc.recv)
+
 
     def close(self):
         '''\
