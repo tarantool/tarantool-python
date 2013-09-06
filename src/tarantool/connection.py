@@ -131,19 +131,17 @@ class Connection(object):
         '''
 
         buf = ''
-        l = 12
+        to_read = 12
 
-        while 1:
-            buf += self._socket.recv(l - len(buf))
-            if len(buf) < l:
-                continue
+        while to_read:
+            temp_buf = self._socket.recv(to_read)
+            if not temp_buf:
+                raise NetworkError(socket.error(errno.ECONNRESET,
+                    "Lost connection to server during query"))
+            buf += temp_buf
+            to_read = (12 - len(buf)) if len(buf) < 12 else (struct_L.unpack(buf[4:8])[0] + 12 - len(buf))
 
-            l = 12 + struct_L.unpack(buf[4:8])[0]
-
-            if len(buf) < l:
-                continue
-
-            return buf[0:12], buf[12:]
+        return buf[0:12], buf[12:]
 
     def _send_request_wo_reconnect(
             self, request, space_name=None, field_defs=None,
