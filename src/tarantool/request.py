@@ -65,7 +65,7 @@ class Request(object):
     @classmethod
     def pack_int_base128(cls, value):
         '''\
-        Pack integer value using LEB128 encoding
+        Pack integer value using BER128 encoding
         :param value: integer value to encode
         :type value: int
 
