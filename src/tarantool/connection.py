@@ -10,6 +10,11 @@ import ctypes
 import ctypes.util
 import socket
 
+try:
+    from ctypes import c_ssize_t
+except ImportError:
+    from ctypes import c_longlong as c_ssize_t
+
 from tarantool.response import Response
 from tarantool.request import (
     Request,
@@ -51,8 +56,8 @@ class Connection(object):
     (insert/delete/update/select).
     '''
     _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-    _recv = ctypes.CFUNCTYPE(ctypes.c_ssize_t, ctypes.c_int, 
-            ctypes.c_void_p, ctypes.c_ssize_t, ctypes.c_int, 
+    _recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, 
+            ctypes.c_void_p, c_ssize_t, ctypes.c_int, 
             use_errno=True)(_libc.recv)
 
     def __init__(self, host, port,

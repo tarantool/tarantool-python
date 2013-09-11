@@ -4,7 +4,10 @@
 This module provides :class:`~tarantool.space.Space` class.
 It is an object-oriented wrapper for request over Tarantool space.
 '''
-
+from tarantool.const import (
+    BOX_RETURN_TUPLE,
+    BOX_ADD,
+    BOX_REPLACE)
 
 class Space(object):
 
@@ -27,22 +30,65 @@ class Space(object):
         self.connection = connection
         self.space_no = connection.schema.space_no(space_name)
 
-    def insert(self, values, return_tuple=False):
-        '''\
-        Insert single record into the space.
+    def replace(self, values, return_tuple=None):
+        '''
+        Execute REPLACE request.
+        It will throw error if there's no tuple with this PK exists
 
-        :param values: record to be inserted. The tuple must contain only
-            scalar (integer or strings) values
+        :param values: record to be inserted. The tuple must contain
+            only scalar (integer or strings) values
         :type values: tuple
-        :param return_tuple: True indicates that it is required to return
-            the inserted tuple back
-        :type return_tuple: boo
+        :param return_tuple: True indicates that it is required
+            to return the inserted tuple back
+        :type return_tuple: bool
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
-        return self.connection.insert(self.space_no, values, return_tuple)
+        if return_tuple is None:
+            return_tuple = self.connection.return_tuple
+        self.connection._insert(self.space_no, values, (
+            BOX_RETURN_TUPLE if return_tuple else 0) | BOX_REPLACE)
 
-    def delete(self, key, return_tuple=False):
+    def store(self, values, return_tuple=None):
+        '''
+        Execute STORE request.
+        It will overwrite tuple with the same PK, if it exists,
+        or inserts if not
+
+        :param values: record to be inserted. The tuple must contain
+            only scalar (integer or strings) values
+        :type values: tuple
+        :param return_tuple: True indicates that it is required
+            to return the inserted tuple back
+        :type return_tuple: bool
+
+        :rtype: :class:`~tarantool.response.Response` instance
+        '''
+        if return_tuple is None:
+            return_tuple = self.connection.return_tuple
+        self.connection._insert(self.space_no, values, (
+            BOX_RETURN_TUPLE if return_tuple else 0))
+
+    def insert(self, values, return_tuple=None):
+        '''
+        Execute INSERT request.
+        It will throw error if there's tuple with same PK exists.
+
+        :param values: record to be inserted. The tuple must contain
+            only scalar (integer or strings) values
+        :type values: tuple
+        :param return_tuple: True indicates that it is required
+            to return the inserted tuple back
+        :type return_tuple: bool
+
+        :rtype: :class:`~tarantool.response.Response` instance
+        '''
+        if return_tuple is None:
+            return_tuple = self.connection.return_tuple
+        self.connection._insert(self.space_no, values, (
+            BOX_RETURN_TUPLE if return_tuple else 0) | BOX_ADD)
+
+    def delete(self, key, return_tuple=None):
         '''
         Delete records by its primary key.
 
@@ -54,9 +100,11 @@ class Space(object):
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
+        if return_tuple is None:
+            return_tuple = self.connection.return_tuple
         return self.connection.delete(self.space_no, key, return_tuple)
 
-    def update(self, key, op_list, return_tuple=False):
+    def update(self, key, op_list, return_tuple=None):
         '''
         Update records by it's primary key with operations defined in op_list
 
@@ -68,6 +116,8 @@ class Space(object):
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
+        if return_tuple is None:
+            return_tuple = self.connection.return_tuple
         return self.connection.update(
             self.space_no, key, op_list, return_tuple)
 
