@@ -91,6 +91,7 @@ class Connection(object):
             self.schema = Schema(schema)
         self._socket = None
         self.connected = False
+        self.error = True
         if connect_now:
             self.connect()
 

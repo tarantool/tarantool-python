@@ -209,12 +209,12 @@ class Response(list):
         # In case of an error unpack the body as an error message
         if self._return_code != 0:
             self._return_message = unicode(buff[4:-1], "utf8", "replace")
-            if self._completion_status == 2:
+            if self._completion_status == 2 and self.conn.error:
                 raise DatabaseError(self._return_code, self._return_message)
 
         # If the response don't contains any tuples - there is no tuples to
         # unpack
-        if self._body_length == 8:
+        if self._body_length == 8 or self._completion_status == 2:
             return
 
         # Parse response tuples (<fq_tuple>)
