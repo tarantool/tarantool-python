@@ -180,11 +180,13 @@ class Connection(object):
         **Due to bug in python - timeout is internal python construction.
         '''
         def check():  # Check that connection is alive
-            rc = self._recv(self._socket.fileno(), '', 0, socket.MSG_DONTWAIT)
+            rc = self._recv(self._socket.fileno(), '', 1, 
+                    socket.MSG_DONTWAIT or socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
                 return errno.EAGAIN
-            return ctypes.get_errno()
+            return (ctypes.get_errno() if ctypes.get_errno() 
+                    else errno.ECONNRESET)
 
         attempt = 0
         last_errno = 0
