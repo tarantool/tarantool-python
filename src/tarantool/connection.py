@@ -294,7 +294,7 @@ class Connection(object):
         '''
         if return_tuple is None:
             return_tuple = self.return_tuple
-        self._insert(space_name, values, (
+        return self._insert(space_name, values, (
             BOX_RETURN_TUPLE if return_tuple else 0) | BOX_REPLACE)
 
     def store(self, space_name, values, return_tuple=None):
@@ -316,7 +316,7 @@ class Connection(object):
         '''
         if return_tuple is None:
             return_tuple = self.return_tuple
-        self._insert(space_name, values, (
+        return self._insert(space_name, values, (
             BOX_RETURN_TUPLE if return_tuple else 0))
 
     def insert(self, space_name, values, return_tuple=None):
@@ -337,7 +337,7 @@ class Connection(object):
         '''
         if return_tuple is None:
             return_tuple = self.return_tuple
-        self._insert(space_name, values, (
+        return self._insert(space_name, values, (
             BOX_RETURN_TUPLE if return_tuple else 0) | BOX_ADD)
 
     def delete(self, space_name, key, return_tuple=None):
