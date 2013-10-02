@@ -64,5 +64,8 @@ setup(
         "Topic :: Database :: Front-Ends"
     ],
     cmdclass = cmdclass,
-    command_options = command_options
+    command_options = command_options,
+    requires = [
+        'msgpack-python>=0.3',
+    ]
 )
