@@ -9,6 +9,7 @@ import errno
 import ctypes
 import ctypes.util
 import socket
+import msgpack
 
 try:
     from ctypes import c_ssize_t
@@ -21,20 +22,17 @@ from tarantool.request import (
     RequestCall,
     RequestDelete,
     RequestInsert,
+    RequestReplace,
     RequestPing,
     RequestSelect,
     RequestUpdate)
 
 from tarantool.space import Space
 from tarantool.const import (
-    struct_L,
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
     RETRY_MAX_ATTEMPTS,
-    BOX_RETURN_TUPLE,
-    BOX_ADD,
-    BOX_REPLACE,
     REQUEST_TYPE_PING)
 from tarantool.error import (
     NetworkError,
@@ -56,17 +54,16 @@ class Connection(object):
     (insert/delete/update/select).
     '''
     _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-    _recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, 
-            ctypes.c_void_p, c_ssize_t, ctypes.c_int, 
-            use_errno=True)(_libc.recv)
+    _sys_recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, ctypes.c_void_p,
+                                 c_ssize_t, ctypes.c_int,
+                                 use_errno=True)(_libc.recv)
 
     def __init__(self, host, port,
                  socket_timeout=SOCKET_TIMEOUT,
                  reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True,
-                 schema=None,
-                 return_tuple=True):
+                 schema=None):
         '''\
         Initialize a connection to the server.
 
@@ -84,7 +81,6 @@ class Connection(object):
         self.socket_timeout = socket_timeout
         self.reconnect_delay = reconnect_delay
         self.reconnect_max_attempts = reconnect_max_attempts
-        self.return_tuple = return_tuple
         if isinstance(schema, Schema):
             self.schema = schema
         else:
@@ -128,6 +124,18 @@ class Connection(object):
             self.connected = False
             raise NetworkError(e)
 
+
+    def _recv(self, to_read):
+        buf = ''
+        while to_read > 0:
+            tmp = self._socket.recv(to_read)
+            if not tmp:
+                raise NetworkError(socket.error(errno.ECONNRESET,
+                      "Lost connection to server during query"))
+            to_read -= len(tmp)
+            buf += tmp
+        return buf
+
     def _read_response(self):
         '''
         Read response from the transport (socket)
@@ -135,19 +143,10 @@ class Connection(object):
         :return: tuple of the form (header, body)
         :rtype: tuple of two byte arrays
         '''
-
-        buf = ''
-        to_read = 12
-
-        while to_read:
-            temp_buf = self._socket.recv(to_read)
-            if not temp_buf:
-                raise NetworkError(socket.error(errno.ECONNRESET,
-                    "Lost connection to server during query"))
-            buf += temp_buf
-            to_read = (12 - len(buf)) if len(buf) < 12 else (struct_L.unpack(buf[4:8])[0] + 12 - len(buf))
-
-        return buf[0:12], buf[12:]
+        # Read packet length
+        length = msgpack.unpackb(self._recv(5))
+        # Read the packet
+        return self._recv(length)
 
     def _send_request_wo_reconnect(
             self, request, space_name=None, field_defs=None,
@@ -163,9 +162,8 @@ class Connection(object):
         # (try again)
         for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             self._socket.sendall(bytes(request))
-            header, body = self._read_response()
-            response = Response(
-                self, header, body, space_name, field_defs, default_type)
+            response = Response(self, self._read_response(), space_name,
+                                field_defs, default_type)
 
             if response.completion_status != 1:
                 return response
@@ -180,12 +178,12 @@ class Connection(object):
         **Due to bug in python - timeout is internal python construction.
         '''
         def check():  # Check that connection is alive
-            rc = self._recv(self._socket.fileno(), '', 1, 
-                    socket.MSG_DONTWAIT | socket.MSG_PEEK)
+            rc = self._sys_recv(self._socket.fileno(), '', 1,
+                    socket.MSG_DONTWAIT or socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
                 return errno.EAGAIN
-            return (ctypes.get_errno() if ctypes.get_errno() 
+            return (ctypes.get_errno() if ctypes.get_errno()
                     else errno.ECONNRESET)
 
         attempt = 0
@@ -235,9 +233,6 @@ class Connection(object):
         :type func_name: str
         :param args: list of function arguments
         :type args: list or tuple
-        :param return_tuple: True indicates that it is required to return
-            the inserted tuple back
-        :type return_tuple: bool
         :param field_defs: field definitions used for types conversion,
                e.g. [('field0', tarantool.NUM), ('field1', tarantool.STR)]
         :type field_defs: None or  [(name, type) or None]
@@ -261,9 +256,8 @@ class Connection(object):
         field_defs = kwargs.get("field_defs", None)
         default_type = kwargs.get("default_type", None)
         space_name = kwargs.get("space_name", None)
-        return_tuple = kwargs.get("return_tuple", self.return_tuple)
 
-        request = RequestCall(self, func_name, args, return_tuple)
+        request = RequestCall(self, func_name, args)
         response = self._send_request(request, space_name=space_name,
                                       field_defs=field_defs,
                                       default_type=default_type)
@@ -271,12 +265,8 @@ class Connection(object):
 
     def _insert(self, space_name, values, flags):
         assert isinstance(values, tuple)
-        assert (flags & (BOX_RETURN_TUPLE | BOX_ADD | BOX_REPLACE)) == flags
 
-        request = RequestInsert(self, space_name, values, flags)
-        return self._send_request(request, space_name)
-
-    def replace(self, space_name, values, return_tuple=None):
+    def replace(self, space_name, values):
         '''
         Execute REPLACE request.
         It will throw error if there's no tuple with this PK exists
@@ -286,40 +276,13 @@ class Connection(object):
         :param values: record to be inserted. The tuple must contain
             only scalar (integer or strings) values
         :type values: tuple
-        :param return_tuple: True indicates that it is required
-            to return the inserted tuple back
-        :type return_tuple: bool
 
         :rtype: `Response` instance
         '''
-        if return_tuple is None:
-            return_tuple = self.return_tuple
-        return self._insert(space_name, values, (
-            BOX_RETURN_TUPLE if return_tuple else 0) | BOX_REPLACE)
+        request = RequestReplace(self, space_name, values)
+        return self._send_request(request, space_name)
 
-    def store(self, space_name, values, return_tuple=None):
-        '''
-        Execute STORE request.
-        It will overwrite tuple with the same PK, if it exists,
-        or inserts if not
-
-        :param int space_name: space id to insert a record
-        :type space_name: int or str
-        :param values: record to be inserted. The tuple must contain
-            only scalar (integer or strings) values
-        :type values: tuple
-        :param return_tuple: True indicates that it is required
-            to return the inserted tuple back
-        :type return_tuple: bool
-
-        :rtype: `Response` instance
-        '''
-        if return_tuple is None:
-            return_tuple = self.return_tuple
-        return self._insert(space_name, values, (
-            BOX_RETURN_TUPLE if return_tuple else 0))
-
-    def insert(self, space_name, values, return_tuple=None):
+    def insert(self, space_name, values):
         '''
         Execute INSERT request.
         It will throw error if there's tuple with same PK exists.
@@ -329,18 +292,13 @@ class Connection(object):
         :param values: record to be inserted. The tuple must contain
             only scalar (integer or strings) values
         :type values: tuple
-        :param return_tuple: True indicates that it is required
-            to return the inserted tuple back
-        :type return_tuple: bool
 
         :rtype: `Response` instance
         '''
-        if return_tuple is None:
-            return_tuple = self.return_tuple
-        return self._insert(space_name, values, (
-            BOX_RETURN_TUPLE if return_tuple else 0) | BOX_ADD)
+        request = RequestInsert(self, space_name, values)
+        return self._send_request(request, space_name)
 
-    def delete(self, space_name, key, return_tuple=None):
+    def delete(self, space_name, key):
         '''\
         Execute DELETE request.
         Delete single record identified by `key` (using primary index).
@@ -349,20 +307,15 @@ class Connection(object):
         :type space_name: int or name
         :param key: key that identifies a record
         :type key: int or str
-        :param return_tuple: indicates that it is required
-            to return the deleted tuple back
-        :type return_tuple: bool
 
         :rtype: `Response` instance
         '''
         assert isinstance(key, (int, long, basestring))
 
-        if return_tuple is None:
-            return_tuple = self.return_tuple
-        request = RequestDelete(self, space_name, key, return_tuple)
+        request = RequestDelete(self, space_name, key)
         return self._send_request(request, space_name)
 
-    def update(self, space_name, key, op_list, return_tuple=None):
+    def update(self, space_name, key, op_list):
         '''\
         Execute UPDATE request.
         Update single record identified by `key` (using primary index).
@@ -377,17 +330,12 @@ class Connection(object):
             is tuple of three values
         :type op_list: a list of the form
             [(field_1, symbol_1, arg_1), (field_2, symbol_2, arg_2),...]
-        :param return_tuple: indicates that it is required
-            to return the updated tuple back
-        :type return_tuple: bool
 
         :rtype: `Response` instance
         '''
         assert isinstance(key, (int, long, basestring))
 
-        if return_tuple is None:
-            return_tuple = self.return_tuple
-        request = RequestUpdate(self, space_name, key, op_list, return_tuple)
+        request = RequestUpdate(self, space_name, key, op_list)
         return self._send_request(request, space_name)
 
     def ping(self, notime=False):

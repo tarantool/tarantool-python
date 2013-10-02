@@ -56,14 +56,13 @@ Update
 Обновить запись с id ``'DDDD'``, поместив значение ``'Denver'`` 
 в поле ``1``::
 
-    >>> demo.update('DDDD', [(1, '=', 'Denver')], return_tuple=True)
+    >>> demo.update('DDDD', [(1, '=', 'Denver')])
     [('DDDD', 'Denver')]
 
 Для поиска записи :meth:`~tarantool.space.Space.update` всгеда использует
 первичный индекс.
 Номера полей начинаются с нуля.
 Таким образом, поле ``0`` - это первый элемент кортежа. 
-Аргумент ``return_tuple = True`` означает, то Tarantool должен вернуть обновленный кортеж.
 
 
 Delete
@@ -71,7 +70,7 @@ Delete
 
 Удалить одиночную запись с идентификатором ``'DDDD'``::
 
-    >>> demo.delete('DDDD', return_tuple=True)
+    >>> demo.delete('DDDD')
     [('DDDD', 'Denver')]
 
 Для поиска записи :meth:`~tarantool.space.Space.delete` всгеда использует 
