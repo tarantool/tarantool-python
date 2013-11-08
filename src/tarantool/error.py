@@ -17,6 +17,11 @@ The PEP-249 says that database related exceptions must be inherited as follows:
           |__InternalError
           |__ProgrammingError
           |__NotSupportedError
+
+
+In Python 2.7, all exceptions are children of StandardError,
+and from Python 3 on they descend directly from Exception.
+
 '''
 
 import os
@@ -25,7 +30,7 @@ import sys
 import warnings
 
 
-class Error(StandardError):
+class Error(Exception):
     '''Base class for error exceptions'''
 
 

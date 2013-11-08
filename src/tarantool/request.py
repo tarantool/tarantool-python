@@ -22,7 +22,7 @@ class Request(object):
     _int_base128 = tuple(
         (
             struct_B.pack(val) if val < 128 else struct_BB.pack(val >> 7 & 0xff | 0x80, val & 0x7F) \
-            for val in xrange(0x4000)
+            for val in range(0x4000)
         )
     )
 
