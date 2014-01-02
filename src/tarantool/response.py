@@ -110,23 +110,15 @@ class Response(list):
         if self._body_length == 8 or self._completion_status == 2:
             return
 
-        # Parse response tuples (<fq_tuple>)
+        # Parse response tuples (<tuple>)
         if self._rowcount > 0:
-            # The first 4 bytes in the response body is the <count> we have
-            # already read
-            offset = 8
-            while offset < self._body_length:
-                '''
-                # In resonse tuples have the form <size><tuple>
-                # (<fq_tuple> ::= <size><tuple>).
-                '''
-                tuple_size = struct.unpack_from("<L", buff, offset)[0]
-                tuple_data = struct.unpack_from("<%ds" % (tuple_size), buff, offset + 4)[0]
-                tuple_value = msgpack.loads(tuple_data, use_list = False)
+            unpacker = msgpack.Unpacker(use_list = False)
+            unpacker.feed(buff[8:])
+
+            while len(self) < self._rowcount:
+                tuple_value = unpacker.unpack()
                 self.append(tuple_value)
 
-                # This '4' is a size of <size> attribute
-                offset = offset + tuple_size + 4
 
     @property
     def completion_status(self):
