@@ -9,6 +9,7 @@ import errno
 import ctypes
 import ctypes.util
 import socket
+import msgpack
 
 try:
     from ctypes import c_ssize_t
@@ -56,9 +57,9 @@ class Connection(object):
     (insert/delete/update/select).
     '''
     _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-    _recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, 
-            ctypes.c_void_p, c_ssize_t, ctypes.c_int, 
-            use_errno=True)(_libc.recv)
+    _sys_recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, ctypes.c_void_p,
+                                 c_ssize_t, ctypes.c_int,
+                                 use_errno=True)(_libc.recv)
 
     def __init__(self, host, port,
                  socket_timeout=SOCKET_TIMEOUT,
@@ -128,6 +129,18 @@ class Connection(object):
             self.connected = False
             raise NetworkError(e)
 
+
+    def _recv(self, to_read):
+        buf = ''
+        while to_read > 0:
+            tmp = self._socket.recv(to_read)
+            if not tmp:
+                raise NetworkError(socket.error(errno.ECONNRESET,
+                      "Lost connection to server during query"))
+            to_read -= len(tmp)
+            buf += tmp
+        return buf
+
     def _read_response(self):
         '''
         Read response from the transport (socket)
@@ -135,19 +148,10 @@ class Connection(object):
         :return: tuple of the form (header, body)
         :rtype: tuple of two byte arrays
         '''
-
-        buf = ''
-        to_read = 12
-
-        while to_read:
-            temp_buf = self._socket.recv(to_read)
-            if not temp_buf:
-                raise NetworkError(socket.error(errno.ECONNRESET,
-                    "Lost connection to server during query"))
-            buf += temp_buf
-            to_read = (12 - len(buf)) if len(buf) < 12 else (struct_L.unpack(buf[4:8])[0] + 12 - len(buf))
-
-        return buf[0:12], buf[12:]
+        # Read packet length
+        length = msgpack.unpackb(self._recv(5))
+        # Read the packet
+        return self._recv(length)
 
     def _send_request_wo_reconnect(
             self, request, space_name=None, field_defs=None,
@@ -163,9 +167,8 @@ class Connection(object):
         # (try again)
         for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             self._socket.sendall(bytes(request))
-            header, body = self._read_response()
-            response = Response(
-                self, header, body, space_name, field_defs, default_type)
+            response = Response(self, self._read_response(), space_name,
+                                field_defs, default_type)
 
             if response.completion_status != 1:
                 return response
@@ -180,12 +183,12 @@ class Connection(object):
         **Due to bug in python - timeout is internal python construction.
         '''
         def check():  # Check that connection is alive
-            rc = self._recv(self._socket.fileno(), '', 1, 
+            rc = self._sys_recv(self._socket.fileno(), '', 1,
                     socket.MSG_DONTWAIT or socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
                 return errno.EAGAIN
-            return (ctypes.get_errno() if ctypes.get_errno() 
+            return (ctypes.get_errno() if ctypes.get_errno()
                     else errno.ECONNRESET)
 
         attempt = 0

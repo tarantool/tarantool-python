@@ -38,9 +38,6 @@ class Space(object):
         :param values: record to be inserted. The tuple must contain
             only scalar (integer or strings) values
         :type values: tuple
-        :param return_tuple: True indicates that it is required
-            to return the inserted tuple back
-        :type return_tuple: bool
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
@@ -58,9 +55,6 @@ class Space(object):
         :param values: record to be inserted. The tuple must contain
             only scalar (integer or strings) values
         :type values: tuple
-        :param return_tuple: True indicates that it is required
-            to return the inserted tuple back
-        :type return_tuple: bool
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
@@ -77,9 +71,6 @@ class Space(object):
         :param values: record to be inserted. The tuple must contain
             only scalar (integer or strings) values
         :type values: tuple
-        :param return_tuple: True indicates that it is required
-            to return the inserted tuple back
-        :type return_tuple: bool
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
@@ -94,9 +85,6 @@ class Space(object):
 
         :param key: key of records to be deleted
         :type values: tuple or str or int or long
-        :param return_tuple: True indicates that it is required to return
-            the inserted tuple back
-        :type return_tuple: bool
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
@@ -110,9 +98,6 @@ class Space(object):
 
         :param key: key of records to be updated
         :type values: tuple or str or int or long
-        :param return_tuple: True indicates that it is required to return
-            the inserted tuple back
-        :type return_tuple: bool
 
         :rtype: :class:`~tarantool.response.Response` instance
         '''
@@ -156,9 +141,6 @@ class Space(object):
         :type func_name: str
         :param args: list of function arguments
         :type args: list or tuple
-        :param return_tuple: True indicates that it is required to return
-            the inserted tuple back
-        :type return_tuple: bool
         :param field_defs: field definitions used for types conversion,
                e.g. [('field0', tarantool.NUM), ('field1', tarantool.STR)]
         :type field_defs: None or  [(name, type) or None]
