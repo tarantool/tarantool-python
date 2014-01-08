@@ -8,22 +8,18 @@ import struct
 import msgpack
 
 from tarantool.const import (
-    struct_B,
-    struct_BB,
-    struct_BBB,
-    struct_BBBB,
-    struct_BBBBB,
     struct_L,
     struct_LL,
-    struct_LLL,
     struct_LLLLL,
     struct_LB,
+    IPROTO_CODE,
+    IPROTO_SYNC,
     UPDATE_OPERATION_CODE,
+    REQUEST_TYPE_PING,
+    REQUEST_TYPE_SELECT,
     REQUEST_TYPE_INSERT,
     REQUEST_TYPE_DELETE,
-    REQUEST_TYPE_SELECT,
     REQUEST_TYPE_UPDATE,
-    REQUEST_TYPE_PING,
     REQUEST_TYPE_CALL
 )
 
@@ -50,8 +46,10 @@ class Request(object):
     __str__ = __bytes__
 
     @classmethod
-    def header(cls, body_length):
-        return struct_LLL.pack(cls.request_type, body_length, 0)
+    def header(cls, length):
+        header = msgpack.dumps({ IPROTO_CODE : cls.request_type,
+                                IPROTO_SYNC : 0})
+        return msgpack.dumps(length + len(header)) + header
 
     def pack_field(self, value):
         return msgpack.dumps(value)
@@ -262,8 +260,8 @@ class RequestPing(Request):
     |--------------- header ----------------|
      <request_type><body_length><request_id>
     '''
-    request_typle = REQUEST_TYPE_PING
+    request_type = REQUEST_TYPE_PING
 
     def __init__(self, conn):
         super(RequestPing, self).__init__(conn)
-        self._bytes = struct_LLL.pack(REQUEST_TYPE_PING, 0, 0)
+        self._bytes = self.header(0)
