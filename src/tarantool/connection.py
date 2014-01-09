@@ -29,7 +29,6 @@ from tarantool.request import (
 
 from tarantool.space import Space
 from tarantool.const import (
-    struct_L,
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,

@@ -9,8 +9,7 @@ import msgpack
 
 from tarantool.const import (
     struct_L,
-    struct_LL,
-    struct_LLLLL,
+    struct_LLLL,
     struct_LB,
     IPROTO_CODE,
     IPROTO_SYNC,
@@ -69,22 +68,6 @@ class Request(object):
         assert isinstance(values, (tuple, list))
         return msgpack.dumps(values)
 
-    def pack_key_tuple(self, values, space_no=None, index_no=None):
-        '''\
-        Pack key tuple
-        <tuple> ::= <msgpack_array>
-
-        :param value: key tuple to be packed
-        :type value: tuple of scalar values (bytes, str or int)
-
-        :return: packed tuple
-        :rtype: bytes
-        '''
-        assert isinstance(values, (tuple, list))
-
-        return msgpack.dumps(values)
-
-
 class RequestInsert(Request):
 
     '''\
@@ -140,9 +123,7 @@ class RequestDelete(Request):
         super(RequestDelete, self).__init__(conn)
 
         space_no = self.conn.schema.space_no(space_name)
-        request_body = \
-            struct_L.pack(space_no) + \
-            self.pack_key_tuple((key,), space_no, 0)
+        request_body = struct_L.pack(space_no) + msgpack.dumps((key,))
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -155,16 +136,14 @@ class RequestSelect(Request):
     request_type = REQUEST_TYPE_SELECT
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, index_name, tuple_list, offset, limit):
+    def __init__(self, conn, space_name, index_name, key, offset, limit):
         super(RequestSelect, self).__init__(conn)
-        assert isinstance(tuple_list, (list, tuple, set, frozenset))
 
         space_no = self.conn.schema.space_no(space_name)
         index_no = self.conn.schema.index_no(space_no, index_name)
         request_body = \
-            struct_LLLLL.pack(space_no, index_no, offset, limit, len(tuple_list)) + \
-            b"".join([self.pack_key_tuple(t, space_no, index_no)
-                     for t in tuple_list])
+            struct_LLLL.pack(space_no, index_no, offset, limit) + \
+            msgpack.dumps((key,))
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -185,7 +164,7 @@ class RequestUpdate(Request):
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
             struct_L.pack(space_no) + \
-            self.pack_key_tuple((key,), space_no, 0) + \
+            msgpack.dumps((key,)) + \
             struct_L.pack(len(op_list)) +\
             self.pack_operations(op_list)
 
