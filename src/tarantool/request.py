@@ -18,6 +18,7 @@ from tarantool.const import (
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
     REQUEST_TYPE_INSERT,
+    REQUEST_TYPE_REPLACE,
     REQUEST_TYPE_DELETE,
     REQUEST_TYPE_UPDATE,
     REQUEST_TYPE_CALL
@@ -88,24 +89,38 @@ class RequestInsert(Request):
 
     '''\
     Represents INSERT request
-
-    <insert_request_body> ::= <space_no><flags><tuple>
-    |--------------- header ----------------|--------- body ---------|
-     <request_type><body_length><request_id> <space_no><flags><tuple>
-                                                               |
-                          items to add (multiple values)  -----+
     '''
     request_type = REQUEST_TYPE_INSERT
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, values, flags):
+    def __init__(self, conn, space_name, values):
         '''\
         '''
         super(RequestInsert, self).__init__(conn)
 
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
-            struct_LL.pack(space_no, flags) + \
+            struct_L.pack(space_no) + \
+            self.pack_tuple(values, space_no)
+
+        self._bytes = self.header(len(request_body)) + request_body
+
+class RequestReplace(Request):
+
+    '''\
+    Represents REPLACE request
+    '''
+    request_type = REQUEST_TYPE_REPLACE
+
+    # pylint: disable=W0231
+    def __init__(self, conn, space_name, values):
+        '''\
+        '''
+        super(RequestReplace, self).__init__(conn)
+
+        space_no = self.conn.schema.space_no(space_name)
+        request_body = \
+            struct_L.pack(space_no) + \
             self.pack_tuple(values, space_no)
 
         self._bytes = self.header(len(request_body)) + request_body
@@ -115,26 +130,18 @@ class RequestDelete(Request):
 
     '''
     Represents DELETE request
-
-    <delete_request_body> ::= <space_no><flags><tuple>
-    |--------------- header ----------------|--------- body ---------|
-     <request_type><body_length><request_id> <space_no><flags><tuple>
-                                                               |
-                          key to search in primary index  -----+
-                          (tuple with single value)
     '''
     request_type = REQUEST_TYPE_DELETE
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, key, return_tuple):
+    def __init__(self, conn, space_name, key):
         '''
         '''
         super(RequestDelete, self).__init__(conn)
-        flags = 1 if return_tuple else 0
 
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
-            struct_LL.pack(space_no, flags) + \
+            struct_L.pack(space_no) + \
             self.pack_key_tuple((key,), space_no, 0)
 
         self._bytes = self.header(len(request_body)) + request_body
@@ -144,17 +151,6 @@ class RequestSelect(Request):
 
     '''\
     Represents SELECT request
-
-    <select_request_body> ::= <space_no><index_no><offset><limit><count><tuple>+
-
-    |--------------- header ----------------|---------------request_body ---------------------...|
-     <request_type><body_length><request_id> <space_no><index_no><offset><limit><count><tuple>+
-                                                        ^^^^^^^^                 ^^^^^^^^^^^^
-                                                            |                          |
-                                           Index to use ----+                          |
-                                                                                       |
-                            List of tuples to search in the index ---------------------+
-                            (tuple cardinality can be > 1 when using composite indexes)
     '''
     request_type = REQUEST_TYPE_SELECT
 
@@ -175,28 +171,20 @@ class RequestSelect(Request):
 
 class RequestUpdate(Request):
 
-    '''
-    <update_request_body> ::= <space_no><flags><tuple><count><operation>+
-    <operation> ::= <field_no><op_code><op_arg>
-
-    |--------------- header ----------------|---------------request_body --------------...|
-     <request_type><body_length><request_id> <space_no><flags><tuple><count><operation>+
-                                                               |      |      |
-                           Key to search in primary index -----+      |      +-- list of operations
-                           (tuple with cardinality=1)                 +-- number of operations
+    '''\
+        Represents UPDATE request
     '''
 
     request_type = REQUEST_TYPE_UPDATE
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, key, op_list, return_tuple):
+    def __init__(self, conn, space_name, key, op_list):
         super(RequestUpdate, self).__init__(conn)
-        flags = 1 if return_tuple else 0
         assert isinstance(key, (int, long, basestring))
 
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
-            struct_LL.pack(space_no, flags) + \
+            struct_L.pack(space_no) + \
             self.pack_key_tuple((key,), space_no, 0) + \
             struct_L.pack(len(op_list)) +\
             self.pack_operations(op_list)
@@ -229,24 +217,16 @@ class RequestUpdate(Request):
 class RequestCall(Request):
 
     '''
-    <call_request_body> ::= <flags><proc_name><tuple>
-    <proc_name> ::= <field>
-
-    |--------------- header ----------------|-----request_body -------|
-     <request_type><body_length><request_id> <flags><proc_name><tuple>
-                                                                |
-                                    Lua function arguments -----+
+        Represents CALL request
     '''
     request_type = REQUEST_TYPE_CALL
 
     # pylint: disable=W0231
-    def __init__(self, conn, proc_name, args, return_tuple):
+    def __init__(self, conn, proc_name, args):
         super(RequestCall, self).__init__(conn)
-        flags = 1 if return_tuple else 0
         assert isinstance(args, (list, tuple))
 
         request_body = \
-            struct_L.pack(flags) + \
             self.pack_field(proc_name) +\
             self.pack_tuple([k for k in args])
 
@@ -257,8 +237,6 @@ class RequestPing(Request):
 
     '''
     Ping body is empty, so body_length == 0 and there's no body
-    |--------------- header ----------------|
-     <request_type><body_length><request_id>
     '''
     request_type = REQUEST_TYPE_PING
 
