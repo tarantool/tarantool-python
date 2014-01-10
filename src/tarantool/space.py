@@ -4,10 +4,6 @@
 This module provides :class:`~tarantool.space.Space` class.
 It is an object-oriented wrapper for request over Tarantool space.
 '''
-from tarantool.const import (
-    BOX_RETURN_TUPLE,
-    BOX_ADD,
-    BOX_REPLACE)
 
 class Space(object):
 

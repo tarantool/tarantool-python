@@ -33,9 +33,6 @@ from tarantool.const import (
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
     RETRY_MAX_ATTEMPTS,
-    BOX_RETURN_TUPLE,
-    BOX_ADD,
-    BOX_REPLACE,
     REQUEST_TYPE_PING)
 from tarantool.error import (
     NetworkError,
