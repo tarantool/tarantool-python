@@ -181,7 +181,7 @@ class Connection(object):
         '''
         def check():  # Check that connection is alive
             rc = self._recv(self._socket.fileno(), '', 1, 
-                    socket.MSG_DONTWAIT or socket.MSG_PEEK)
+                    socket.MSG_DONTWAIT | socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
                 return errno.EAGAIN
