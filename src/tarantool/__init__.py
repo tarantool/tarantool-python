@@ -26,7 +26,7 @@ from tarantool.error import (
 )
 
 
-def connect(host="localhost", port=33013, schema=None, return_tuple=True):
+def connect(host="localhost", port=33013, schema=None):
     '''\
     Create a connection to the Tarantool server.
 
@@ -35,7 +35,6 @@ def connect(host="localhost", port=33013, schema=None, return_tuple=True):
     :param schema: Data schema (see Developer guide
         and :class:`~tarantool.schema.Schema`)
     :type schema: :class:`~tarantool.schema.Schema` or dict
-    :param bool return_tuple: Return tuple by default, in update/delete/insert operations.
 
     :rtype: :class:`~tarantool.connection.Connection`
     :raise: `NetworkError`
@@ -46,8 +45,7 @@ def connect(host="localhost", port=33013, schema=None, return_tuple=True):
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,
                       connect_now=True,
-                      schema=schema,
-                      return_tuple=return_tuple)
+                      schema=schema)
 
 __all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError',
            'NetworkError', 'NetworkWarning', 'RetryWarning', 'RAW', 'STR',

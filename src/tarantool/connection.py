@@ -266,7 +266,6 @@ class Connection(object):
     def _insert(self, space_name, values, flags):
         assert isinstance(values, tuple)
 
-
     def replace(self, space_name, values):
         '''
         Execute REPLACE request.
@@ -280,7 +279,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        request = RequestReplace(self, space_name, values, 0)
+        request = RequestReplace(self, space_name, values)
         return self._send_request(request, space_name)
 
     def insert(self, space_name, values):
@@ -296,7 +295,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        request = RequestInsert(self, space_name, values, 0)
+        request = RequestInsert(self, space_name, values)
         return self._send_request(request, space_name)
 
     def delete(self, space_name, key):

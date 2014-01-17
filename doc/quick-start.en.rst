@@ -56,14 +56,13 @@ Update
 Update the record with id ``'DDDD'`` placing the value ``'Denver'`` 
 into the field ``1``::
 
-    >>> demo.update('DDDD', [(1, '=', 'Denver')], return_tuple=True)
+    >>> demo.update('DDDD', [(1, '=', 'Denver')])
     [('DDDD', 'Denver')]
 
 To find the record :meth:`~tarantool.space.Space.update` always uses 
 the primary index.
 Fields numbers are starting from zero. 
 So field ``0`` is the first element in the tuple. 
-Argument ``return_tuple = True`` indicates that Tarantool should return the modified tuple.
 
 
 Delete
@@ -71,7 +70,7 @@ Delete
 
 Delete single record identified by id ``'DDDD'``::
 
-    >>> demo.delete('DDDD', return_tuple=True)
+    >>> demo.delete('DDDD')
     [('DDDD', 'Denver')]
 
 To find the record :meth:`~tarantool.space.Space.delete` always uses 
