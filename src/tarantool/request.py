@@ -165,33 +165,9 @@ class RequestUpdate(Request):
         request_body = \
             struct_L.pack(space_no) + \
             msgpack.dumps((key,)) + \
-            struct_L.pack(len(op_list)) +\
-            self.pack_operations(op_list)
+            msgpack.dumps(op_list)
 
         self._bytes = self.header(len(request_body)) + request_body
-
-    def pack_operations(self, op_list):
-        result = []
-        for op in op_list:
-            try:
-                field_no, op_symbol, op_arg = op
-            except ValueError:
-                raise ValueError(
-                    "Operation must be a tuple of 3 elements "
-                    "(field_id, op, value)")
-            try:
-                op_code = UPDATE_OPERATION_CODE[op_symbol]
-            except KeyError:
-                raise ValueError(
-                    "Invalid operaction symbol '%s', expected one of %s" % (
-                        op_symbol,
-                        ', '.join(["'%s'" % c for c in sorted(
-                            UPDATE_OPERATION_CODE.keys())])))
-            data = b"".join(
-                [struct_LB.pack(field_no, op_code), self.pack_field(op_arg)])
-            result.append(data)
-        return b"".join(result)
-
 
 class RequestCall(Request):
 
