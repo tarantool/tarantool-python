@@ -8,12 +8,16 @@ import struct
 import msgpack
 
 from tarantool.const import (
-    struct_L,
-    struct_LLLL,
-    struct_LB,
     IPROTO_CODE,
     IPROTO_SYNC,
-    UPDATE_OPERATION_CODE,
+    IPROTO_SPACE_ID,
+    IPROTO_INDEX_ID,
+    IPROTO_LIMIT,
+    IPROTO_OFFSET,
+    IPROTO_ITERATOR,
+    IPROTO_KEY,
+    IPROTO_TUPLE,
+    IPROTO_FUNCTION_NAME,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
     REQUEST_TYPE_INSERT,
@@ -51,23 +55,6 @@ class Request(object):
                                 IPROTO_SYNC : 0})
         return msgpack.dumps(length + len(header)) + header
 
-    def pack_field(self, value):
-        return msgpack.dumps(value)
-
-    def pack_tuple(self, values, space_no=None):
-        '''\
-        Pack tuple of values
-        <tuple> ::= <msgpack_array>
-
-        :param value: tuple to be packed
-        :type value: tuple of scalar values (bytes, str or int)
-
-        :return: packed tuple
-        :rtype: bytes
-        '''
-        assert isinstance(values, (tuple, list))
-        return msgpack.dumps(values)
-
 class RequestInsert(Request):
 
     '''\
@@ -80,11 +67,11 @@ class RequestInsert(Request):
         '''\
         '''
         super(RequestInsert, self).__init__(conn)
+        assert isinstance(values, (tuple, list))
 
         space_no = self.conn.schema.space_no(space_name)
-        request_body = \
-            struct_L.pack(space_no) + \
-            self.pack_tuple(values, space_no)
+        request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
+                                       IPROTO_TUPLE: values })
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -100,11 +87,11 @@ class RequestReplace(Request):
         '''\
         '''
         super(RequestReplace, self).__init__(conn)
+        assert isinstance(values, (tuple, list))
 
         space_no = self.conn.schema.space_no(space_name)
-        request_body = \
-            struct_L.pack(space_no) + \
-            self.pack_tuple(values, space_no)
+        request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
+                                       IPROTO_TUPLE: values })
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -123,7 +110,8 @@ class RequestDelete(Request):
         super(RequestDelete, self).__init__(conn)
 
         space_no = self.conn.schema.space_no(space_name)
-        request_body = struct_L.pack(space_no) + msgpack.dumps((key,))
+        request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
+                                       IPROTO_KEY: (key,) })
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -141,9 +129,11 @@ class RequestSelect(Request):
 
         space_no = self.conn.schema.space_no(space_name)
         index_no = self.conn.schema.index_no(space_no, index_name)
-        request_body = \
-            struct_LLLL.pack(space_no, index_no, offset, limit) + \
-            msgpack.dumps((key,))
+        request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
+                                       IPROTO_INDEX_ID: index_no, \
+                                       IPROTO_OFFSET: offset, \
+                                       IPROTO_LIMIT: limit, \
+                                       IPROTO_KEY: (key,) })
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -162,10 +152,9 @@ class RequestUpdate(Request):
         assert isinstance(key, (int, long, basestring))
 
         space_no = self.conn.schema.space_no(space_name)
-        request_body = \
-            struct_L.pack(space_no) + \
-            msgpack.dumps((key,)) + \
-            msgpack.dumps(op_list)
+        request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
+                                       IPROTO_KEY: (key,), \
+                                       IPROTO_TUPLE: op_list })
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -177,13 +166,12 @@ class RequestCall(Request):
     request_type = REQUEST_TYPE_CALL
 
     # pylint: disable=W0231
-    def __init__(self, conn, proc_name, args):
+    def __init__(self, conn, name, args):
         super(RequestCall, self).__init__(conn)
         assert isinstance(args, (list, tuple))
 
-        request_body = \
-            self.pack_field(proc_name) +\
-            self.pack_tuple([k for k in args])
+        request_body = msgpack.dumps({ IPROTO_FUNCTION_NAME: name, \
+                                       IPROTO_TUPLE: args })
 
         self._bytes = self.header(len(request_body)) + request_body
 

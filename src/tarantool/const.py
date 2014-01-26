@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
-import struct
-
-# pylint: disable=C0103
-struct_LB = struct.Struct("<LB")
-struct_L = struct.Struct("<L")
-struct_LLLL = struct.Struct("<LLLL")
-
 IPROTO_CODE = 0x00
 IPROTO_SYNC = 0x01
 IPROTO_SPACE_ID = 0x10
@@ -28,8 +21,6 @@ REQUEST_TYPE_REPLACE = 3
 REQUEST_TYPE_UPDATE = 4 
 REQUEST_TYPE_DELETE = 5 
 REQUEST_TYPE_CALL = 6 
-
-UPDATE_OPERATION_CODE = {'=': 0, '+': 1, '&': 2, '^': 3, '|': 4, 'splice': 5}
 
 # Default value for socket timeout (seconds)
 SOCKET_TIMEOUT = None
