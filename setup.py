@@ -65,7 +65,7 @@ setup(
     ],
     cmdclass = cmdclass,
     command_options = command_options,
-    requires = [
-        'msgpack-python>=0.3',
+    install_requires = [
+        'msgpack-python>=0.4',
     ]
 )
