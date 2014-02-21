@@ -6,6 +6,7 @@ Request types definitions
 
 import struct
 import msgpack
+import hashlib
 
 from tarantool.const import (
     IPROTO_CODE,
@@ -16,6 +17,7 @@ from tarantool.const import (
     IPROTO_OFFSET,
     IPROTO_ITERATOR,
     IPROTO_KEY,
+    IPROTO_USER_NAME,
     IPROTO_TUPLE,
     IPROTO_FUNCTION_NAME,
     REQUEST_TYPE_PING,
@@ -24,7 +26,8 @@ from tarantool.const import (
     REQUEST_TYPE_REPLACE,
     REQUEST_TYPE_DELETE,
     REQUEST_TYPE_UPDATE,
-    REQUEST_TYPE_CALL
+    REQUEST_TYPE_CALL,
+    REQUEST_TYPE_AUTHENTICATE
 )
 
 
@@ -73,6 +76,28 @@ class RequestInsert(Request):
         request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
                                        IPROTO_TUPLE: values })
 
+        self._bytes = self.header(len(request_body)) + request_body
+
+class RequestAuthenticate(Request):
+
+    request_type = REQUEST_TYPE_AUTHENTICATE
+
+
+    def __init__(self, conn, salt, user, password):
+        super(RequestAuthenticate, self).__init__(conn)
+        def sha1(values):
+            sha1 = hashlib.sha1()
+            for i in values:
+                sha1.update(i)
+            return sha1.digest()
+        def strxor(rhs, lhs):
+                return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
+        hash1 = sha1((password,))
+        hash2 = sha1((hash1,))
+        scramble = sha1((salt, hash2))
+        scramble = strxor(hash1, scramble)
+        request_body = msgpack.dumps({IPROTO_USER_NAME: user, \
+                                      IPROTO_TUPLE: ("chap-sha1", scramble)})
         self._bytes = self.header(len(request_body)) + request_body
 
 class RequestReplace(Request):

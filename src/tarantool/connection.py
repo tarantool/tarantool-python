@@ -10,6 +10,8 @@ import ctypes
 import ctypes.util
 import socket
 import msgpack
+import base64
+from const import IPROTO_GREETING_SIZE
 
 try:
     from ctypes import c_ssize_t
@@ -25,7 +27,8 @@ from tarantool.request import (
     RequestReplace,
     RequestPing,
     RequestSelect,
-    RequestUpdate)
+    RequestUpdate,
+    RequestAuthenticate)
 
 from tarantool.space import Space
 from tarantool.const import (
@@ -59,6 +62,8 @@ class Connection(object):
                                  use_errno=True)(_libc.recv)
 
     def __init__(self, host, port,
+                 user=None,
+                 password=None,
                  socket_timeout=SOCKET_TIMEOUT,
                  reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                  reconnect_delay=RECONNECT_DELAY,
@@ -78,6 +83,8 @@ class Connection(object):
         '''
         self.host = host
         self.port = port
+        self.user = user
+        self.password = password
         self.socket_timeout = socket_timeout
         self.reconnect_delay = reconnect_delay
         self.reconnect_max_attempts = reconnect_max_attempts
@@ -116,9 +123,14 @@ class Connection(object):
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
             self._socket.connect((self.host, self.port))
+            greeting = self._recv(IPROTO_GREETING_SIZE)
+            self._salt = base64.decodestring(greeting[64:])[:20]
+            if self.user:
+                self.authenticate(self.user, self.password)
             # It is important to set socket timeout *after* connection.
-            # Otherwise the timeout exception will rised, even if the server
-            # does not listen
+            # Otherwise the timeout exception will be raised, even when
+            # the connection fails because the server is simply
+            # not bound to port
             self._socket.settimeout(self.socket_timeout)
         except socket.error as e:
             self.connected = False
@@ -280,6 +292,16 @@ class Connection(object):
         '''
         request = RequestReplace(self, space_name, values)
         return self._send_request(request, space_name)
+
+    def authenticate(self, user, password):
+        self.user = user;
+        self.password = password
+        if not self._socket:
+            return self._opt_reconnect()
+
+        request = RequestAuthenticate(self, self._salt, self.user, \
+                                      self.password)
+        return self._send_request(request)
 
     def insert(self, space_name, values):
         '''
