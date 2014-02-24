@@ -6,16 +6,16 @@ import sys
 import msgpack
 
 from tarantool.const import (
+    REQUEST_TYPE_DELETE,
     REQUEST_TYPE_INSERT,
     REQUEST_TYPE_SELECT,
     REQUEST_TYPE_UPDATE,
-    REQUEST_TYPE_DELETE,
     IPROTO_CODE,
-    IPROTO_ERROR,
     IPROTO_DATA,
+    IPROTO_ERROR,
+    IPROTO_SYNC,
 )
-from tarantool.error import DatabaseError
-
+from tarantool.error import DatabaseError, tnt_strerror
 
 if sys.version_info < (2, 6):
     bytes = str    # pylint: disable=W0622
@@ -29,10 +29,7 @@ class Response(list):
     and parses binary packet received from the server.
     '''
 
-    def __init__(
-        self, conn, response, space_name=None, field_defs=None,
-        default_type=None
-    ):
+    def __init__(self, conn, response, space_name=None):
         '''\
         Create an instance of `Response` using data received from the server.
 
@@ -49,29 +46,21 @@ class Response(list):
 
         unpacker = msgpack.Unpacker(use_list = False)
         unpacker.feed(response)
-
         header = unpacker.unpack()
 
         # Separate return_code and completion_code
         self._completion_status = header[IPROTO_CODE] & 0x00ff
         self._return_code = header[IPROTO_CODE] >> 8
-        self._return_message = None
+        self._sync = header.get(IPROTO_SYNC, 0)
         self.conn = conn
-        if space_name is not None:
-            self.space_no = conn.schema.space_no(space_name)
-        else:
-            self.space_no = None
-        self.field_defs = field_defs
-        self.default_type = default_type
-
         body = None
         try:
             body = unpacker.unpack()
         except msgpack.OutOfData:
             return
 
+        self._return_message = body.get(IPROTO_ERROR, "")
         if self._return_code != 0:
-            self._return_message = body[IPROTO_ERROR]
             if self._completion_status == 2 and self.conn.error:
                 raise DatabaseError(self._return_code, self._return_message)
         else:
@@ -85,7 +74,6 @@ class Response(list):
         Request completion status.
 
         There are only three completion status codes in use:
-
             * ``0`` -- "success"; the only possible :attr:`return_code` with
                        this status is ``0``
             * ``1`` -- "try again"; an indicator of an intermittent error.
@@ -118,6 +106,15 @@ class Response(list):
         return self._return_code
 
     @property
+    def strerror(self):
+        '''\
+        :type: str
+
+        It may be ER_OK if request was successful, or contain error code string.
+        '''
+        return tnt_strerror(self._return_code)
+
+    @property
     def return_message(self):
         '''\
         :type: str
@@ -127,20 +124,21 @@ class Response(list):
         '''
         return self._return_message
 
-    def __repr__(self):
+    def __str__(self):
         '''\
         Return user friendy string representation of the object.
         Useful for the interactive sessions and debuging.
 
         :rtype: str or None
         '''
-        # If response is not empty then return default list representation
-        # If there was an SELECT request - return list representation even it
-        # is empty
-        if(self._request_type == REQUEST_TYPE_SELECT or len(self)):
-            return super(Response, self).__repr__()
+        errstr = "---\n- error:\n    errcode: {errname}\n    errmsg:  " +
+            "{errstr}\n..."
+        if self.completion_status:
+            return errstr.format(errname = self.strerror,
+                                 errstr  = self.return_message)
+        table = ""
+        if len(self):
+            table = "\n"+"\n".join(["- "+str(list(k)) for k in self]))
+        return "---{0}\n...".format(table)
 
-        # Return string of form "N records affected"
-        affected = str(self.rowcount) + \
-            " record" if self.rowcount == 1 else " records"
-        return affected + " affected"
+    __repr__ = __str__
