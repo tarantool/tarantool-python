@@ -1,10 +1,17 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from distutils.core import setup
-import os.path
 
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
+import os
+
+os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
 # Read package version without importing it
-for line in open(os.path.join(os.path.dirname(__file__), "src", "tarantool", "__init__.py")):
+for line in open(os.path.join("tarantool", "__init__.py")):
     if line.startswith("__version__"):
         exec line
         break
@@ -30,7 +37,7 @@ try:
     from sphinx_pypi_upload import UploadDoc
     cmdclass["upload_sphinx"] = UploadDoc
     command_options["upload_sphinx"] = {
-            'upload_dir': ('setup.py', os.path.join(os.path.dirname(__file__), "build", "sphinx", "html"))
+            'upload_dir': ('setup.py', os.path.join("build", "sphinx", "html"))
     }
 except ImportError:
     pass
@@ -47,7 +54,7 @@ except ImportError:
 setup(
     name = "tarantool",
     packages = ["tarantool"],
-    package_dir = {"tarantool": os.path.join("src", "tarantool")},
+    package_dir = {"tarantool": os.path.join("tarantool")},
     version = __version__,
     platforms = ["all"],
     author = "Konstantin Cherkasoff",

@@ -24,7 +24,7 @@ class Space(object):
         '''
 
         self.connection = connection
-        self.space_no = connection.schema.space_no(space_name)
+        self.space_no = self.connection.schema.get_space(space_name).sid
 
     def replace(self, values):
         '''

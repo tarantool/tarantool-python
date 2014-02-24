@@ -16,10 +16,10 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath('.')), "src"))
+# sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath('.')), "src"))
 
 # Read package version without importing it
-for line in open(os.path.join(os.path.dirname(os.path.abspath('.')), "src", "tarantool", "__init__.py")):
+for line in open(os.path.join(os.path.dirname(os.path.abspath('.')), "tarantool", "__init__.py")):
     if line.startswith("__version__"):
         exec line
         break

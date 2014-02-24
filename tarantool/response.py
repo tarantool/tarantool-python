@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
-import struct
 import sys
 import msgpack
 
 from tarantool.const import (
-    REQUEST_TYPE_DELETE,
-    REQUEST_TYPE_INSERT,
-    REQUEST_TYPE_SELECT,
-    REQUEST_TYPE_UPDATE,
     IPROTO_CODE,
     IPROTO_DATA,
     IPROTO_ERROR,

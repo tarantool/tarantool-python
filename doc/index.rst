@@ -40,7 +40,6 @@ API Reference
 
    api/module-tarantool.rst
    api/class-connection.rst
-   api/class-schema.rst
    api/class-space.rst
    api/class-response.rst
 

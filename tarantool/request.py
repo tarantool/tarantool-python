@@ -4,7 +4,6 @@
 Request types definitions
 '''
 
-import struct
 import msgpack
 import hashlib
 
@@ -15,7 +14,6 @@ from tarantool.const import (
     IPROTO_INDEX_ID,
     IPROTO_LIMIT,
     IPROTO_OFFSET,
-    IPROTO_ITERATOR,
     IPROTO_KEY,
     IPROTO_USER_NAME,
     IPROTO_TUPLE,
@@ -66,13 +64,12 @@ class RequestInsert(Request):
     request_type = REQUEST_TYPE_INSERT
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, values):
+    def __init__(self, conn, space_no, values):
         '''\
         '''
         super(RequestInsert, self).__init__(conn)
         assert isinstance(values, (tuple, list))
 
-        space_no = self.conn.schema.space_no(space_name)
         request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
                                        IPROTO_TUPLE: values })
 
@@ -108,13 +105,12 @@ class RequestReplace(Request):
     request_type = REQUEST_TYPE_REPLACE
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, values):
+    def __init__(self, conn, space_no, values):
         '''\
         '''
         super(RequestReplace, self).__init__(conn)
         assert isinstance(values, (tuple, list))
 
-        space_no = self.conn.schema.space_no(space_name)
         request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
                                        IPROTO_TUPLE: values })
 
@@ -129,14 +125,14 @@ class RequestDelete(Request):
     request_type = REQUEST_TYPE_DELETE
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, key):
+    def __init__(self, conn, space_no, index_no, key):
         '''
         '''
         super(RequestDelete, self).__init__(conn)
 
-        space_no = self.conn.schema.space_no(space_name)
         request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
-                                       IPROTO_KEY: (key,) })
+                                       IPROTO_INDEX_ID: index_no, \
+                                       IPROTO_KEY: key})
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -149,16 +145,13 @@ class RequestSelect(Request):
     request_type = REQUEST_TYPE_SELECT
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, index_name, key, offset, limit):
+    def __init__(self, conn, space_no, index_no, key, offset, limit):
         super(RequestSelect, self).__init__(conn)
-
-        space_no = self.conn.schema.space_no(space_name)
-        index_no = self.conn.schema.index_no(space_no, index_name)
         request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
                                        IPROTO_INDEX_ID: index_no, \
                                        IPROTO_OFFSET: offset, \
                                        IPROTO_LIMIT: limit, \
-                                       IPROTO_KEY: (key,) })
+                                       IPROTO_KEY: key })
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -172,13 +165,12 @@ class RequestUpdate(Request):
     request_type = REQUEST_TYPE_UPDATE
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_name, key, op_list):
+    def __init__(self, conn, space_no, index_no, key, op_list):
         super(RequestUpdate, self).__init__(conn)
-        assert isinstance(key, (int, long, basestring))
 
-        space_no = self.conn.schema.space_no(space_name)
         request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
-                                       IPROTO_KEY: (key,), \
+                                       IPROTO_INDEX_ID: index_no, \
+                                       IPROTO_KEY: key, \
                                        IPROTO_TUPLE: op_list })
 
         self._bytes = self.header(len(request_body)) + request_body

@@ -16,7 +16,7 @@ Creating a space instance
 Instance of :class:`~tarantool.space.Space` is a named object to access
 the key space.
 
-Create `` demo `` object which will be used to access the space `` 0 ``::
+Create `` demo `` object which will be used to access the space `` 0 `` ::
 
     >>> demo = server.space(0)
 

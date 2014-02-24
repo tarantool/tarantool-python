@@ -10,13 +10,6 @@ from tarantool.const import (
     RECONNECT_DELAY
 )
 
-from tarantool.schema import (
-    Schema,
-    RAW,
-    STR,
-    NUM,
-    NUM64
-)
 from tarantool.error import (
     Error,
     DatabaseError,
@@ -25,18 +18,21 @@ from tarantool.error import (
     RetryWarning
 )
 
+from tarantool.schema import (
+        Schema,
+        SchemaError
+)
 
-def connect(host="localhost", port=33013, schema=None):
+
+def connect(host="localhost", port=33013):
     '''\
     Create a connection to the Tarantool server.
 
     :param str host: Server hostname or IP-address
     :param int port: Server port
-    :param schema: Data schema (see Developer guide
-        and :class:`~tarantool.schema.Schema`)
-    :type schema: :class:`~tarantool.schema.Schema` or dict
 
     :rtype: :class:`~tarantool.connection.Connection`
+
     :raise: `NetworkError`
     '''
 
@@ -44,9 +40,7 @@ def connect(host="localhost", port=33013, schema=None):
                       socket_timeout=SOCKET_TIMEOUT,
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,
-                      connect_now=True,
-                      schema=schema)
+                      connect_now=True)
 
 __all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError',
-           'NetworkError', 'NetworkWarning', 'RetryWarning', 'RAW', 'STR',
-           'NUM', 'NUM64']
+           'NetworkError', 'NetworkWarning', 'RetryWarning', 'SchemaError']

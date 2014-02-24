@@ -107,6 +107,15 @@ if sys.platform == "win32":
     del os_strerror_patched
 
 
+class SchemaError(DatabaseError):
+    def __init__(self, value):
+        super(SchemaError, self).__init__(0, value)
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+
+
 class NetworkError(DatabaseError):
 
     '''Error related to network'''
@@ -208,7 +217,7 @@ _strerror = {
     33: ("ER_NO_SUCH_PROC", "Procedure '%.*s' is not defined"),
     34: ("ER_NO_SUCH_TRIGGER", "Trigger is not found"),
     35: ("ER_NO_SUCH_INDEX", "No index #%u is defined in space %u"),
-    37: ("ER_NO_SUCH_SPACE", "Space %u does not exist"),
+    36: ("ER_NO_SUCH_SPACE", "Space %u does not exist"),
     37: ("ER_NO_SUCH_FIELD", "Field %u was not found in the tuple"),
     38: ("ER_SPACE_ARITY", "Tuple field count %u does not match space \
             %u arity %u"),
