@@ -41,7 +41,7 @@ from tarantool.error import (
     RetryWarning,
     NetworkWarning)
 from tarantool.schema import Schema
-
+from tarantool.utils import check_key
 
 class Connection(object):
 
@@ -162,8 +162,7 @@ class Connection(object):
         # (try again)
         for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             self._socket.sendall(bytes(request))
-            response = Response(self, self._read_response(), space_name,
-                                field_defs, default_type)
+            response = Response(self, self._read_response())
 
             if response.completion_status != 1:
                 return response
@@ -179,7 +178,7 @@ class Connection(object):
         '''
         def check():  # Check that connection is alive
             rc = self._sys_recv(self._socket.fileno(), '', 1,
-                    socket.MSG_DONTWAIT or socket.MSG_PEEK)
+                    socket.MSG_DONTWAIT | socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
                 return errno.EAGAIN
@@ -310,8 +309,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        assert isinstance(key, (int, long, basestring))
-
+        check_key(key)
         request = RequestDelete(self, space_name, key)
         return self._send_request(request, space_name)
 
@@ -333,8 +331,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        assert isinstance(key, (int, long, basestring))
-
+        check_key(key)
         request = RequestUpdate(self, space_name, key, op_list)
         return self._send_request(request, space_name)
 
