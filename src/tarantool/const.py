@@ -33,7 +33,32 @@ BOX_ADD = 2
 BOX_REPLACE = 4
 
 
-UPDATE_OPERATION_CODE = {'=': 0, '+': 1, '&': 2, '^': 3, '|': 4, 'splice': 5}
+UPDATE_OPERATION_CODE = {
+    0       : (0, 3),
+    '='     : (0, 3),
+    'assign': (0, 3),
+    1       : (1, 3),
+    '+'     : (1, 3),
+    'add'   : (1, 3),
+    2       : (2, 3),
+    '&'     : (2, 3),
+    'and'   : (2, 3),
+    3       : (3, 3),
+    '^'     : (3, 3),
+    'xor'   : (3, 3),
+    4       : (4, 3),
+    '|'     : (4, 3),
+    'or'    : (4, 3),
+    5       : (5, 5),
+    ':'     : (5, 5),
+    'splice': (5, 5),
+    6       : (6, 2),
+    'del'   : (6, 2),
+    'delete': (6, 2),
+    7       : (7, 3),
+    'ins'   : (7, 3),
+    'insert': (7, 3),
+}
 
 # Default value for socket timeout (seconds)
 SOCKET_TIMEOUT = None

@@ -43,6 +43,7 @@ from tarantool.error import (
     RetryWarning,
     NetworkWarning)
 from tarantool.schema import Schema
+from tarantool.utils import check_key
 
 
 class Connection(object):
@@ -56,8 +57,8 @@ class Connection(object):
     (insert/delete/update/select).
     '''
     _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-    _recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, 
-            ctypes.c_void_p, c_ssize_t, ctypes.c_int, 
+    _recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int,
+            ctypes.c_void_p, c_ssize_t, ctypes.c_int,
             use_errno=True)(_libc.recv)
 
     def __init__(self, host, port,
@@ -180,12 +181,12 @@ class Connection(object):
         **Due to bug in python - timeout is internal python construction.
         '''
         def check():  # Check that connection is alive
-            rc = self._recv(self._socket.fileno(), '', 1, 
+            rc = self._recv(self._socket.fileno(), '', 1,
                     socket.MSG_DONTWAIT | socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
                 return errno.EAGAIN
-            return (ctypes.get_errno() if ctypes.get_errno() 
+            return (ctypes.get_errno() if ctypes.get_errno()
                     else errno.ECONNRESET)
 
         attempt = 0
@@ -355,7 +356,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        assert isinstance(key, (int, long, basestring))
+        key = check_key(key)
 
         if return_tuple is None:
             return_tuple = self.return_tuple
@@ -383,7 +384,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        assert isinstance(key, (int, long, basestring))
+        key = check_key(key)
 
         if return_tuple is None:
             return_tuple = self.return_tuple

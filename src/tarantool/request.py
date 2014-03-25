@@ -26,6 +26,7 @@ from tarantool.const import (
     REQUEST_TYPE_CALL
 )
 
+from error import InterfaceError
 
 class Request(object):
 
@@ -208,7 +209,7 @@ class RequestDelete(Request):
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
             struct_LL.pack(space_no, flags) + \
-            self.pack_key_tuple((key,), space_no, 0)
+            self.pack_key_tuple(key, space_no, 0)
 
         self._bytes = self.header(len(request_body)) + request_body
 
@@ -250,7 +251,8 @@ class RequestUpdate(Request):
 
     '''
     <update_request_body> ::= <space_no><flags><tuple><count><operation>+
-    <operation> ::= <field_no><op_code><op_arg>
+    <operation> ::= <field_no><op_code> ( <op_arg> | <int32_varint><offset><length><string> |        )
+                                            BASE                      SPLICE                | DELETE
 
     |--------------- header ----------------|---------------request_body --------------...|
      <request_type><body_length><request_id> <space_no><flags><tuple><count><operation>+
@@ -265,12 +267,11 @@ class RequestUpdate(Request):
     def __init__(self, conn, space_name, key, op_list, return_tuple):
         super(RequestUpdate, self).__init__(conn)
         flags = 1 if return_tuple else 0
-        assert isinstance(key, (int, long, basestring))
 
         space_no = self.conn.schema.space_no(space_name)
         request_body = \
             struct_LL.pack(space_no, flags) + \
-            self.pack_key_tuple((key,), space_no, 0) + \
+            self.pack_key_tuple(key, space_no, 0) + \
             struct_L.pack(len(op_list)) +\
             self.pack_operations(op_list)
 
@@ -280,22 +281,38 @@ class RequestUpdate(Request):
         result = []
         for op in op_list:
             try:
-                field_no, op_symbol, op_arg = op
-            except ValueError:
-                raise ValueError(
-                    "Operation must be a tuple of 3 elements "
-                    "(field_id, op, value)")
-            try:
-                op_code = UPDATE_OPERATION_CODE[op_symbol]
+                assert UPDATE_OPERATION_CODE[op[1]][1] == len(op), \
+                        "Length of tuple doesn't match. Must be %d, not %d" % \
+                                (UPDATE_OPERATION_CODE[op[1]][1], len(op))
             except KeyError:
-                raise ValueError(
-                    "Invalid operaction symbol '%s', expected one of %s" % (
-                        op_symbol,
-                        ', '.join(["'%s'" % c for c in sorted(
-                            UPDATE_OPERATION_CODE.keys())])))
-            op_arg = self.conn.schema.pack_value(op_arg)
-            data = b"".join(
-                [struct_LB.pack(field_no, op_code), self.pack_field(op_arg)])
+                raise InterfaceError("Wrong operation type: '%s'" % op[1])
+            field_no = op[0]
+            op_type  = UPDATE_OPERATION_CODE[op[1]][0]
+            data = b''
+            if op_type == 5:
+                offset = self.conn.schema.pack_value(op[2])
+                length = self.conn.schema.pack_value(op[3])
+                string = self.conn.schema.pack_value(op[4])
+                data = b"".join(
+                    [struct_LB.pack(field_no, op_type),
+                        self.pack_field(
+                            b"".join([
+                                self.pack_field(offset),
+                                self.pack_field(length),
+                                self.pack_field(string)
+                                ])
+
+                        )
+                    ]
+                )
+            elif op_type == 6:
+                op_arg = self.conn.schema.pack_value('')
+                data = b"".join(
+                    [struct_LB.pack(field_no, op_type), self.pack_field(op_arg)])
+            else:
+                op_arg = self.conn.schema.pack_value(op[2])
+                data = b"".join(
+                    [struct_LB.pack(field_no, op_type), self.pack_field(op_arg)])
             result.append(data)
         return b"".join(result)
 
