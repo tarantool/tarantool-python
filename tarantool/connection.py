@@ -100,12 +100,9 @@ class Connection(object):
         self._socket.close()
         self._socket = None
 
-    def connect(self):
+    def connect_basic(self):
         '''\
         Create connection to the host and port specified in __init__().
-        Usually there is no need to call this method directly,
-        since it is called when you create an `Connection` instance.
-
         :raise: `NetworkError`
         '''
 
@@ -117,10 +114,27 @@ class Connection(object):
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
             self._socket.connect((self.host, self.port))
+        except socket.error as e:
+            self.connected = False
+            raise NetworkError(e)
+
+    def handshake(self):
             greeting = self._recv(IPROTO_GREETING_SIZE)
             self._salt = base64.decodestring(greeting[64:])[:20]
             if self.user:
                 self.authenticate(self.user, self.password)
+
+    def connect(self):
+        '''\
+        Create connection to the host and port specified in __init__().
+        Usually there is no need to call this method directly,
+        since it is called when you create an `Connection` instance.
+
+        :raise: `NetworkError`
+        '''
+        try:
+            self.connect_basic()
+            self.handshake()
             # It is important to set socket timeout *after* connection.
             # Otherwise the timeout exception will be raised, even when
             # the connection fails because the server is simply
@@ -129,7 +143,6 @@ class Connection(object):
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
-
 
     def _recv(self, to_read):
         buf = ''
@@ -180,8 +193,12 @@ class Connection(object):
         Check that connection is alive using low-level recv from libc(ctypes)
         **Due to bug in python - timeout is internal python construction.
         '''
+        if not self._socket:
+            return self.connect()
+
         def check():  # Check that connection is alive
-            self._sys_recv(self._socket.fileno(), '', 1,
+            buf = ctypes.create_string_buffer(2)
+            self._sys_recv(self._socket.fileno(), buf, 1,
                     socket.MSG_DONTWAIT | socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
@@ -189,24 +206,32 @@ class Connection(object):
             return (ctypes.get_errno() if ctypes.get_errno()
                     else errno.ECONNRESET)
 
+        last_errno = check()
+        if self.connected and last_errno == errno.EAGAIN:
+            return 
+
         attempt = 0
         last_errno = 0
-        if not self._socket:
-            self.connect()
         while True:
-            last_errno = check()
-            if self.connected and last_errno == errno.EAGAIN:
-                break
             time.sleep(self.reconnect_delay)
             try:
-                self.connect()
+                self.connect_basic()
             except NetworkError as e:
                 last_errno = e.errno
+            if last_errno == 0:
+                break
             warn("Reconnect attempt %d of %d" %
                  (attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
-                raise socket.error((last_errno, errno.errorcode[last_errno]))
+                raise NetworkError(socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
+
+        self.handshake()
+        # It is important to set socket timeout *after* connection.
+        # Otherwise the timeout exception will be raised, even when
+        # the connection fails because the server is simply
+        # not bound to port
+        self._socket.settimeout(self.socket_timeout)
 
     def _send_request(self, request):
         '''\
@@ -275,7 +300,7 @@ class Connection(object):
 
         request = RequestAuthenticate(self, self._salt, self.user, \
                                       self.password)
-        return self._send_request(request)
+        return self._send_request_wo_reconnect(request)
 
     def insert(self, space_name, values):
         '''
