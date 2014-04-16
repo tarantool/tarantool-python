@@ -106,8 +106,7 @@ class TarantoolAdmin(object):
 
 class TarantoolServer(object):
     default_tarantool = {
-            "bin":       "tarantool_box",
-            "config":    "tarantool.cfg",
+            "bin":           "tarantool",
             "logfile":   "tarantool.log",
             "init":           "init.lua"}
 
@@ -117,13 +116,6 @@ class TarantoolServer(object):
             "pid_file":                           "\"box.pid\"",
             "rows_per_wal":                                 200}
 
-    config_template = (
-        "slab_alloc_arena = {slab_alloc_arena}\n"
-        "custom_proc_title = {custom_proc_title}\n"
-        "pid_file = {pid_file}\n"
-        "primary_port = {primary}\n"
-        "admin_port = {admin}\n"
-        "rows_per_wal = {rows_per_val}")
     @property
     def logfile_path(self):
         return os.path.join(self.vardir, self.default_tarantool['logfile'])
@@ -133,19 +125,24 @@ class TarantoolServer(object):
         return os.path.join(self.vardir, self.default_tarantool['config'])
 
     @property
-    def initlua_path(self):
+    def script_path(self):
         return os.path.join(self.vardir, self.default_tarantool['init'])
 
     @property
-    def initlua_source(self):
-        if not hasattr(self, '_initlua_source'):
-            self._initlua_source = None
-        return self._initlua_source
-    @initlua_source.setter
-    def initlua_source(self, val):
+    def script_dst(self):
+        return os.path.join(self.vardir, os.path.basename(self.script))
+
+    @property
+    def script(self):
+        if not hasattr(self, '_script'): self._script = None
+        return self._script
+    @script.setter
+    def script(self, val):
         if val is None:
-            self._initlua_source = None
-        self._initlua_source = os.path.abspath(val)
+            if hasattr(self, '_script'):
+                delattr(self, '_script')
+            return
+        self._script = os.path.abspath(val)
 
     @property
     def binary(self):
@@ -164,12 +161,9 @@ class TarantoolServer(object):
             int(port)
         except ValueError:
             raise ValueError("Bad port number: '%s'" % port)
-        if not hasattr(self, 'admin') or self.admin is None:
-            self.admin = TarantoolAdmin('localhost', port)
-            return
-        if self.admin.port != port:
-            self.admin.port = port
-            self.admin.reconnect()
+        if hasattr(self, 'admin'):
+            del self.admin
+        self.admin = TarantoolAdmin('localhost', port)
 
     @property
     def log_des(self):
@@ -184,9 +178,6 @@ class TarantoolServer(object):
             self._log_des.close()
         delattr(self, '_log_des')
 
-
-    # self.logfile
-
     def __init__(self):
         os.popen('ulimit -c unlimited')
         self.args = {}
@@ -194,30 +185,24 @@ class TarantoolServer(object):
         self.args['admin'] = find_port(self.args['primary'] + 1)
         self._admin = self.args['admin']
         self.vardir = tempfile.mkdtemp(prefix='var_', dir=os.getcwd())
+        self.find_exe()
 
     def find_exe(self):
-        path = os.environ['PATH']
         if 'TARANTOOL_BOX_PATH' in os.environ:
-            path = os.environ['TARANTOOL_BOX_PATH'] + os.pathsep + path
+            os.environ["PATH"] = os.environ["TARANTOOL_BOX_PATH"] + os.pathsep + os.environ["PATH"]
 
-        for _dir in path.split(os.pathsep):
+        for _dir in os.environ["PATH"].split(os.pathsep):
             exe = os.path.join(_dir, self.default_tarantool["bin"])
             if os.access(exe, os.X_OK):
                 return os.path.abspath(exe)
         raise RuntimeError("Can't find server executable in " + path)
 
     def generate_configuration(self):
-        with open(self.cfgfile_path, 'w') as cfgfile:
-            args = dict(self.default_cfg)
-            args.update(self.args)
-            for i in self.config_template.splitlines():
-                try:
-                    cfgfile.write(i.format(**args) + '\n')
-                except (IndexError, KeyError):
-                    continue
+        os.putenv("PRIMARY_PORT", str(self.args['primary']))
+        os.putenv("ADMIN_PORT", str(self.args['admin']))
 
     def prepare_args(self):
-        return shlex.split(self.binary + ' ' + (self.initlua_path if self.initlua_source is not None else ''))
+        return shlex.split(self.binary if not self.script else self.script_dst)
 
     def wait_until_started(self):
         """ Wait until server is started.
@@ -225,7 +210,6 @@ class TarantoolServer(object):
         Server consists of two parts:
         1) wait until server is listening on sockets
         2) wait until server tells us his status
-
         """
 
         while True:
@@ -253,8 +237,9 @@ class TarantoolServer(object):
         # * Wait unitl Tarantool\Box
         #   started                   --DONE(wait_until_started)
         self.generate_configuration()
-        if self.initlua_source:
-            shutil.copy(self.initlua_source, self.initlua_path)
+        if self.script:
+            shutil.copy(self.script, self.script_dst)
+            os.chmod(self.script_dst, 0777)
         args = self.prepare_args()
         self.process = subprocess.Popen(args,
                 cwd = self.vardir,

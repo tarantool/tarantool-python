@@ -26,6 +26,9 @@ REQUEST_TYPE_DELETE = 5
 REQUEST_TYPE_CALL = 6
 REQUEST_TYPE_AUTHENTICATE = 7
 
+SPACE_SPACE = 280
+SPACE_INDEX = 288
+
 # Default value for socket timeout (seconds)
 SOCKET_TIMEOUT = None
 # Default maximum number of attempts to reconnect

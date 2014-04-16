@@ -10,6 +10,7 @@ class TestSuite_Schema(unittest.TestCase):
         print ' SCHEMA '.center(70, '=')
         print '-' * 70
         self.srv = TarantoolServer()
+        self.srv.script = 'tests/suites/box.lua'
         self.srv.start()
         self.con = tarantool.Connection('localhost', self.srv.args['primary'])
         self.sch = self.con.schema
