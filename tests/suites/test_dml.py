@@ -83,6 +83,8 @@ class Request(unittest.TestCase):
         self.assertEqual(len(self.con.select('space_1', [0], index='secondary', limit=100)), 99)
         self.assertEqual(len(self.con.select('space_1', [0], index='secondary', limit=50)), 50)
 
+        # TODO: Check iterator_types
+
     def test_03_delete(self):
         # Check that delete works fine
         self.assertEqual(self.con.delete('space_1', 20), [(20, 0, 'tuple_20')])

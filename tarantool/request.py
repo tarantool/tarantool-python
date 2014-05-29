@@ -18,6 +18,7 @@ from tarantool.const import (
     IPROTO_USER_NAME,
     IPROTO_TUPLE,
     IPROTO_FUNCTION_NAME,
+    IPROTO_ITERATOR,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
     REQUEST_TYPE_INSERT,
@@ -145,13 +146,14 @@ class RequestSelect(Request):
     request_type = REQUEST_TYPE_SELECT
 
     # pylint: disable=W0231
-    def __init__(self, conn, space_no, index_no, key, offset, limit):
+    def __init__(self, conn, space_no, index_no, key, offset, limit, iterator):
         super(RequestSelect, self).__init__(conn)
         request_body = msgpack.dumps({ IPROTO_SPACE_ID: space_no, \
                                        IPROTO_INDEX_ID: index_no, \
                                        IPROTO_OFFSET: offset, \
                                        IPROTO_LIMIT: limit, \
-                                       IPROTO_KEY: key })
+                                       IPROTO_ITERATOR: iterator, \
+                                       IPROTO_KEY: key})
 
         self._bytes = self.header(len(request_body)) + request_body
 

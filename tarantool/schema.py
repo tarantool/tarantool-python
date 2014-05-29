@@ -6,6 +6,7 @@ It is a Tarantool schema description.
 '''
 
 from tarantool.error import SchemaError
+import tarantool.const as const
 
 class SchemaIndex(object):
     def __init__(self, array, space):
@@ -68,10 +69,9 @@ class Schema(object):
         _space = self.find_local_space(space)
         if _space is not None:
             return _space
-        temp = ('name' if isinstance(space, basestring) else 'primary')
+        _index = (const.INDEX_SPACE_NAME if isinstance(space, basestring) else const.INDEX_SPACE_PRIMARY)
 
-        array = self.con.call("box.space._space.index.{0}:select".format(temp),
-                space)
+        array = self.con.select(const.SPACE_SPACE, space, index=_index)
         if len(array) > 1:
             raise SchemaError('Some strange output from server: \n'+array)
         elif len(array) == 0 or not len(array[0]):
@@ -86,10 +86,9 @@ class Schema(object):
         if _index is not None:
             return _index
         space = self.get_space(space)
-        temp = ('name' if isinstance(index, basestring) else 'primary')
+        _index = (const.INDEX_INDEX_NAME if isinstance(index, basestring) else const.INDEX_INDEX_PRIMARY)
 
-        array = self.con.call('box.space._index.index.{0}:select'.format(temp),
-                [(space.sid, index)])
+        array = self.con.select(const.SPACE_INDEX, [space.sid, index], index=_index)
         if len(array) > 1:
             raise SchemaError('Some strange output from server: \n'+array)
         elif len(array) == 0 or not len(array[0]):

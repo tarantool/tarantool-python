@@ -17,7 +17,8 @@ class TestSuite_Schema(unittest.TestCase):
 
     def test_00_authenticate(self):
         self.assertIsNone(self.srv.admin("box.schema.user.create('test', { password = 'test' })"))
-        self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'execute,read,write', 'universe')"))
+        self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'read,write', 'space', '_space')"))
+        self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'read,write', 'space', '_index')"))
         self.assertEqual(self.con.authenticate('test', 'test'), [])
 
     def test_01_space_bad(self):

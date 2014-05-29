@@ -288,7 +288,8 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        space_name = self.schema.get_space(space_name).sid
+        if isinstance(space_name, basestring):
+            space_name = self.schema.get_space(space_name).sid
         request = RequestReplace(self, space_name, values)
         return self._send_request(request)
 
@@ -315,7 +316,8 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        space_name = self.schema.get_space(space_name).sid
+        if isinstance(space_name, basestring):
+            space_name = self.schema.get_space(space_name).sid
         request = RequestInsert(self, space_name, values)
         return self._send_request(request)
 
@@ -331,11 +333,13 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        index = kwargs.get("index", 0)
+        index_name = kwargs.get("index", 0)
 
         key = check_key(key)
-        space_name = self.schema.get_space(space_name).sid
-        index_name = self.schema.get_index(space_name, index).iid
+        if isinstance(space_name, basestring):
+            space_name = self.schema.get_space(space_name).sid
+        if isinstance(index_name, basestring):
+            index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestDelete(self, space_name, index_name, key)
         return self._send_request(request)
 
@@ -360,8 +364,10 @@ class Connection(object):
         index = kwargs.get("index", 0)
 
         key = check_key(key)
-        space_name = self.schema.get_space(space_name).sid
-        index_name = self.schema.get_index(space_name, index).iid
+        if isinstance(space_name, basestring):
+            space_name = self.schema.get_space(space_name).sid
+        if isinstance(index_name, basestring):
+            index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestUpdate(self, space_name, index_name, key, op_list)
         return self._send_request(request)
 
@@ -428,15 +434,18 @@ class Connection(object):
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 0xffffffff)
         index_name = kwargs.get("index", 0)
+        iterator_type = kwargs.get("iterator", 0)
 
         # Perform smart type checking (scalar / list of scalars / list of
         # tuples)
         key = check_key(key, select=True)
 
-        space_name = self.schema.get_space(space_name).sid
-        index_name = self.schema.get_index(space_name, index_name).iid
+        if isinstance(space_name, basestring):
+            space_name = self.schema.get_space(space_name).sid
+        if isinstance(index_name, basestring):
+            index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestSelect(
-            self, space_name, index_name, key, offset, limit)
+                self, space_name, index_name, key, offset, limit, iterator_type)
         response = self._send_request(request)
         return response
 
