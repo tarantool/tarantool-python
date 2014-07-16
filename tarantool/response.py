@@ -9,6 +9,8 @@ from tarantool.const import (
     IPROTO_DATA,
     IPROTO_ERROR,
     IPROTO_SYNC,
+    REQUEST_TYPE_OK,
+    REQUEST_TYPE_ERROR
 )
 from tarantool.error import DatabaseError, tnt_strerror
 
@@ -43,23 +45,26 @@ class Response(list):
         unpacker.feed(response)
         header = unpacker.unpack()
 
-        # Separate return_code and completion_code
-        self._completion_status = header[IPROTO_CODE] & 0x00ff
-        self._return_code = header[IPROTO_CODE] >> 8
         self._sync = header.get(IPROTO_SYNC, 0)
         self.conn = conn
+        code = header[IPROTO_CODE]
         body = None
         try:
             body = unpacker.unpack()
         except msgpack.OutOfData:
-            return
+            body = {}
 
-        self._return_message = body.get(IPROTO_ERROR, "")
-        if self._return_code != 0:
-            if self._completion_status == 2 and self.conn.error:
-                raise DatabaseError(self._return_code, self._return_message)
+        if code == REQUEST_TYPE_OK:
+            self._return_code = 0;
+            self._completion_status = 0
+            self.extend(body.get(IPROTO_DATA, []))
         else:
-            self.extend(body[IPROTO_DATA])
+            # Separate return_code and completion_code
+            self._return_message = body.get(IPROTO_ERROR, "")
+            self._return_code = code & (REQUEST_TYPE_ERROR - 1)
+            self._completion_status = 2
+            if self.conn.error:
+                raise DatabaseError(self._return_code, self._return_message)
 
     @property
     def completion_status(self):
