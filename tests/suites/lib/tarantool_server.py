@@ -216,7 +216,7 @@ class TarantoolServer(object):
             try:
                 temp = TarantoolAdmin('localhost', self.args['admin'])
                 ans = temp('box.info.status')[0]
-                if ans in ('primary', 'hot_standby', 'orphan') or ans.startswith('replica'):
+                if ans in ('running', 'primary', 'hot_standby', 'orphan') or ans.startswith('replica'):
                     return True
                 else:
                     raise Exception("Strange output for `box.info.status`: %s" % (ans))

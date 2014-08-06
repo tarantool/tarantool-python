@@ -15,8 +15,11 @@ class Request(unittest.TestCase):
         self.con = tarantool.Connection('localhost', self.srv.args['primary'])
         self.adm = self.srv.admin
         self.space_created = self.adm("box.schema.create_space('space_1')")
-        self.adm("box.space['space_1']:create_index('primary', {type = 'tree', parts = {0, 'num'}, unique = true})")
-        self.adm("box.space['space_1']:create_index('secondary', {type = 'tree', parts = {1, 'num', 2, 'str'}, unique = true})")
+        self.adm("box.space['space_1']:create_index('primary', {type = 'tree', parts = {1, 'num'}, unique = true})")
+        self.adm("box.space['space_1']:create_index('secondary', {type = 'tree', parts = {2, 'num', 3, 'str'}, unique = true})")
+        self.adm("json = require('json')")
+        self.adm("fiber = require('fiber')")
+        self.adm("uuid = require('uuid')")
 
     def test_00_00_authenticate(self):
         self.assertIsNone(self.srv.admin("box.schema.user.create('test', { password = 'test' })"))
@@ -116,34 +119,34 @@ class Request(unittest.TestCase):
         pass
 
     def test_07_call(self):
-        self.assertEqual(self.con.call('box.cjson.decode', '[123, 234, 345]'), [(123, 234, 345)])
-        self.assertEqual(self.con.call('box.cjson.decode', ['[123, 234, 345]']), [(123, 234, 345)])
-        self.assertEqual(self.con.call('box.cjson.decode', ('[123, 234, 345]',)), [(123, 234, 345)])
+        self.assertEqual(self.con.call('json.decode', '[123, 234, 345]'), [(123, 234, 345)])
+        self.assertEqual(self.con.call('json.decode', ['[123, 234, 345]']), [(123, 234, 345)])
+        self.assertEqual(self.con.call('json.decode', ('[123, 234, 345]',)), [(123, 234, 345)])
         with self.assertRaisesRegexp(tarantool.DatabaseError,
                 '(32, .*)'):
-            self.con.call('box.cjson.decode')
+            self.con.call('json.decode')
         with self.assertRaisesRegexp(tarantool.DatabaseError,
                 '(22, .*)'):
-            self.con.call('box.cjson.decode', '{"hello": "world"}')
-        ans = self.con.call('box.time')
+            self.con.call('json.decode', '{"hello": "world"}')
+        ans = self.con.call('fiber.time')
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)
         self.assertIsInstance(ans[0][0], float)
-        ans = self.con.call('box.time64')
+        ans = self.con.call('fiber.time64')
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)
         self.assertIsInstance(ans[0][0], (int, long))
-        ans = self.con.call('box.uuid')
+        ans = self.con.call('uuid.str')
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)
         self.assertIsInstance(ans[0][0], str)
-#        ans = self.con.call('box.uuid_hex')
+#        ans = self.con.call('uuid.hex')
 #        self.assertEqual(len(ans), 1)
 #        self.assertEqual(len(ans[0]), 1)
 #        self.assertIsInstance(ans[0][0], str)
-        with self.assertRaisesRegexp(tarantool.DatabaseError,
-                '(12345, \'lol, error\')'):
-            self.con.call('box.raise', [12345, 'lol, error'])
+#        with self.assertRaisesRegexp(tarantool.DatabaseError,
+#                '(12345, \'lol, error\')'):
+#            self.con.call('box.error', [12345, 'lol, error'])
 
         self.assertEqual(self.con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [(1, 2, 3, 'fld_1')])
         self.assertEqual(self.con.call('box.tuple.new', 'fld_1'), [('fld_1',)])
