@@ -1,7 +1,7 @@
-Python client library for Tarantool Database
-============================================
+Python driver for Tarantool 1.6
+===============================
 
-This package is a pure-python client library for `Tarantool Database`_.
+This package is a pure-python client library for `Tarantool`_.
 
 `Documentation`_  |  `Downloads`_  |  `PyPI`_  |  `GitHub`_  | `Issue tracker`_
 
