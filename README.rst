@@ -8,9 +8,8 @@ This package is a pure-python client library for `Tarantool`_.
 .. _`Documentation`: http://packages.python.org/tarantool
 .. _`Downloads`: http://pypi.python.org/pypi/tarantool#downloads
 .. _`PyPI`: http://pypi.python.org/pypi/tarantool
-.. _`GitHub`: https://github.com/mailru/tarantool-python
-.. _`Issue tracker`: https://github.com/mailru/tarantool-python/issues
-
+.. _`GitHub`: https://github.com/tarantool/tarantool-python
+.. _`Issue tracker`: https://github.com/tarantool/tarantool-python/issues
 
 Download and Install
 --------------------
@@ -18,9 +17,7 @@ Download and Install
 The recommended way to install ``tarantool`` package is using PIP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For Tarantool version < 1.6.0 you must get ``0.3.*`` connector version
-
-::
+For Tarantool version < 1.6.0 you must get ``0.3.*`` connector version::
 
     $ pip install tarantool\<0.4
 
@@ -38,37 +35,33 @@ You can also download zip archive, unpack it and run
 To install development version of the package using pip
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For Tarantool version < 1.6.0 you must get ``0.3.*`` connector version
-
-::
+For Tarantool version < 1.6.0 you must get ``stable`` branch::
 
     $ pip install git+https://github.com/tarantool/tarantool-python.git@stable
 
-For later Tarantool use version ``0.5.*`` connector version::
+For later Tarantool use ``master`` branch::
 
     $ pip install git+https://github.com/tarantool/tarantool-python.git@master
 
-
 --------------------------------------------------------------------------------
-
 
 What is Tarantool?
 ------------------
 
-`Tarantool`_ is a damn fast key/value data store originally designed by
-`Mail.Ru`_ and released under the terms of `BSD license`_. `Tarantool`_ is
-production-ready and actively used at `Mail.Ru`_ - one of the leading
-Russian web content providers.
+`Tarantool`_ is a NoSQL database running inside a Lua program. It combines the network programming power of Node.JS with data persistency capabilities of Redis. It's open source, `BSD licensed`_.
 
- * NoSQL database
- * In-memory storage
- * Data is protected by on-disk write-ahead-log and snapshots
- * Key-value data model: each record is a tuple of multiple values,
-   identified by primary key
- * Records can be accessed using secondary indexes
- * Secondary indexes can be non-unique and composite (include multiple fields)
- * Server-side stored procedures in Lua
- * Very fast binary client-server protocol
+Features
+--------
+
+    * Lua packages for non-blocking I/O, fibers and HTTP
+    * MsgPack data format and MsgPack based client-server protocol
+    * Two data engines:
+        * 100% in-memory with optional persistence
+        * 2-level disk-based B-tree, to use with large data sets (powered by `Sophia`_)
+    * secondary key and index iterators support (can be non-unique and composite)
+    * multiple index types: HASH, BITSET, TREE
+    * asynchronous master-master replication
+    * authentication and access control
 
 
 See More
@@ -83,8 +76,8 @@ See More
 .. _`Tarantool`:
 .. _`Tarantool Database`:
 .. _`Tarantool Homepage`: http://tarantool.org
-.. _`Tarantool at Github`: https://github.com/mailru/tarantool
-.. _`Tarantool User Guide`: http://tarantool.org/tarantool_user_guide.html
-.. _`Client-server protocol specification`: https://raw.github.com/mailru/tarantool/master/doc/box-protocol.txt
-.. _`Mail.Ru`: http://mail.ru
-.. _`BSD license`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
+.. _`Tarantool at Github`: https://github.com/tarantool/tarantool
+.. _`Tarantool User Guide`: http://tarantool.org/doc/user_guide.html
+.. _`Client-server protocol specification`: https://raw.github.com/tarantool/tarantool/master/doc/box-protocol.txt
+.. _`Sophia`: http://sphia.org
+.. _`BSD licensed`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
