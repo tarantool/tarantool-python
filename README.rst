@@ -15,17 +15,38 @@ This package is a pure-python client library for `Tarantool`_.
 Download and Install
 --------------------
 
-The recommended way to install ``tarantool`` package::
+The recommended way to install ``tarantool`` package is using PIP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    $ pip install tarantool
+For Tarantool version < 1.6.0 you must get ``0.3.*`` connector version
 
-You can also download zip archive, unpack it and run::
+::
+
+    $ pip install tarantool\<0.4
+
+For later Tarantool use version ``0.5.*`` connector version::
+
+    $ pip install tarantool\>0.4
+
+You can also download zip archive, unpack it and run
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
 
     $ python setup.py install
 
-To install development version of the package use pip::
+To install development version of the package using pip
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    $ pip install git+https://github.com/mailru/tarantool-python
+For Tarantool version < 1.6.0 you must get ``0.3.*`` connector version
+
+::
+
+    $ pip install git+https://github.com/tarantool/tarantool-python.git@stable
+
+For later Tarantool use version ``0.5.*`` connector version::
+
+    $ pip install git+https://github.com/tarantool/tarantool-python.git@master
 
 
 --------------------------------------------------------------------------------
