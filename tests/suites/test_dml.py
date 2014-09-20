@@ -116,7 +116,18 @@ class Request(unittest.TestCase):
         self.assertEqual(self.con.ping(notime=True), "Success")
 
     def test_06_update(self):
-        pass
+        self.assertEqual(self.con.update('space_1', (2,), [('+', 1, 3)]),
+                [(2, 5, 'tuple_3')])
+        self.assertEqual(self.con.update('space_1', (2,), [('-', 1, 3)]),
+                [(2, 2, 'tuple_3')])
+        self.assertEqual(self.con.update('space_1', (2,), [(':', 2, 3, 2, 'lalal')]),
+                [(2, 2, 'tuplalal_3')])
+        self.assertEqual(self.con.update('space_1', (2,), [('!', 2, '1')]),
+                [(2, 2, '1', 'tuplalal_3')])
+        self.assertEqual(self.con.update('space_1', (2,), [('!', 2, 'oingo, boingo')]),
+                [(2, 2, 'oingo, boingo', '1', 'tuplalal_3')])
+        self.assertEqual(self.con.update('space_1', (2,), [('#', 2, 2)]),
+                [(2, 2, 'tuplalal_3')])
 
     def test_07_call(self):
         self.assertEqual(self.con.call('json.decode', '[123, 234, 345]'), [(123, 234, 345)])

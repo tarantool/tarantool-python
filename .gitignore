@@ -6,3 +6,4 @@
 /MANIFEST
 *.snap
 sophia
+*.egg-info

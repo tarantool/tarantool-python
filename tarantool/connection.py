@@ -208,7 +208,7 @@ class Connection(object):
 
         last_errno = check()
         if self.connected and last_errno == errno.EAGAIN:
-            return 
+            return
 
         attempt = 0
         last_errno = 0
@@ -352,6 +352,8 @@ class Connection(object):
 
         :param space_name: space number or name to update a record
         :type space_name: int or str
+        :param index: index number or name to update a record
+        :type index: int or str
         :param key: key that identifies a record
         :type key: int or str
         :param op_list: list of operations. Each operation
@@ -361,7 +363,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        index = kwargs.get("index", 0)
+        index_name = kwargs.get("index", 0)
 
         key = check_key(key)
         if isinstance(space_name, basestring):
