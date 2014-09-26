@@ -12,8 +12,7 @@ import subprocess
 
 def check_port(port, rais=True):
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(("localhost", port))
+        sock = socket.create_connection(("localhost", port))
     except socket.error:
         return True
     if rais:
@@ -39,22 +38,20 @@ class TarantoolAdmin(object):
         self.host = host
         self.port = port
         self.is_connected = False
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-
+        self.socket = None
     def connect(self):
-        self.socket.connect((self.host, self.port))
+        self.socket = socket.create_connection((self.host, self.port))
+        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         self.is_connected = True
 
     def disconnect(self):
         if self.is_connected:
             self.socket.close()
+            self.socket = None
             self.is_connected = False
 
     def reconnect(self):
         self.disconnect()
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         self.connect()
 
     def opt_reconnect(self):
@@ -63,7 +60,7 @@ class TarantoolAdmin(object):
             Make use of this property and detect whether or not the socket is
             dead. Reconnect a dead socket, do nothing if the socket is good."""
         try:
-            if self.socket.recv(0, socket.MSG_DONTWAIT) == '':
+            if self.socket is None or self.socket.recv(0, socket.MSG_DONTWAIT) == '':
                 self.reconnect()
         except socket.error as e:
             if e.errno == errno.EAGAIN:
