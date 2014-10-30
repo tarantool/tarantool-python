@@ -13,13 +13,13 @@ class test(setuptools.Command):
     ]
 
     def initialize_options(self):
-        self.verbosity = 1
+        self.verbosity = 2
 
     def finalize_options(self):
         try:
             self.verbosity = int(self.verbosity)
         except ValueError:
-            self.verbosity = 1
+            self.verbosity = 2
 
     def run(self):
         '''

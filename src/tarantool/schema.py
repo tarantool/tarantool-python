@@ -424,6 +424,8 @@ class Schema(object):
         :rtype: bytes
         '''
 
+        if not isinstance(values, (tuple, list)):
+            values = (values, )
         space_def = self._spaces.get(space_no, None)
         if space_def:
             (_name, field_defs, default_type, index_defs) = space_def
