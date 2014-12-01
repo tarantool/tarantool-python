@@ -4,6 +4,7 @@
 This module provides low-level API for Tarantool
 '''
 
+import sys
 import time
 import errno
 import ctypes
@@ -56,10 +57,8 @@ class Connection(object):
     Also this class provides low-level interface to data manipulation
     (insert/delete/update/select).
     '''
-    _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-    _recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int,
-            ctypes.c_void_p, c_ssize_t, ctypes.c_int,
-            use_errno=True)(_libc.recv)
+    _libc = None
+    _recv = None
 
     def __init__(self, host, port,
                  socket_timeout=SOCKET_TIMEOUT,
@@ -93,6 +92,11 @@ class Connection(object):
         self._socket = None
         self.connected = False
         self.error = True
+        if not sys.platform.startswith('win32') or _libc is None or _recv is None:
+            _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+            _recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int,
+                    ctypes.c_void_p, c_ssize_t, ctypes.c_int,
+                    use_errno=True)(_libc.recv)
         if connect_now:
             self.connect()
 
@@ -180,6 +184,9 @@ class Connection(object):
         Check that connection is alive using low-level recv from libc(ctypes)
         **Due to bug in python - timeout is internal python construction.
         '''
+        if self._recv == None:
+            return
+
         def check():  # Check that connection is alive
             rc = self._recv(self._socket.fileno(), '', 1,
                     socket.MSG_DONTWAIT | socket.MSG_PEEK)
