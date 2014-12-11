@@ -1,0 +1,23 @@
+language: python
+
+branches:
+  only:
+    - master
+    - stable
+
+cache: false
+
+notifications:
+  email: false
+  irc: false
+
+before_script:
+  - uname -a
+  - lsb_release -a
+  - curl http://tarantool.org/dist/public.key | sudo apt-key add -
+  - echo "deb http://tarantool.org/dist/stable/ubuntu `lsb_release -c -s` main" | sudo tee -a /etc/apt/sources.list.d/tarantool.list
+  - sudo apt-get update
+
+script:
+  - sudo apt-get -y install tarantool python-yaml
+  - python setup.py test
