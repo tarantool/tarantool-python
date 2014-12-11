@@ -266,7 +266,11 @@ class Connection(object):
             args = args[0]
 
         # Check if 'field_defs' and 'default_type' keyword arguments are passed
-        field_defs = kwargs.get("field_defs", None)
+        field_types = kwargs.get("field_types", None)
+        if field_types is not None:
+            field_defs = [('', k) for k in field_types]
+        else:
+            field_defs = kwargs.get("field_defs", None)
         default_type = kwargs.get("default_type", None)
         space_name = kwargs.get("space_name", None)
         return_tuple = kwargs.get("return_tuple", self.return_tuple)
@@ -420,7 +424,8 @@ class Connection(object):
         return t1 - t0
 
     def _select(
-            self, space_name, index_name, values, offset=0, limit=0xffffffff):
+            self, space_name, index_name, values,
+            offset=0, limit=0xffffffff, field_types=None):
         '''\
         Low level version of select() method.
 
@@ -440,10 +445,12 @@ class Connection(object):
 
         # 'values' argument must be a collection with tuples
         assert isinstance(values, (list, tuple, set, frozenset))
+        if field_types is not None:
+            field_types = [('', k) for k in field_types]
 
         request = RequestSelect(
             self, space_name, index_name, values, offset, limit)
-        response = self._send_request(request, space_name)
+        response = self._send_request(request, space_name, field_defs=field_types)
         return response
 
     def select(self, space_name, values=None, **kwargs):
@@ -485,6 +492,7 @@ class Connection(object):
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 0xffffffff)
         index = kwargs.get("index", 0)
+        field_types = kwargs.get("field_types", None)
 
         # Perform smart type cheching (scalar / list of scalars / list of
         # tuples)
@@ -511,7 +519,7 @@ class Connection(object):
                     "Invalid value type, expected one of scalar "
                     "(int or str) / list of scalars / list of tuples ")
 
-        return self._select(space_name, index, values, offset, limit)
+        return self._select(space_name, index, values, offset, limit, field_types)
 
     def space(self, space_name):
         '''\
