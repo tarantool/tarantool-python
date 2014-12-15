@@ -135,6 +135,8 @@ class Space(object):
         :type offset: int
         :param limit: limits the total number of returned tuples
         :type limit: int
+        :param field_types: obsolete
+        :type field_types: list of types or list of numbers
 
         :rtype: `Response` instance
         '''
@@ -144,9 +146,11 @@ class Space(object):
         index = kwargs.get("index", 0)
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 0xffffffff)
+        field_types = kwargs.get("field_types", None)
 
         return self.connection.select(
-            self.space_no, values, index=index, offset=offset, limit=limit)
+            self.space_no, values, index=index,
+            offset=offset, limit=limit, field_types=field_types)
 
     def call(self, func_name, *args, **kwargs):
         '''\
@@ -168,6 +172,8 @@ class Space(object):
         :param space_name: space number or name. A schema for the space
             will be used for type conversion.
         :type space_name: None or int or str
+        :param field_types: obsolete
+        :type field_types: list of types or list of numbers
 
         :rtype: `Response` instance
         '''
