@@ -66,7 +66,8 @@ class Connection(object):
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True,
                  schema=None,
-                 return_tuple=True):
+                 return_tuple=True,
+                 strict=True):
         '''\
         Initialize a connection to the server.
 
@@ -89,6 +90,7 @@ class Connection(object):
             self.schema = schema
         else:
             self.schema = Schema(schema)
+        self.schema.strict = strict
         self._socket = None
         self.connected = False
         self.error = True

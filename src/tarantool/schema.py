@@ -60,6 +60,7 @@ class Schema(object):
 
         self._space_names = {}
         self._spaces = {}
+        self.strict = True
         if schema is None:
             return
 
@@ -300,13 +301,19 @@ class Schema(object):
         '''
 
         if cast_to in (NUM, int):
+            if len(packed_value) == 8 and not self.strict:
+                return self._unpack_value_int64(packed_value)
             return self._unpack_value_int(packed_value)
         elif cast_to in (RAW, bytes, None):
             return packed_value
-        elif cast_to in (STR, basestring):
+        elif cast_to in (str, ) and not self.strict:
+            return str(packed_value)
+        elif cast_to in (STR, ) or type(cast_to) == type and issubclass(cast_to, basestring):
             return unicode(packed_value)
         elif cast_to in (NUM64, long):
             return self._unpack_value_int64(packed_value)
+        elif callable(cast_to) and not self.strict:
+            return cast_to(packed_value)
         else:
             raise TypeError("Invalid field type %s" % (cast_to))
 
