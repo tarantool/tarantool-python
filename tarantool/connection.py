@@ -19,6 +19,7 @@ try:
 except ImportError:
     from ctypes import c_longlong as c_ssize_t
 
+import tarantool
 from tarantool.response import Response
 from tarantool.request import (
     Request,
@@ -61,6 +62,12 @@ class Connection(object):
     _sys_recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, ctypes.c_void_p,
                                  c_ssize_t, ctypes.c_int,
                                  use_errno=True)(_libc.recv)
+
+    Error = tarantool.error
+    DatabaseError = tarantool.error.DatabaseError
+    InterfaceError = tarantool.error.InterfaceError
+    SchemaError = tarantool.error.SchemaError
+    NetworkError = tarantool.error.NetworkError
 
     def __init__(self, host, port,
                  user=None,
