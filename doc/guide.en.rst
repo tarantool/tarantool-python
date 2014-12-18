@@ -148,15 +148,30 @@ There are four basic operations supported by Tarantool:
 Inserting and replacing records
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To insert or replace records :meth:`Space.insert() <tarantool.space.Space.insert>`
+To insert records :meth:`Space.insert() <tarantool.space.Space.insert>`
 method should be used::
 
     >>> user.insert((user_id, email, int(time.time())))
 
-The first element of the tuple is always its unique primary key.
+The first element of the tuple is its unique primary key.
+It will throw error, if tuple with same value in unique indexes exists.
+
+To replace records :meth:`Space.replace() <tarantool.space.Space.replace>`
+method should be used::
+
+    >>> user.replace((user_id, email_new, int(time.time())))
+
+If and entry with the same key not exists, exception'll be throwed.
+
+To store (no matter what) record :meth:`Space.store() <tarantool.space.Space.store>`
+method shout be used::
+
+    >>> user.store((user_id, email_new, int(time.time())))
+    >>> user.store((user_id_new, email, int(time.time())))
 
 If an entry with the same key already exists, it will be replaced
-without any warning or error message.
+without any warning or error message. If an entry with same key
+doesn't exists, it will be inserted.
 
 .. note:: In case of ``insert`` request ``Response.rowcount`` is always equals to ``1``
 
