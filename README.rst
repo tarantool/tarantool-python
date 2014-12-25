@@ -5,7 +5,7 @@ This package is a pure-python client library for `Tarantool`_.
 
 `Documentation`_  |  `Downloads`_  |  `PyPI`_  |  `GitHub`_  | `Issue tracker`_
 
-.. _`Documentation`: http://packages.python.org/tarantool
+.. _`Documentation`: http://tarantool-python.readthedocs.org/en/latest/
 .. _`Downloads`: http://pypi.python.org/pypi/tarantool#downloads
 .. _`PyPI`: http://pypi.python.org/pypi/tarantool
 .. _`GitHub`: https://github.com/tarantool/tarantool-python
