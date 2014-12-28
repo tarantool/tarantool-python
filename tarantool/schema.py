@@ -92,7 +92,7 @@ class Schema(object):
         if len(array) > 1:
             raise SchemaError('Some strange output from server: \n'+array)
         elif len(array) == 0 or not len(array[0]):
-            temp_name = ('name' if isinstance(space, basestring) else 'id')
+            temp_name = ('name' if isinstance(index, basestring) else 'id')
             raise SchemaError('There\'s no index with {2} \'{0}\' '
                     'in space \'{1}\''.format(index, space.name, temp_name))
         array = array[0]
