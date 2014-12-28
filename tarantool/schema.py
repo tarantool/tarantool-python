@@ -19,9 +19,13 @@ class SchemaIndex(object):
             self.parts.append((array[5+1+i*2], array[5+2+i*2]))
         self.space = space
         self.space.indexes[self.iid] = self
+        if self.name:
+            self.space.indexes[self.name] = self
 
     def flush(self):
         del self.space.indexes[self.iid]
+        if self.name:
+            del self.space.indexes[self.name]
 
 class SchemaSpace(object):
     def __init__(self, array, schema):
@@ -31,44 +35,24 @@ class SchemaSpace(object):
         self.indexes = {}
         self.schema = schema
         self.schema[self.sid] = self
+        if self.name:
+            self.schema[self.name] = self
 
     def flush(self):
         del self.schema[self.sid]
+        if self.name:
+            del self.schema[self.name]
 
 class Schema(object):
     def __init__(self, con):
         self.schema = {}
         self.con = con
 
-    def find_local_space(self, space):
-        if isinstance(space, basestring):
-            for _, val in self.schema.iteritems():
-                if val.name == space:
-                    return val
-            return None
+    def get_space(self, space):
         try:
             return self.schema[space]
         except KeyError:
-            return None
-
-    def find_local_index(self, space, index):
-        space = self.find_local_space(space)
-        if space is None:
-            return None
-        if isinstance(index, basestring):
-            for _, val in space.indexes.iteritems():
-                if val.name == index:
-                    return val
-            return None
-        try:
-            return space.indexes[index]
-        except KeyError:
-            return None
-
-    def get_space(self, space):
-        _space = self.find_local_space(space)
-        if _space is not None:
-            return _space
+            pass
         _index = (const.INDEX_SPACE_NAME if isinstance(space, basestring) else const.INDEX_SPACE_PRIMARY)
 
         array = self.con.select(const.SPACE_SPACE, space, index=_index)
@@ -82,21 +66,22 @@ class Schema(object):
         return SchemaSpace(array, self.schema)
 
     def get_index(self, space, index):
-        _index = self.find_local_index(space, index)
-        if _index is not None:
-            return _index
-        space = self.get_space(space)
+        _space = self.get_space(space)
+        try:
+            return _space.indexes[index]
+        except KeyError:
+            pass
         _index = (const.INDEX_INDEX_NAME if isinstance(index, basestring) else const.INDEX_INDEX_PRIMARY)
 
-        array = self.con.select(const.SPACE_INDEX, [space.sid, index], index=_index)
+        array = self.con.select(const.SPACE_INDEX, [_space.sid, index], index=_index)
         if len(array) > 1:
             raise SchemaError('Some strange output from server: \n'+array)
         elif len(array) == 0 or not len(array[0]):
             temp_name = ('name' if isinstance(index, basestring) else 'id')
             raise SchemaError('There\'s no index with {2} \'{0}\' '
-                    'in space \'{1}\''.format(index, space.name, temp_name))
+                    'in space \'{1}\''.format(index, _space.name, temp_name))
         array = array[0]
-        return SchemaIndex(array, space)
+        return SchemaIndex(array, _space)
 
     def flush(self):
         self.schema.clear()
