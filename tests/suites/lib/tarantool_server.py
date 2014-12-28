@@ -43,6 +43,7 @@ class TarantoolAdmin(object):
         self.socket = socket.create_connection((self.host, self.port))
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         self.is_connected = True
+        self.socket.recv(256) # skip greating
 
     def disconnect(self):
         if self.is_connected:
@@ -60,7 +61,7 @@ class TarantoolAdmin(object):
             Make use of this property and detect whether or not the socket is
             dead. Reconnect a dead socket, do nothing if the socket is good."""
         try:
-            if self.socket is None or self.socket.recv(0, socket.MSG_DONTWAIT) == '':
+            if self.socket is None or self.socket.recv(1, socket.MSG_DONTWAIT|socket.MSG_PEEK) == '':
                 self.reconnect()
         except socket.error as e:
             if e.errno == errno.EAGAIN:
