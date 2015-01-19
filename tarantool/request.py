@@ -26,6 +26,7 @@ from tarantool.const import (
     REQUEST_TYPE_DELETE,
     REQUEST_TYPE_UPDATE,
     REQUEST_TYPE_CALL,
+    REQUEST_TYPE_EVAL,
     REQUEST_TYPE_AUTHENTICATE
 )
 
@@ -193,6 +194,13 @@ class RequestCall(Request):
                                        IPROTO_TUPLE: args })
 
         self._bytes = self.header(len(request_body)) + request_body
+
+class RequestEval(RequestCall):
+
+    '''
+        Represents EVAL request
+    '''
+    request_type = REQUEST_TYPE_EVAL
 
 
 class RequestPing(Request):

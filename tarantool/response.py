@@ -3,6 +3,7 @@
 
 import sys
 import msgpack
+import yaml
 
 from tarantool.const import (
     IPROTO_CODE,
@@ -41,7 +42,7 @@ class Response(list):
         # created in the __new__(). But let it be.
         super(Response, self).__init__()
 
-        unpacker = msgpack.Unpacker(use_list = False)
+        unpacker = msgpack.Unpacker(use_list = True)
         unpacker.feed(response)
         header = unpacker.unpack()
 
@@ -57,12 +58,18 @@ class Response(list):
         if code == REQUEST_TYPE_OK:
             self._return_code = 0;
             self._completion_status = 0
-            self.extend(body.get(IPROTO_DATA, []))
+            self._data = body.get(IPROTO_DATA, None)
+            # Backward-compatibility
+            if isinstance(self._data, (list, tuple)):
+                self.extend(self._data)
+            else:
+                self.append(self._data)
         else:
             # Separate return_code and completion_code
             self._return_message = body.get(IPROTO_ERROR, "")
             self._return_code = code & (REQUEST_TYPE_ERROR - 1)
             self._completion_status = 2
+            self._data = None
             if self.conn.error:
                 raise DatabaseError(self._return_code, self._return_message)
 
@@ -106,6 +113,17 @@ class Response(list):
         return self._return_code
 
     @property
+    def data(self):
+        '''\
+        :type: object
+
+        Required field in the server response.
+        Contains list of tuples of SELECT, REPLACE and DELETE requests
+        and arbitrary data for CALL.
+        '''
+        return self._data
+
+    @property
     def strerror(self):
         '''\
         :type: str
@@ -131,13 +149,11 @@ class Response(list):
 
         :rtype: str or None
         '''
-        errstr = "---\n- error:\n    errcode: {errname}\n    errmsg: {errstr}\n..."
         if self.completion_status:
-            return errstr.format(errname = self.strerror,
-                                 errstr  = self.return_message)
-        table = ""
-        if len(self):
-            table = "\n"+"\n".join(["- "+str(list(k)) for k in self])
-        return "---{0}\n...".format(table)
+            return yaml.dump({ 'error': {
+                'code': self.strerror[0],
+                'reason': self.return_message
+            }})
+        return yaml.dump(self._data)
 
     __repr__ = __str__

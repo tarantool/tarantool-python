@@ -25,6 +25,7 @@ from tarantool.request import (
     Request,
     RequestCall,
     RequestDelete,
+    RequestEval,
     RequestInsert,
     RequestReplace,
     RequestPing,
@@ -280,6 +281,28 @@ class Connection(object):
         request = RequestCall(self, func_name, args)
         response = self._send_request(request)
         return response
+
+    def eval(self, expr, *args):
+        '''\
+        Execute EVAL request. Eval Lua expression.
+
+        :param expr: Lua expression
+        :type expr: str
+        :param args: list of function arguments
+        :type args: list or tuple
+
+        :rtype: `Response` instance
+        '''
+        assert isinstance(expr, str)
+
+        # This allows to use a tuple or list as an argument
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            args = args[0]
+
+        request = RequestEval(self, expr, args)
+        response = self._send_request(request)
+        return response
+
 
     def replace(self, space_name, values):
         '''
