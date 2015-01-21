@@ -19,6 +19,7 @@ from tarantool.const import (
     IPROTO_TUPLE,
     IPROTO_FUNCTION_NAME,
     IPROTO_ITERATOR,
+    IPROTO_EXPR,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
     REQUEST_TYPE_INSERT,
@@ -178,6 +179,7 @@ class RequestUpdate(Request):
 
         self._bytes = self.header(len(request_body)) + request_body
 
+
 class RequestCall(Request):
 
     '''
@@ -195,12 +197,23 @@ class RequestCall(Request):
 
         self._bytes = self.header(len(request_body)) + request_body
 
-class RequestEval(RequestCall):
+
+class RequestEval(Request):
 
     '''
         Represents EVAL request
     '''
     request_type = REQUEST_TYPE_EVAL
+
+    # pylint: disable=W0231
+    def __init__(self, conn, name, args):
+        super(RequestEval, self).__init__(conn)
+        assert isinstance(args, (list, tuple))
+
+        request_body = msgpack.dumps({ IPROTO_EXPR: name, \
+                                       IPROTO_TUPLE: args })
+
+        self._bytes = self.header(len(request_body)) + request_body
 
 
 class RequestPing(Request):
