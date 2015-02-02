@@ -27,9 +27,11 @@ from tarantool.request import (
     RequestDelete,
     RequestEval,
     RequestInsert,
+    RequestJoin,
     RequestReplace,
     RequestPing,
     RequestSelect,
+    RequestSubscribe,
     RequestUpdate,
     RequestAuthenticate)
 
@@ -39,6 +41,8 @@ from tarantool.const import (
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
     RETRY_MAX_ATTEMPTS,
+    REQUEST_TYPE_OK,
+    REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE)
 from tarantool.error import (
     NetworkError,
@@ -331,6 +335,27 @@ class Connection(object):
         request = RequestAuthenticate(self, self._salt, self.user, \
                                       self.password)
         return self._send_request_wo_reconnect(request)
+
+    def join(self, server_uuid):
+        request = RequestJoin(self, server_uuid)
+        resp = self._send_request(request)
+        while True:
+            yield resp
+            if resp.code == REQUEST_TYPE_OK or \
+               resp.code >= REQUEST_TYPE_ERROR:
+                return
+            resp = Response(self, self._read_response())
+        self.close() # close connection after JOIN
+
+    def subscribe(self, cluster_uuid, server_uuid, vclock = {}):
+        request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
+        resp = self._send_request(request)
+        while True:
+            yield resp
+            if resp.code >= REQUEST_TYPE_ERROR:
+                return
+            resp = Response(self, self._read_response())
+        self.close() # close connection after SUBSCRIBE
 
     def insert(self, space_name, values):
         '''

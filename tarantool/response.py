@@ -48,17 +48,17 @@ class Response(list):
 
         self._sync = header.get(IPROTO_SYNC, 0)
         self.conn = conn
-        code = header[IPROTO_CODE]
-        body = None
+        self._code = header[IPROTO_CODE]
+        self._body = {}
         try:
-            body = unpacker.unpack()
+            self._body = unpacker.unpack()
         except msgpack.OutOfData:
-            body = {}
+            pass
 
-        if code == REQUEST_TYPE_OK:
+        if self._code < REQUEST_TYPE_ERROR:
             self._return_code = 0;
             self._completion_status = 0
-            self._data = body.get(IPROTO_DATA, None)
+            self._data = self._body.get(IPROTO_DATA, None)
             # Backward-compatibility
             if isinstance(self._data, (list, tuple)):
                 self.extend(self._data)
@@ -66,8 +66,8 @@ class Response(list):
                 self.append(self._data)
         else:
             # Separate return_code and completion_code
-            self._return_message = body.get(IPROTO_ERROR, "")
-            self._return_code = code & (REQUEST_TYPE_ERROR - 1)
+            self._return_message = self._body.get(IPROTO_ERROR, "")
+            self._return_code = self._code & (REQUEST_TYPE_ERROR - 1)
             self._completion_status = 2
             self._data = None
             if self.conn.error:
@@ -98,6 +98,26 @@ class Response(list):
         Number of rows affected or returned by a query.
         '''
         return len(self)
+
+    @property
+    def body(self):
+        '''\
+        :type: dict
+
+        Required field in the server response.
+        Contains raw response body.
+        '''
+        return self._body
+
+    @property
+    def code(self):
+        '''\
+        :type: int
+
+        Required field in the server response.
+        Contains response type id.
+        '''
+        return self._code
 
     @property
     def return_code(self):

@@ -19,6 +19,9 @@ from tarantool.const import (
     IPROTO_TUPLE,
     IPROTO_FUNCTION_NAME,
     IPROTO_ITERATOR,
+    IPROTO_SERVER_UUID,
+    IPROTO_CLUSTER_UUID,
+    IPROTO_VCLOCK,
     IPROTO_EXPR,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
@@ -28,7 +31,9 @@ from tarantool.const import (
     REQUEST_TYPE_UPDATE,
     REQUEST_TYPE_CALL,
     REQUEST_TYPE_EVAL,
-    REQUEST_TYPE_AUTHENTICATE
+    REQUEST_TYPE_AUTHENTICATE,
+    REQUEST_TYPE_JOIN,
+    REQUEST_TYPE_SUBSCRIBE
 )
 
 
@@ -226,3 +231,35 @@ class RequestPing(Request):
     def __init__(self, conn):
         super(RequestPing, self).__init__(conn)
         self._bytes = self.header(0)
+
+class RequestJoin(Request):
+
+    '''
+        Represents JOIN request
+    '''
+    request_type = REQUEST_TYPE_JOIN
+
+    # pylint: disable=W0231
+    def __init__(self, conn, server_uuid):
+        super(RequestJoin, self).__init__(conn)
+        request_body = msgpack.dumps({ IPROTO_SERVER_UUID: server_uuid })
+        self._bytes = self.header(len(request_body)) + request_body
+
+class RequestSubscribe(Request):
+
+    '''
+        Represents SUBSCRIBE request
+    '''
+    request_type = REQUEST_TYPE_SUBSCRIBE
+
+    # pylint: disable=W0231
+    def __init__(self, conn, cluster_uuid, server_uuid, vclock):
+        super(RequestSubscribe, self).__init__(conn)
+        assert isinstance(vclock, dict)
+
+        request_body = msgpack.dumps({
+            IPROTO_CLUSTER_UUID: cluster_uuid,
+            IPROTO_SERVER_UUID: server_uuid,
+            IPROTO_VCLOCK: vclock
+        })
+        self._bytes = self.header(len(request_body)) + request_body
