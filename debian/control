@@ -1,11 +1,11 @@
-Source: tarantool
+Source: tarantool-python
 Maintainer: Konstantin Cherkasoff <k.cherkasoff@gmail.com>
 Section: python
 Priority: optional
 Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7)
 Standards-Version: 3.9.1
 
-Package: python-tarantool
+Package: tarantool-python
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-yaml, msgpack-python
 Description: Python client library for Tarantool Database
