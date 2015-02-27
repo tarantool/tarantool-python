@@ -184,7 +184,7 @@ method should be used.
 
 Example::
 
-    >>> user.update(1001, [(1, '=', 'John'), (2, '=', 'Smith')])
+    >>> user.update(1001, [('=', 1, 'John'), ('=', 2, 'Smith')])
 
 In this example new values for fields ``1`` and ``2`` are assigned.
 
