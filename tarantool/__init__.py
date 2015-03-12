@@ -19,8 +19,8 @@ from tarantool.error import (
 )
 
 from tarantool.schema import (
-        Schema,
-        SchemaError
+    Schema,
+    SchemaError
 )
 
 

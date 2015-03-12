@@ -37,7 +37,7 @@ class DatabaseError(Error):
 
 class InterfaceError(Error):
 
-    '''\
+    '''
     Error related to the database interface rather than the database itself
     '''
 
@@ -90,7 +90,7 @@ if sys.platform == "win32":
     os_strerror_orig = os.strerror
 
     def os_strerror_patched(code):
-        '''\
+        '''
         Return cross-platform message about socket-related errors
 
         This function exists because under Windows os.strerror returns
@@ -144,7 +144,7 @@ class NetworkWarning(UserWarning):
 
 class RetryWarning(UserWarning):
 
-    '''\
+    '''
     Warning is emited in case of server return completion_status == 1
     (try again)
     '''
@@ -157,7 +157,7 @@ warnings.filterwarnings("always", category=RetryWarning)
 
 
 def warn(message, warning_class):
-    '''\
+    '''
     Emit warinig message.
     Just like standard warnings.warn() but don't output full filename.
     '''
@@ -167,68 +167,72 @@ def warn(message, warning_class):
     warnings.warn_explicit(message, warning_class, module_name, line_no)
 
 _strerror = {
-     0: ("ER_OK", "OK"),
-     1: ("ER_ILLEGAL_PARAMS", "Illegal parameters, %s"),
-     2: ("ER_MEMORY_ISSUE", "Failed to allocate %u bytes in %s for %s"),
-     3: ("ER_TUPLE_FOUND", "Duplicate key exists in unique index %u"),
-     4: ("ER_TUPLE_NOT_FOUND", "Tuple doesn't exist in index %u"),
-     5: ("ER_UNSUPPORTED", "%s does not support %s"),
-     6: ("ER_NONMASTER", "Can't modify data on a replication slave. My \
-            master is: %s"),
-     7: ("ER_SECONDARY", "Can't modify data upon a request on the \
-            secondary port."),
-     8: ("ER_INJECTION", "Error injection '%s'"),
-     9: ("ER_CREATE_SPACE", "Failed to create space %u: %s"),
+    0: ("ER_OK", "OK"),
+    1: ("ER_ILLEGAL_PARAMS", "Illegal parameters, %s"),
+    2: ("ER_MEMORY_ISSUE", "Failed to allocate %u bytes in %s for %s"),
+    3: ("ER_TUPLE_FOUND", "Duplicate key exists in unique index %u"),
+    4: ("ER_TUPLE_NOT_FOUND", "Tuple doesn't exist in index %u"),
+    5: ("ER_UNSUPPORTED", "%s does not support %s"),
+    6: ("ER_NONMASTER",
+        "Can't modify data on a replication slave. My master is: %s"),
+    7: ("ER_SECONDARY",
+        "Can't modify data upon a request on the secondary port."),
+    8: ("ER_INJECTION", "Error injection '%s'"),
+    9: ("ER_CREATE_SPACE", "Failed to create space %u: %s"),
     10: ("ER_SPACE_EXISTS", "Space %u already exists"),
     11: ("ER_DROP_SPACE", "Can't drop space %u: %s"),
     12: ("ER_ALTER_SPACE", "Can't modify space %u: %s"),
-    13: ("ER_INDEX_TYPE", "Unsupported index type supplied for index %u \
-            in space %u"),
-    14: ("ER_MODIFY_INDEX", "Can't create or modify index %u in space \
-            %u: %s"),
-    15: ("ER_LAST_DROP", "Can't drop the primary key in a system space, \
-            space id %u"),
+    13: ("ER_INDEX_TYPE",
+         "Unsupported index type supplied for index %u in space %u"),
+    14: ("ER_MODIFY_INDEX",
+         "Can't create or modify index %u in space %u: %s"),
+    15: ("ER_LAST_DROP",
+         "Can't drop the primary key in a system space, space id %u"),
     16: ("ER_TUPLE_FORMAT_LIMIT", "Tuple format limit reached: %u"),
-    17: ("ER_DROP_PRIMARY_KEY", "Can't drop primary key in space %u \
-            while secondary keys exist"),
-    18: ("ER_KEY_FIELD_TYPE", "Supplied key type of part %u does not \
-            match index part type: expected %s"),
-    19: ("ER_EXACT_MATCH", "Invalid key part count in an exact match \
-            (expected %u, got %u)"),
+    17: ("ER_DROP_PRIMARY_KEY",
+         "Can't drop primary key in space %u while secondary keys exist"),
+    18: ("ER_KEY_FIELD_TYPE",
+         ("Supplied key type of part %u does not match index part type:"
+          " expected %s")),
+    19: ("ER_EXACT_MATCH",
+         "Invalid key part count in an exact match (expected %u, got %u)"),
     20: ("ER_INVALID_MSGPACK", "Invalid MsgPack - %s"),
     21: ("ER_PROC_RET", "msgpack.encode: can not encode Lua type '%s'"),
     22: ("ER_TUPLE_NOT_ARRAY", "Tuple/Key must be MsgPack array"),
-    23: ("ER_FIELD_TYPE", "Tuple field %u type does not match one \
-            required by operation: expected %s"),
-    24: ("ER_FIELD_TYPE_MISMATCH", "Ambiguous field type in index %u, \
-            key part %u. Requested type is %s but the field has \
-            previously been defined as %s"),
+    23: ("ER_FIELD_TYPE",
+         ("Tuple field %u type does not match one required by operation:"
+          " expected %s")),
+    24: ("ER_FIELD_TYPE_MISMATCH",
+         ("Ambiguous field type in index %u, key part %u. Requested type"
+          " is %s but the field has previously been defined as %s")),
     25: ("ER_SPLICE", "Field SPLICE error: %s"),
-    26: ("ER_ARG_TYPE", "Argument type in operation on field %u does \
-            not match field type: expected a %s"),
+    26: ("ER_ARG_TYPE",
+         ("Argument type in operation on field %u does not match field type:"
+          " expected a %s")),
     27: ("ER_TUPLE_IS_TOO_LONG", "Tuple is too long %u"),
     28: ("ER_UNKNOWN_UPDATE_OP", "Unknown UPDATE operation"),
     29: ("ER_UPDATE_FIELD", "Field %u UPDATE error: %s"),
-    30: ("ER_FIBER_STACK", "Can not create a new fiber: recursion \
-            limit reached"),
-    31: ("ER_KEY_PART_COUNT", "Invalid key part count (expected \
-            [0..%u], got %u)"),
+    30: ("ER_FIBER_STACK",
+         "Can not create a new fiber: recursion limit reached"),
+    31: ("ER_KEY_PART_COUNT",
+         "Invalid key part count (expected [0..%u], got %u)"),
     32: ("ER_PROC_LUA", "%s"),
     33: ("ER_NO_SUCH_PROC", "Procedure '%.*s' is not defined"),
     34: ("ER_NO_SUCH_TRIGGER", "Trigger is not found"),
     35: ("ER_NO_SUCH_INDEX", "No index #%u is defined in space %u"),
     36: ("ER_NO_SUCH_SPACE", "Space %u does not exist"),
     37: ("ER_NO_SUCH_FIELD", "Field %u was not found in the tuple"),
-    38: ("ER_SPACE_ARITY", "Tuple field count %u does not match space \
-            %u arity %u"),
-    39: ("ER_INDEX_ARITY", "Tuple field count %u is less than required \
-            by a defined index (expected %u)"),
+    38: ("ER_SPACE_ARITY",
+         "Tuple field count %u does not match space %u arity %u"),
+    39: ("ER_INDEX_ARITY",
+         ("Tuple field count %u is less than required by a defined index"
+          " (expected %u)")),
     40: ("ER_WAL_IO", "Failed to write to disk"),
     41: ("ER_MORE_THAN_ONE_TUPLE", "More than one tuple found"),
 }
+
 
 def tnt_strerror(num):
     if num in _strerror:
         return _strerror[num]
     return "UNDEFINED"
-
