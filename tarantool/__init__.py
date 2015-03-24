@@ -24,7 +24,7 @@ from tarantool.schema import (
 )
 
 
-def connect(host="localhost", port=33013):
+def connect(host="localhost", port=33013, user=None, password=None):
     '''\
     Create a connection to the Tarantool server.
 
@@ -37,6 +37,8 @@ def connect(host="localhost", port=33013):
     '''
 
     return Connection(host, port,
+                      user=user,
+                      password=password,
                       socket_timeout=SOCKET_TIMEOUT,
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,

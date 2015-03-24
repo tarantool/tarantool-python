@@ -120,6 +120,16 @@ class Response(list):
         return self._code
 
     @property
+    def sync(self):
+        '''\
+        :type: int
+
+        Required field in the server response.
+        Contains response header IPROTO_SYNC.
+        '''
+        return self._sync
+
+    @property
     def return_code(self):
         '''\
         :type: int
