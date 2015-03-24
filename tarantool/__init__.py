@@ -37,6 +37,8 @@ def connect(host="localhost", port=33013):
     '''
 
     return Connection(host, port,
+                      user=None,
+                      password=None,
                       socket_timeout=SOCKET_TIMEOUT,
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,
