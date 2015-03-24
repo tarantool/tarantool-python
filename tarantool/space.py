@@ -5,16 +5,16 @@ This module provides :class:`~tarantool.space.Space` class.
 It is an object-oriented wrapper for request over Tarantool space.
 '''
 
-class Space(object):
 
-    '''\
+class Space(object):
+    '''
     Object-oriented wrapper for accessing a particular space.
     Encapsulates the identifier of the space and provides more convenient
     syntax for database operations.
     '''
 
     def __init__(self, connection, space_name):
-        '''\
+        '''
         Create Space instance.
 
         :param connection: Object representing connection to the server
@@ -75,7 +75,7 @@ class Space(object):
         return self.connection.update(self.space_no, key, op_list)
 
     def select(self, values, **kwargs):
-        '''\
+        '''
         Execute SELECT request.
         Select and retrieve data from the database.
 
@@ -102,7 +102,7 @@ class Space(object):
             self.space_no, values, index=index, offset=offset, limit=limit)
 
     def call(self, func_name, *args, **kwargs):
-        '''\
+        '''
         Execute CALL request. Call stored Lua function.
 
         :param func_name: stored Lua function name
