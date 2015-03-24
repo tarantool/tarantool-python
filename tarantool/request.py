@@ -52,15 +52,27 @@ class Request(object):
     def __init__(self, conn):
         self._bytes = None
         self.conn = conn
+        self._sync = None
 
     def __bytes__(self):
         return self._bytes
     __str__ = __bytes__
 
-    @classmethod
-    def header(cls, length):
-        header = msgpack.dumps({IPROTO_CODE: cls.request_type,
-                                IPROTO_SYNC: 0})
+    @property
+    def sync(self):
+        '''\
+        :type: int
+
+        Required field in the server request.
+        Contains request header IPROTO_SYNC.
+        '''
+        return self._sync
+
+    def header(self, length):
+        self._sync = self.conn.generate_sync()
+        header = msgpack.dumps({IPROTO_CODE: self.request_type,
+                                IPROTO_SYNC: self._sync})
+
         return msgpack.dumps(length + len(header)) + header
 
 

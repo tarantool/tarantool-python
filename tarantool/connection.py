@@ -516,3 +516,9 @@ class Connection(object):
         :rtype: `Space` instance
         '''
         return Space(self, space_name)
+
+    def generate_sync(self):
+        """\
+        Need override for async io connection
+        """
+        return 0
