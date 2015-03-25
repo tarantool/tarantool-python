@@ -19,7 +19,7 @@ class TestSuite_Schema(unittest.TestCase):
         self.assertIsNone(self.srv.admin("box.schema.user.create('test', { password = 'test' })"))
         self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'read,write', 'space', '_space')"))
         self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'read,write', 'space', '_index')"))
-        self.assertEqual(self.con.authenticate('test', 'test'), [])
+        self.assertEqual(self.con.authenticate('test', 'test')._data, None)
 
     def test_01_space_bad(self):
         with self.assertRaisesRegexp(tarantool.SchemaError,

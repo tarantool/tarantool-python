@@ -82,8 +82,6 @@ class Response(list):
         There are only three completion status codes in use:
             * ``0`` -- "success"; the only possible :attr:`return_code` with
                        this status is ``0``
-            * ``1`` -- "try again"; an indicator of an intermittent error.
-                       This status is handled automatically by this module.
             * ``2`` -- "error"; in this case :attr:`return_code` holds
                        the actual error.
         '''
