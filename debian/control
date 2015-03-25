@@ -9,23 +9,5 @@ Package: tarantool-python
 Architecture: any
 Depends: ${misc:Depends}, python-all (>= 2.6.6-3), python-yaml, python-msgpack | msgpack-python
 Description: Python client library for Tarantool Database
- Python driver for Tarantool 1.6
- ===============================
- .
- This package is a pure-python client library for `Tarantool`_.
- .
- `Documentation`_  |  `Downloads`_  |  `PyPI`_  |  `GitHub`_  | `Issue tracker`_
- .
- .. _`Documentation`: http://tarantool-python.readthedocs.org/en/latest/
- .. _`Downloads`: http://pypi.python.org/pypi/tarantool#downloads
- .. _`PyPI`: http://pypi.python.org/pypi/tarantool
- .. _`GitHub`: https://github.com/tarantool/tarantool-python
- .. _`Issue tracker`: https://github.com/tarantool/tarantool-python/issues
- .
- Download and Install
- --------------------
- .
- The recommended way to install ``tarantool`` package is using PIP
- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- .
- For Tarantool version < 1.6.0 you must get ``0.3.*`` connector version::
+    Python driver for Tarantool 1.6 
+    This package is a pure-python client library for Tarantool.
