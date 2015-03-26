@@ -11,6 +11,9 @@ This package is a pure-python client library for `Tarantool`_.
 .. _`GitHub`: https://github.com/tarantool/tarantool-python
 .. _`Issue tracker`: https://github.com/tarantool/tarantool-python/issues
 
+.. image:: https://travis-ci.org/tarantool/tarantool-python.svg?branch=master
+    :target: https://travis-ci.org/tarantool/tarantool-python
+
 Download and Install
 --------------------
 

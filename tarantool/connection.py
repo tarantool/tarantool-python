@@ -12,7 +12,6 @@ import socket
 import msgpack
 
 import base64
-from const import IPROTO_GREETING_SIZE
 
 try:
     from ctypes import c_ssize_t
@@ -53,9 +52,9 @@ from tarantool.error import (
 from tarantool.schema import Schema
 from tarantool.utils import check_key
 
-class Connection(object):
 
-    '''\
+class Connection(object):
+    '''
     Represents connection to the Tarantool server.
 
     This class is responsible for connection and network exchange with
@@ -81,7 +80,7 @@ class Connection(object):
                  reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True):
-        '''\
+        '''
         Initialize a connection to the server.
 
         :param str host: Server hostname or IP-address
@@ -104,16 +103,15 @@ class Connection(object):
         if connect_now:
             self.connect()
 
-
     def close(self):
-        '''\
+        '''
         Close connection to the server
         '''
         self._socket.close()
         self._socket = None
 
     def connect_basic(self):
-        '''\
+        '''
         Create connection to the host and port specified in __init__().
         :raise: `NetworkError`
         '''
@@ -136,7 +134,7 @@ class Connection(object):
                 self.authenticate(self.user, self.password)
 
     def connect(self):
-        '''\
+        '''
         Create connection to the host and port specified in __init__().
         Usually there is no need to call this method directly,
         since it is called when you create an `Connection` instance.
@@ -161,7 +159,7 @@ class Connection(object):
             tmp = self._socket.recv(to_read)
             if not tmp:
                 raise NetworkError(socket.error(errno.ECONNRESET,
-                      "Lost connection to server during query"))
+                                   "Lost connection to server during query"))
             to_read -= len(tmp)
             buf += tmp
         return buf
@@ -179,7 +177,7 @@ class Connection(object):
         return self._recv(length)
 
     def _send_request_wo_reconnect(self, request):
-        '''\
+        '''
         :rtype: `Response` instance
 
         :raise: NetworkError
@@ -200,7 +198,7 @@ class Connection(object):
         raise DatabaseError(response.return_code, response.return_message)
 
     def _opt_reconnect(self):
-        '''\
+        '''
         Check that connection is alive using low-level recv from libc(ctypes)
         **Due to bug in python - timeout is internal python construction.
         '''
@@ -210,7 +208,7 @@ class Connection(object):
         def check():  # Check that connection is alive
             buf = ctypes.create_string_buffer(2)
             self._sys_recv(self._socket.fileno(), buf, 1,
-                    socket.MSG_DONTWAIT | socket.MSG_PEEK)
+                           socket.MSG_DONTWAIT | socket.MSG_PEEK)
             if ctypes.get_errno() == errno.EAGAIN:
                 ctypes.set_errno(0)
                 return errno.EAGAIN
@@ -234,7 +232,8 @@ class Connection(object):
             warn("Reconnect attempt %d of %d" %
                  (attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
-                raise NetworkError(socket.error(last_errno, errno.errorcode[last_errno]))
+                raise NetworkError(
+                    socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
 
         self.handshake()
@@ -245,7 +244,7 @@ class Connection(object):
         self._socket.settimeout(self.socket_timeout)
 
     def _send_request(self, request):
-        '''\
+        '''
         Send the request to the server through the socket.
         Return an instance of `Response` class.
 
@@ -266,7 +265,7 @@ class Connection(object):
         self.schema.flush()
 
     def call(self, func_name, *args):
-        '''\
+        '''
         Execute CALL request. Call stored Lua function.
 
         :param func_name: stored Lua function name
@@ -287,7 +286,7 @@ class Connection(object):
         return response
 
     def eval(self, expr, *args):
-        '''\
+        '''
         Execute EVAL request. Eval Lua expression.
 
         :param expr: Lua expression
@@ -306,7 +305,6 @@ class Connection(object):
         request = RequestEval(self, expr, args)
         response = self._send_request(request)
         return response
-
 
     def replace(self, space_name, values):
         '''
@@ -327,12 +325,12 @@ class Connection(object):
         return self._send_request(request)
 
     def authenticate(self, user, password):
-        self.user = user;
+        self.user = user
         self.password = password
         if not self._socket:
             return self._opt_reconnect()
 
-        request = RequestAuthenticate(self, self._salt, self.user, \
+        request = RequestAuthenticate(self, self._salt, self.user,
                                       self.password)
         return self._send_request_wo_reconnect(request)
 
@@ -341,13 +339,13 @@ class Connection(object):
         resp = self._send_request(request)
         while True:
             yield resp
-            if resp.code == REQUEST_TYPE_OK or \
-               resp.code >= REQUEST_TYPE_ERROR:
+            if resp.code == REQUEST_TYPE_OK or resp.code >= REQUEST_TYPE_ERROR:
                 return
             resp = Response(self, self._read_response())
-        self.close() # close connection after JOIN
+        self.close()  # close connection after JOIN
 
-    def subscribe(self, cluster_uuid, server_uuid, vclock = {}):
+    def subscribe(self, cluster_uuid, server_uuid, vclock={}):
+        # FIXME rudnyh: ^ 'vclock={}'? really? sure?
         request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
         resp = self._send_request(request)
         while True:
@@ -355,7 +353,7 @@ class Connection(object):
             if resp.code >= REQUEST_TYPE_ERROR:
                 return
             resp = Response(self, self._read_response())
-        self.close() # close connection after SUBSCRIBE
+        self.close()  # close connection after SUBSCRIBE
 
     def insert(self, space_name, values):
         '''
@@ -376,7 +374,7 @@ class Connection(object):
         return self._send_request(request)
 
     def delete(self, space_name, key, **kwargs):
-        '''\
+        '''
         Execute DELETE request.
         Delete single record identified by `key` (using primary index).
 
@@ -398,7 +396,7 @@ class Connection(object):
         return self._send_request(request)
 
     def update(self, space_name, key, op_list, **kwargs):
-        '''\
+        '''
         Execute UPDATE request.
         Update single record identified by `key` (using primary index).
 
@@ -428,7 +426,7 @@ class Connection(object):
         return self._send_request(request)
 
     def ping(self, notime=False):
-        '''\
+        '''
         Execute PING request.
         Send empty request and receive empty response from server.
 
@@ -438,7 +436,7 @@ class Connection(object):
 
         request = RequestPing(self)
         t0 = time.time()
-        response = self._send_request(request)
+        self._send_request(request)
         t1 = time.time()
 
         if notime:
@@ -446,7 +444,7 @@ class Connection(object):
         return t1 - t0
 
     def select(self, space_name, key=None, **kwargs):
-        '''\
+        '''
         Execute SELECT request.
         Select and retrieve data from the database.
 
@@ -500,13 +498,13 @@ class Connection(object):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index_name, basestring):
             index_name = self.schema.get_index(space_name, index_name).iid
-        request = RequestSelect(
-                self, space_name, index_name, key, offset, limit, iterator_type)
+        request = RequestSelect(self, space_name, index_name, key, offset,
+                                limit, iterator_type)
         response = self._send_request(request)
         return response
 
     def space(self, space_name):
-        '''\
+        '''
         Create `Space` instance for particular space
 
         `Space` instance encapsulates the identifier of the space and provides
@@ -518,3 +516,9 @@ class Connection(object):
         :rtype: `Space` instance
         '''
         return Space(self, space_name)
+
+    def generate_sync(self):
+        """\
+        Need override for async io connection
+        """
+        return 0

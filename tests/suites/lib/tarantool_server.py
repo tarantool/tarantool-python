@@ -213,11 +213,14 @@ class TarantoolServer(object):
         while True:
             try:
                 temp = TarantoolAdmin('localhost', self.args['admin'])
-                ans = temp('box.info.status')[0]
-                if ans in ('running', 'primary', 'hot_standby', 'orphan') or ans.startswith('replica'):
-                    return True
-                else:
-                    raise Exception("Strange output for `box.info.status`: %s" % (ans))
+                while True:
+                    ans = temp('box.info.status')[0]
+                    if ans in ('running', 'hot_standby', 'orphan') or ans.startswith('replica'):
+                        return True
+                    elif ans in ('loading',):
+                        continue
+                    else:
+                        raise Exception("Strange output for `box.info.status`: %s" % (ans))
             except socket.error as e:
                 if e.errno == errno.ECONNREFUSED:
                     time.sleep(0.1)

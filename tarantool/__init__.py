@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 from tarantool.connection import Connection
 from tarantool.const import (
@@ -19,12 +19,12 @@ from tarantool.error import (
 )
 
 from tarantool.schema import (
-        Schema,
-        SchemaError
+    Schema,
+    SchemaError
 )
 
 
-def connect(host="localhost", port=33013):
+def connect(host="localhost", port=33013, user=None, password=None):
     '''\
     Create a connection to the Tarantool server.
 
@@ -37,6 +37,8 @@ def connect(host="localhost", port=33013):
     '''
 
     return Connection(host, port,
+                      user=user,
+                      password=password,
                       socket_timeout=SOCKET_TIMEOUT,
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,

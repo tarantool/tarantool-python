@@ -10,7 +10,6 @@ from tarantool.const import (
     IPROTO_DATA,
     IPROTO_ERROR,
     IPROTO_SYNC,
-    REQUEST_TYPE_OK,
     REQUEST_TYPE_ERROR
 )
 from tarantool.error import DatabaseError, tnt_strerror
@@ -18,9 +17,9 @@ from tarantool.error import DatabaseError, tnt_strerror
 if sys.version_info < (2, 6):
     bytes = str    # pylint: disable=W0622
 
-class Response(list):
 
-    '''\
+class Response(list):
+    '''
     Represents a single response from the server in compliance with the
     Tarantool protocol.
     Responsible for data encapsulation (i.e. received list of tuples)
@@ -28,7 +27,7 @@ class Response(list):
     '''
 
     def __init__(self, conn, response):
-        '''\
+        '''
         Create an instance of `Response` using data received from the server.
 
         __init__() itself reads data from the socket, parses response body and
@@ -42,7 +41,7 @@ class Response(list):
         # created in the __new__(). But let it be.
         super(Response, self).__init__()
 
-        unpacker = msgpack.Unpacker(use_list = True)
+        unpacker = msgpack.Unpacker(use_list=True)
         unpacker.feed(response)
         header = unpacker.unpack()
 
@@ -56,7 +55,7 @@ class Response(list):
             pass
 
         if self._code < REQUEST_TYPE_ERROR:
-            self._return_code = 0;
+            self._return_code = 0
             self._completion_status = 0
             self._data = self._body.get(IPROTO_DATA, None)
             # Backward-compatibility
@@ -75,7 +74,7 @@ class Response(list):
 
     @property
     def completion_status(self):
-        '''\
+        '''
         :type: int
 
         Request completion status.
@@ -83,8 +82,6 @@ class Response(list):
         There are only three completion status codes in use:
             * ``0`` -- "success"; the only possible :attr:`return_code` with
                        this status is ``0``
-            * ``1`` -- "try again"; an indicator of an intermittent error.
-                       This status is handled automatically by this module.
             * ``2`` -- "error"; in this case :attr:`return_code` holds
                        the actual error.
         '''
@@ -92,7 +89,7 @@ class Response(list):
 
     @property
     def rowcount(self):
-        '''\
+        '''
         :type: int
 
         Number of rows affected or returned by a query.
@@ -101,7 +98,7 @@ class Response(list):
 
     @property
     def body(self):
-        '''\
+        '''
         :type: dict
 
         Required field in the server response.
@@ -111,7 +108,7 @@ class Response(list):
 
     @property
     def code(self):
-        '''\
+        '''
         :type: int
 
         Required field in the server response.
@@ -120,8 +117,18 @@ class Response(list):
         return self._code
 
     @property
-    def return_code(self):
+    def sync(self):
         '''\
+        :type: int
+
+        Required field in the server response.
+        Contains response header IPROTO_SYNC.
+        '''
+        return self._sync
+
+    @property
+    def return_code(self):
+        '''
         :type: int
 
         Required field in the server response.
@@ -134,7 +141,7 @@ class Response(list):
 
     @property
     def data(self):
-        '''\
+        '''
         :type: object
 
         Required field in the server response.
@@ -145,16 +152,17 @@ class Response(list):
 
     @property
     def strerror(self):
-        '''\
+        '''
         :type: str
 
-        It may be ER_OK if request was successful, or contain error code string.
+        It may be ER_OK if request was successful,
+        or contain error code string.
         '''
         return tnt_strerror(self._return_code)
 
     @property
     def return_message(self):
-        '''\
+        '''
         :type: str
 
         The error message returned by the server in case
@@ -163,14 +171,14 @@ class Response(list):
         return self._return_message
 
     def __str__(self):
-        '''\
+        '''
         Return user friendy string representation of the object.
         Useful for the interactive sessions and debuging.
 
         :rtype: str or None
         '''
         if self.completion_status:
-            return yaml.dump({ 'error': {
+            return yaml.dump({'error': {
                 'code': self.strerror[0],
                 'reason': self.return_message
             }})

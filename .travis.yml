@@ -19,5 +19,6 @@ before_script:
   - sudo apt-get update
 
 script:
-  - sudo apt-get -y install tarantool python-yaml
+  - sudo apt-get -y install tarantool
+  - pip install -r requirements.txt
   - python setup.py test
