@@ -185,3 +185,6 @@ class Response(list):
         return yaml.dump(self._data)
 
     __repr__ = __str__
+
+class FutureResponse(Response):
+    pass

@@ -143,12 +143,12 @@ class Connection(object):
         '''
         try:
             self.connect_basic()
-            self.handshake()
             # It is important to set socket timeout *after* connection.
             # Otherwise the timeout exception will be raised, even when
             # the connection fails because the server is simply
             # not bound to port
             self._socket.settimeout(self.socket_timeout)
+            self.handshake()
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
@@ -236,12 +236,12 @@ class Connection(object):
                     socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
 
-        self.handshake()
         # It is important to set socket timeout *after* connection.
         # Otherwise the timeout exception will be raised, even when
         # the connection fails because the server is simply
         # not bound to port
         self._socket.settimeout(self.socket_timeout)
+        self.handshake()
 
     def _send_request(self, request):
         '''
@@ -344,8 +344,9 @@ class Connection(object):
             resp = Response(self, self._read_response())
         self.close()  # close connection after JOIN
 
-    def subscribe(self, cluster_uuid, server_uuid, vclock={}):
-        # FIXME rudnyh: ^ 'vclock={}'? really? sure?
+    def subscribe(self, cluster_uuid, server_uuid, vclock=None):
+        if (vclock is None):
+            vclock = {}
         request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
         resp = self._send_request(request)
         while True:
