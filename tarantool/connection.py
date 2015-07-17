@@ -156,12 +156,14 @@ class Connection(object):
     def _recv(self, to_read):
         buf = ''
         while to_read > 0:
-            tmp = self._socket.recv(to_read)
-            if not tmp:
+            try:
+                tmp = self._socket.recv(to_read)
+            except socket.error:
                 raise NetworkError(socket.error(errno.ECONNRESET,
                                    "Lost connection to server during query"))
-            to_read -= len(tmp)
-            buf += tmp
+            else:
+                to_read -= len(tmp)
+                buf += tmp
         return buf
 
     def _read_response(self):
@@ -207,13 +209,19 @@ class Connection(object):
 
         def check():  # Check that connection is alive
             buf = ctypes.create_string_buffer(2)
-            self._sys_recv(self._socket.fileno(), buf, 1,
-                           socket.MSG_DONTWAIT | socket.MSG_PEEK)
-            if ctypes.get_errno() == errno.EAGAIN:
-                ctypes.set_errno(0)
-                return errno.EAGAIN
-            return (ctypes.get_errno() if ctypes.get_errno()
-                    else errno.ECONNRESET)
+            try:
+                sock_fd = self._socket.fileno()
+            except socket.error as e:
+                if e.errno == errno.EBADF:
+                    return errno.ECONNRESET
+            else:
+                self._sys_recv(sock_fd, buf, 1,
+                               socket.MSG_DONTWAIT | socket.MSG_PEEK)
+                if ctypes.get_errno() == errno.EAGAIN:
+                    ctypes.set_errno(0)
+                    return errno.EAGAIN
+                return (ctypes.get_errno() if ctypes.get_errno()
+                        else errno.ECONNRESET)
 
         last_errno = check()
         if self.connected and last_errno == errno.EAGAIN:
@@ -226,9 +234,10 @@ class Connection(object):
             try:
                 self.connect_basic()
             except NetworkError as e:
-                last_errno = e.errno
-            if last_errno == 0:
-                break
+                pass
+            else:
+                if self.connected:
+                    break
             warn("Reconnect attempt %d of %d" %
                  (attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
