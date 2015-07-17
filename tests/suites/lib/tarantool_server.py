@@ -193,7 +193,7 @@ class TarantoolServer(object):
             exe = os.path.join(_dir, self.default_tarantool["bin"])
             if os.access(exe, os.X_OK):
                 return os.path.abspath(exe)
-        raise RuntimeError("Can't find server executable in " + path)
+        raise RuntimeError("Can't find server executable in " + os.environ["PATH"])
 
     def generate_configuration(self):
         os.putenv("PRIMARY_PORT", str(self.args['primary']))
@@ -240,7 +240,7 @@ class TarantoolServer(object):
         self.generate_configuration()
         if self.script:
             shutil.copy(self.script, self.script_dst)
-            os.chmod(self.script_dst, 0777)
+            os.chmod(self.script_dst, 0o777)
         args = self.prepare_args()
         self.process = subprocess.Popen(args,
                 cwd = self.vardir,

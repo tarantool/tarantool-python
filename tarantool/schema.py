@@ -5,6 +5,8 @@ This module provides :class:`~tarantool.schema.Schema` class.
 It is a Tarantool schema description.
 '''
 
+import six
+
 from tarantool.error import SchemaError
 import tarantool.const as const
 
@@ -12,11 +14,11 @@ import tarantool.const as const
 class SchemaIndex(object):
     def __init__(self, array, space):
         self.iid = array[1]
-        self.name = array[2]
+        self.name = array[2].decode()
         self.index = array[3]
         self.unique = array[4]
         self.parts = []
-        for i in xrange(array[5]):
+        for i in range(array[5]):
             self.parts.append((array[5 + 1 + i * 2], array[5 + 2 + i * 2]))
         self.space = space
         self.space.indexes[self.iid] = self
@@ -33,7 +35,7 @@ class SchemaSpace(object):
     def __init__(self, array, schema):
         self.sid = array[0]
         self.arity = array[1]
-        self.name = array[2]
+        self.name = array[2].decode()
         self.indexes = {}
         self.schema = schema
         self.schema[self.sid] = self
@@ -57,14 +59,14 @@ class Schema(object):
         except KeyError:
             pass
         _index = (const.INDEX_SPACE_NAME
-                  if isinstance(space, basestring)
+                  if isinstance(space, six.string_types)
                   else const.INDEX_SPACE_PRIMARY)
 
         array = self.con.select(const.SPACE_SPACE, space, index=_index)
         if len(array) > 1:
             raise SchemaError('Some strange output from server: \n' + array)
         elif len(array) == 0 or not len(array[0]):
-            temp_name = ('name' if isinstance(space, basestring) else 'id')
+            temp_name = ('name' if isinstance(space, six.string_types) else 'id')
             raise SchemaError(
                 "There's no space with {1} '{0}'".format(space, temp_name))
         array = array[0]
@@ -77,7 +79,7 @@ class Schema(object):
         except KeyError:
             pass
         _index = (const.INDEX_INDEX_NAME
-                  if isinstance(index, basestring)
+                  if isinstance(index, six.string_types)
                   else const.INDEX_INDEX_PRIMARY)
 
         array = self.con.select(const.SPACE_INDEX, [_space.sid, index],
@@ -85,7 +87,7 @@ class Schema(object):
         if len(array) > 1:
             raise SchemaError('Some strange output from server: \n' + array)
         elif len(array) == 0 or not len(array[0]):
-            temp_name = ('name' if isinstance(index, basestring) else 'id')
+            temp_name = ('name' if isinstance(index, six.string_types) else 'id')
             raise SchemaError(
                 "There's no index with {2} '{0}' in space '{1}'".format(
                     index, _space.name, temp_name))

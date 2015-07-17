@@ -24,10 +24,12 @@ import socket
 import sys
 import warnings
 
-
-class Error(StandardError):
-
-    '''Base class for error exceptions'''
+try:
+    class Error(StandardError):
+        '''Base class for error exceptions'''
+except NameError:
+    class Error(Exception):
+        '''Base class for error exceptions'''
 
 
 class DatabaseError(Error):
