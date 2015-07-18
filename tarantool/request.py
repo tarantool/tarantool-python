@@ -4,6 +4,7 @@
 Request types definitions
 '''
 
+import six
 import msgpack
 import hashlib
 
@@ -105,13 +106,16 @@ class RequestAuthenticate(Request):
         super(RequestAuthenticate, self).__init__(conn)
 
         def sha1(values):
-            sha1 = hashlib.sha1()
+            sha = hashlib.sha1()
             for i in values:
-                sha1.update(i)
-            return sha1.digest()
+                sha.update(i if isinstance(i, six.binary_type) else i.encode())
+            return sha.digest()
 
         def strxor(rhs, lhs):
+            if six.PY2:
                 return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
+
+            return bytes([x ^ y for x, y in zip(rhs, lhs)])
 
         hash1 = sha1((password,))
         hash2 = sha1((hash1,))

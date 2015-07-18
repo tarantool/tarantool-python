@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
+import six
 import sys
 import msgpack
 import yaml
@@ -41,7 +42,11 @@ class Response(list):
         # created in the __new__(). But let it be.
         super(Response, self).__init__()
 
-        unpacker = msgpack.Unpacker(use_list=True)
+        if six.PY2:
+            unpacker = msgpack.Unpacker(use_list=True)
+        else:
+            unpacker = msgpack.Unpacker(use_list=True, encoding="utf-8")
+
         unpacker.feed(response)
         header = unpacker.unpack()
 
