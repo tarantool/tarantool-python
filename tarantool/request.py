@@ -108,7 +108,8 @@ class RequestAuthenticate(Request):
         def sha1(values):
             sha = hashlib.sha1()
             for i in values:
-                sha.update(i if isinstance(i, six.binary_type) else i.encode())
+                if i is not None:
+                    sha.update(i if isinstance(i, six.binary_type) else i.encode())
             return sha.digest()
 
         def strxor(rhs, lhs):
