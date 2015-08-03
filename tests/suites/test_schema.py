@@ -7,8 +7,8 @@ from lib.tarantool_server import TarantoolServer
 class TestSuite_Schema(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print ' SCHEMA '.center(70, '=')
-        print '-' * 70
+        print(' SCHEMA '.center(70, '='))
+        print('-' * 70)
         self.srv = TarantoolServer()
         self.srv.script = 'tests/suites/box.lua'
         self.srv.start()
