@@ -63,11 +63,6 @@ class Connection(object):
     Also this class provides low-level interface to data manipulation
     (insert/delete/update/select).
     '''
-    _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-    _sys_recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, ctypes.c_void_p,
-                                 c_ssize_t, ctypes.c_int,
-                                 use_errno=True)(_libc.recv)
-
     Error = tarantool.error
     DatabaseError = tarantool.error.DatabaseError
     InterfaceError = tarantool.error.InterfaceError
@@ -90,6 +85,11 @@ class Connection(object):
         creates network connection.
                              if False than you have to call connect() manualy.
         '''
+        libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+        recv = self._sys_recv = libc.recv
+        recv.argtypes = [
+            ctypes.c_int, ctypes.c_void_p, c_ssize_t, ctypes.c_int]
+        recv.restype = c_ssize_t
         self.host = host
         self.port = port
         self.user = user
