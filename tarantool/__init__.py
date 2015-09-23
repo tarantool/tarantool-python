@@ -7,7 +7,8 @@ from tarantool.connection import Connection
 from tarantool.const import (
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
-    RECONNECT_DELAY
+    RECONNECT_DELAY,
+    ENCODING_DEFAULT
 )
 
 from tarantool.error import (
@@ -24,7 +25,7 @@ from tarantool.schema import (
 )
 
 
-def connect(host="localhost", port=33013, user=None, password=None):
+def connect(host="localhost", port=33013, user=None, password=None, encoding=ENCODING_DEFAULT):
     '''\
     Create a connection to the Tarantool server.
 
@@ -42,7 +43,9 @@ def connect(host="localhost", port=33013, user=None, password=None):
                       socket_timeout=SOCKET_TIMEOUT,
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,
-                      connect_now=True)
+                      connect_now=True,
+                      encoding=encoding)
+
 
 __all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError',
            'NetworkError', 'NetworkWarning', 'RetryWarning', 'SchemaError']

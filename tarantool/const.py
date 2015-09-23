@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
+import six
+
 IPROTO_CODE = 0x00
 IPROTO_SYNC = 0x01
 IPROTO_SPACE_ID = 0x10
@@ -69,3 +71,8 @@ RECONNECT_DELAY = 0.1
 # Number of reattempts in case of server
 # return completion_status == 1 (try again)
 RETRY_MAX_ATTEMPTS = 10
+
+if six.PY2:
+    ENCODING_DEFAULT = None
+else:
+    ENCODING_DEFAULT = "utf-8"

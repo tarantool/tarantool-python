@@ -43,13 +43,16 @@ from tarantool.const import (
     RETRY_MAX_ATTEMPTS,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_ERROR,
-    IPROTO_GREETING_SIZE)
+    IPROTO_GREETING_SIZE,
+    ENCODING_DEFAULT)
+
 from tarantool.error import (
     NetworkError,
     DatabaseError,
     warn,
     RetryWarning,
     NetworkWarning)
+
 from tarantool.schema import Schema
 from tarantool.utils import check_key
 
@@ -75,7 +78,8 @@ class Connection(object):
                  socket_timeout=SOCKET_TIMEOUT,
                  reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                  reconnect_delay=RECONNECT_DELAY,
-                 connect_now=True):
+                 connect_now=True,
+                 encoding=ENCODING_DEFAULT):
         '''
         Initialize a connection to the server.
 
@@ -101,6 +105,7 @@ class Connection(object):
         self._socket = None
         self.connected = False
         self.error = True
+        self.encoding = encoding
         if connect_now:
             self.connect()
 
