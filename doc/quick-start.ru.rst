@@ -34,7 +34,7 @@ Select
 
     >>> demo.select('AAAA')
 
-Извлечь несколько записей используя перыичный индекс::
+Извлечь несколько записей используя первичный индекс::
 
     >>> demo.select(['AAAA', 'BBBB', 'CCCC'])
     [('AAAA', 'Alpha'), ('BBBB', 'Bravo'), ('CCCC', 'Charlie')]

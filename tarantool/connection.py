@@ -4,6 +4,7 @@
 This module provides low-level API for Tarantool
 '''
 
+import six
 import time
 import errno
 import ctypes
@@ -62,11 +63,6 @@ class Connection(object):
     Also this class provides low-level interface to data manipulation
     (insert/delete/update/select).
     '''
-    _libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-    _sys_recv = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_int, ctypes.c_void_p,
-                                 c_ssize_t, ctypes.c_int,
-                                 use_errno=True)(_libc.recv)
-
     Error = tarantool.error
     DatabaseError = tarantool.error.DatabaseError
     InterfaceError = tarantool.error.InterfaceError
@@ -89,6 +85,11 @@ class Connection(object):
         creates network connection.
                              if False than you have to call connect() manualy.
         '''
+        libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+        recv = self._sys_recv = libc.recv
+        recv.argtypes = [
+            ctypes.c_int, ctypes.c_void_p, c_ssize_t, ctypes.c_int]
+        recv.restype = c_ssize_t
         self.host = host
         self.port = port
         self.user = user
@@ -154,7 +155,7 @@ class Connection(object):
             raise NetworkError(e)
 
     def _recv(self, to_read):
-        buf = ''
+        buf = b""
         while to_read > 0:
             try:
                 tmp = self._socket.recv(to_read)
@@ -188,7 +189,7 @@ class Connection(object):
 
         # Repeat request in a loop if the server returns completion_status == 1
         # (try again)
-        for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
+        for attempt in range(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             self._socket.sendall(bytes(request))
             response = Response(self, self._read_response())
 
@@ -328,7 +329,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        if isinstance(space_name, basestring):
+        if isinstance(space_name, six.string_types):
             space_name = self.schema.get_space(space_name).sid
         request = RequestReplace(self, space_name, values)
         return self._send_request(request)
@@ -377,7 +378,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        if isinstance(space_name, basestring):
+        if isinstance(space_name, six.string_types):
             space_name = self.schema.get_space(space_name).sid
         request = RequestInsert(self, space_name, values)
         return self._send_request(request)
@@ -397,9 +398,9 @@ class Connection(object):
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
-        if isinstance(space_name, basestring):
+        if isinstance(space_name, six.string_types):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, basestring):
+        if isinstance(index_name, six.string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestDelete(self, space_name, index_name, key)
         return self._send_request(request)
@@ -427,9 +428,9 @@ class Connection(object):
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
-        if isinstance(space_name, basestring):
+        if isinstance(space_name, six.string_types):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, basestring):
+        if isinstance(index_name, six.string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestUpdate(self, space_name, index_name, key, op_list)
         return self._send_request(request)
@@ -503,9 +504,9 @@ class Connection(object):
         # tuples)
         key = check_key(key, select=True)
 
-        if isinstance(space_name, basestring):
+        if isinstance(space_name, six.string_types):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, basestring):
+        if isinstance(index_name, six.string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestSelect(self, space_name, index_name, key, offset,
                                 limit, iterator_type)

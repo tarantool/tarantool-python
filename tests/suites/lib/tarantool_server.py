@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import os
+import os.path
 import errno
 import shlex
 import random
@@ -39,6 +42,7 @@ class TarantoolAdmin(object):
         self.port = port
         self.is_connected = False
         self.socket = None
+
     def connect(self):
         self.socket = socket.create_connection((self.host, self.port))
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
@@ -87,7 +91,7 @@ class TarantoolAdmin(object):
         if not command:
             return
         cmd = command.replace('\n', ' ') + '\n'
-        self.socket.sendall(cmd)
+        self.socket.sendall(cmd.encode())
 
         bufsiz = 4096
         res = ""
@@ -96,7 +100,7 @@ class TarantoolAdmin(object):
             buf = self.socket.recv(bufsiz)
             if not buf:
                 break
-            res = res + buf
+            res = res + buf.decode()
             if (res.rfind("\n...\n") >= 0 or res.rfind("\r\n...\r\n") >= 0):
                 break
 
@@ -134,6 +138,7 @@ class TarantoolServer(object):
     def script(self):
         if not hasattr(self, '_script'): self._script = None
         return self._script
+
     @script.setter
     def script(self, val):
         if val is None:
@@ -153,6 +158,7 @@ class TarantoolServer(object):
         if not hasattr(self, 'admin'):
             self.admin = None
         return self.admin
+
     @_admin.setter
     def _admin(self, port):
         try:
@@ -168,6 +174,7 @@ class TarantoolServer(object):
         if not hasattr(self, '_log_des'):
             self._log_des = open(self.logfile_path, 'a')
         return self._log_des
+
     @log_des.deleter
     def log_des(self):
         if not hasattr(self, '_log_des'):
@@ -193,7 +200,7 @@ class TarantoolServer(object):
             exe = os.path.join(_dir, self.default_tarantool["bin"])
             if os.access(exe, os.X_OK):
                 return os.path.abspath(exe)
-        raise RuntimeError("Can't find server executable in " + path)
+        raise RuntimeError("Can't find server executable in " + os.environ["PATH"])
 
     def generate_configuration(self):
         os.putenv("PRIMARY_PORT", str(self.args['primary']))
@@ -240,7 +247,7 @@ class TarantoolServer(object):
         self.generate_configuration()
         if self.script:
             shutil.copy(self.script, self.script_dst)
-            os.chmod(self.script_dst, 0777)
+            os.chmod(self.script_dst, 0o777)
         args = self.prepare_args()
         self.process = subprocess.Popen(args,
                 cwd = self.vardir,
@@ -249,15 +256,17 @@ class TarantoolServer(object):
         self.wait_until_started()
 
     def stop(self):
-        self.process.terminate()
-        self.process.wait()
+        if self.process.poll() is None:
+            self.process.terminate()
+            self.process.wait()
 
     def restart(self):
         self.stop()
         self.start()
 
     def clean(self):
-        shutil.rmtree(self.vardir)
+        if os.path.isdir(self.vardir):
+            shutil.rmtree(self.vardir)
 
     def __del__(self):
         self.stop()
