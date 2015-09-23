@@ -15,6 +15,8 @@ class SchemaIndex(object):
     def __init__(self, array, space):
         self.iid = array[1]
         self.name = array[2]
+        if isinstance(self.name, bytes):
+            self.name = self.name.decode()
         self.index = array[3]
         self.unique = array[4]
         self.parts = []
@@ -36,6 +38,8 @@ class SchemaSpace(object):
         self.sid = array[0]
         self.arity = array[1]
         self.name = array[2]
+        if isinstance(self.name, bytes):
+            self.name = self.name.decode()
         self.indexes = {}
         self.schema = schema
         self.schema[self.sid] = self
