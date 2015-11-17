@@ -168,6 +168,9 @@ class Connection(object):
                 raise NetworkError(socket.error(errno.ECONNRESET,
                                    "Lost connection to server during query"))
             else:
+                if len(tmp) == 0:
+                    raise NetworkError(socket.error(errno.ECONNRESET,
+                                       "Lost connection to server during query"))
                 to_read -= len(tmp)
                 buf += tmp
         return buf
