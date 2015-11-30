@@ -9,7 +9,7 @@ env:
     global:
       - OUT_REPO=tarantool/modules
       - GIT_REPO=https://github.com/$TRAVIS_REPO_SLUG.git
-      - PROJECT=tarantool-pyhton
+      - PROJECT=tarantool-python
     matrix:
       - OS=el DIST=6 PACK=rpm
       - OS=el DIST=7 PACK=rpm
