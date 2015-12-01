@@ -12,8 +12,6 @@ import ctypes.util
 import socket
 import msgpack
 
-import base64
-
 try:
     from ctypes import c_ssize_t
 except ImportError:
@@ -53,8 +51,8 @@ from tarantool.error import (
     RetryWarning,
     NetworkWarning)
 
-from tarantool.schema import Schema
-from tarantool.utils import check_key
+from .schema import Schema
+from .utils import check_key, greeting_decode
 
 
 class Connection(object):
@@ -134,10 +132,15 @@ class Connection(object):
             raise NetworkError(e)
 
     def handshake(self):
-            greeting = self._recv(IPROTO_GREETING_SIZE)
-            self._salt = base64.decodestring(greeting[64:])[:20]
-            if self.user:
-                self.authenticate(self.user, self.password)
+        greeting_buf = self._recv(IPROTO_GREETING_SIZE)
+        greeting = greeting_decode(greeting_buf)
+        if greeting.protocol != "Binary":
+            raise NetworkError("Unsupported protocol: " + greeting.protocol)
+        self.version_id = greeting.version_id
+        self.uuid = greeting.uuid
+        self._salt = greeting.salt
+        if self.user:
+            self.authenticate(self.user, self.password)
 
     def connect(self):
         '''
