@@ -24,6 +24,7 @@ from tarantool.const import (
     IPROTO_CLUSTER_UUID,
     IPROTO_VCLOCK,
     IPROTO_EXPR,
+    REQUEST_TYPE_OK,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
     REQUEST_TYPE_INSERT,
@@ -278,3 +279,16 @@ class RequestSubscribe(Request):
             IPROTO_VCLOCK: vclock
         })
         self._bytes = self.header(len(request_body)) + request_body
+
+class RequestOK(Request):
+    '''
+    Represents OK acknowledgement
+    '''
+    request_type = REQUEST_TYPE_OK
+
+    # pylint: disable=W0231
+    def __init__(self, conn, sync):
+        super(RequestOK, self).__init__(conn)
+        header = msgpack.dumps({IPROTO_CODE: self.request_type,
+                                IPROTO_SYNC: sync})
+        self._bytes = msgpack.dumps(len(header)) + header

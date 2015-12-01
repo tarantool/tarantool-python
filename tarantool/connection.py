@@ -21,6 +21,7 @@ import tarantool
 from tarantool.response import Response
 from tarantool.request import (
     Request,
+    RequestOK,
     RequestCall,
     RequestDelete,
     RequestEval,
@@ -52,7 +53,7 @@ from tarantool.error import (
     NetworkWarning)
 
 from .schema import Schema
-from .utils import check_key, greeting_decode
+from .utils import check_key, greeting_decode, version_id
 
 
 class Connection(object):
@@ -357,8 +358,13 @@ class Connection(object):
 
     def join(self, server_uuid):
         request = RequestJoin(self, server_uuid)
+        sync = request._sync
         resp = self._send_request(request)
         while True:
+            if self.version_id >= version_id(1, 7, 0):
+                # Send acknowledgement
+                ack = RequestOK(self, sync)
+                self._socket.sendall(bytes(ack))
             yield resp
             if resp.code == REQUEST_TYPE_OK or resp.code >= REQUEST_TYPE_ERROR:
                 return
@@ -368,8 +374,13 @@ class Connection(object):
     def subscribe(self, cluster_uuid, server_uuid, vclock={}):
         # FIXME rudnyh: ^ 'vclock={}'? really? sure?
         request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
+        sync = request._sync
         resp = self._send_request(request)
         while True:
+            if self.version_id >= version_id(1, 7, 0):
+                # Send acknowledgement
+                ack = RequestOK(self, sync)
+                self._socket.sendall(bytes(ack))
             yield resp
             if resp.code >= REQUEST_TYPE_ERROR:
                 return
