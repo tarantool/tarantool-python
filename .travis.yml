@@ -6,10 +6,6 @@ language: python
 cache: false
 
 env:
-    global:
-      - OUT_REPO=tarantool/modules
-      - GIT_REPO=https://github.com/$TRAVIS_REPO_SLUG.git
-      - PROJECT=tarantool-python
     matrix:
       - OS=el DIST=6 PACK=rpm
       - OS=el DIST=7 PACK=rpm
@@ -24,11 +20,6 @@ env:
       - OS=debian DIST=wheezy PACK=deb
       - OS=debian DIST=stretch PACK=deb
       - PACK=none
-
-before_install:
-  - git submodule update --init --recursive
-  - sudo apt-get update
-  - gem install package_cloud
 
 script:
   - git clone https://github.com/tarantool/build.git
