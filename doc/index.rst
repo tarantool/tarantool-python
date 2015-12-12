@@ -9,11 +9,11 @@ Python client library for Tarantool Database
 
     * `PyPI`_
     * `GitHub`_
-    
+
     **Install**
-    
+
     .. code-block:: none
-    
+
         $ pip install tarantool
 
 
@@ -26,7 +26,7 @@ Documentation
 -------------
 .. toctree::
    :maxdepth: 1
-   
+
    quick-start.en
    guide.en
 
@@ -55,9 +55,9 @@ API Reference
 
 .. _`Tarantool`:
 .. _`Tarantool homepage`: http://tarantool.org
-.. _`Tarantool/Box User Guide`: http://tarantool.org/tarantool_user_guide.html
+.. _`Tarantool/Box User Guide`: http://tarantool.org/doc/book/index.html
 .. _`Mail.Ru`: http://mail.ru
 .. _`BSD`:
 .. _`BSD license`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
 .. _`PyPI`: http://pypi.python.org/pypi/tarantool
-.. _`GitHub`: https://github.com/coxx/tarantool-python
+.. _`GitHub`: https://github.com/tarantool/tarantool-python
