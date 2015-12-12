@@ -31,7 +31,7 @@ For later Tarantool use version ``0.5.*`` connector version::
 You can also download zip archive, unpack it and run
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. code-block:: console
 
     $ python setup.py install
 
@@ -51,7 +51,9 @@ For later Tarantool use ``master`` branch::
 What is Tarantool?
 ------------------
 
-`Tarantool`_ is a NoSQL database running inside a Lua program. It combines the network programming power of Node.JS with data persistency capabilities of Redis. It's open source, `BSD licensed`_.
+`Tarantool`_ is a NoSQL database running inside a Lua program. It combines the
+network programming power of Node.JS with data persistency capabilities of
+Redis. It's open source, `BSD licensed`_.
 
 Features
 --------
@@ -66,7 +68,6 @@ Features
     * asynchronous master-master replication
     * authentication and access control
 
-
 See More
 ^^^^^^^^
 
@@ -80,7 +81,7 @@ See More
 .. _`Tarantool Database`:
 .. _`Tarantool Homepage`: http://tarantool.org
 .. _`Tarantool at Github`: https://github.com/tarantool/tarantool
-.. _`Tarantool User Guide`: http://tarantool.org/doc/user_guide.html
+.. _`Tarantool User Guide`: http://tarantool.org/doc/book/index.html
 .. _`Client-server protocol specification`: http://tarantool.org/doc/dev_guide/box-protocol.html
 .. _`Sophia`: http://sphia.org
 .. _`BSD licensed`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
