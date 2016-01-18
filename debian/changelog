@@ -1,3 +1,9 @@
+tarantool-python (0.5.2-1) unstable; urgency=medium
+
+  * Fix minor bugs
+
+ -- Eugine Blikh <bigbes@gmail.com>  Mon, 18 Jan 2016 13:46:33 +0300
+
 tarantool-python (0.5.1-1) unstable; urgency=medium
 
   * Fix minor bugs
