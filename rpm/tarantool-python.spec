@@ -1,12 +1,10 @@
 %define name tarantool-python
-%global build_version %(git describe --long | sed "s/[0-9]*\.[0-9]*\.[0-9]*-//" | sed "s/-[a-z 0-9]*//")
-
 
 Summary: Python client library for Tarantool Database
 Name: %{name}
 Version: 0.5.2
-Release: %{build_version}
-Source0: %{version}.tar.gz
+Release: 1%{?dist}
+Source0: tarantool-python-%{version}.tar.gz
 License: BSD
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -106,7 +104,7 @@ See More
 
 
 %prep
-%setup -q -c %{name}-%{version}
+%setup -q -n %{name}-%{version}
 
 %build
 python setup.py build
