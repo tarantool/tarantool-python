@@ -241,7 +241,7 @@ class Connection(object):
             return
 
         attempt = 0
-        last_errno = 0
+        last_errno = errno.ECONNRESET
         while True:
             time.sleep(self.reconnect_delay)
             try:
