@@ -37,7 +37,7 @@ def greeting_decode(greeting_buf):
     # Tarantool 1.6.8-132-g82f5424 (Lua console)
     result = Greeting()
     try:
-        (product, _, tail) = greeting_buf[0:63].partition(' ')
+        (product, _, tail) = str(greeting_buf)[0:63].partition(' ')
         if product.startswith("Tarantool "):
             raise Exception()
         # Parse a version string - 1.6.6-83-gc6b2129 or 1.6.7
@@ -64,4 +64,4 @@ def greeting_decode(greeting_buf):
         return result
     except Exception as e:
         print('exx', e)
-        raise ValueError("Invalid greeting: " + greeting_buf)
+        raise ValueError("Invalid greeting: " + str(greeting_buf))

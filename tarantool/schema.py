@@ -22,7 +22,7 @@ class SchemaIndex(object):
         self.parts = []
         if isinstance(index_row[5], (list, tuple)):
             for k, v in index_row[5]:
-                self.parts.append(k, v)
+                self.parts.append((k, v))
         else:
             for i in range(index_row[5]):
                 self.parts.append((index_row[5 + 1 + i * 2], index_row[5 + 2 + i * 2]))
@@ -100,13 +100,13 @@ class Schema(object):
 
         index_row = None
         try:
-            index_row = self.con.select(const.SPACE_VSPACE, [_space.sid, index],
+            index_row = self.con.select(const.SPACE_VINDEX, [_space.sid, index],
                                 index=_index)
         except DatabaseError as e:
             if e.args[0] != 36:
                 raise
         if index_row is None:
-            index_row = self.con.select(const.SPACE_SPACE, [_space.sid, index],
+            index_row = self.con.select(const.SPACE_INDEX, [_space.sid, index],
                                 index=_index)
 
         if len(index_row) > 1:

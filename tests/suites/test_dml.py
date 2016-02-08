@@ -4,9 +4,9 @@ import six
 import yaml
 import unittest
 import tarantool
-from lib.tarantool_server import TarantoolServer
+from .lib.tarantool_server import TarantoolServer
 
-class Request(unittest.TestCase):
+class TestSuite_Request(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' DML '.center(70, '='))
@@ -134,12 +134,10 @@ class Request(unittest.TestCase):
         self.assertEqual(self.con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
         self.assertEqual(self.con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
         self.assertEqual(self.con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
-        with self.assertRaisesRegexp(tarantool.DatabaseError,
-                '(32, .*)'):
+        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
             self.con.call('json.decode')
-        with self.assertRaisesRegexp(tarantool.DatabaseError,
-                '(22, .*)'):
-            self.con.call('json.decode', '{"hello": "world"}')
+        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
+            self.con.call('json.decode', '{[1, 2]: "world"}')
         ans = self.con.call('fiber.time')
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)

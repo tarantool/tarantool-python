@@ -2,7 +2,7 @@
 
 import unittest
 import tarantool
-from lib.tarantool_server import TarantoolServer
+from .lib.tarantool_server import TarantoolServer
 
 class TestSuite_Schema(unittest.TestCase):
     @classmethod
