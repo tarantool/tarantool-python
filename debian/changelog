@@ -1,3 +1,15 @@
+tarantool-python (0.5.3-1) unstable; urgency=medium
+
+  * Adding support for python3, again.
+  * Update docstrings for tarantool.Connection and tarnatool.Space mehods
+  * Modify tarantool.Space methods for simplicity
+  * Add support for Upsert command
+  * Fix some errors
+  * Fix compatibility when migrating from 1.6.4 to 1.6.7 or more
+
+
+ -- Eugine Blikh <bigbes@gmail.com>  Mon, 09 Feb 2016 19:17:33 +0300
+
 tarantool-python (0.5.2-1) unstable; urgency=medium
 
   * Fix minor bugs

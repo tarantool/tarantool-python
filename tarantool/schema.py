@@ -26,7 +26,6 @@ class SchemaIndex(object):
         else:
             for i in range(index_row[5]):
                 self.parts.append((index_row[5 + 1 + i * 2], index_row[5 + 2 + i * 2]))
-            sel
         self.space = space
         self.space.indexes[self.iid] = self
         if self.name:
