@@ -19,106 +19,65 @@ class Space(object):
 
         :param connection: Object representing connection to the server
         :type connection: :class:`~tarantool.connection.Connection` instance
-        :param int space_no: space no or name to insert a record
+        :param int space_name: space no or name to insert a record
         :type space_name: int or str
         '''
 
         self.connection = connection
         self.space_no = self.connection.schema.get_space(space_name).sid
 
-    def replace(self, values):
-        '''
-        Execute REPLACE request.
-        It will throw error if there's no tuple with this PK exists
-
-        :param values: record to be inserted. The tuple must contain
-            only scalar (integer or strings) values
-        :type values: tuple
-
-        :rtype: :class:`~tarantool.response.Response` instance
-        '''
-        self.connection.replace(self.space_no, values)
-
-    def insert(self, values):
+    def insert(self, *args, **kwargs):
         '''
         Execute INSERT request.
-        It will throw error if there's tuple with same PK exists.
 
-        :param values: record to be inserted. The tuple must contain
-            only scalar (integer or strings) values
-        :type values: tuple
-
-        :rtype: :class:`~tarantool.response.Response` instance
+        See `~tarantool.connection.insert` for more information
         '''
-        self.connection.insert(self.space_no, values)
+        return self.connection.insert(self.space_no, *args, **kwargs)
 
-    def delete(self, key):
+    def replace(self, *args, **kwargs):
         '''
-        Delete records by its primary key.
+        Execute REPLACE request.
 
-        :param key: key of records to be deleted
-        :type values: tuple or str or int or long
-
-        :rtype: :class:`~tarantool.response.Response` instance
+        See `~tarantool.connection.replace` for more information
         '''
-        return self.connection.delete(self.space_no, key)
+        return self.connection.replace(self.space_no, *args, **kwargs)
 
-    def update(self, key, op_list):
+    def delete(self, *args, **kwargs):
         '''
-        Update records by it's primary key with operations defined in op_list
+        Execute DELETE request.
 
-        :param key: key of records to be updated
-        :type values: tuple or str or int or long
-
-        :rtype: :class:`~tarantool.response.Response` instance
+        See `~tarantool.connection.delete` for more information
         '''
-        return self.connection.update(self.space_no, key, op_list)
+        return self.connection.delete(self.space_no, *args, **kwargs)
 
-    def select(self, values, **kwargs):
+    def update(self, *args, **kwargs):
+        '''
+        Execute UPDATE request.
+
+        See `~tarantool.connection.update` for more information
+        '''
+        return self.connection.update(self.space_no, *args, **kwargs)
+
+    def upsert(self, *args, **kwargs):
+        '''
+        Execute UPDATE request.
+
+        See `~tarantool.connection.upsert` for more information
+        '''
+        return self.connection.upsert(self.space_no, *args, **kwargs)
+
+    def select(self, *args, **kwargs):
         '''
         Execute SELECT request.
-        Select and retrieve data from the database.
 
-        :param values: list of values to search over the index
-        :type values: list of tuples
-        :param index: specifies which index to use (default is **0** which
-            means that the **primary index** will be used)
-        :type index: int
-        :param offset: offset in the resulting tuple set
-        :type offset: int
-        :param limit: limits the total number of returned tuples
-        :type limit: int
-
-        :rtype: `Response` instance
+        See `~tarantool.connection.select` for more information
         '''
-        # Initialize arguments and its defaults from **kwargs
-        # I use the explicit argument initialization from the kwargs
-        # to make it impossible to pass positional arguments
-        index = kwargs.get("index", 0)
-        offset = kwargs.get("offset", 0)
-        limit = kwargs.get("limit", 0xffffffff)
+        return self.connection.select(self.space_no, *args, **kwargs)
 
-        return self.connection.select(
-            self.space_no, values, index=index, offset=offset, limit=limit)
-
-    def call(self, func_name, *args, **kwargs):
+    def call(self, *args, **kwargs):
         '''
         Execute CALL request. Call stored Lua function.
 
-        :param func_name: stored Lua function name
-        :type func_name: str
-        :param args: list of function arguments
-        :type args: list or tuple
-        :param field_defs: field definitions used for types conversion,
-               e.g. [('field0', tarantool.NUM), ('field1', tarantool.STR)]
-        :type field_defs: None or  [(name, type) or None]
-        :param default_type: None a default type used for result conversion,
-            as defined in ``schema[space_no]['default_type']``
-        :type default_type: None or int
-        :param space_name: space number or name. A schema for the space
-            will be used for type conversion.
-        :type space_name: None or int or str
-
-        :rtype: `Response` instance
+        It's deprecated, use `~tarantool.connection.call` instead
         '''
         return self.connection.call(func_name, *args, **kwargs)

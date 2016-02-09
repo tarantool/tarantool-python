@@ -24,6 +24,7 @@ from tarantool.const import (
     IPROTO_CLUSTER_UUID,
     IPROTO_VCLOCK,
     IPROTO_EXPR,
+    IPROTO_OPS,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
@@ -31,6 +32,7 @@ from tarantool.const import (
     REQUEST_TYPE_REPLACE,
     REQUEST_TYPE_DELETE,
     REQUEST_TYPE_UPDATE,
+    REQUEST_TYPE_UPSERT,
     REQUEST_TYPE_CALL,
     REQUEST_TYPE_EVAL,
     REQUEST_TYPE_AUTHENTICATE,
@@ -248,6 +250,23 @@ class RequestPing(Request):
         super(RequestPing, self).__init__(conn)
         self._bytes = self.header(0)
 
+class RequestUpsert(Request):
+    '''
+    Represents UPSERT request
+    '''
+
+    request_type = REQUEST_TYPE_UPSERT
+
+    # pylint: disable=W0231
+    def __init__(self, conn, space_no, index_no, tuple_value, op_list):
+        super(RequestUpsert, self).__init__(conn)
+
+        request_body = msgpack.dumps({IPROTO_SPACE_ID: space_no,
+                                      IPROTO_INDEX_ID: index_no,
+                                      IPROTO_TUPLE: tuple_value,
+                                      IPROTO_OPS: op_list})
+
+        self._bytes = self.header(len(request_body)) + request_body
 
 class RequestJoin(Request):
     '''

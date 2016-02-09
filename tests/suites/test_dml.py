@@ -18,7 +18,7 @@ class TestSuite_Request(unittest.TestCase):
         self.adm = self.srv.admin
         self.space_created = self.adm("box.schema.create_space('space_1')")
         self.adm("box.space['space_1']:create_index('primary', {type = 'tree', parts = {1, 'num'}, unique = true})")
-        self.adm("box.space['space_1']:create_index('secondary', {type = 'tree', parts = {2, 'num', 3, 'str'}, unique = true})")
+        self.adm("box.space['space_1']:create_index('secondary', {type = 'tree', parts = {2, 'num', 3, 'str'}, unique = false})")
         self.adm("json = require('json')")
         self.adm("fiber = require('fiber')")
         self.adm("uuid = require('uuid')")
@@ -160,6 +160,58 @@ class TestSuite_Request(unittest.TestCase):
 
         self.assertEqual(self.con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
         self.assertEqual(self.con.call('box.tuple.new', 'fld_1'), [['fld_1']])
+
+    def test_08_eval(self):
+        self.assertEqual(self.con.eval('return json.decode(...)',
+                                       '[123, 234, 345]'), [[123, 234, 345]])
+        self.assertEqual(self.con.eval('return json.decode(...)',
+                                       ['[123, 234, 345]']), [[123, 234, 345]])
+        self.assertEqual(self.con.eval('return json.decode(...)',
+                                       ('[123, 234, 345]',)), [[123, 234, 345]])
+        self.assertEqual(self.con.eval('return json.decode("[123, 234, 345]")'),
+                                       [[123, 234, 345]])
+        self.assertEqual(self.con.eval('return json.decode("[123, 234, 345]"), '+
+                                       'json.decode("[123, 234, 345]")'),
+                                       [[123, 234, 345], [123, 234, 345]])
+        self.assertEqual(self.con.eval('json.decode("[123, 234, 345]")'), [])
+
+    def test_09_upsert(self):
+        self.assertEqual(self.con.select('space_1', [22], index='primary'), [[22, 2, 'tuple_22']])
+        self.assertEqual(self.con.select('space_1', [23], index='primary'), [[23, 3, 'tuple_23']])
+        self.assertEqual(self.con.select('space_1', [499], index='primary'), [[499, 4, 'tuple_499']])
+        self.assertEqual(self.con.select('space_1', [500], index='primary'), [])
+        self.assertEqual(self.con.upsert('space_1', [500, 123, 'hello, world'],
+                                         [(':', 2, 2, 3, "---")]), [])
+        self.assertEqual(self.con.select('space_1', [500], index='primary'), [[500, 123, 'hello, world']])
+        self.assertEqual(self.con.upsert('space_1', [500, 123, 'hello, world'],
+                                         [(':', 2, 2, 3, "---")]), [])
+        self.assertEqual(self.con.select('space_1', [500], index='primary'), [[500, 123, 'he---, world']])
+
+    def test_10_space(self):
+        space = self.con.space('space_1')
+        self.assertEqual(space.select([22], index='primary'), [[22, 2, 'tuple_22']])
+        self.assertEqual(space.replace([22, 10, 'lol']), [[22, 10, 'lol']])
+        self.assertEqual(space.insert([900, 10, 'foo']), [[900, 10, 'foo']])
+        self.assertEqual(space.select([10], index='secondary'), [
+            [900, 10, 'foo'], [22, 10, 'lol']
+        ])
+        self.assertEqual(space.select([10], index='secondary', limit=1), [
+            [900, 10, 'foo']
+        ])
+        self.assertEqual(space.select([10], index='secondary', limit=1, offset=1), [
+            [22, 10, 'lol']
+        ])
+        self.assertEqual(space.select([501], index='primary'), [])
+        self.assertEqual(space.upsert([501, 123, 'hello, world'],
+                                         [(':', 2, 2, 3, "---")]), [])
+        self.assertEqual(space.select([501], index='primary'), [[501, 123, 'hello, world']])
+        self.assertEqual(space.upsert([501, 123, 'hello, world'],
+                                         [(':', 2, 2, 3, "---")]), [])
+        self.assertEqual(space.update([400], [('!', 2, 'oingo, boingo')]),
+                [[400, 0, 'oingo, boingo', 'tuple_400']])
+        self.assertEqual(space.update([400], [('#', 2, 1)]),
+                [[400, 0, 'tuple_400']])
+        self.assertEqual(space.delete([900]), [[900, 10, 'foo']])
 
     @classmethod
     def tearDownClass(self):
