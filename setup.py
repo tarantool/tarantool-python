@@ -70,7 +70,7 @@ setup(
     author_email="k.cherkasoff@gmail.com",
     url="https://github.com/tarantool/tarantool-python",
     license="BSD",
-    description="Python client library for Tarantool Database",
+    description="Python client library for Tarantool 1.6 Database",
     long_description=read('README.rst'),
     classifiers=[
         "Intended Audience :: Developers",
