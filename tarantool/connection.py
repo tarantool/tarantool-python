@@ -370,7 +370,7 @@ class Connection(object):
         sync = request._sync
         resp = self._send_request(request)
         while True:
-            if self.version_id >= version_id(1, 7, 0):
+            if self.version_id >= version_id(1, 7, 0) and resp.code == REQUEST_TYPE_OK:
                 # Send acknowledgement
                 ack = RequestOK(self, sync)
                 self._socket.sendall(bytes(ack))
