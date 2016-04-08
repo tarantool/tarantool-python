@@ -91,7 +91,7 @@ class Connection(object):
                              if False than you have to call connect() manualy.
         '''
         if os.name == 'nt':
-            libc = ctypes.CDLL(ctypes.util.find_library('Ws2_32'), use_errno=True)
+            libc = ctypes.windll.LoadLibrary(ctypes.util.find_library('Ws2_32'))
         else:
             libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
         recv = self._sys_recv = libc.recv
@@ -233,8 +233,13 @@ class Connection(object):
                 if e.errno == errno.EBADF:
                     return errno.ECONNRESET
             else:
-                self._sys_recv(sock_fd, buf, 1,
-                               socket.MSG_DONTWAIT | socket.MSG_PEEK)
+                if os.name == 'nt':
+                    flag = socket.MSG_PEEK
+                    self._socket.setblocking(False)
+                else:
+                    flag = socket.MSG_DONTWAIT | socket.MSG_PEEK
+                self._sys_recv(sock_fd, buf, 1, flag)
+
                 if ctypes.get_errno() == errno.EAGAIN:
                     ctypes.set_errno(0)
                     return errno.EAGAIN
