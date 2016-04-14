@@ -365,35 +365,49 @@ class Connection(object):
                                       self.password)
         return self._send_request_wo_reconnect(request)
 
-    def join(self, server_uuid):
+    def _join_v16(self, server_uuid):
         request = RequestJoin(self, server_uuid)
-        sync = request._sync
-        resp = self._send_request(request)
+        self._socket.sendall(bytes(request))
+
         while True:
-            if self.version_id >= version_id(1, 7, 0) and resp.code == REQUEST_TYPE_OK:
-                # Send acknowledgement
-                ack = RequestOK(self, sync)
-                self._socket.sendall(bytes(ack))
+            resp = Response(self, self._read_response());
             yield resp
             if resp.code == REQUEST_TYPE_OK or resp.code >= REQUEST_TYPE_ERROR:
                 return
-            resp = Response(self, self._read_response())
         self.close()  # close connection after JOIN
 
-    def subscribe(self, cluster_uuid, server_uuid, vclock={}):
-        # FIXME rudnyh: ^ 'vclock={}'? really? sure?
-        request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
-        sync = request._sync
-        resp = self._send_request(request)
+    def _join_v17(self, server_uuid):
+        class JoinState:
+            Handshake, Initial, Final, Done = range(4)
+
+        request = RequestJoin(self, server_uuid)
+        self._socket.sendall(bytes(request))
+        state = JoinState.Handshake
         while True:
-            if self.version_id >= version_id(1, 7, 0):
-                # Send acknowledgement
-                ack = RequestOK(self, sync)
-                self._socket.sendall(bytes(ack))
+            resp = Response(self, self._read_response())
             yield resp
             if resp.code >= REQUEST_TYPE_ERROR:
                 return
+            elif resp.code == REQUEST_TYPE_OK:
+                state = state + 1
+                if state == JoinState.Done:
+                    return
+
+    def join(self, server_uuid):
+        self._opt_reconnect()
+        if self.version_id < version_id(1, 7, 0):
+            return self._join_v16(server_uuid)
+        return self._join_v17(server_uuid)
+
+    def subscribe(self, cluster_uuid, server_uuid, vclock=None):
+        vclock = vclock or {}
+        request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
+        self._socket.sendall(bytes(request))
+        while True:
             resp = Response(self, self._read_response())
+            yield resp
+            if resp.code >= REQUEST_TYPE_ERROR:
+                return
         self.close()  # close connection after SUBSCRIBE
 
     def insert(self, space_name, values):
