@@ -11,6 +11,7 @@ import ctypes
 import ctypes.util
 import socket
 import msgpack
+import os
 
 try:
     from ctypes import c_ssize_t
@@ -89,7 +90,10 @@ class Connection(object):
         creates network connection.
                              if False than you have to call connect() manualy.
         '''
-        libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+        if os.name == 'nt':
+            libc = ctypes.windll.LoadLibrary(ctypes.util.find_library('Ws2_32'))
+        else:
+            libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
         recv = self._sys_recv = libc.recv
         recv.argtypes = [
             ctypes.c_int, ctypes.c_void_p, c_ssize_t, ctypes.c_int]
@@ -229,8 +233,13 @@ class Connection(object):
                 if e.errno == errno.EBADF:
                     return errno.ECONNRESET
             else:
-                self._sys_recv(sock_fd, buf, 1,
-                               socket.MSG_DONTWAIT | socket.MSG_PEEK)
+                if os.name == 'nt':
+                    flag = socket.MSG_PEEK
+                    self._socket.setblocking(False)
+                else:
+                    flag = socket.MSG_DONTWAIT | socket.MSG_PEEK
+                self._sys_recv(sock_fd, buf, 1, flag)
+
                 if ctypes.get_errno() == errno.EAGAIN:
                     ctypes.set_errno(0)
                     return errno.EAGAIN
