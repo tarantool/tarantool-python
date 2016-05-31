@@ -79,7 +79,7 @@ class Schema(object):
         if space_row is None:
             space_row = self.con.select(const.SPACE_SPACE, space, index=_index)
         if len(space_row) > 1:
-            raise SchemaError('Some strange output from server: \n' + space_row)
+            raise SchemaError('Some strange output from server: \n' + str(space_row))
         elif len(space_row) == 0 or not len(space_row[0]):
             temp_name = ('name' if isinstance(space, six.string_types) else 'id')
             raise SchemaError(
@@ -109,7 +109,7 @@ class Schema(object):
                                 index=_index)
 
         if len(index_row) > 1:
-            raise SchemaError('Some strange output from server: \n' + index_row)
+            raise SchemaError('Some strange output from server: \n' + str(index_row))
         elif len(index_row) == 0 or not len(index_row[0]):
             temp_name = ('name' if isinstance(index, six.string_types) else 'id')
             raise SchemaError(
