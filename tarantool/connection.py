@@ -45,7 +45,9 @@ from tarantool.const import (
     REQUEST_TYPE_OK,
     REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE,
-    ENCODING_DEFAULT)
+    ENCODING_DEFAULT,
+    ITERATOR_EQ,
+    ITERATOR_ALL)
 
 from tarantool.error import (
     NetworkError,
@@ -667,7 +669,13 @@ class Connection(object):
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 0xffffffff)
         index_name = kwargs.get("index", 0)
-        iterator_type = kwargs.get("iterator", 0)
+        iterator_type = kwargs.get("iterator")
+
+        if iterator_type == None and \
+           (key == None or (isinstance(key, (list, tuple)) and len(key) == 0)):
+               iterator_type = ITERATOR_ALL
+        else:
+            iterator_type = ITERATOR_EQ
 
         # Perform smart type checking (scalar / list of scalars / list of
         # tuples)

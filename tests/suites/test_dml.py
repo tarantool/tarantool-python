@@ -4,6 +4,7 @@ import six
 import yaml
 import unittest
 import tarantool
+
 from .lib.tarantool_server import TarantoolServer
 
 class TestSuite_Request(unittest.TestCase):
@@ -17,15 +18,36 @@ class TestSuite_Request(unittest.TestCase):
         self.con = tarantool.Connection('localhost', self.srv.args['primary'])
         self.adm = self.srv.admin
         self.space_created = self.adm("box.schema.create_space('space_1')")
-        self.adm("box.space['space_1']:create_index('primary', {type = 'tree', parts = {1, 'num'}, unique = true})")
-        self.adm("box.space['space_1']:create_index('secondary', {type = 'tree', parts = {2, 'num', 3, 'str'}, unique = false})")
+        self.adm("""
+        box.space['space_1']:create_index('primary', {
+            type = 'tree',
+            parts = {1, 'num'},
+            unique = true})
+        """.replace('\n', ' '))
+        self.adm("""
+        box.space['space_1']:create_index('secondary', {
+            type = 'tree',
+            parts = {2, 'num', 3, 'str'},
+            unique = false})
+        """.replace('\n', ' '))
+        self.space_created = self.adm("box.schema.create_space('space_2')")
+        self.adm("""
+        box.space['space_2']:create_index('primary', {
+            type = 'hash',
+            parts = {1, 'num'},
+            unique = true})
+        """.replace('\n', ' '))
         self.adm("json = require('json')")
         self.adm("fiber = require('fiber')")
         self.adm("uuid = require('uuid')")
 
     def test_00_00_authenticate(self):
-        self.assertIsNone(self.srv.admin("box.schema.user.create('test', { password = 'test' })"))
-        self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'execute,read,write', 'universe')"))
+        self.assertIsNone(self.srv.admin("""
+        box.schema.user.create('test', { password = 'test' })
+        """))
+        self.assertIsNone(self.srv.admin("""
+        box.schema.user.grant('test', 'execute,read,write', 'universe')
+        """))
         self.assertEqual(self.con.authenticate('test', 'test')._data, None)
 
     def test_00_01_space_created(self):
@@ -40,9 +62,7 @@ class TestSuite_Request(unittest.TestCase):
                     [i, i%5, 'tuple_'+str(i)]
             )
     def test_00_03_answer_repr(self):
-        repr_str = \
-'''- [1, 1, tuple_1]
-'''
+        repr_str = """- [1, 1, tuple_1]\n"""
         self.assertEqual(repr(self.con.select('space_1', 1)), repr_str)
 
     def test_02_select(self):
@@ -212,6 +232,17 @@ class TestSuite_Request(unittest.TestCase):
         self.assertEqual(space.update([400], [('#', 2, 1)]),
                 [[400, 0, 'tuple_400']])
         self.assertEqual(space.delete([900]), [[900, 10, 'foo']])
+
+    def test_11_select_all_hash(self):
+        space = self.con.space('space_2')
+        cnt = 10
+        for k in xrange(cnt):
+            space.insert([k, 'lol'])
+        self.assertEqual(len(space.select(())), cnt)
+        self.assertEqual(len(space.select([])), cnt)
+        self.assertEqual(len(space.select()), cnt)
+        with self.assertRaises(tarantool.error.DatabaseError):
+            space.select((), iterator=tarantool.const.ITERATOR_EQ)
 
     @classmethod
     def tearDownClass(self):
