@@ -236,7 +236,7 @@ class TestSuite_Request(unittest.TestCase):
     def test_11_select_all_hash(self):
         space = self.con.space('space_2')
         cnt = 10
-        for k in xrange(cnt):
+        for k in range(cnt):
             space.insert([k, 'lol'])
         self.assertEqual(len(space.select(())), cnt)
         self.assertEqual(len(space.select([])), cnt)

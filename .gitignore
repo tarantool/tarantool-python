@@ -8,3 +8,4 @@
 *.snap
 sophia
 *.egg-info
+.tox
