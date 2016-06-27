@@ -175,6 +175,10 @@ class Connection(object):
         while to_read > 0:
             try:
                 tmp = self._socket.recv(to_read)
+            except OverflowError:
+                self._socket.close()
+                raise NetworkError(socker.error(errno.ECONNRESET,
+                                   "Too big packet. Closing connection to server"))
             except socket.error:
                 raise NetworkError(socket.error(errno.ECONNRESET,
                                    "Lost connection to server during query"))
