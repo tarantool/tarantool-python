@@ -76,6 +76,10 @@ See More
  * `Tarantool User Guide`_
  * `Client-server Protocol Specification`_
 
+NOTE
+^^^^
+
+This driver is synchronous, so connection mustn't be shared between threads/processes.
 
 .. _`Tarantool`:
 .. _`Tarantool Database`:
