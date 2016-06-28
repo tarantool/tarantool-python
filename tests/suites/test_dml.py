@@ -108,6 +108,10 @@ class TestSuite_Request(unittest.TestCase):
         self.assertEqual(len(self.con.select('space_1', [0], index='secondary', limit=50)), 50)
 
         # TODO: Check iterator_types
+        self.assertEqual(
+            self.con.select('space_1', [0, 'tuple_20'], index='secondary', limit=2, iterator=tarantool.const.ITERATOR_GT),
+            [[200, 0, 'tuple_200'], [205, 0, 'tuple_205']]
+        )
 
     def test_03_delete(self):
         # Check that delete works fine
@@ -170,13 +174,6 @@ class TestSuite_Request(unittest.TestCase):
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)
         self.assertIsInstance(ans[0][0], str)
-#        ans = self.con.call('uuid.hex')
-#        self.assertEqual(len(ans), 1)
-#        self.assertEqual(len(ans[0]), 1)
-#        self.assertIsInstance(ans[0][0], str)
-#        with self.assertRaisesRegexp(tarantool.DatabaseError,
-#                '(12345, \'lol, error\')'):
-#            self.con.call('box.error', [12345, 'lol, error'])
 
         self.assertEqual(self.con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
         self.assertEqual(self.con.call('box.tuple.new', 'fld_1'), [['fld_1']])

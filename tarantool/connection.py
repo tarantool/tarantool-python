@@ -675,11 +675,10 @@ class Connection(object):
         index_name = kwargs.get("index", 0)
         iterator_type = kwargs.get("iterator")
 
-        if iterator_type == None and \
-           (key == None or (isinstance(key, (list, tuple)) and len(key) == 0)):
-               iterator_type = ITERATOR_ALL
-        else:
+        if iterator_type == None:
             iterator_type = ITERATOR_EQ
+            if (key == None or (isinstance(key, (list, tuple)) and len(key) == 0)):
+                iterator_type = ITERATOR_ALL
 
         # Perform smart type checking (scalar / list of scalars / list of
         # tuples)
