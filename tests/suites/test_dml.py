@@ -67,26 +67,26 @@ class TestSuite_Request(unittest.TestCase):
 
     def test_02_select(self):
         # Check that select with different keys are Ok. (With and without index names)
-        self.assertEqual(self.con.select('space_1', 20), [[20, 0, 'tuple_20']])
-        self.assertEqual(self.con.select('space_1', [21]), [[21, 1, 'tuple_21']])
-        self.assertEqual(self.con.select('space_1', [22], index='primary'), [[22, 2, 'tuple_22']])
-        self.assertEqual(self.con.select('space_1', [23], index='primary'), [[23, 3, 'tuple_23']])
+        self.assertSequenceEqual(self.con.select('space_1', 20), [[20, 0, 'tuple_20']])
+        self.assertSequenceEqual(self.con.select('space_1', [21]), [[21, 1, 'tuple_21']])
+        self.assertSequenceEqual(self.con.select('space_1', [22], index='primary'), [[22, 2, 'tuple_22']])
+        self.assertSequenceEqual(self.con.select('space_1', [23], index='primary'), [[23, 3, 'tuple_23']])
         # Check that Offset and Limit args are working fine.
-        self.assertEqual(self.con.select('space_1', [20], index='primary', limit=1), [[20, 0, 'tuple_20']])
+        self.assertSequenceEqual(self.con.select('space_1', [20], index='primary', limit=1), [[20, 0, 'tuple_20']])
         # With other indexes too
-        self.assertEqual(
+        self.assertSequenceEqual(
                 sorted(
                     self.con.select('space_1', [0], index='secondary', offset=3, limit=0),
                     key = lambda x: x[0]),
                 []
             )
-        self.assertEqual(
+        self.assertSequenceEqual(
                 sorted(
                     self.con.select('space_1', [0], index='secondary', offset=3, limit=1),
                     key = lambda x: x[0]),
                 [[110, 0, 'tuple_110']]
             )
-        self.assertEqual(
+        self.assertSequenceEqual(
                 sorted(
                     self.con.select('space_1', [0], index='secondary', offset=3, limit=2),
                     key = lambda x: x[0]),
@@ -108,30 +108,30 @@ class TestSuite_Request(unittest.TestCase):
         self.assertEqual(len(self.con.select('space_1', [0], index='secondary', limit=50)), 50)
 
         # TODO: Check iterator_types
-        self.assertEqual(
+        self.assertSequenceEqual(
             self.con.select('space_1', [0, 'tuple_20'], index='secondary', limit=2, iterator=tarantool.const.ITERATOR_GT),
             [[200, 0, 'tuple_200'], [205, 0, 'tuple_205']]
         )
 
     def test_03_delete(self):
         # Check that delete works fine
-        self.assertEqual(self.con.delete('space_1', 20), [[20, 0, 'tuple_20']])
-        self.assertEqual(self.con.delete('space_1', [20]), [])
-        self.assertEqual(self.con.select('space_1', [20], index='primary'), [])
+        self.assertSequenceEqual(self.con.delete('space_1', 20), [[20, 0, 'tuple_20']])
+        self.assertSequenceEqual(self.con.delete('space_1', [20]), [])
+        self.assertSequenceEqual(self.con.select('space_1', [20], index='primary'), [])
         # Check that <index_id> field has no meaning, yet.
         with self.assertRaisesRegexp(tarantool.DatabaseError,
                 '(19, .*)'):
                 self.con.delete('space_1', [1, 'tuple_21'])
-        self.assertEqual(self.con.select('space_1', [21], index='primary'), [[21, 1, 'tuple_21']])
+        self.assertSequenceEqual(self.con.select('space_1', [21], index='primary'), [[21, 1, 'tuple_21']])
 
     def test_04_replace(self):
         # Check replace that is Ok.
-        self.assertEqual(self.con.replace('space_1', [2, 2, 'tuple_3']), [[2, 2, 'tuple_3']])
-        self.assertEqual(self.con.select('space_1', 2), [[2, 2, 'tuple_3']])
+        self.assertSequenceEqual(self.con.replace('space_1', [2, 2, 'tuple_3']), [[2, 2, 'tuple_3']])
+        self.assertSequenceEqual(self.con.select('space_1', 2), [[2, 2, 'tuple_3']])
         # Check replace that isn't Ok.
         with self.assertRaisesRegexp(tarantool.DatabaseError,
                 '(39, .*)'):
-            self.assertEqual(self.con.replace('space_1', [2, 2]), [[2, 2, 'tuple_2']])
+            self.assertSequenceEqual(self.con.replace('space_1', [2, 2]), [[2, 2, 'tuple_2']])
 
     def test_05_ping(self):
         # Simple ping test
@@ -141,23 +141,23 @@ class TestSuite_Request(unittest.TestCase):
         self.assertEqual(self.con.ping(notime=True), "Success")
 
     def test_06_update(self):
-        self.assertEqual(self.con.update('space_1', (2,), [('+', 1, 3)]),
+        self.assertSequenceEqual(self.con.update('space_1', (2,), [('+', 1, 3)]),
                 [[2, 5, 'tuple_3']])
-        self.assertEqual(self.con.update('space_1', (2,), [('-', 1, 3)]),
+        self.assertSequenceEqual(self.con.update('space_1', (2,), [('-', 1, 3)]),
                 [[2, 2, 'tuple_3']])
-        self.assertEqual(self.con.update('space_1', (2,), [(':', 2, 3, 2, 'lalal')]),
+        self.assertSequenceEqual(self.con.update('space_1', (2,), [(':', 2, 3, 2, 'lalal')]),
                 [[2, 2, 'tuplalal_3']])
-        self.assertEqual(self.con.update('space_1', (2,), [('!', 2, '1')]),
+        self.assertSequenceEqual(self.con.update('space_1', (2,), [('!', 2, '1')]),
                 [[2, 2, '1', 'tuplalal_3']])
-        self.assertEqual(self.con.update('space_1', (2,), [('!', 2, 'oingo, boingo')]),
+        self.assertSequenceEqual(self.con.update('space_1', (2,), [('!', 2, 'oingo, boingo')]),
                 [[2, 2, 'oingo, boingo', '1', 'tuplalal_3']])
-        self.assertEqual(self.con.update('space_1', (2,), [('#', 2, 2)]),
+        self.assertSequenceEqual(self.con.update('space_1', (2,), [('#', 2, 2)]),
                 [[2, 2, 'tuplalal_3']])
 
     def test_07_call(self):
-        self.assertEqual(self.con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
-        self.assertEqual(self.con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
-        self.assertEqual(self.con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
+        self.assertSequenceEqual(self.con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
+        self.assertSequenceEqual(self.con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
+        self.assertSequenceEqual(self.con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
         with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
             self.con.call('json.decode')
         with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
@@ -175,60 +175,60 @@ class TestSuite_Request(unittest.TestCase):
         self.assertEqual(len(ans[0]), 1)
         self.assertIsInstance(ans[0][0], str)
 
-        self.assertEqual(self.con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
-        self.assertEqual(self.con.call('box.tuple.new', 'fld_1'), [['fld_1']])
+        self.assertSequenceEqual(self.con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
+        self.assertSequenceEqual(self.con.call('box.tuple.new', 'fld_1'), [['fld_1']])
 
     def test_08_eval(self):
-        self.assertEqual(self.con.eval('return json.decode(...)',
+        self.assertSequenceEqual(self.con.eval('return json.decode(...)',
                                        '[123, 234, 345]'), [[123, 234, 345]])
-        self.assertEqual(self.con.eval('return json.decode(...)',
+        self.assertSequenceEqual(self.con.eval('return json.decode(...)',
                                        ['[123, 234, 345]']), [[123, 234, 345]])
-        self.assertEqual(self.con.eval('return json.decode(...)',
+        self.assertSequenceEqual(self.con.eval('return json.decode(...)',
                                        ('[123, 234, 345]',)), [[123, 234, 345]])
-        self.assertEqual(self.con.eval('return json.decode("[123, 234, 345]")'),
+        self.assertSequenceEqual(self.con.eval('return json.decode("[123, 234, 345]")'),
                                        [[123, 234, 345]])
-        self.assertEqual(self.con.eval('return json.decode("[123, 234, 345]"), '+
+        self.assertSequenceEqual(self.con.eval('return json.decode("[123, 234, 345]"), '+
                                        'json.decode("[123, 234, 345]")'),
                                        [[123, 234, 345], [123, 234, 345]])
-        self.assertEqual(self.con.eval('json.decode("[123, 234, 345]")'), [])
+        self.assertSequenceEqual(self.con.eval('json.decode("[123, 234, 345]")'), [])
 
     def test_09_upsert(self):
-        self.assertEqual(self.con.select('space_1', [22], index='primary'), [[22, 2, 'tuple_22']])
-        self.assertEqual(self.con.select('space_1', [23], index='primary'), [[23, 3, 'tuple_23']])
-        self.assertEqual(self.con.select('space_1', [499], index='primary'), [[499, 4, 'tuple_499']])
-        self.assertEqual(self.con.select('space_1', [500], index='primary'), [])
-        self.assertEqual(self.con.upsert('space_1', [500, 123, 'hello, world'],
+        self.assertSequenceEqual(self.con.select('space_1', [22], index='primary'), [[22, 2, 'tuple_22']])
+        self.assertSequenceEqual(self.con.select('space_1', [23], index='primary'), [[23, 3, 'tuple_23']])
+        self.assertSequenceEqual(self.con.select('space_1', [499], index='primary'), [[499, 4, 'tuple_499']])
+        self.assertSequenceEqual(self.con.select('space_1', [500], index='primary'), [])
+        self.assertSequenceEqual(self.con.upsert('space_1', [500, 123, 'hello, world'],
                                          [(':', 2, 2, 3, "---")]), [])
-        self.assertEqual(self.con.select('space_1', [500], index='primary'), [[500, 123, 'hello, world']])
-        self.assertEqual(self.con.upsert('space_1', [500, 123, 'hello, world'],
+        self.assertSequenceEqual(self.con.select('space_1', [500], index='primary'), [[500, 123, 'hello, world']])
+        self.assertSequenceEqual(self.con.upsert('space_1', [500, 123, 'hello, world'],
                                          [(':', 2, 2, 3, "---")]), [])
-        self.assertEqual(self.con.select('space_1', [500], index='primary'), [[500, 123, 'he---, world']])
+        self.assertSequenceEqual(self.con.select('space_1', [500], index='primary'), [[500, 123, 'he---, world']])
 
     def test_10_space(self):
         space = self.con.space('space_1')
-        self.assertEqual(space.select([22], index='primary'), [[22, 2, 'tuple_22']])
-        self.assertEqual(space.replace([22, 10, 'lol']), [[22, 10, 'lol']])
-        self.assertEqual(space.insert([900, 10, 'foo']), [[900, 10, 'foo']])
-        self.assertEqual(space.select([10], index='secondary'), [
+        self.assertSequenceEqual(space.select([22], index='primary'), [[22, 2, 'tuple_22']])
+        self.assertSequenceEqual(space.replace([22, 10, 'lol']), [[22, 10, 'lol']])
+        self.assertSequenceEqual(space.insert([900, 10, 'foo']), [[900, 10, 'foo']])
+        self.assertSequenceEqual(space.select([10], index='secondary'), [
             [900, 10, 'foo'], [22, 10, 'lol']
         ])
-        self.assertEqual(space.select([10], index='secondary', limit=1), [
+        self.assertSequenceEqual(space.select([10], index='secondary', limit=1), [
             [900, 10, 'foo']
         ])
-        self.assertEqual(space.select([10], index='secondary', limit=1, offset=1), [
+        self.assertSequenceEqual(space.select([10], index='secondary', limit=1, offset=1), [
             [22, 10, 'lol']
         ])
-        self.assertEqual(space.select([501], index='primary'), [])
-        self.assertEqual(space.upsert([501, 123, 'hello, world'],
+        self.assertSequenceEqual(space.select([501], index='primary'), [])
+        self.assertSequenceEqual(space.upsert([501, 123, 'hello, world'],
                                          [(':', 2, 2, 3, "---")]), [])
-        self.assertEqual(space.select([501], index='primary'), [[501, 123, 'hello, world']])
-        self.assertEqual(space.upsert([501, 123, 'hello, world'],
+        self.assertSequenceEqual(space.select([501], index='primary'), [[501, 123, 'hello, world']])
+        self.assertSequenceEqual(space.upsert([501, 123, 'hello, world'],
                                          [(':', 2, 2, 3, "---")]), [])
-        self.assertEqual(space.update([400], [('!', 2, 'oingo, boingo')]),
+        self.assertSequenceEqual(space.update([400], [('!', 2, 'oingo, boingo')]),
                 [[400, 0, 'oingo, boingo', 'tuple_400']])
-        self.assertEqual(space.update([400], [('#', 2, 1)]),
+        self.assertSequenceEqual(space.update([400], [('#', 2, 1)]),
                 [[400, 0, 'tuple_400']])
-        self.assertEqual(space.delete([900]), [[900, 10, 'foo']])
+        self.assertSequenceEqual(space.delete([900]), [[900, 10, 'foo']])
 
     def test_11_select_all_hash(self):
         space = self.con.space('space_2')

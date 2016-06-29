@@ -41,7 +41,6 @@ from tarantool.const import (
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
-    RETRY_MAX_ATTEMPTS,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE,
@@ -52,9 +51,8 @@ from tarantool.const import (
 from tarantool.error import (
     NetworkError,
     DatabaseError,
-    warn,
-    RetryWarning,
-    NetworkWarning)
+    NetworkWarning,
+    SchemaReloadException)
 
 from .schema import Schema
 from .utils import check_key, greeting_decode, version_id
@@ -108,6 +106,7 @@ class Connection(object):
         self.reconnect_delay = reconnect_delay
         self.reconnect_max_attempts = reconnect_max_attempts
         self.schema = Schema(self)
+        self.schema_version = 1
         self._socket = None
         self.connected = False
         self.error = True
@@ -166,6 +165,7 @@ class Connection(object):
             # the connection fails because the server is simply
             # not bound to port
             self._socket.settimeout(self.socket_timeout)
+            self.load_schema()
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
@@ -210,18 +210,17 @@ class Connection(object):
         '''
         assert isinstance(request, Request)
 
-        # Repeat request in a loop if the server returns completion_status == 1
-        # (try again)
-        for attempt in range(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
-            self._socket.sendall(bytes(request))
-            response = Response(self, self._read_response())
+        response = None
+        while True:
+            try:
+                self._socket.sendall(bytes(request))
+                response = Response(self, self._read_response())
+                break
+            except SchemaReloadException as e:
+                self.update_schema(e.schema_version)
+                continue
 
-            if response.completion_status != 1:
-                return response
-            warn(response.return_message, RetryWarning)
-
-        # Raise an error if the maximum number of attempts have been made
-        raise DatabaseError(response.return_code, response.return_message)
+        return response
 
     def _opt_reconnect(self):
         '''
@@ -294,13 +293,20 @@ class Connection(object):
         assert isinstance(request, Request)
 
         self._opt_reconnect()
-        response = self._send_request_wo_reconnect(
-            request)
 
-        return response
+        return self._send_request_wo_reconnect(request)
+
+    def load_schema(self):
+        self.schema.fetch_space_all()
+        self.schema.fetch_index_all()
+
+    def update_schema(self, schema_version):
+        self.schema_version = schema_version
+        self.flush_schema()
 
     def flush_schema(self):
         self.schema.flush()
+        self.load_schema()
 
     def call(self, func_name, *args):
         '''
@@ -378,7 +384,10 @@ class Connection(object):
 
         request = RequestAuthenticate(self, self._salt, self.user,
                                       self.password)
-        return self._send_request_wo_reconnect(request)
+        auth_response = self._send_request_wo_reconnect(request)
+        if auth_response.return_code == 0:
+            self.flush_schema()
+        return auth_response
 
     def _join_v16(self, server_uuid):
         request = RequestJoin(self, server_uuid)

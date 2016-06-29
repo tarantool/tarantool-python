@@ -16,7 +16,6 @@ from tarantool.error import (
     DatabaseError,
     NetworkError,
     NetworkWarning,
-    RetryWarning
 )
 
 from tarantool.schema import (
@@ -48,4 +47,4 @@ def connect(host="localhost", port=33013, user=None, password=None, encoding=ENC
 
 
 __all__ = ['connect', 'Connection', 'Schema', 'Error', 'DatabaseError',
-           'NetworkError', 'NetworkWarning', 'RetryWarning', 'SchemaError']
+           'NetworkError', 'NetworkWarning', 'SchemaError']

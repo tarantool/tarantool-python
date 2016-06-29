@@ -25,6 +25,8 @@ from tarantool.const import (
     IPROTO_VCLOCK,
     IPROTO_EXPR,
     IPROTO_OPS,
+    IPROTO_INDEX_BASE,
+    IPROTO_SCHEMA_ID,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
@@ -59,7 +61,8 @@ class Request(object):
         self._sync = None
 
     def __bytes__(self):
-        return self._bytes
+        return self.header(len(self._body)) + self._body
+
     __str__ = __bytes__
 
     @property
@@ -74,11 +77,11 @@ class Request(object):
 
     def header(self, length):
         self._sync = self.conn.generate_sync()
-        header = msgpack.dumps({IPROTO_CODE: self.request_type,
-                                IPROTO_SYNC: self._sync})
+        header = msgpack.dumps({IPROTO_CODE:      self.request_type,
+                                IPROTO_SYNC:      self._sync,
+                                IPROTO_SCHEMA_ID: self.conn.schema_version})
 
         return msgpack.dumps(length + len(header)) + header
-
 
 class RequestInsert(Request):
     '''
@@ -96,7 +99,7 @@ class RequestInsert(Request):
         request_body = msgpack.dumps({IPROTO_SPACE_ID: space_no,
                                       IPROTO_TUPLE: values})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestAuthenticate(Request):
@@ -127,7 +130,7 @@ class RequestAuthenticate(Request):
         scramble = strxor(hash1, scramble)
         request_body = msgpack.dumps({IPROTO_USER_NAME: user,
                                       IPROTO_TUPLE: ("chap-sha1", scramble)})
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestReplace(Request):
@@ -146,7 +149,7 @@ class RequestReplace(Request):
         request_body = msgpack.dumps({IPROTO_SPACE_ID: space_no,
                                       IPROTO_TUPLE: values})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestDelete(Request):
@@ -165,7 +168,7 @@ class RequestDelete(Request):
                                       IPROTO_INDEX_ID: index_no,
                                       IPROTO_KEY: key})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestSelect(Request):
@@ -184,7 +187,7 @@ class RequestSelect(Request):
                                       IPROTO_ITERATOR: iterator,
                                       IPROTO_KEY: key})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestUpdate(Request):
@@ -203,7 +206,7 @@ class RequestUpdate(Request):
                                       IPROTO_KEY: key,
                                       IPROTO_TUPLE: op_list})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestCall(Request):
@@ -220,7 +223,7 @@ class RequestCall(Request):
         request_body = msgpack.dumps({IPROTO_FUNCTION_NAME: name,
                                       IPROTO_TUPLE: args})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestEval(Request):
@@ -237,7 +240,7 @@ class RequestEval(Request):
         request_body = msgpack.dumps({IPROTO_EXPR: name,
                                       IPROTO_TUPLE: args})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestPing(Request):
@@ -248,7 +251,7 @@ class RequestPing(Request):
 
     def __init__(self, conn):
         super(RequestPing, self).__init__(conn)
-        self._bytes = self.header(0)
+        self._body = b''
 
 class RequestUpsert(Request):
     '''
@@ -266,7 +269,7 @@ class RequestUpsert(Request):
                                       IPROTO_TUPLE: tuple_value,
                                       IPROTO_OPS: op_list})
 
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 class RequestJoin(Request):
     '''
@@ -278,7 +281,7 @@ class RequestJoin(Request):
     def __init__(self, conn, server_uuid):
         super(RequestJoin, self).__init__(conn)
         request_body = msgpack.dumps({IPROTO_SERVER_UUID: server_uuid})
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 
 class RequestSubscribe(Request):
@@ -297,7 +300,7 @@ class RequestSubscribe(Request):
             IPROTO_SERVER_UUID: server_uuid,
             IPROTO_VCLOCK: vclock
         })
-        self._bytes = self.header(len(request_body)) + request_body
+        self._body = request_body
 
 class RequestOK(Request):
     '''
@@ -310,4 +313,4 @@ class RequestOK(Request):
         super(RequestOK, self).__init__(conn)
         header = msgpack.dumps({IPROTO_CODE: self.request_type,
                                 IPROTO_SYNC: sync})
-        self._bytes = msgpack.dumps(len(header)) + header
+        self._body = request_body

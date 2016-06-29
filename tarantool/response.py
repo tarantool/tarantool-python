@@ -2,23 +2,25 @@
 # pylint: disable=C0301,W0105,W0401,W0614
 
 import sys
-import msgpack
 import yaml
+import msgpack
+import collections
 
 from tarantool.const import (
     IPROTO_CODE,
     IPROTO_DATA,
     IPROTO_ERROR,
     IPROTO_SYNC,
+    IPROTO_SCHEMA_ID,
     REQUEST_TYPE_ERROR
 )
-from tarantool.error import DatabaseError, tnt_strerror
+from tarantool.error import DatabaseError, tnt_strerror, SchemaReloadException
 
 if sys.version_info < (2, 6):
     bytes = str    # pylint: disable=W0622
 
 
-class Response(list):
+class Response(collections.Sequence):
     '''
     Represents a single response from the server in compliance with the
     Tarantool protocol.
@@ -49,10 +51,11 @@ class Response(list):
         unpacker.feed(response)
         header = unpacker.unpack()
 
+        self.conn  = conn
         self._sync = header.get(IPROTO_SYNC, 0)
-        self.conn = conn
         self._code = header[IPROTO_CODE]
         self._body = {}
+        self._schema_version = header.get(IPROTO_SCHEMA_ID, None)
         try:
             self._body = unpacker.unpack()
         except msgpack.OutOfData:
@@ -60,36 +63,60 @@ class Response(list):
 
         if self._code < REQUEST_TYPE_ERROR:
             self._return_code = 0
-            self._completion_status = 0
+            self._schema_version = header.get(IPROTO_SCHEMA_ID, None)
             self._data = self._body.get(IPROTO_DATA, None)
-            # Backward-compatibility
-            if isinstance(self._data, (list, tuple)):
-                self.extend(self._data)
-            else:
-                self.append(self._data)
+            if not isinstance(self._data, (list, tuple)) and self._data is not None:
+                self._data = [self._data]
+            # # Backward-compatibility
+            # if isinstance(self._data, (list, tuple)):
+            #     self.extend(self._data)
+            # else:
+            #     self.append(self._data)
         else:
             # Separate return_code and completion_code
             self._return_message = self._body.get(IPROTO_ERROR, "")
             self._return_code = self._code & (REQUEST_TYPE_ERROR - 1)
-            self._completion_status = 2
-            self._data = None
+            self._data = []
+            if self._return_code == 109:
+                raise SchemaReloadException(self._return_message,
+                                            self._schema_version)
             if self.conn.error:
                 raise DatabaseError(self._return_code, self._return_message)
 
-    @property
-    def completion_status(self):
-        '''
-        :type: int
+    def __getitem__(self, idx):
+        if self._data == None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        return self._data.__getitem__(idx)
 
-        Request completion status.
+    def __len__(self):
+        if self._data == None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        return len(self._data)
 
-        There are only three completion status codes in use:
-            * ``0`` -- "success"; the only possible :attr:`return_code` with
-                       this status is ``0``
-            * ``2`` -- "error"; in this case :attr:`return_code` holds
-                       the actual error.
-        '''
-        return self._completion_status
+    def __contains__(self, item):
+        if self._data == None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        return item in self._data
+
+    def __iter__(self):
+        if self._data == None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        return iter(self._data)
+
+    def __reversed__(self):
+        if self._data == None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        return reversed(self._data)
+
+    def index(self, *args):
+        if self._data == None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        return self._data.index(*args)
+
+    def count(self, item):
+        if self._data == None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        return self._data.count(item)
 
     @property
     def rowcount(self):
@@ -174,6 +201,15 @@ class Response(list):
         '''
         return self._return_message
 
+    @property
+    def schema_version(self):
+        '''
+        :type: int
+
+        Current schema version of request.
+        '''
+        return self._schema_version
+
     def __str__(self):
         '''
         Return user friendy string representation of the object.
@@ -181,11 +217,13 @@ class Response(list):
 
         :rtype: str or None
         '''
-        if self.completion_status:
-            return yaml.dump({'error': {
-                'code': self.strerror[0],
-                'reason': self.return_message
-            }})
+        if self.return_code:
+            return yaml.dump({
+                'error': {
+                    'code'  : self.strerror[0],
+                    'reason': self.return_message
+                }
+            })
         return yaml.dump(self._data)
 
     __repr__ = __str__

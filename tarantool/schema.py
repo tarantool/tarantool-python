@@ -25,7 +25,10 @@ class SchemaIndex(object):
                 self.parts.append((k, v))
         else:
             for i in range(index_row[5]):
-                self.parts.append((index_row[5 + 1 + i * 2], index_row[5 + 2 + i * 2]))
+                self.parts.append((
+                    index_row[5 + 1 + i * 2],
+                    index_row[5 + 2 + i * 2]
+                ))
         self.space = space
         self.space.indexes[self.iid] = self
         if self.name:
@@ -66,26 +69,54 @@ class Schema(object):
             return self.schema[space]
         except KeyError:
             pass
-        _index = (const.INDEX_SPACE_NAME
-                  if isinstance(space, six.string_types)
-                  else const.INDEX_SPACE_PRIMARY)
+
+        return self.fetch_space(space)
+
+    def fetch_space(self, space):
+        space_row = self.fetch_space_from(space)
+
+        if len(space_row) > 1:
+            # We have selected more than one space, it's strange
+            raise SchemaError('Some strange output from server: \n' + str(space_row))
+        elif len(space_row) == 0 or not len(space_row[0]):
+            # We can't find space with this name or id
+            temp_name = ('name' if isinstance(space, six.string_types) else 'id')
+            errmsg = "There's no space with {1} '{0}'".format(space, temp_name)
+            raise SchemaError(errmsg)
+
+        space_row = space_row[0]
+
+        return SchemaSpace(space_row, self.schema)
+
+    def fetch_space_from(self, space):
+        _index = None
+        if isinstance(space, six.string_types):
+            _index = const.INDEX_SPACE_NAME
+        else:
+            _index = const.INDEX_SPACE_PRIMARY
+
+        if space == None:
+            space = ()
 
         space_row = None
         try:
+            # Try to fetch from '_vspace'
             space_row = self.con.select(const.SPACE_VSPACE, space, index=_index)
         except DatabaseError as e:
+            # if space can't be found, then user is using old version of
+            # tarantool, try again with '_space'
             if e.args[0] != 36:
                 raise
         if space_row is None:
+            # Try to fetch from '_space'
             space_row = self.con.select(const.SPACE_SPACE, space, index=_index)
-        if len(space_row) > 1:
-            raise SchemaError('Some strange output from server: \n' + str(space_row))
-        elif len(space_row) == 0 or not len(space_row[0]):
-            temp_name = ('name' if isinstance(space, six.string_types) else 'id')
-            raise SchemaError(
-                "There's no space with {1} '{0}'".format(space, temp_name))
-        space_row = space_row[0]
-        return SchemaSpace(space_row, self.schema)
+
+        return space_row
+
+    def fetch_space_all(self):
+        space_rows = self.fetch_space_from(None)
+        for row in space_rows:
+            SchemaSpace(row, self.schema)
 
     def get_index(self, space, index):
         _space = self.get_space(space)
@@ -93,30 +124,62 @@ class Schema(object):
             return _space.indexes[index]
         except KeyError:
             pass
-        _index = (const.INDEX_INDEX_NAME
-                  if isinstance(index, six.string_types)
-                  else const.INDEX_INDEX_PRIMARY)
+
+        return self.fetch_index(_space, index)
+
+    def fetch_index(self, space_object, index):
+        index_row = self.fetch_index_from(space_object.sid, index)
+
+        if len(index_row) > 1:
+            # We have selected more than one index, it's strange
+            raise SchemaError('Some strange output from server: \n' + str(index_row))
+        elif len(index_row) == 0 or not len(index_row[0]):
+            # We can't find index with this name or id
+            temp_name = ('name' if isinstance(index, six.string_types) else 'id')
+            errmsg = ("There's no index with {2} '{0}'"
+                " in space '{1}'").format(index, space_object.name, temp_name)
+            raise SchemaError(errmsg)
+
+        index_row = index_row[0]
+
+        return SchemaIndex(index_row, space_object)
+
+    def fetch_index_all(self):
+        index_rows = self.fetch_index_from(None, None)
+        for row in index_rows:
+            SchemaIndex(row, self.schema[row[0]])
+
+    def fetch_index_from(self, space, index):
+        _index = None
+        if isinstance(index, six.string_types):
+            _index = const.INDEX_INDEX_NAME
+        else:
+            _index = const.INDEX_INDEX_PRIMARY
+
+        _key_tuple = None
+        if   space is None and index is None:
+            _key_tuple = ()
+        elif space is not None and index is None:
+            _key_tuple = (space)
+        elif space is not None and index is not None:
+            _key_tuple = (space, index)
+        else:
+            raise SchemaError("Bad arguments for schema resolving")
 
         index_row = None
         try:
-            index_row = self.con.select(const.SPACE_VINDEX, [_space.sid, index],
-                                index=_index)
+            # Try to fetch from '_vindex'
+            index_row = self.con.select(const.SPACE_VINDEX, _key_tuple, index=_index)
         except DatabaseError as e:
+            # if space can't be found, then user is using old version of
+            # tarantool, try again with '_index'
             if e.args[0] != 36:
                 raise
         if index_row is None:
-            index_row = self.con.select(const.SPACE_INDEX, [_space.sid, index],
-                                index=_index)
+            # Try to fetch from '_index'
+            index_row = self.con.select(const.SPACE_INDEX, _key_tuple, index=_index)
 
-        if len(index_row) > 1:
-            raise SchemaError('Some strange output from server: \n' + str(index_row))
-        elif len(index_row) == 0 or not len(index_row[0]):
-            temp_name = ('name' if isinstance(index, six.string_types) else 'id')
-            raise SchemaError(
-                "There's no index with {2} '{0}' in space '{1}'".format(
-                    index, _space.name, temp_name))
-        index_row = index_row[0]
-        return SchemaIndex(index_row, _space)
+        return index_row
 
     def flush(self):
         self.schema.clear()
