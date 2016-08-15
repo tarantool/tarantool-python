@@ -74,7 +74,7 @@ class Space(object):
         '''
         return self.connection.select(self.space_no, *args, **kwargs)
 
-    def call(self, *args, **kwargs):
+    def call(self, func_name, *args, **kwargs):
         '''
         Execute CALL request. Call stored Lua function.
 

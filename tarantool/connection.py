@@ -22,7 +22,7 @@ import tarantool
 from tarantool.response import Response
 from tarantool.request import (
     Request,
-    RequestOK,
+    # RequestOK,
     RequestCall,
     RequestDelete,
     RequestEval,
@@ -34,8 +34,8 @@ from tarantool.request import (
     RequestSubscribe,
     RequestUpdate,
     RequestUpsert,
-    RequestAuthenticate)
-
+    RequestAuthenticate
+)
 from tarantool.space import Space
 from tarantool.const import (
     SOCKET_TIMEOUT,
@@ -46,16 +46,17 @@ from tarantool.const import (
     IPROTO_GREETING_SIZE,
     ENCODING_DEFAULT,
     ITERATOR_EQ,
-    ITERATOR_ALL)
-
+    ITERATOR_ALL
+)
 from tarantool.error import (
     NetworkError,
-    DatabaseError,
+    # DatabaseError,
     NetworkWarning,
-    SchemaReloadException)
-
-from .schema import Schema
-from .utils import check_key, greeting_decode, version_id
+    SchemaReloadException,
+    warn
+)
+from tarantool.schema import Schema
+from tarantool.utils import check_key, greeting_decode, version_id
 
 
 class Connection(object):
@@ -91,7 +92,9 @@ class Connection(object):
                              if False than you have to call connect() manualy.
         '''
         if os.name == 'nt':
-            libc = ctypes.windll.LoadLibrary(ctypes.util.find_library('Ws2_32'))
+            libc = ctypes.windll.LoadLibrary(
+                ctypes.util.find_library('Ws2_32')
+            )
         else:
             libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
         recv = self._sys_recv = libc.recv
@@ -177,15 +180,24 @@ class Connection(object):
                 tmp = self._socket.recv(to_read)
             except OverflowError:
                 self._socket.close()
-                raise NetworkError(socker.error(errno.ECONNRESET,
-                                   "Too big packet. Closing connection to server"))
+                err = socket.error(
+                    errno.ECONNRESET,
+                    "Too big packet. Closing connection to server"
+                )
+                raise NetworkError(err)
             except socket.error:
-                raise NetworkError(socket.error(errno.ECONNRESET,
-                                   "Lost connection to server during query"))
+                err = socket.error(
+                    errno.ECONNRESET,
+                    "Lost connection to server during query"
+                )
+                raise NetworkError(err)
             else:
                 if len(tmp) == 0:
-                    raise NetworkError(socket.error(errno.ECONNRESET,
-                                       "Lost connection to server during query"))
+                    err = socket.error(
+                        errno.ECONNRESET,
+                        "Lost connection to server during query"
+                    )
+                    raise NetworkError(err)
                 to_read -= len(tmp)
                 buf += tmp
         return buf
@@ -261,7 +273,7 @@ class Connection(object):
             time.sleep(self.reconnect_delay)
             try:
                 self.connect_basic()
-            except NetworkError as e:
+            except NetworkError:
                 pass
             else:
                 if self.connected:
@@ -394,7 +406,7 @@ class Connection(object):
         self._socket.sendall(bytes(request))
 
         while True:
-            resp = Response(self, self._read_response());
+            resp = Response(self, self._read_response())
             yield resp
             if resp.code == REQUEST_TYPE_OK or resp.code >= REQUEST_TYPE_ERROR:
                 return
@@ -543,7 +555,8 @@ class Connection(object):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index_name, six.string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
-        request = RequestUpsert(self, space_name, index_name, tuple_value, op_list)
+        request = RequestUpsert(self, space_name, index_name, tuple_value,
+                                op_list)
         return self._send_request(request)
 
     def update(self, space_name, key, op_list, **kwargs):
@@ -684,9 +697,10 @@ class Connection(object):
         index_name = kwargs.get("index", 0)
         iterator_type = kwargs.get("iterator")
 
-        if iterator_type == None:
+        if iterator_type is None:
             iterator_type = ITERATOR_EQ
-            if (key == None or (isinstance(key, (list, tuple)) and len(key) == 0)):
+            if key is None or (isinstance(key, (list, tuple)) and
+                               len(key) == 0):
                 iterator_type = ITERATOR_ALL
 
         # Perform smart type checking (scalar / list of scalars / list of
@@ -717,7 +731,7 @@ class Connection(object):
         return Space(self, space_name)
 
     def generate_sync(self):
-        """\
+        '''
         Need override for async io connection
-        """
+        '''
         return 0

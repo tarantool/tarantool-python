@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
-__version__ = "0.5.4"
-
 from tarantool.connection import Connection
 from tarantool.const import (
     SOCKET_TIMEOUT,
@@ -24,8 +22,12 @@ from tarantool.schema import (
 )
 
 
-def connect(host="localhost", port=33013, user=None, password=None, encoding=ENCODING_DEFAULT):
-    '''\
+__version__ = "0.5.4"
+
+
+def connect(host="localhost", port=33013, user=None, password=None,
+            encoding=ENCODING_DEFAULT):
+    '''
     Create a connection to the Tarantool server.
 
     :param str host: Server hostname or IP-address

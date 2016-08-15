@@ -77,10 +77,12 @@ class Schema(object):
 
         if len(space_row) > 1:
             # We have selected more than one space, it's strange
-            raise SchemaError('Some strange output from server: \n' + str(space_row))
+            raise SchemaError(
+                'Some strange output from server: \n' + str(space_row)
+            )
         elif len(space_row) == 0 or not len(space_row[0]):
             # We can't find space with this name or id
-            temp_name = ('name' if isinstance(space, six.string_types) else 'id')
+            temp_name = 'name' if isinstance(space, six.string_types) else 'id'
             errmsg = "There's no space with {1} '{0}'".format(space, temp_name)
             raise SchemaError(errmsg)
 
@@ -95,13 +97,14 @@ class Schema(object):
         else:
             _index = const.INDEX_SPACE_PRIMARY
 
-        if space == None:
+        if space is None:
             space = ()
 
         space_row = None
         try:
             # Try to fetch from '_vspace'
-            space_row = self.con.select(const.SPACE_VSPACE, space, index=_index)
+            space_row = self.con.select(const.SPACE_VSPACE, space,
+                                        index=_index)
         except DatabaseError as e:
             # if space can't be found, then user is using old version of
             # tarantool, try again with '_space'
@@ -132,12 +135,15 @@ class Schema(object):
 
         if len(index_row) > 1:
             # We have selected more than one index, it's strange
-            raise SchemaError('Some strange output from server: \n' + str(index_row))
+            raise SchemaError(
+                'Some strange output from server: \n' + str(index_row)
+            )
         elif len(index_row) == 0 or not len(index_row[0]):
             # We can't find index with this name or id
-            temp_name = ('name' if isinstance(index, six.string_types) else 'id')
+            temp_name = 'name' if isinstance(index, six.string_types) else 'id'
             errmsg = ("There's no index with {2} '{0}'"
-                " in space '{1}'").format(index, space_object.name, temp_name)
+                      " in space '{1}'").format(index, space_object.name,
+                                                temp_name)
             raise SchemaError(errmsg)
 
         index_row = index_row[0]
@@ -157,7 +163,7 @@ class Schema(object):
             _index = const.INDEX_INDEX_PRIMARY
 
         _key_tuple = None
-        if   space is None and index is None:
+        if space is None and index is None:
             _key_tuple = ()
         elif space is not None and index is None:
             _key_tuple = (space)
@@ -169,7 +175,8 @@ class Schema(object):
         index_row = None
         try:
             # Try to fetch from '_vindex'
-            index_row = self.con.select(const.SPACE_VINDEX, _key_tuple, index=_index)
+            index_row = self.con.select(const.SPACE_VINDEX, _key_tuple,
+                                        index=_index)
         except DatabaseError as e:
             # if space can't be found, then user is using old version of
             # tarantool, try again with '_index'
@@ -177,7 +184,8 @@ class Schema(object):
                 raise
         if index_row is None:
             # Try to fetch from '_index'
-            index_row = self.con.select(const.SPACE_INDEX, _key_tuple, index=_index)
+            index_row = self.con.select(const.SPACE_INDEX, _key_tuple,
+                                        index=_index)
 
         return index_row
 

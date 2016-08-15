@@ -14,7 +14,13 @@ from tarantool.const import (
     IPROTO_SCHEMA_ID,
     REQUEST_TYPE_ERROR
 )
-from tarantool.error import DatabaseError, tnt_strerror, SchemaReloadException
+from tarantool.error import (
+    DatabaseError,
+    InterfaceError,
+    SchemaReloadException,
+    tnt_strerror
+)
+
 
 if sys.version_info < (2, 6):
     bytes = str    # pylint: disable=W0622
@@ -51,7 +57,7 @@ class Response(collections.Sequence):
         unpacker.feed(response)
         header = unpacker.unpack()
 
-        self.conn  = conn
+        self.conn = conn
         self._sync = header.get(IPROTO_SYNC, 0)
         self._code = header[IPROTO_CODE]
         self._body = {}
@@ -65,7 +71,8 @@ class Response(collections.Sequence):
             self._return_code = 0
             self._schema_version = header.get(IPROTO_SCHEMA_ID, None)
             self._data = self._body.get(IPROTO_DATA, None)
-            if not isinstance(self._data, (list, tuple)) and self._data is not None:
+            if (not isinstance(self._data, (list, tuple)) and
+                    self._data is not None):
                 self._data = [self._data]
             # # Backward-compatibility
             # if isinstance(self._data, (list, tuple)):
@@ -84,37 +91,37 @@ class Response(collections.Sequence):
                 raise DatabaseError(self._return_code, self._return_message)
 
     def __getitem__(self, idx):
-        if self._data == None:
+        if self._data is None:
             raise InterfaceError("Trying to access data, when there's no data")
         return self._data.__getitem__(idx)
 
     def __len__(self):
-        if self._data == None:
+        if self._data is None:
             raise InterfaceError("Trying to access data, when there's no data")
         return len(self._data)
 
     def __contains__(self, item):
-        if self._data == None:
+        if self._data is None:
             raise InterfaceError("Trying to access data, when there's no data")
         return item in self._data
 
     def __iter__(self):
-        if self._data == None:
+        if self._data is None:
             raise InterfaceError("Trying to access data, when there's no data")
         return iter(self._data)
 
     def __reversed__(self):
-        if self._data == None:
+        if self._data is None:
             raise InterfaceError("Trying to access data, when there's no data")
         return reversed(self._data)
 
     def index(self, *args):
-        if self._data == None:
+        if self._data is None:
             raise InterfaceError("Trying to access data, when there's no data")
         return self._data.index(*args)
 
     def count(self, item):
-        if self._data == None:
+        if self._data is None:
             raise InterfaceError("Trying to access data, when there's no data")
         return self._data.count(item)
 
@@ -149,7 +156,7 @@ class Response(collections.Sequence):
 
     @property
     def sync(self):
-        '''\
+        '''
         :type: int
 
         Required field in the server response.
@@ -220,7 +227,7 @@ class Response(collections.Sequence):
         if self.return_code:
             return yaml.dump({
                 'error': {
-                    'code'  : self.strerror[0],
+                    'code': self.strerror[0],
                     'reason': self.return_message
                 }
             })

@@ -25,7 +25,7 @@ from tarantool.const import (
     IPROTO_VCLOCK,
     IPROTO_EXPR,
     IPROTO_OPS,
-    IPROTO_INDEX_BASE,
+    # IPROTO_INDEX_BASE,
     IPROTO_SCHEMA_ID,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_PING,
@@ -67,7 +67,7 @@ class Request(object):
 
     @property
     def sync(self):
-        '''\
+        '''
         :type: int
 
         Required field in the server request.
@@ -77,11 +77,12 @@ class Request(object):
 
     def header(self, length):
         self._sync = self.conn.generate_sync()
-        header = msgpack.dumps({IPROTO_CODE:      self.request_type,
-                                IPROTO_SYNC:      self._sync,
+        header = msgpack.dumps({IPROTO_CODE: self.request_type,
+                                IPROTO_SYNC: self._sync,
                                 IPROTO_SCHEMA_ID: self.conn.schema_version})
 
         return msgpack.dumps(length + len(header)) + header
+
 
 class RequestInsert(Request):
     '''
@@ -115,7 +116,10 @@ class RequestAuthenticate(Request):
             sha = hashlib.sha1()
             for i in values:
                 if i is not None:
-                    sha.update(i if isinstance(i, six.binary_type) else i.encode())
+                    if isinstance(i, six.binary_type):
+                        sha.update(i)
+                    else:
+                        sha.update(i.encode())
             return sha.digest()
 
         def strxor(rhs, lhs):
@@ -253,6 +257,7 @@ class RequestPing(Request):
         super(RequestPing, self).__init__(conn)
         self._body = b''
 
+
 class RequestUpsert(Request):
     '''
     Represents UPSERT request
@@ -270,6 +275,7 @@ class RequestUpsert(Request):
                                       IPROTO_OPS: op_list})
 
         self._body = request_body
+
 
 class RequestJoin(Request):
     '''
@@ -302,6 +308,7 @@ class RequestSubscribe(Request):
         })
         self._body = request_body
 
+
 class RequestOK(Request):
     '''
     Represents OK acknowledgement
@@ -311,6 +318,6 @@ class RequestOK(Request):
     # pylint: disable=W0231
     def __init__(self, conn, sync):
         super(RequestOK, self).__init__(conn)
-        header = msgpack.dumps({IPROTO_CODE: self.request_type,
-                                IPROTO_SYNC: sync})
+        request_body = msgpack.dumps({IPROTO_CODE: self.request_type,
+                                      IPROTO_SYNC: sync})
         self._body = request_body

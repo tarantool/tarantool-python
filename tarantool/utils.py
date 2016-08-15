@@ -4,6 +4,7 @@ import six
 import base64
 import uuid
 
+
 def check_key(*args, **kwargs):
     if 'first' not in kwargs:
         kwargs['first'] = True
@@ -21,8 +22,10 @@ def check_key(*args, **kwargs):
         assert isinstance(key, six.integer_types + six.string_types)
     return list(args)
 
+
 def version_id(major, minor, patch):
     return (((major << 8) | minor) << 8) | patch
+
 
 def greeting_decode(greeting_buf):
     class Greeting:
@@ -59,7 +62,7 @@ def greeting_decode(greeting_buf):
             # Tarantool < 1.6.7 doesn't add "(Binary)" to greeting
             result.protocol = "Binary"
         elif len(tail.strip()) != 0:
-            raise Exception("x") # Unsuported greeting
+            raise Exception("x")  # Unsuported greeting
         result.salt = base64.decodestring(greeting_buf[64:])[:20]
         return result
     except Exception as e:
