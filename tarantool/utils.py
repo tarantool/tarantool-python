@@ -19,7 +19,7 @@ def check_key(*args, **kwargs):
         elif args[0] is None and kwargs['select']:
             return []
     for key in args:
-        assert isinstance(key, six.integer_types + six.string_types)
+        assert isinstance(key, six.integer_types + six.string_types + (float,))
     return list(args)
 
 
