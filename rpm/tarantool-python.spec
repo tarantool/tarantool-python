@@ -1,7 +1,5 @@
-%define name tarantool-python
-
 Summary: Python client library for Tarantool Database
-Name: %{name}
+Name: tarantool-python
 Version: 0.5.4
 Release: 1%{?dist}
 Source0: tarantool-python-%{version}.tar.gz
