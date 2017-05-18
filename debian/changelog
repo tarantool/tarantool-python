@@ -1,3 +1,9 @@
+tarantool-python (0.5.5-0) unstable; urgency=medium
+
+    Release for PyPI
+
+ -- Eugine Blikh <bigbes@gmail.com>  Mon, 18 May 2017 23:23:33 +0300
+
 tarantool-python (0.5.4-0) unstable; urgency=medium
 
     Release for PyPO
