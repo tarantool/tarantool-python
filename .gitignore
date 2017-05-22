@@ -9,3 +9,7 @@
 sophia
 *.egg-info
 .tox
+
+*.xlog
+*.snap
+*.vylog

@@ -52,6 +52,11 @@ class SchemaSpace(object):
         self.schema[self.sid] = self
         if self.name:
             self.schema[self.name] = self
+        self.format = dict()
+        for part_id, part in enumerate(space_row[6]):
+            part['id'] = part_id
+            self.format[part['name']] = part
+            self.format[part_id     ] = part
 
     def flush(self):
         del self.schema[self.sid]
@@ -188,6 +193,19 @@ class Schema(object):
                                         index=_index)
 
         return index_row
+
+    def get_field(self, space, field):
+        _space = self.get_space(space)
+        try:
+            return _space.format[field]
+        except:
+            tp = 'name' if isinstance(field, six.string_types) else 'id'
+            errmsg = "There's no field with {2} '{0}' in space '{1}'".format(
+                    field, _space.name, tp
+            )
+            raise SchemaError(errmsg)
+
+        return field
 
     def flush(self):
         self.schema.clear()

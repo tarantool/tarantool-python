@@ -241,6 +241,28 @@ class TestSuite_Request(unittest.TestCase):
         with self.assertRaises(tarantool.error.DatabaseError):
             space.select((), iterator=tarantool.const.ITERATOR_EQ)
 
+    def test_12_update_fields(self):
+        self.srv.admin(
+        """
+        do
+            local sp = box.schema.create_space('sp', {
+                format = {
+                    { name = 'fir', type = 'unsigned' },
+                    { name = 'sec', type = 'string'   },
+                    { name = 'thi', type = 'unsigned' },
+                }
+            })
+            sp:create_index('pr', {
+                parts = {1, 'unsigned'}
+            })
+        end
+        """)
+        self.con.insert('sp', [2, 'help', 4])
+        self.assertSequenceEqual(
+            self.con.update('sp', (2,), [('+', 'thi', 3)]),
+            [[2, 'help', 7]]
+        )
+
     @classmethod
     def tearDownClass(self):
         self.srv.stop()

@@ -4,14 +4,15 @@
 This module provides low-level API for Tarantool
 '''
 
+import os
 import six
+import copy
 import time
 import errno
 import ctypes
 import ctypes.util
 import socket
 import msgpack
-import os
 
 try:
     from ctypes import c_ssize_t
@@ -429,6 +430,15 @@ class Connection(object):
                 if state == JoinState.Done:
                     return
 
+    def _ops_process(self, space, update_ops):
+        new_ops = []
+        for op in update_ops:
+            if isinstance(op[1], six.string_types):
+                op = list(op)
+                op[1] = self.schema.get_field(space, op[1])['id']
+            new_ops.append(op)
+        return new_ops
+
     def join(self, server_uuid):
         self._opt_reconnect()
         if self.version_id < version_id(1, 7, 0):
@@ -555,6 +565,7 @@ class Connection(object):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index_name, six.string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
+        op_list = self._ops_process(space_name, op_list)
         request = RequestUpsert(self, space_name, index_name, tuple_value,
                                 op_list)
         return self._send_request(request)
@@ -629,6 +640,7 @@ class Connection(object):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index_name, six.string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
+        op_list = self._ops_process(space_name, op_list)
         request = RequestUpdate(self, space_name, index_name, key, op_list)
         return self._send_request(request)
 

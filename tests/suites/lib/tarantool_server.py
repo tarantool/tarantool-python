@@ -85,7 +85,7 @@ class TarantoolAdmin(object):
         self.disconnect()
 
     def __call__(self, command):
-        return self.execute(command)
+        return self.execute(' '.join(command.split('\n')))
 
     def execute_no_reconnect(self, command):
         if not command:
