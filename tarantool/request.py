@@ -5,6 +5,7 @@ Request types definitions
 '''
 
 import six
+import sys
 import msgpack
 import hashlib
 
@@ -123,7 +124,7 @@ class RequestAuthenticate(Request):
             return sha.digest()
 
         def strxor(rhs, lhs):
-            if six.PY2:
+            if sys.version_info.major == 2:
                 return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
 
             return bytes([x ^ y for x, y in zip(rhs, lhs)])
