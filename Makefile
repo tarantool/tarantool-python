@@ -1,5 +1,5 @@
 test:
-	pytest
+	python -m pytest
 coverage:
 	python -m coverage run -p --source=. setup.py test
 cov-html:

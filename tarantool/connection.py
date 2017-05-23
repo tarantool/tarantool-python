@@ -134,6 +134,12 @@ class Connection(object):
         self._socket = None
 
     def connect_basic(self):
+        if self.host == None:
+            self.connect_unix()
+        else:
+            self.connect_tcp()
+
+    def connect_tcp(self):
         '''
         Create connection to the host and port specified in __init__().
         :raise: `NetworkError`
@@ -146,6 +152,23 @@ class Connection(object):
                 self._socket.close()
             self._socket = socket.create_connection((self.host, self.port))
             self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        except socket.error as e:
+            self.connected = False
+            raise NetworkError(e)
+
+    def connect_unix(self):
+        '''
+        Create connection to the host and port specified in __init__().
+        :raise: `NetworkError`
+        '''
+
+        try:
+            # If old socket already exists - close it and re-create
+            self.connected = True
+            if self._socket:
+                self._socket.close()
+            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self._socket.connect(self.port)
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
