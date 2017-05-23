@@ -3,7 +3,7 @@
 
 import collections
 
-import yaml
+import json
 import msgpack
 
 from tarantool.const import (
@@ -221,12 +221,17 @@ class Response(collections.Sequence):
         :rtype: str or None
         '''
         if self.return_code:
-            return yaml.dump({
+            return json.dumps({
                 'error': {
                     'code': self.strerror[0],
                     'reason': self.return_message
                 }
-            })
-        return yaml.dump(self._data)
+            }, sort_keys = True, indent = 4)
+        output = []
+        for tpl in self._data:
+            output.extend(("- ", json.dumps(tpl), "\n"))
+        if len(output) > 0:
+            output.pop()
+        return ''.join(output)
 
     __repr__ = __str__

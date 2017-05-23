@@ -38,11 +38,11 @@ except ImportError:
 
 # Test runner
 # python setup.py test
-try:
-    from tests.setup_command import test
-    cmdclass["test"] = test
-except ImportError:
-    pass
+# try:
+#     from tests.setup_command import test
+#     cmdclass["test"] = test
+# except ImportError:
+#     pass
 
 
 def read(*parts):
@@ -83,6 +83,5 @@ setup(
     command_options=command_options,
     install_requires=[
         'msgpack-python>=0.4',
-        'PyYAML>=3.10',
     ]
 )

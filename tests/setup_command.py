@@ -5,7 +5,6 @@ import sys
 import unittest
 import setuptools
 
-
 from glob import glob
 
 class test(setuptools.Command):
@@ -22,9 +21,7 @@ class test(setuptools.Command):
         '''
         Find all tests in test/tarantool/ and run them
         '''
-        #root = os.path.dirname(os.path.dirname(__file__))
-        #sys.path.insert(0, root)
-              
+
         tests = unittest.defaultTestLoader.discover('tests')
         test_runner = unittest.TextTestRunner(verbosity = 2)
         test_runner.run(tests)
