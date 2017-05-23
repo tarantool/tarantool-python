@@ -7,7 +7,7 @@ Standards-Version: 3.9.1
 
 Package: tarantool-python
 Architecture: any
-Depends: ${misc:Depends}, python-all (>= 2.6.6-3), python-yaml, python-msgpack | msgpack-python
+Depends: ${misc:Depends}, python-all (>= 2.6.6-3), python-msgpack | msgpack-python
 Description: Python client library for Tarantool Database
-    Python driver for Tarantool 1.6 
+    Python driver for Tarantool 1.6
     This package is a pure-python client library for Tarantool.

@@ -9,9 +9,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
 Vendor: Konstantin Cherkasoff <k.cherkasoff@gmail.com>
-Requires: python-yaml python-msgpack
+Requires: python-msgpack
 Url: https://github.com/tarantool/tarantool-python
-
+BuildRequires: python-setuptools
 %description
 Python driver for Tarantool 1.6
 ===============================
