@@ -4,10 +4,9 @@
 Request types definitions
 '''
 
-import six
-import sys
 import msgpack
 import hashlib
+
 
 from tarantool.const import (
     IPROTO_CODE,
@@ -42,7 +41,10 @@ from tarantool.const import (
     REQUEST_TYPE_JOIN,
     REQUEST_TYPE_SUBSCRIBE
 )
-
+from tarantool.utils import (
+    strxor,
+    binary_types
+)
 
 class Request(object):
     '''
@@ -60,6 +62,7 @@ class Request(object):
         self._bytes = None
         self.conn = conn
         self._sync = None
+        self._body = ''
 
     def __bytes__(self):
         return self.header(len(self._body)) + self._body
@@ -117,17 +120,11 @@ class RequestAuthenticate(Request):
             sha = hashlib.sha1()
             for i in values:
                 if i is not None:
-                    if isinstance(i, six.binary_type):
+                    if isinstance(i, binary_types):
                         sha.update(i)
                     else:
                         sha.update(i.encode())
             return sha.digest()
-
-        def strxor(rhs, lhs):
-            if sys.version_info.major == 2:
-                return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
-
-            return bytes([x ^ y for x, y in zip(rhs, lhs)])
 
         hash1 = sha1((password,))
         hash2 = sha1((hash1,))

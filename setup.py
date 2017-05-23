@@ -83,7 +83,6 @@ setup(
     command_options=command_options,
     install_requires=[
         'msgpack-python>=0.4',
-        'six',
         'PyYAML>=3.10',
     ]
 )

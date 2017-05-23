@@ -1,9 +1,32 @@
 # -*- coding: utf-8 -*-
-
-import six
+import sys
 import base64
 import uuid
 
+# Compatibility layer for Python2/Python3
+if sys.version_info.major == 2:
+    string_types     = (basestring, )
+    integer_types    = (int, long)
+    ENCODING_DEFAULT = None
+    if sys.version_info.minor < 6:
+        binary_types = (str, )
+    else:
+        binary_types = (bytes, )
+
+    def strxor(rhs, lhs):
+        return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
+
+elif sys.version_info.major == 3:
+    binary_types  = (bytes, )
+    string_types  = (str, )
+    integer_types = (int, )
+    ENCODING_DEFAULT = "utf-8"
+
+    def strxor(rhs, lhs):
+        return bytes([x ^ y for x, y in zip(rhs, lhs)])
+
+else:
+    pass # unreachable
 
 def check_key(*args, **kwargs):
     if 'first' not in kwargs:
@@ -19,13 +42,12 @@ def check_key(*args, **kwargs):
         elif args[0] is None and kwargs['select']:
             return []
     for key in args:
-        assert isinstance(key, six.integer_types + six.string_types + (float,))
+        assert isinstance(key, integer_types + string_types + (float,))
     return list(args)
 
 
 def version_id(major, minor, patch):
     return (((major << 8) | minor) << 8) | patch
-
 
 def greeting_decode(greeting_buf):
     class Greeting:

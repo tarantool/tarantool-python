@@ -5,9 +5,14 @@ This module provides :class:`~tarantool.schema.Schema` class.
 It is a Tarantool schema description.
 '''
 
-import six
-
-from tarantool.error import SchemaError, DatabaseError
+from tarantool.utils import (
+    string_types,
+    integer_types,
+)
+from tarantool.error import (
+    SchemaError,
+    DatabaseError
+)
 import tarantool.const as const
 
 
@@ -87,7 +92,7 @@ class Schema(object):
             )
         elif len(space_row) == 0 or not len(space_row[0]):
             # We can't find space with this name or id
-            temp_name = 'name' if isinstance(space, six.string_types) else 'id'
+            temp_name = 'name' if isinstance(space, string_types) else 'id'
             errmsg = "There's no space with {1} '{0}'".format(space, temp_name)
             raise SchemaError(errmsg)
 
@@ -97,7 +102,7 @@ class Schema(object):
 
     def fetch_space_from(self, space):
         _index = None
-        if isinstance(space, six.string_types):
+        if isinstance(space, string_types):
             _index = const.INDEX_SPACE_NAME
         else:
             _index = const.INDEX_SPACE_PRIMARY
@@ -145,7 +150,7 @@ class Schema(object):
             )
         elif len(index_row) == 0 or not len(index_row[0]):
             # We can't find index with this name or id
-            temp_name = 'name' if isinstance(index, six.string_types) else 'id'
+            temp_name = 'name' if isinstance(index, string_types) else 'id'
             errmsg = ("There's no index with {2} '{0}'"
                       " in space '{1}'").format(index, space_object.name,
                                                 temp_name)
@@ -162,7 +167,7 @@ class Schema(object):
 
     def fetch_index_from(self, space, index):
         _index = None
-        if isinstance(index, six.string_types):
+        if isinstance(index, string_types):
             _index = const.INDEX_INDEX_NAME
         else:
             _index = const.INDEX_INDEX_PRIMARY
@@ -199,7 +204,7 @@ class Schema(object):
         try:
             return _space.format[field]
         except:
-            tp = 'name' if isinstance(field, six.string_types) else 'id'
+            tp = 'name' if isinstance(field, string_types) else 'id'
             errmsg = "There's no field with {2} '{0}' in space '{1}'".format(
                     field, _space.name, tp
             )

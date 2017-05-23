@@ -6,7 +6,6 @@ from tarantool.const import (
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
-    ENCODING_DEFAULT
 )
 
 from tarantool.error import (
@@ -21,6 +20,9 @@ from tarantool.schema import (
     SchemaError
 )
 
+from tarantool.utils import (
+    ENCODING_DEFAULT
+)
 
 __version__ = "0.5.5"
 

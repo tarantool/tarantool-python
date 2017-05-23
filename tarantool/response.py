@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
-import sys
+import collections
+
 import yaml
 import msgpack
-import collections
 
 from tarantool.const import (
     IPROTO_CODE,
@@ -20,10 +20,6 @@ from tarantool.error import (
     SchemaReloadException,
     tnt_strerror
 )
-
-
-if sys.version_info < (2, 6):
-    bytes = str    # pylint: disable=W0622
 
 
 class Response(collections.Sequence):
@@ -46,8 +42,8 @@ class Response(collections.Sequence):
         '''
 
         # This is not necessary, because underlying list data structures are
-        # created in the __new__(). But let it be.
-        super(Response, self).__init__()
+        # created in the __new__().
+        # super(Response, self).__init__()
 
         if conn.encoding is not None:
             unpacker = msgpack.Unpacker(use_list=True, encoding=conn.encoding)

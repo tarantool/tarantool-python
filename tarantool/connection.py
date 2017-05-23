@@ -5,21 +5,20 @@ This module provides low-level API for Tarantool
 '''
 
 import os
-import six
-import copy
 import time
 import errno
+import socket
+
 import ctypes
 import ctypes.util
-import socket
-import msgpack
-
 try:
     from ctypes import c_ssize_t
 except ImportError:
     from ctypes import c_longlong as c_ssize_t
 
-import tarantool
+import msgpack
+
+import tarantool.error
 from tarantool.response import Response
 from tarantool.request import (
     Request,
@@ -45,19 +44,26 @@ from tarantool.const import (
     REQUEST_TYPE_OK,
     REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE,
-    ENCODING_DEFAULT,
     ITERATOR_EQ,
     ITERATOR_ALL
 )
 from tarantool.error import (
     NetworkError,
-    # DatabaseError,
+    DatabaseError,
+    InterfaceError,
+    SchemaError,
     NetworkWarning,
     SchemaReloadException,
     warn
 )
 from tarantool.schema import Schema
-from tarantool.utils import check_key, greeting_decode, version_id
+from tarantool.utils import (
+    check_key,
+    greeting_decode,
+    version_id,
+    string_types,
+    ENCODING_DEFAULT,
+)
 
 
 class Connection(object):
@@ -70,10 +76,10 @@ class Connection(object):
     (insert/delete/update/select).
     '''
     Error = tarantool.error
-    DatabaseError = tarantool.error.DatabaseError
-    InterfaceError = tarantool.error.InterfaceError
-    SchemaError = tarantool.error.SchemaError
-    NetworkError = tarantool.error.NetworkError
+    DatabaseError = DatabaseError
+    InterfaceError = InterfaceError
+    SchemaError = SchemaError
+    NetworkError = NetworkError
 
     def __init__(self, host, port,
                  user=None,
@@ -376,7 +382,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        if isinstance(space_name, six.string_types):
+        if isinstance(space_name, string_types):
             space_name = self.schema.get_space(space_name).sid
         request = RequestReplace(self, space_name, values)
         return self._send_request(request)
@@ -433,7 +439,7 @@ class Connection(object):
     def _ops_process(self, space, update_ops):
         new_ops = []
         for op in update_ops:
-            if isinstance(op[1], six.string_types):
+            if isinstance(op[1], string_types):
                 op = list(op)
                 op[1] = self.schema.get_field(space, op[1])['id']
             new_ops.append(op)
@@ -469,7 +475,7 @@ class Connection(object):
 
         :rtype: `Response` instance
         '''
-        if isinstance(space_name, six.string_types):
+        if isinstance(space_name, string_types):
             space_name = self.schema.get_space(space_name).sid
         request = RequestInsert(self, space_name, values)
         return self._send_request(request)
@@ -490,9 +496,9 @@ class Connection(object):
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
-        if isinstance(space_name, six.string_types):
+        if isinstance(space_name, string_types):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, six.string_types):
+        if isinstance(index_name, string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestDelete(self, space_name, index_name, key)
         return self._send_request(request)
@@ -561,9 +567,9 @@ class Connection(object):
         '''
         index_name = kwargs.get("index", 0)
 
-        if isinstance(space_name, six.string_types):
+        if isinstance(space_name, string_types):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, six.string_types):
+        if isinstance(index_name, string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
         op_list = self._ops_process(space_name, op_list)
         request = RequestUpsert(self, space_name, index_name, tuple_value,
@@ -636,9 +642,9 @@ class Connection(object):
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
-        if isinstance(space_name, six.string_types):
+        if isinstance(space_name, string_types):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, six.string_types):
+        if isinstance(index_name, string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
         op_list = self._ops_process(space_name, op_list)
         request = RequestUpdate(self, space_name, index_name, key, op_list)
@@ -719,9 +725,9 @@ class Connection(object):
         # tuples)
         key = check_key(key, select=True)
 
-        if isinstance(space_name, six.string_types):
+        if isinstance(space_name, string_types):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, six.string_types):
+        if isinstance(index_name, string_types):
             index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestSelect(self, space_name, index_name, key, offset,
                                 limit, iterator_type)
