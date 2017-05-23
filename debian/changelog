@@ -1,3 +1,15 @@
+tarantool-python (0.6.1-0) unstable; urgency=medium
+
+    Release for PyPI with some incompatible changes:
+
+    * `str`/`repr` of tuples now shows not yaml, but `json` (incompat)
+    * supports now CALL 1.7.1 by default (incompat)
+    * added support for unix sockets
+    * getting rid of six dependency
+    * packages for centos 6/7 should now be ok
+
+ -- Eugine Blikh <bigbes@gmail.com>  Mon, 23 May 2017 20:57:33 +0300
+
 tarantool-python (0.5.5-0) unstable; urgency=medium
 
     Release for PyPI
