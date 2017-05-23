@@ -88,7 +88,8 @@ class Connection(object):
                  reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True,
-                 encoding=ENCODING_DEFAULT):
+                 encoding=ENCODING_DEFAULT,
+                 call_16=False):
         '''
         Initialize a connection to the server.
 
@@ -121,6 +122,7 @@ class Connection(object):
         self.connected = False
         self.error = True
         self.encoding = encoding
+        self.call_16 = call_16
         if connect_now:
             self.connect()
 
@@ -344,7 +346,7 @@ class Connection(object):
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
 
-        request = RequestCall(self, func_name, args)
+        request = RequestCall(self, func_name, args, self.call_16)
         response = self._send_request(request)
         return response
 

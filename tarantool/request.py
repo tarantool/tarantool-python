@@ -35,6 +35,7 @@ from tarantool.const import (
     REQUEST_TYPE_DELETE,
     REQUEST_TYPE_UPDATE,
     REQUEST_TYPE_UPSERT,
+    REQUEST_TYPE_CALL16,
     REQUEST_TYPE_CALL,
     REQUEST_TYPE_EVAL,
     REQUEST_TYPE_AUTHENTICATE,
@@ -218,7 +219,9 @@ class RequestCall(Request):
     request_type = REQUEST_TYPE_CALL
 
     # pylint: disable=W0231
-    def __init__(self, conn, name, args):
+    def __init__(self, conn, name, args, call_16):
+        if call_16:
+            self.request_type = REQUEST_TYPE_CALL16
         super(RequestCall, self).__init__(conn)
         assert isinstance(args, (list, tuple))
 

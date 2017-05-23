@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import six
 import yaml
 import unittest
 import tarantool
@@ -154,29 +153,54 @@ class TestSuite_Request(unittest.TestCase):
         self.assertSequenceEqual(self.con.update('space_1', (2,), [('#', 2, 2)]),
                 [[2, 2, 'tuplalal_3']])
 
-    def test_07_call(self):
-        self.assertSequenceEqual(self.con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
-        self.assertSequenceEqual(self.con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
-        self.assertSequenceEqual(self.con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
+    def test_07_call_16(self):
+        con = tarantool.Connection('localhost', self.srv.args['primary'], call_16 = True)
+        con.authenticate('test', 'test')
+        self.assertSequenceEqual(con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
+        self.assertSequenceEqual(con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
+        self.assertSequenceEqual(con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
         with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
-            self.con.call('json.decode')
+            con.call('json.decode')
         with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
-            self.con.call('json.decode', '{[1, 2]: "world"}')
-        ans = self.con.call('fiber.time')
+            con.call('json.decode', '{[1, 2]: "world"}')
+        ans = con.call('fiber.time')
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)
         self.assertIsInstance(ans[0][0], float)
-        ans = self.con.call('fiber.time64')
+        ans = con.call('fiber.time64')
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)
-        self.assertIsInstance(ans[0][0], six.integer_types)
-        ans = self.con.call('uuid.str')
+        self.assertIsInstance(ans[0][0], tarantool.utils.integer_types)
+        ans = con.call('uuid.str')
         self.assertEqual(len(ans), 1)
         self.assertEqual(len(ans[0]), 1)
         self.assertIsInstance(ans[0][0], str)
 
-        self.assertSequenceEqual(self.con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
-        self.assertSequenceEqual(self.con.call('box.tuple.new', 'fld_1'), [['fld_1']])
+        self.assertSequenceEqual(con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
+        self.assertSequenceEqual(con.call('box.tuple.new', 'fld_1'), [['fld_1']])
+
+    def test_07_call_17(self):
+        con = tarantool.Connection('localhost', self.srv.args['primary'])
+        con.authenticate('test', 'test')
+        self.assertSequenceEqual(con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
+        self.assertSequenceEqual(con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
+        self.assertSequenceEqual(con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
+        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
+            con.call('json.decode')
+        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
+            con.call('json.decode', '{[1, 2]: "world"}')
+        ans = con.call('fiber.time')
+        self.assertEqual(len(ans), 1)
+        self.assertIsInstance(ans[0], float)
+        ans = con.call('fiber.time64')
+        self.assertEqual(len(ans), 1)
+        self.assertIsInstance(ans[0], tarantool.utils.integer_types)
+        ans = con.call('uuid.str')
+        self.assertEqual(len(ans), 1)
+        self.assertIsInstance(ans[0], str)
+
+        self.assertSequenceEqual(con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
+        self.assertSequenceEqual(con.call('box.tuple.new', 'fld_1'), [['fld_1']])
 
     def test_08_eval(self):
         self.assertSequenceEqual(self.con.eval('return json.decode(...)',
