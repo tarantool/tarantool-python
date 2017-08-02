@@ -60,7 +60,7 @@ class TestSuite_Request(unittest.TestCase):
                     [i, i%5, 'tuple_'+str(i)]
             )
     def test_00_03_answer_repr(self):
-        repr_str = """- [1, 1, "tuple_1"]"""
+        repr_str = """- [1, 1, 'tuple_1']"""
         self.assertEqual(repr(self.con.select('space_1', 1)), repr_str)
 
     def test_02_select(self):

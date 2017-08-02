@@ -229,7 +229,7 @@ class Response(collections.Sequence):
             }, sort_keys = True, indent = 4)
         output = []
         for tpl in self._data:
-            output.extend(("- ", json.dumps(tpl), "\n"))
+            output.extend(("- ", repr(tpl), "\n"))
         if len(output) > 0:
             output.pop()
         return ''.join(output)
