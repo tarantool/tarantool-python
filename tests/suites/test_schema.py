@@ -208,9 +208,9 @@ class TestSuite_Schema(unittest.TestCase):
         self.assertEqual(len(index.parts), 1)
 
     def test_07_schema_version_update(self):
-        self.assertEqual(len(self.con.select('_space')), 12)
+        _space_len = len(self.con.select('_space'))
         self.srv.admin("box.schema.create_space('ttt22')")
-        self.assertEqual(len(self.con.select('_space')), 13)
+        self.assertEqual(len(self.con.select('_space')), _space_len + 1)
 
     @classmethod
     def tearDownClass(self):
