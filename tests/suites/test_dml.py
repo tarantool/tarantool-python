@@ -35,6 +35,23 @@ class TestSuite_Request(unittest.TestCase):
             parts = {1, 'num'},
             unique = true})
         """.replace('\n', ' '))
+
+        self.adm("box.schema.create_space('space_3')")
+        self.adm("""
+        box.space['space_3']:format({
+            {name='id', type='integer'}, 
+            {name='field1', type='string', is_nullable=true},    
+            {name='field2', type='string', is_nullable=true}})    
+        box.space['space_3']:create_index('primary', {
+            type = 'tree',
+            parts = {'id'},
+            unique = true})
+        box.space['space_3']:create_index('secondary', {
+            type = 'tree',
+            parts = {'field1', 'field2'},
+            unique = false})
+        """.replace('\n', ' '))
+
         self.adm("json = require('json')")
         self.adm("fiber = require('fiber')")
         self.adm("uuid = require('uuid')")
@@ -59,9 +76,15 @@ class TestSuite_Request(unittest.TestCase):
                     self.con.insert('space_1', [i, i%5, 'tuple_'+str(i)])[0],
                     [i, i%5, 'tuple_'+str(i)]
             )
+
     def test_00_03_answer_repr(self):
         repr_str = """- [1, 1, 'tuple_1']"""
         self.assertEqual(repr(self.con.select('space_1', 1)), repr_str)
+
+    def test_00_04_fill_space(self):
+        for i in range(1, 500):
+            tuple = [i, 'tuple_1_' + str(i), 'tuple_2_' + str(i)]
+            self.assertEqual(self.con.insert('space_3', tuple)[0], tuple)
 
     def test_02_select(self):
         # Check that select with different keys are Ok. (With and without index names)
@@ -285,6 +308,15 @@ class TestSuite_Request(unittest.TestCase):
             self.con.update('sp', (2,), [('+', 'thi', 3)]),
             [[2, 'help', 7]]
         )
+
+    def test_03_select(self):
+        # Check that select with different keys are Ok. (With and without index names)
+        self.assertSequenceEqual(self.con.select('space_3', 20), [[20, 'tuple_1_20', 'tuple_2_20']])
+        self.assertSequenceEqual(self.con.select('space_3', [21]), [[21, 'tuple_1_21', 'tuple_2_21']])
+        self.assertSequenceEqual(self.con.select('space_3', [22], index='primary'), [[22, 'tuple_1_22', 'tuple_2_22']])
+        self.assertSequenceEqual(
+            self.con.select('space_3', ['tuple_1_23', 'tuple_2_23'], index='secondary'),
+            [[23, 'tuple_1_23', 'tuple_2_23']])
 
     @classmethod
     def tearDownClass(self):

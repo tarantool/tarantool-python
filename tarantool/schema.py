@@ -26,11 +26,11 @@ class SchemaIndex(object):
         self.unique = index_row[4]
         self.parts = []
         if isinstance(index_row[5], (list, tuple)):
-            for part in range(len(index_row[5])):
-                if isinstance(part, list):
-                    self.parts.append({'field': part[0], 'type': part[1]})
-                else:
-                    self.parts.append(part)
+            for part in index_row[5]:
+               if isinstance(part, list):
+                   self.parts.append((part[0], part[1]))
+               else:
+                   self.parts.append((part['field'], part['type']))
         else:
             for i in range(index_row[5]):
                 self.parts.append((
