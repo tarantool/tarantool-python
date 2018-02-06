@@ -82,6 +82,7 @@ class Connection(object):
     NetworkError = NetworkError
 
     def __init__(self, host, port,
+                 socket=None,
                  user=None,
                  password=None,
                  socket_timeout=SOCKET_TIMEOUT,
@@ -113,6 +114,7 @@ class Connection(object):
         self.port = port
         self.user = user
         self.password = password
+        self.socket = socket
         self.socket_timeout = socket_timeout
         self.reconnect_delay = reconnect_delay
         self.reconnect_max_attempts = reconnect_max_attempts
@@ -134,7 +136,7 @@ class Connection(object):
         self._socket = None
 
     def connect_basic(self):
-        if self.host == None:
+        if self.host == None or self.socket:
             self.connect_unix()
         else:
             self.connect_tcp()
@@ -168,7 +170,11 @@ class Connection(object):
             if self._socket:
                 self._socket.close()
             self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            self._socket.connect(self.port)
+
+            if self.socket:
+                self._socket.connect(self.socket)
+            else:
+                self._socket.connect(self.port)
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
