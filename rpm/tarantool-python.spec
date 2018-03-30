@@ -1,6 +1,6 @@
 Summary: Python client library for Tarantool Database
 Name: tarantool-python
-Version: 0.6.1
+Version: 0.6.2
 Release: 1%{?dist}
 Source0: tarantool-python-%{version}.tar.gz
 License: BSD
