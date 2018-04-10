@@ -101,7 +101,7 @@ class Connection(object):
         '''
         if os.name == 'nt':
             libc = ctypes.windll.LoadLibrary(
-                ctypes.util.find_library('Ws2_32')
+                ctypes.util.find_library('Ws2_32'), use_errno=True
             )
         else:
             libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
