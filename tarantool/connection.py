@@ -100,7 +100,7 @@ class Connection(object):
                              if False than you have to call connect() manualy.
         '''
         if os.name == 'nt':
-            libc = ctypes.windll.LoadLibrary(
+            libc = ctypes.windll(
                 ctypes.util.find_library('Ws2_32'), use_last_error=True
             )
         else:
