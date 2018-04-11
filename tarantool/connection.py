@@ -300,6 +300,8 @@ class Connection(object):
                     err = ctypes.get_errno()
                 else:
                     err = ctypes.get_last_error()
+                    self._socket.setblocking(True)
+
 
                 WWSAEWOULDBLOCK = 10035
                 if (retbytes < 0) and (err == errno.EAGAIN or
