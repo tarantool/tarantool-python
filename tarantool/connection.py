@@ -101,7 +101,7 @@ class Connection(object):
         '''
         if os.name == 'nt':
             libc = ctypes.windll.LoadLibrary(
-                ctypes.util.find_library('Ws2_32'), use_errno=True
+                ctypes.util.find_library('Ws2_32'), use_last_error=True
             )
         else:
             libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
@@ -120,6 +120,7 @@ class Connection(object):
         self.schema_version = 1
         self._socket = None
         self.connected = False
+        self.inconnect = False
         self.error = True
         self.encoding = encoding
         self.call_16 = call_16
@@ -193,6 +194,7 @@ class Connection(object):
         :raise: `NetworkError`
         '''
         try:
+            self.inconnect = True
             self.connect_basic()
             self.handshake()
             # It is important to set socket timeout *after* connection.
@@ -201,8 +203,10 @@ class Connection(object):
             # not bound to port
             self._socket.settimeout(self.socket_timeout)
             self.load_schema()
+            self.inconnect = False
         except socket.error as e:
             self.connected = False
+            self.inconnect = False
             raise NetworkError(e)
 
     def _recv(self, to_read):
@@ -271,6 +275,8 @@ class Connection(object):
         Check that connection is alive using low-level recv from libc(ctypes)
         **Due to bug in python - timeout is internal python construction.
         '''
+        if self.inconnect:
+            return
         if not self._socket:
             return self.connect()
 
@@ -287,13 +293,19 @@ class Connection(object):
                     self._socket.setblocking(False)
                 else:
                     flag = socket.MSG_DONTWAIT | socket.MSG_PEEK
-                self._sys_recv(sock_fd, buf, 1, flag)
+                retbytes = self._sys_recv(sock_fd, buf, 1, flag)
 
-                if ctypes.get_errno() == errno.EAGAIN:
+                err = 0
+                if os.name!= 'nt':
+                    err = ctypes.get_errno()
+                else:
+                    err = ctypes.get_last_error()
+                      
+                if (retbytes < 0) and (err == errno.EAGAIN or err == errno.EWOULDBLOCK):
                     ctypes.set_errno(0)
                     return errno.EAGAIN
-                return (ctypes.get_errno() if ctypes.get_errno()
-                        else errno.ECONNRESET)
+                else:
+                    return errno.ECONNRESET
 
         last_errno = check()
         if self.connected and last_errno == errno.EAGAIN:
