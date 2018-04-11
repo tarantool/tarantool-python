@@ -100,7 +100,7 @@ class Connection(object):
                              if False than you have to call connect() manualy.
         '''
         if os.name == 'nt':
-            libc = ctypes.windll(
+            libc = ctypes.WinDLL(
                 ctypes.util.find_library('Ws2_32'), use_last_error=True
             )
         else:
@@ -108,7 +108,7 @@ class Connection(object):
         recv = self._sys_recv = libc.recv
         recv.argtypes = [
             ctypes.c_int, ctypes.c_void_p, c_ssize_t, ctypes.c_int]
-        recv.restype = c_ssize_t
+        recv.restype = ctypes.c_int
         self.host = host
         self.port = port
         self.user = user
@@ -300,8 +300,11 @@ class Connection(object):
                     err = ctypes.get_errno()
                 else:
                     err = ctypes.get_last_error()
-                      
-                if (retbytes < 0) and (err == errno.EAGAIN or err == errno.EWOULDBLOCK):
+
+                WWSAEWOULDBLOCK = 10035
+                if (retbytes < 0) and (err == errno.EAGAIN or
+                                       err == errno.EWOULDBLOCK or
+                                       err == WWSAEWOULDBLOCK):
                     ctypes.set_errno(0)
                     return errno.EAGAIN
                 else:
