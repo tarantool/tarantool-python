@@ -152,7 +152,6 @@ class Connection(object):
             if self._socket:
                 self._socket.close()
             self._socket = socket.create_connection((self.host, self.port))
-            self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)

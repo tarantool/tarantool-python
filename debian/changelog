@@ -1,3 +1,9 @@
+tarantool-python (0.6.4-0) unstable; urgency=medium
+
+    Release for PyPI which made Windows work again
+
+ -- Alexey Gadzhiev <alexey.gadzhiev@corp.mail.ru>  Tue, 11 Apr 2017 17:23:33 +0300
+
 tarantool-python (0.6.3-0) unstable; urgency=medium
 
     Release for PyPI with fix for 1.10.x Tarantool version 
