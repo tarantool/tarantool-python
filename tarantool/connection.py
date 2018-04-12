@@ -332,8 +332,12 @@ class Connection(object):
                 raise NetworkError(
                     socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
-
-        self.handshake()
+        try:
+            self.inconnect = True
+            self.handshake()
+        except:
+            self.inconnect = False
+            raise
         # It is important to set socket timeout *after* connection.
         # Otherwise the timeout exception will be raised, even when
         # the connection fails because the server is simply
