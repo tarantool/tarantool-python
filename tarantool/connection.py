@@ -335,6 +335,7 @@ class Connection(object):
         try:
             self.inconnect = True
             self.handshake()
+            self.inconnect = False
         except:
             self.inconnect = False
             raise
