@@ -1,0 +1,22 @@
+box.schema.user.grant('guest', 'read,write,execute', 'universe')
+---
+...
+_ = box.schema.space.create('test')
+---
+...
+_ = box.space.test:create_index('primary')
+---
+...
+box.schema.user.grant('guest', 'read,write,execute', 'universe')
+---
+...
+_ = box.schema.space.create('test')
+---
+...
+_ = box.space.test:create_index('primary')
+---
+...
+- [1, 0]
+- [1, 1]
+- [1, 0]
+NetworkError !
