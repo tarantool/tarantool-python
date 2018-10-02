@@ -22,6 +22,6 @@ class test(setuptools.Command):
         Find all tests in test/tarantool/ and run them
         '''
 
-        tests = unittest.defaultTestLoader.discover('tests')
+        tests = unittest.defaultTestLoader.discover('unit')
         test_runner = unittest.TextTestRunner(verbosity = 2)
         test_runner.run(tests)
