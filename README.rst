@@ -87,5 +87,5 @@ This driver is synchronous, so connection mustn't be shared between threads/proc
 .. _`Tarantool at Github`: https://github.com/tarantool/tarantool
 .. _`Tarantool User Guide`: http://tarantool.org/doc/book/index.html
 .. _`Client-server protocol specification`: http://tarantool.org/doc/dev_guide/box-protocol.html
-.. _`Sophia`: http://sphia.org
+.. _`Sophia`: http://sophia.systems
 .. _`BSD licensed`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
