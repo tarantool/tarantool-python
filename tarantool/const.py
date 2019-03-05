@@ -78,6 +78,8 @@ ITERATOR_BITSET_ALL_NOT_SET = 9
 ITERATOR_OVERLAPS = 10
 ITERATOR_NEIGHBOR = 11
 
+# Default value for connection timeout (seconds)
+CONNECTION_TIMEOUT = None
 # Default value for socket timeout (seconds)
 SOCKET_TIMEOUT = None
 # Default maximum number of attempts to reconnect
