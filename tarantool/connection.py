@@ -38,6 +38,7 @@ from tarantool.request import (
 )
 from tarantool.space import Space
 from tarantool.const import (
+    CONNECTION_TIMEOUT,
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
@@ -89,7 +90,8 @@ class Connection(object):
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True,
                  encoding=ENCODING_DEFAULT,
-                 call_16=False):
+                 call_16=False,
+                 connection_timeout=CONNECTION_TIMEOUT):
         '''
         Initialize a connection to the server.
 
@@ -124,6 +126,7 @@ class Connection(object):
         self.error = True
         self.encoding = encoding
         self.call_16 = call_16
+        self.connection_timeout = connection_timeout
         if connect_now:
             self.connect()
 
@@ -151,7 +154,9 @@ class Connection(object):
             self.connected = True
             if self._socket:
                 self._socket.close()
-            self._socket = socket.create_connection((self.host, self.port))
+            self._socket = socket.create_connection(
+                (self.host, self.port), timeout=self.connection_timeout)
+            self._socket.settimeout(self.socket_timeout)
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
@@ -168,7 +173,9 @@ class Connection(object):
             if self._socket:
                 self._socket.close()
             self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self._socket.settimeout(self.connection_timeout)
             self._socket.connect(self.port)
+            self._socket.settimeout(self.socket_timeout)
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
@@ -339,11 +346,6 @@ class Connection(object):
         except:
             self.inconnect = False
             raise
-        # It is important to set socket timeout *after* connection.
-        # Otherwise the timeout exception will be raised, even when
-        # the connection fails because the server is simply
-        # not bound to port
-        self._socket.settimeout(self.socket_timeout)
 
     def _send_request(self, request):
         '''
