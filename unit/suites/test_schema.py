@@ -222,5 +222,6 @@ class TestSuite_Schema(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
+        self.con.close()
         self.srv.stop()
         self.srv.clean()
