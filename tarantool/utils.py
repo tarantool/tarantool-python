@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sys
-import base64
 import uuid
 
 # Compatibility layer for Python2/Python3
@@ -12,6 +11,7 @@ if sys.version_info.major == 2:
         binary_types = (str, )
     else:
         binary_types = (bytes, )
+    from base64 import decodestring as base64_decode
 
     def strxor(rhs, lhs):
         return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
@@ -21,6 +21,7 @@ elif sys.version_info.major == 3:
     string_types  = (str, )
     integer_types = (int, )
     ENCODING_DEFAULT = "utf-8"
+    from base64 import decodebytes as base64_decode
 
     def strxor(rhs, lhs):
         return bytes([x ^ y for x, y in zip(rhs, lhs)])
@@ -84,8 +85,8 @@ def greeting_decode(greeting_buf):
             # Tarantool < 1.6.7 doesn't add "(Binary)" to greeting
             result.protocol = "Binary"
         elif len(tail.strip()) != 0:
-            raise Exception("x")  # Unsuported greeting
-        result.salt = base64.decodestring(greeting_buf[64:])[:20]
+            raise Exception("x")  # Unsupported greeting
+        result.salt = base64_decode(greeting_buf[64:])[:20]
         return result
     except Exception as e:
         print('exx', e)
