@@ -2,19 +2,19 @@ tarantool-python (0.6.4-0) unstable; urgency=medium
 
     Release for PyPI which made Windows work again
 
- -- Alexey Gadzhiev <alexey.gadzhiev@corp.mail.ru>  Tue, 11 Apr 2017 17:23:33 +0300
+ -- Alexey Gadzhiev <alexey.gadzhiev@corp.mail.ru>  Tue, 11 Apr 2018 17:23:33 +0300
 
 tarantool-python (0.6.3-0) unstable; urgency=medium
 
-    Release for PyPI with fix for 1.10.x Tarantool version 
+    Release for PyPI with fix for 1.10.x Tarantool version
 
- -- Alexey Gadzhiev <alexey.gadzhiev@corp.mail.ru>  Tue, 3 Apr 2017 16:57:33 +0300
+ -- Alexey Gadzhiev <alexey.gadzhiev@corp.mail.ru>  Tue, 3 Apr 2018 16:57:33 +0300
 
 tarantool-python (0.6.2-0) unstable; urgency=medium
 
     Release for PyPI with new schema type
 
- -- Alexey Gadzhiev <alexey.gadzhiev@corp.mail.ru>  Fri, 30 Mar 2017 16:57:33 +0300
+ -- Alexey Gadzhiev <alexey.gadzhiev@corp.mail.ru>  Fri, 30 Mar 2018 16:57:33 +0300
 
 tarantool-python (0.6.1-0) unstable; urgency=medium
 
