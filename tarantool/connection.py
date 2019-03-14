@@ -203,11 +203,6 @@ class Connection(object):
             self.inconnect = True
             self.connect_basic()
             self.handshake()
-            # It is important to set socket timeout *after* connection.
-            # Otherwise the timeout exception will be raised, even when
-            # the connection fails because the server is simply
-            # not bound to port
-            self._socket.settimeout(self.socket_timeout)
             self.load_schema()
             self.inconnect = False
         except socket.error as e:
