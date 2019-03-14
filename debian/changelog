@@ -1,3 +1,24 @@
+tarantool-python (0.6.5-0) unstable; urgency=medium
+
+    ## Breaking changes
+
+    This release should not break existing code.
+
+    ## New features
+
+    * Added MeshConnection that allows to switch between nodes from a user
+      provided list if a current node is down using round-robin strategy
+      (#106).
+    * Added connection_timeout parameter to Connection (#115).
+
+    ## Bugfixes
+
+    * Fixed auto-reconnection in Connection.
+    * Eliminated deprecation warnings on Python 3 (#114).
+    * Add TCP_NODEPLAY back (it was removed in 0.6.4) (#127).
+
+ -- Alexander Turenko <alexander.turenko@tarantool.org> Tue, 19 Mar 2019 03:40:01 +0300
+
 tarantool-python (0.6.4-0) unstable; urgency=medium
 
     Release for PyPI which made Windows work again
