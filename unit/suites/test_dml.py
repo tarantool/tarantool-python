@@ -212,6 +212,8 @@ class TestSuite_Request(unittest.TestCase):
         self.assertSequenceEqual(con.call('box.tuple.new', [1, 2, 3, 'fld_1']), [[1, 2, 3, 'fld_1']])
         self.assertSequenceEqual(con.call('box.tuple.new', 'fld_1'), [['fld_1']])
 
+        con.close()
+
     def test_08_eval(self):
         self.assertSequenceEqual(self.con.eval('return json.decode(...)',
                                        '[123, 234, 345]'), [[123, 234, 345]])
@@ -299,5 +301,6 @@ class TestSuite_Request(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
+        self.con.close()
         self.srv.stop()
         self.srv.clean()
