@@ -206,7 +206,7 @@ class Connection(object):
             self.handshake()
             self.load_schema()
             self.inconnect = False
-        except socket.error as e:
+        except Exception as e:
             self.connected = False
             self.inconnect = False
             raise NetworkError(e)
