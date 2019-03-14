@@ -13,3 +13,6 @@ sophia
 *.xlog
 *.snap
 *.vylog
+
+# Vim Swap files
+*.sw[a-z]
