@@ -8,10 +8,11 @@ import random
 import socket
 import tempfile
 
-import yaml
 import time
 import shutil
 import subprocess
+
+from .tarantool_admin import TarantoolAdmin
 
 def check_port(port, rais=True):
     try:
@@ -35,76 +36,6 @@ def find_port(port = None):
 class RunnerException(object):
     pass
 
-
-class TarantoolAdmin(object):
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
-        self.is_connected = False
-        self.socket = None
-
-    def connect(self):
-        self.socket = socket.create_connection((self.host, self.port))
-        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        self.is_connected = True
-        self.socket.recv(256) # skip greating
-
-    def disconnect(self):
-        if self.is_connected:
-            self.socket.close()
-            self.socket = None
-            self.is_connected = False
-
-    def reconnect(self):
-        self.disconnect()
-        self.connect()
-
-    def opt_reconnect(self):
-        """ On a socket which was disconnected, recv of 0 bytes immediately
-            returns with no data. On a socket which is alive, it returns EAGAIN.
-            Make use of this property and detect whether or not the socket is
-            dead. Reconnect a dead socket, do nothing if the socket is good."""
-        try:
-            if self.socket is None or self.socket.recv(1, socket.MSG_DONTWAIT|socket.MSG_PEEK) == '':
-                self.reconnect()
-        except socket.error as e:
-            if e.errno == errno.EAGAIN:
-                pass
-            else:
-                self.reconnect()
-
-    def execute(self, command):
-        self.opt_reconnect()
-        return self.execute_no_reconnect(command)
-
-    def __enter__(self):
-        self.connect()
-        return self
-
-    def __exit__(self, type, value, tb):
-        self.disconnect()
-
-    def __call__(self, command):
-        return self.execute(' '.join(command.split('\n')))
-
-    def execute_no_reconnect(self, command):
-        if not command:
-            return
-        cmd = command.replace('\n', ' ') + '\n'
-        self.socket.sendall(cmd.encode())
-
-        bufsiz = 4096
-        res = ""
-
-        while True:
-            buf = self.socket.recv(bufsiz)
-            if not buf:
-                break
-            res = res + buf.decode()
-            if (res.rfind("\n...\n") >= 0 or res.rfind("\r\n...\r\n") >= 0):
-                break
-
-        return yaml.load(res)
 
 class TarantoolServer(object):
     default_tarantool = {
@@ -183,14 +114,22 @@ class TarantoolServer(object):
             self._log_des.close()
         delattr(self, '_log_des')
 
+    def __new__(cls):
+        if os.name == 'nt':
+            from .remote_tarantool_server import RemoteTarantoolServer
+            return RemoteTarantoolServer()
+        return super(TarantoolServer, cls).__new__(cls)
+
     def __init__(self):
         os.popen('ulimit -c unlimited')
+        self.host = 'localhost'
         self.args = {}
         self.args['primary'] = find_port()
         self.args['admin'] = find_port(self.args['primary'] + 1)
         self._admin = self.args['admin']
         self.vardir = tempfile.mkdtemp(prefix='var_', dir=os.getcwd())
         self.find_exe()
+        self.process = None
 
     def find_exe(self):
         if 'TARANTOOL_BOX_PATH' in os.environ:
@@ -272,3 +211,10 @@ class TarantoolServer(object):
         self.stop()
         self.clean()
 
+    def touch_lock(self):
+        # A stub method to be compatible with
+        # RemoteTarantoolServer.
+        pass
+
+    def is_started(self):
+        return self.process is not None

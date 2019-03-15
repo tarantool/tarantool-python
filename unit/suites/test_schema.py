@@ -12,8 +12,13 @@ class TestSuite_Schema(unittest.TestCase):
         self.srv = TarantoolServer()
         self.srv.script = 'unit/suites/box.lua'
         self.srv.start()
-        self.con = tarantool.Connection('localhost', self.srv.args['primary'])
+        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
         self.sch = self.con.schema
+
+    def setUp(self):
+        # prevent a remote tarantool from clean our session
+        if self.srv.is_started():
+            self.srv.touch_lock()
 
     def test_00_authenticate(self):
         self.assertIsNone(self.srv.admin("box.schema.user.create('test', { password = 'test' })"))
