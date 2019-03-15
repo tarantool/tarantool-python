@@ -16,7 +16,7 @@ class TestSuite_Request(unittest.TestCase):
         self.srv = TarantoolServer()
         self.srv.script = 'unit/suites/box.lua'
         self.srv.start()
-        self.con = tarantool.Connection('localhost', self.srv.args['primary'])
+        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
         self.adm = self.srv.admin
         self.space_created = self.adm("box.schema.create_space('space_1')")
         self.adm("""
@@ -42,6 +42,11 @@ class TestSuite_Request(unittest.TestCase):
         self.adm("fiber = require('fiber')")
         self.adm("uuid = require('uuid')")
 
+    def setUp(self):
+        # prevent a remote tarantool from clean our session
+        if self.srv.is_started():
+            self.srv.touch_lock()
+
     def test_00_00_authenticate(self):
         self.assertIsNone(self.srv.admin("""
         box.schema.user.create('test', { password = 'test' })
@@ -58,6 +63,9 @@ class TestSuite_Request(unittest.TestCase):
     def test_00_02_fill_space(self):
         # Fill space with values
         for i in range(1, 500):
+            if i % 10 == 0:
+                # prevent a remote tarantool from clean our session
+                self.srv.touch_lock()
             self.assertEqual(
                     self.con.insert('space_1', [i, i%5, 'tuple_'+str(i)])[0],
                     [i, i%5, 'tuple_'+str(i)]
@@ -156,7 +164,7 @@ class TestSuite_Request(unittest.TestCase):
                 [[2, 2, 'tuplalal_3']])
 
     def test_07_call_16(self):
-        con = tarantool.Connection('localhost', self.srv.args['primary'], call_16 = True)
+        con = tarantool.Connection(self.srv.host, self.srv.args['primary'], call_16 = True)
         con.authenticate('test', 'test')
         self.assertSequenceEqual(con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
         self.assertSequenceEqual(con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
@@ -182,7 +190,7 @@ class TestSuite_Request(unittest.TestCase):
         self.assertSequenceEqual(con.call('box.tuple.new', 'fld_1'), [['fld_1']])
 
     def test_07_call_17(self):
-        con = tarantool.Connection('localhost', self.srv.args['primary'])
+        con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
         con.authenticate('test', 'test')
         self.assertSequenceEqual(con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
         self.assertSequenceEqual(con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])

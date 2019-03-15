@@ -81,6 +81,25 @@ NOTE
 
 This driver is synchronous, so connection mustn't be shared between threads/processes.
 
+Run tests
+^^^^^^^^^
+
+On Linux:
+
+.. code-block:: console
+   $ python setup.py test
+
+On Windows:
+
+* Setup a Linux machine with installed tarantool (called ``remote`` later).
+* (on ``remote``) Copy ``unit/suites/lib/tarantool_python_ci.lua`` to
+  ``/etc/tarantool/instances.available``.
+* (on ``remote``) Run ``tarantoolctl start tarantool_python_ci``.
+* Set the following environment variables:
+  * ``REMOTE_TARANTOOL_HOST=...``,
+  * ``REMOTE_TARANTOOL_CONSOLE_PORT=3302``.
+* Run ``python setup.py test``.
+
 .. _`Tarantool`:
 .. _`Tarantool Database`:
 .. _`Tarantool Homepage`: http://tarantool.org
