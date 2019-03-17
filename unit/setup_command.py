@@ -4,6 +4,7 @@ import os
 import sys
 import unittest
 import setuptools
+from distutils.errors import DistutilsError
 
 from glob import glob
 
@@ -23,5 +24,7 @@ class test(setuptools.Command):
         '''
 
         tests = unittest.defaultTestLoader.discover('unit')
-        test_runner = unittest.TextTestRunner(verbosity = 2)
-        test_runner.run(tests)
+        test_runner = unittest.TextTestRunner(verbosity=2)
+        result = test_runner.run(tests)
+        if not result.wasSuccessful():
+            raise DistutilsError('There are failed tests')
