@@ -1,5 +1,8 @@
 #!/usr/bin/env ipython
 
+from __future__ import print_function
+
+import sys
 import unittest
 import tarantool
 from .lib.tarantool_server import TarantoolServer
@@ -7,8 +10,8 @@ from .lib.tarantool_server import TarantoolServer
 class TestSuite_Schema(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print(' SCHEMA '.center(70, '='))
-        print('-' * 70)
+        print(' SCHEMA '.center(70, '='), file=sys.stderr)
+        print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
         self.srv.script = 'unit/suites/box.lua'
         self.srv.start()

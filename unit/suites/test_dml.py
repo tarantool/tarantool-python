@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
+import sys
 import unittest
 import tarantool
 
@@ -8,8 +11,8 @@ from .lib.tarantool_server import TarantoolServer
 class TestSuite_Request(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print(' DML '.center(70, '='))
-        print('-' * 70)
+        print(' DML '.center(70, '='), file=sys.stderr)
+        print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
         self.srv.script = 'unit/suites/box.lua'
         self.srv.start()
