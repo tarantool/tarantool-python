@@ -157,6 +157,7 @@ class Connection(object):
             self._socket = socket.create_connection(
                 (self.host, self.port), timeout=self.connection_timeout)
             self._socket.settimeout(self.socket_timeout)
+            self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
