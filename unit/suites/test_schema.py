@@ -1,4 +1,4 @@
-#!/usr/bin/env ipython
+# -*- coding: utf-8 -*-
 
 import unittest
 import tarantool

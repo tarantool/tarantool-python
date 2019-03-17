@@ -1,4 +1,4 @@
-#!/usr/bin/env ipython
+# -*- coding: utf-8 -*-
 
 import unittest
 from tarantool.utils import greeting_decode, version_id
