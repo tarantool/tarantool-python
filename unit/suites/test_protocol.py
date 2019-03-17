@@ -1,5 +1,8 @@
 #!/usr/bin/env ipython
 
+from __future__ import print_function
+
+import sys
 import unittest
 from tarantool.utils import greeting_decode, version_id
 import uuid
@@ -7,8 +10,8 @@ import uuid
 class TestSuite_Protocol(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print(' PROTOCOL '.center(70, '='))
-        print('-' * 70)
+        print(' PROTOCOL '.center(70, '='), file=sys.stderr)
+        print('-' * 70, file=sys.stderr)
 
     def test_00_greeting_1_6(self):
         buf = "Tarantool 1.6.6                                                \n" + \
