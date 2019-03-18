@@ -122,7 +122,6 @@ class Connection(object):
         self.schema_version = 1
         self._socket = None
         self.connected = False
-        self.inconnect = False
         self.error = True
         self.encoding = encoding
         self.call_16 = call_16
@@ -201,14 +200,11 @@ class Connection(object):
         :raise: `NetworkError`
         '''
         try:
-            self.inconnect = True
             self.connect_basic()
             self.handshake()
             self.load_schema()
-            self.inconnect = False
         except Exception as e:
             self.connected = False
-            self.inconnect = False
             raise NetworkError(e)
 
     def _recv(self, to_read):
@@ -277,8 +273,6 @@ class Connection(object):
         Check that connection is alive using low-level recv from libc(ctypes)
         **Due to bug in python - timeout is internal python construction.
         '''
-        if self.inconnect:
-            return
         if not self._socket:
             return self.connect()
 
@@ -335,13 +329,7 @@ class Connection(object):
                 raise NetworkError(
                     socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
-        try:
-            self.inconnect = True
-            self.handshake()
-            self.inconnect = False
-        except:
-            self.inconnect = False
-            raise
+        self.handshake()
 
     def _send_request(self, request):
         '''
