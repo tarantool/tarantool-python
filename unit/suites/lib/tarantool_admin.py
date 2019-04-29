@@ -61,4 +61,4 @@ class TarantoolAdmin(object):
             if (res.rfind("\n...\n") >= 0 or res.rfind("\r\n...\r\n") >= 0):
                 break
 
-        return yaml.load(res)
+        return yaml.safe_load(res)
