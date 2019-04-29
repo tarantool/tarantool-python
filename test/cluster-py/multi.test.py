@@ -42,7 +42,7 @@ for i in range(INSTANCE_N):
 # Make a list of servers
 sources = []
 for server in cluster[1:]:
-    sources.append(yaml.load(server.admin('box.cfg.listen', silent=True))[0])
+    sources.append(yaml.safe_load(server.admin('box.cfg.listen', silent=True))[0])
 
 addrs = []
 for addr in sources:
