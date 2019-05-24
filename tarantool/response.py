@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
-import collections
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
 
 import json
 import msgpack
@@ -22,7 +25,7 @@ from tarantool.error import (
 )
 
 
-class Response(collections.Sequence):
+class Response(Sequence):
     '''
     Represents a single response from the server in compliance with the
     Tarantool protocol.
