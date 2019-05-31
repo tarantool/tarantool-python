@@ -135,6 +135,16 @@ class RequestAuthenticate(Request):
                                       IPROTO_TUPLE: ("chap-sha1", scramble)})
         self._body = request_body
 
+    def header(self, length):
+        self._sync = self.conn.generate_sync()
+        # Set IPROTO_SCHEMA_ID: 0 to avoid SchemaReloadException
+        # It is ok to use 0 in auth every time.
+        header = msgpack.dumps({IPROTO_CODE: self.request_type,
+                                IPROTO_SYNC: self._sync,
+                                IPROTO_SCHEMA_ID: 0})
+
+        return msgpack.dumps(length + len(header)) + header
+
 
 class RequestReplace(Request):
     '''
