@@ -86,3 +86,5 @@ SOCKET_TIMEOUT = None
 RECONNECT_MAX_ATTEMPTS = 10
 # Default delay between attempts to reconnect (seconds)
 RECONNECT_DELAY = 0.1
+# Default cluster nodes list refresh interval (seconds)
+CLUSTER_DISCOVERY_DELAY = 60
