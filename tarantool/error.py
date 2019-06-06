@@ -43,6 +43,12 @@ class InterfaceError(Error):
     '''
 
 
+class ConfigurationError(Error):
+    '''
+    Error of initialization with a user-provided configuration.
+    '''
+
+
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":
     # Windows Sockets Error Codes (not all, but related on network errors)
@@ -152,6 +158,11 @@ class NetworkWarning(UserWarning):
     pass
 
 
+class ClusterDiscoveryWarning(UserWarning):
+    '''Warning related to cluster discovery'''
+    pass
+
+
 # always print this warnings
 warnings.filterwarnings("always", category=NetworkWarning)
 
@@ -165,6 +176,7 @@ def warn(message, warning_class):
     module_name = frame.f_globals.get("__name__")
     line_no = frame.f_lineno
     warnings.warn_explicit(message, warning_class, module_name, line_no)
+
 
 _strerror = {
     0: ("ER_UNKNOWN", "Unknown error"),
