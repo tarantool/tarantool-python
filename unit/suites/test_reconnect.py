@@ -66,6 +66,23 @@ class TestSuite_Reconnect(unittest.TestCase):
         con.close()
         self.srv.stop()
 
+    def test_03_connect_after_close(self):
+        # Start a server and connect to it.
+        self.srv.start()
+        con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
+        con.ping()
+
+        # Close the connection and connect again.
+        con.close()
+        con.connect()
+
+        # Verify that the connection is alive.
+        con.ping()
+
+        # Close the connection and stop the server.
+        con.close()
+        self.srv.stop()
+
     @classmethod
     def tearDownClass(self):
         self.srv.clean()
