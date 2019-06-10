@@ -238,7 +238,7 @@ class Response(Sequence):
                 }
             }, sort_keys = True, indent = 4)
         output = []
-        for tpl in self._data:
+        for tpl in self._data or ():
             output.extend(("- ", repr(tpl), "\n"))
         if len(output) > 0:
             output.pop()
