@@ -90,6 +90,7 @@ Run tests
 On Linux:
 
 .. code-block:: console
+
    $ python setup.py test
 
 On Windows:

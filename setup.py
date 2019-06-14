@@ -72,6 +72,7 @@ setup(
     license="BSD",
     description="Python client library for Tarantool 1.6 Database",
     long_description=read('README.rst'),
+    long_description_content_type='text/x-rst',
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
