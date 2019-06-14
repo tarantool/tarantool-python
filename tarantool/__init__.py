@@ -25,7 +25,7 @@ from tarantool.utils import (
     ENCODING_DEFAULT
 )
 
-__version__ = "0.6.5"
+__version__ = "0.6.6"
 
 
 def connect(host="localhost", port=33013, user=None, password=None,

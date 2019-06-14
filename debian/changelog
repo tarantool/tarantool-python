@@ -1,3 +1,25 @@
+tarantool-python (0.6.6-0) unstable; urgency=medium
+
+    ## Breaking changes
+
+    This release should not break existing code.
+
+    ## New features
+
+    * Added ability to configure a MeshConnection object to periodically
+      update instances list from tarantool (#134).
+
+    ## Bugfixes
+
+    * Fixed the deprecation warning due to deprecated way to import abstract
+      collections.
+    * Fixed SchemaReloadException raising after reconnection with non-actual
+      schema id (#141).
+    * Fixed a string representation of a Response object without data (say,
+      authentication response) (#139).
+
+ -- Alexander Turenko <alexander.turenko@tarantool.org> Fri, 14 Jun 2019 23:14:07 +0300
+
 tarantool-python (0.6.5-0) unstable; urgency=medium
 
     ## Breaking changes
