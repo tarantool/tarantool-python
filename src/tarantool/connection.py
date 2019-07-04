@@ -143,7 +143,7 @@ class Connection(object):
         :rtype: tuple of two byte arrays
         '''
 
-        buf = ''
+        buf = bytes()
         to_read = 12
 
         while to_read:

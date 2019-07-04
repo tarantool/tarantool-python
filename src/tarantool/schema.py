@@ -259,28 +259,21 @@ class Schema(object):
         :rtype: bytes
         '''
         if cast_to:
-            if cast_to in (NUM, int):
-                return self._pack_value_int(value)
-            elif cast_to in (STR, RAW, str, bytes, None):
-                return str(value)
-            elif cast_to in (NUM64, int):
+            if cast_to in (STR, RAW, str, bytes, None):
+                return value
+            elif cast_to in (NUM, NUM64, int):
                 return self._pack_value_int64(value)
             else:
                 raise TypeError("Invalid field type %d." % cast_to)
         else:
             # try to autodetect tarantool types based on python types
-            if isinstance(value, str):
+            if isinstance(value, (str, bytes)):
                 return value
-            elif isinstance(value, int):
-                if value > 4294967295:
-                    return self._pack_value_int64(value)
-                else:
-                    return self._pack_value_int(value)
             elif isinstance(value, int):
                 return self._pack_value_int64(value)
             else:
                 raise TypeError(
-                    "Invalid argument type '%s'. Only 'str', 'int' or "
+                    "Invalid argument type '%s'. Only 'str', 'bytes' or "
                     "'int' expected" % type(value).__name__)
 
     def unpack_value(self, packed_value, cast_to):

@@ -105,6 +105,7 @@ class Request(object):
 
     def pack_field(self, value):
         value_len_packed = Request.pack_int_base128(len(value))
+        value = bytes(value, 'utf-8') if isinstance(value, str) else value
         return struct.pack(
             "<%ds%ds" % (len(value_len_packed), len(value)), value_len_packed,
             value)

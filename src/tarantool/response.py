@@ -140,19 +140,19 @@ class Response(list):
     @staticmethod
     def _unpack_int_base128(varint, offset):
         """Implement Perl unpack's 'w' option, aka base 128 decoding."""
-        res = ord(varint[offset])
-        if ord(varint[offset]) >= 0x80:
+        res = varint[offset]
+        if varint[offset] >= 0x80:
             offset += 1
-            res = ((res - 0x80) << 7) + ord(varint[offset])
-            if ord(varint[offset]) >= 0x80:
+            res = ((res - 0x80) << 7) + varint[offset]
+            if varint[offset] >= 0x80:
                 offset += 1
-                res = ((res - 0x80) << 7) + ord(varint[offset])
-                if ord(varint[offset]) >= 0x80:
+                res = ((res - 0x80) << 7) + varint[offset]
+                if varint[offset] >= 0x80:
                     offset += 1
-                    res = ((res - 0x80) << 7) + ord(varint[offset])
-                    if ord(varint[offset]) >= 0x80:
+                    res = ((res - 0x80) << 7) + varint[offset]
+                    if varint[offset] >= 0x80:
                         offset += 1
-                        res = ((res - 0x80) << 7) + ord(varint[offset])
+                        res = ((res - 0x80) << 7) + varint[offset]
         return res, offset + 1
 
     def _unpack_tuple(self, buff):
