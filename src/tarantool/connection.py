@@ -168,7 +168,7 @@ class Connection(object):
 
         # Repeat request in a loop if the server returns completion_status == 1
         # (try again)
-        for attempt in xrange(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
+        for attempt in range(RETRY_MAX_ATTEMPTS):    # pylint: disable=W0612
             self._socket.sendall(bytes(request))
             header, body = self._read_response()
             response = Response(
@@ -500,13 +500,13 @@ class Connection(object):
         # tuples)
         if values is None:
             values = [[]]
-        elif isinstance(values, (int, long, basestring)):  # scalar
+        elif isinstance(values, (int, str)):  # scalar
             # This request is looking for one single record
             values = [(values, )]
         elif isinstance(values, (list, tuple, set, frozenset)):
             any_item = next(iter(values))
             # list of scalars
-            if isinstance(any_item, (int, long, basestring)):
+            if isinstance(any_item, (int, str)):
                 # This request is looking for several records
                 # using single-valued index
                 # Ex: select(space_no, index_no, [1, 2, 3])

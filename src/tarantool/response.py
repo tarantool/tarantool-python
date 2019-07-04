@@ -33,7 +33,7 @@ class field(bytes):
         # Since parent class is immutable, we should override __new__, not
         # __init__
 
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             return super(field, cls).__new__(
                 cls, value.encode("utf-8", "replace"))
 
@@ -43,7 +43,7 @@ class field(bytes):
         if isinstance(value, (bytearray, bytes)):
             return super(field, cls).__new__(cls, value)
 
-        if isinstance(value, (int, long)):
+        if isinstance(value, (int)):
             if 0 <= value <= 0xFFFFFFFF:
                 # 32 bit integer
                 return super(field, cls).__new__(cls, struct_L.pack(value))
@@ -172,7 +172,7 @@ class Response(list):
         # The first 4 bytes in the response body is the <count> we have already
         # read
         offset = 4
-        for i in xrange(cardinality):
+        for i in range(cardinality):
             field_size, offset = self._unpack_int_base128(buff, offset)
             field_data = struct.unpack_from(
                 "<%ds" % field_size, buff, offset)[0]
@@ -208,7 +208,7 @@ class Response(list):
 
         # In case of an error unpack the body as an error message
         if self._return_code != 0:
-            self._return_message = unicode(buff[4:-1], "utf8", "replace")
+            self._return_message = str(buff[4:-1], "utf8", "replace")
             if self._completion_status == 2 and self.conn.error:
                 raise DatabaseError(self._return_code, self._return_message)
 

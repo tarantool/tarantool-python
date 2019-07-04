@@ -258,7 +258,7 @@ class TarantoolServer(object):
         self.generate_configuration()
         if self.script:
             shutil.copy(self.script, self.script_dst)
-            os.chmod(self.script_dst, 0777)
+            os.chmod(self.script_dst, 0o777)
         args = self.prepare_args()
         if not glob.glob(os.path.join(self.vardir, '*.snap')):
             subprocess.Popen(args + ['--init-storage'],

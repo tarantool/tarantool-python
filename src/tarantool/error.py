@@ -25,7 +25,7 @@ import sys
 import warnings
 
 
-class Error(StandardError):
+class Error(Exception):
 
     '''Base class for error exceptions'''
 

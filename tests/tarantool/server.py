@@ -2,7 +2,7 @@
 import unittest
 
 import tarantool
-from lib.tarantool15 import TarantoolServer
+from .lib.tarantool15 import TarantoolServer
 
 schema = {
     0: {
@@ -181,7 +181,7 @@ class Server15Tests(unittest.TestCase):
                 int
         ),
         self.assertIsInstance(
-                self.con.call('box.time64', [], field_defs=[(0, long)])[0][0],
+                self.con.call('box.time64', [], field_defs=[(0, int)])[0][0],
                 int
         ),
         self.assertEqual(
@@ -192,7 +192,7 @@ class Server15Tests(unittest.TestCase):
         )
         self.assertEqual(
                 self.con.call('test.b', '12345', field_defs=
-                    [(0, int), (1, long)]),
+                    [(0, int), (1, int)]),
                 [(12345, 12345)]
         )
 

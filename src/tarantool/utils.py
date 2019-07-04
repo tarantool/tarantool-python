@@ -15,5 +15,5 @@ def check_key(*args, **kwargs):
         elif args[0] is None and kwargs['select']:
             return []
     for key in args:
-        assert isinstance(key, (int, long, basestring))
+        assert isinstance(key, (int, str))
     return list(args)

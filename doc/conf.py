@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath('.')), "src"))
 # Read package version without importing it
 for line in open(os.path.join(os.path.dirname(os.path.abspath('.')), "src", "tarantool", "__init__.py")):
     if line.startswith("__version__"):
-        exec line
+        exec(line)
         break
 
 # -- General configuration -----------------------------------------------------
@@ -46,8 +46,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Tarantool python client library'
-copyright = u'2011, Konstantin Cherkasoff'
+project = 'Tarantool python client library'
+copyright = '2011, Konstantin Cherkasoff'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -191,8 +191,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Tarantoolpythonclientlibrary.tex', u'Tarantool python client library Documentation',
-   u'Konstantin Cherkasoff', 'manual'),
+  ('index', 'Tarantoolpythonclientlibrary.tex', 'Tarantool python client library Documentation',
+   'Konstantin Cherkasoff', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -221,8 +221,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'tarantoolpythonclientlibrary', u'Tarantool python client library Documentation',
-     [u'Konstantin Cherkasoff'], 1)
+    ('index', 'tarantoolpythonclientlibrary', 'Tarantool python client library Documentation',
+     ['Konstantin Cherkasoff'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -235,8 +235,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Tarantoolpythonclientlibrary', u'Tarantool python client library Documentation',
-   u'Konstantin Cherkasoff', 'Tarantoolpythonclientlibrary', 'One line description of project.',
+  ('index', 'Tarantoolpythonclientlibrary', 'Tarantool python client library Documentation',
+   'Konstantin Cherkasoff', 'Tarantoolpythonclientlibrary', 'One line description of project.',
    'Miscellaneous'),
 ]
 

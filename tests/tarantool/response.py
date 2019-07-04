@@ -7,7 +7,6 @@ import binascii
 import sys
 import unittest
 
-py3 = sys.version_info.major >= 3
 from_hex = lambda x: binascii.unhexlify(''.join(x.split()))
 to_hex = lambda x: binascii.hexlify(x)
 
@@ -41,10 +40,7 @@ class field(unittest.TestCase):
         Test field instantiation from str or unicode value
         '''
         # Word "Test" in cyrillic utf-8 encoded
-        if py3:
-            value = str(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82", "utf-8")
-        else:
-            value = unicode(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82", "utf-8")
+        value = str(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82", "utf-8")
 
         self.assertEqual(
             tarantool.response.field(value),
@@ -147,16 +143,10 @@ class field(unittest.TestCase):
         Test type casting from field to str or unicode
         '''
         # Word "Test" in cyrillic utf-8 encoded
-        if py3:
-            self.assertEqual(
-                str(tarantool.response.field(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82")),
-                str(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82", "utf-8"),
-                "Cast field instance to unicode")
-        else:
-            self.assertEqual(
-                unicode(tarantool.response.field(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82")),
-                unicode(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82", "utf-8"),
-                "Cast field instance to unicode")
+        self.assertEqual(
+            str(tarantool.response.field(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82")),
+            str(b"\xd0\xa2\xd0\xb5\xd1\x81\xd1\x82", "utf-8"),
+            "Cast field instance to unicode")
 
 
 
