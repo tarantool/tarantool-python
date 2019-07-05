@@ -5,11 +5,14 @@ import shlex
 import random
 import socket
 import tempfile
+import sys
 
 import yaml
 import time
 import shutil
 import subprocess
+
+py3 = sys.version_info.major >= 3
 
 def check_port(port, rais=True):
     try:

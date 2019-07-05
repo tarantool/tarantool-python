@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 import unittest
+import sys
 
 import tarantool
-from .lib.tarantool15 import TarantoolServer
+
+py3 = sys.version_info.major >= 3
+if py3:
+    from .lib.tarantool15 import TarantoolServer
+else:
+    from lib.tarantool15 import TarantoolServer
 
 schema = {
     0: {

@@ -46,6 +46,13 @@ from tarantool.error import (
 from tarantool.schema import Schema
 from tarantool.utils import check_key
 
+py3 = sys.version_info.major >= 3
+if py3:
+    long = int
+    basestring = str
+else:
+    bytes = str
+
 
 class Connection(object):
 
@@ -500,13 +507,13 @@ class Connection(object):
         # tuples)
         if values is None:
             values = [[]]
-        elif isinstance(values, (int, str)):  # scalar
+        elif isinstance(values, (int, long, basestring)):  # scalar
             # This request is looking for one single record
             values = [(values, )]
         elif isinstance(values, (list, tuple, set, frozenset)):
             any_item = next(iter(values))
             # list of scalars
-            if isinstance(any_item, (int, str)):
+            if isinstance(any_item, (int, long, basestring)):
                 # This request is looking for several records
                 # using single-valued index
                 # Ex: select(space_no, index_no, [1, 2, 3])

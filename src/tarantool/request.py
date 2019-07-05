@@ -5,6 +5,7 @@ Request types definitions
 '''
 
 import struct
+import sys
 
 from tarantool.const import (
     struct_B,
@@ -26,7 +27,10 @@ from tarantool.const import (
     REQUEST_TYPE_CALL
 )
 
-from .error import InterfaceError
+from tarantool.error import InterfaceError
+
+py3 = sys.version_info.major >= 3
+
 
 class Request(object):
 
@@ -104,8 +108,9 @@ class Request(object):
         raise OverflowError("Number too large to be packed")
 
     def pack_field(self, value):
+        if py3:
+            value = bytes(value, 'utf-8') if isinstance(value, str) else value
         value_len_packed = Request.pack_int_base128(len(value))
-        value = bytes(value, 'utf-8') if isinstance(value, str) else value
         return struct.pack(
             "<%ds%ds" % (len(value_len_packed), len(value)), value_len_packed,
             value)

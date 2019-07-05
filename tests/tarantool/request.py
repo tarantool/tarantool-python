@@ -147,14 +147,14 @@ class RequestUpdate(unittest.TestCase):
             "Update: assign single string value using an integer key"
         )
 
-        # # update t17 set k51 = "NNN" where k0 = "ZZZZZZ"
+        # update t17 set k51 = "NNN" where k0 = "ZZZZZZ"
         self.assertEqual(
             bytes(tarantool.request.RequestUpdate(self.conn, 0x11, b"ZZZZZZ", [(0x33, '=', b"NNN")], False)),
             binascii.unhexlify("130000002000000000000000110000000000000001000000065a5a5a5a5a5a010000003300000000034e4e4e"),
             "Update: assign single string value using a string key"
         )
 
-        # # update t17 set k51 = 0x3333, k68 = 0x4444, k85 = 0x5555  where k0 = 0x22
+        # update t17 set k51 = 0x3333, k68 = 0x4444, k85 = 0x5555  where k0 = 0x22
         self.assertEqual(
             bytes(tarantool.request.RequestUpdate(self.conn, 0x11, 0x22, [(0x33, '=', 0x3333), (0x44, '=', 0x4444), (0x55, '=', 0x5555)], False)),
             binascii.unhexlify("13000000430000000000000011000000000000000100000008220000000000000003000000330000000008333300000000000044000000000844440000000000005500000000085555000000000000"),
@@ -182,11 +182,10 @@ class RequestUpdate(unittest.TestCase):
             "Update: assign multiple string values using a string key"
         )
 
-        # # ------------------------------------------------------------
-        # # Update operation "ADD" ('+'), op_code = 1
+        # ------------------------------------------------------------
+        # Update operation "ADD" ('+'), op_code = 1
 
         # update t17 set k51 = k51 + 0x55 where k0 = 0x22
-        # 085500000000000000
         self.assertEqual(
             bytes(tarantool.request.RequestUpdate(self.conn, 0x11, 0x22, [(0x33, '+', 0x55)], False)),
             binascii.unhexlify("130000002700000000000000"

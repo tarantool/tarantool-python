@@ -16,6 +16,14 @@ from tarantool.const import (
 )
 from tarantool.error import DatabaseError
 
+py3 = sys.version_info.major >= 3
+if py3:
+    long = int
+    basestring = str
+    unicode = str
+
+    def ord(value):
+        return value
 
 if sys.version_info < (2, 6):
     bytes = str    # pylint: disable=W0622
@@ -33,17 +41,17 @@ class field(bytes):
         # Since parent class is immutable, we should override __new__, not
         # __init__
 
-        if isinstance(value, str):
+        if (
+            not py3 and isinstance(value, unicode) or 
+            py3 and isinstance(value, str)
+        ):
             return super(field, cls).__new__(
                 cls, value.encode("utf-8", "replace"))
-
-        if sys.version_info[0] < 3 and isinstance(value, str):
-            return super(field, cls).__new__(cls, value)
 
         if isinstance(value, (bytearray, bytes)):
             return super(field, cls).__new__(cls, value)
 
-        if isinstance(value, (int)):
+        if isinstance(value, (int, long)):
             if 0 <= value <= 0xFFFFFFFF:
                 # 32 bit integer
                 return super(field, cls).__new__(cls, struct_L.pack(value))
@@ -140,19 +148,19 @@ class Response(list):
     @staticmethod
     def _unpack_int_base128(varint, offset):
         """Implement Perl unpack's 'w' option, aka base 128 decoding."""
-        res = varint[offset]
-        if varint[offset] >= 0x80:
+        res = ord(varint[offset])
+        if ord(varint[offset]) >= 0x80:
             offset += 1
-            res = ((res - 0x80) << 7) + varint[offset]
-            if varint[offset] >= 0x80:
+            res = ((res - 0x80) << 7) + ord(varint[offset])
+            if ord(varint[offset]) >= 0x80:
                 offset += 1
-                res = ((res - 0x80) << 7) + varint[offset]
-                if varint[offset] >= 0x80:
+                res = ((res - 0x80) << 7) + ord(varint[offset])
+                if ord(varint[offset]) >= 0x80:
                     offset += 1
-                    res = ((res - 0x80) << 7) + varint[offset]
-                    if varint[offset] >= 0x80:
+                    res = ((res - 0x80) << 7) + ord(varint[offset])
+                    if ord(varint[offset]) >= 0x80:
                         offset += 1
-                        res = ((res - 0x80) << 7) + varint[offset]
+                        res = ((res - 0x80) << 7) + ord(varint[offset])
         return res, offset + 1
 
     def _unpack_tuple(self, buff):
@@ -208,7 +216,7 @@ class Response(list):
 
         # In case of an error unpack the body as an error message
         if self._return_code != 0:
-            self._return_message = str(buff[4:-1], "utf8", "replace")
+            self._return_message = unicode(buff[4:-1], "utf8", "replace")
             if self._completion_status == 2 and self.conn.error:
                 raise DatabaseError(self._return_code, self._return_message)
 

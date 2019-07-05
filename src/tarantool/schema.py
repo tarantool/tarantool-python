@@ -4,6 +4,7 @@
 This module provides :class:`~tarantool.schema.Schema` class.
 It is a Tarantool schema description.
 '''
+import sys
 
 # Tarantool data types
 RAW = 0
@@ -15,6 +16,12 @@ from tarantool.const import (
     struct_L,
     struct_Q
 )
+
+
+py3 = sys.version_info.major >= 3
+if py3:
+    long = int
+    basestring = str
 
 
 class Schema(object):
@@ -65,7 +72,7 @@ class Schema(object):
             return
 
         for (space_no, space_descr) in schema.items():
-            if not isinstance(space_no, int):
+            if not isinstance(space_no, (int, long)):
                 raise ValueError('Invalid space_no: %s' % space_no)
 
             # Space name
@@ -79,7 +86,7 @@ class Schema(object):
             field_descrs = space_descr.get('fields', {})
             max_fieldno = 0
             for field_no in field_descrs.keys():
-                if not isinstance(field_no, int):
+                if not isinstance(field_no, (int, long)):
                     raise ValueError('Invalid field_no: %s' % field_no)
                 max_fieldno = max(max_fieldno, field_no)
 
@@ -102,7 +109,7 @@ class Schema(object):
             index_descrs = space_descr.get('indexes', {})
             max_indexno = 0
             for index_no in index_descrs.keys():
-                if not isinstance(index_no, int):
+                if not isinstance(index_no, (int, long)):
                     raise ValueError('Invalid index_no: %s' % index_no)
                 max_indexno = max(max_indexno, index_no)
 
@@ -152,9 +159,9 @@ class Schema(object):
             return dtype
         elif dtype is None:
             return RAW
-        elif dtype == int:
+        elif isinstance(dtype, (int, long)):
             return NUM64
-        elif isinstance(dtype, str):
+        elif isinstance(dtype, basestring):
             return STR
         else:
             raise ValueError("Invalid data type: %s" % dtype)
@@ -228,7 +235,7 @@ class Schema(object):
         :rtype: bytes
         '''
         if __debug__:
-            if not isinstance(value, int):
+            if not isinstance(value, (int, long)):
                 raise TypeError(
                     "Invalid argument type '%s'. Only 'int' or 'long' "
                     "expected" % type(value).__name__)
@@ -260,16 +267,19 @@ class Schema(object):
         '''
         if cast_to:
             if cast_to in (STR, RAW, str, bytes, None):
-                return value
-            elif cast_to in (NUM, NUM64, int):
+                if py3:
+                    return value
+                else:
+                    return str(value)
+            elif cast_to in (NUM, NUM64, int, long):
                 return self._pack_value_int64(value)
             else:
                 raise TypeError("Invalid field type %d." % cast_to)
         else:
             # try to autodetect tarantool types based on python types
-            if isinstance(value, (str, bytes)):
+            if isinstance(value, (basestring, bytes)):
                 return value
-            elif isinstance(value, int):
+            elif isinstance(value, (int, long)):
                 return self._pack_value_int64(value)
             else:
                 raise TypeError(
@@ -291,18 +301,17 @@ class Schema(object):
             unicode (str for py3k))
         '''
 
-        if cast_to in (NUM, int):
-            if len(packed_value) == 8 and not self.strict:
-                return self._unpack_value_int64(packed_value)
-            return self._unpack_value_int(packed_value)
+        if cast_to in (NUM, NUM64, int, long):
+            return self._unpack_value_int64(packed_value)
         elif cast_to in (RAW, bytes, None):
             return packed_value
         elif cast_to in (str, ) and not self.strict:
             return str(packed_value)
-        elif cast_to in (STR, ) or type(cast_to) == type and issubclass(cast_to, str):
-            return str(packed_value)
-        elif cast_to in (NUM64, int):
-            return self._unpack_value_int64(packed_value)
+        elif cast_to in (STR, ) or type(cast_to) == type and issubclass(cast_to, basestring):
+            if py3:
+                return str(packed_value)
+            else:
+                return unicode(packed_value)
         elif callable(cast_to) and not self.strict:
             return cast_to(packed_value)
         else:
@@ -330,7 +339,7 @@ class Schema(object):
         '''
 
         if field_defs is None and space_no is not None:
-            assert isinstance(space_no, int)
+            assert isinstance(space_no, (int, long))
             # Space schema must be defined if use want to use space by name
             space_def = self._spaces.get(space_no, None)
             if space_def is not None:
@@ -380,7 +389,7 @@ class Schema(object):
         '''
 
         if field_defs is None and space_no is not None:
-            assert isinstance(space_no, int)
+            assert isinstance(space_no, (int, long))
             # Space schema must be defined if use want to use space by name
             space_def = self._spaces.get(space_no, None)
             if space_def is not None:

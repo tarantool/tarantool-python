@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
+import sys
+
+py3 = sys.version_info.major >= 3
+if py3:
+    long = int
+    basestring = str
+
 
 def check_key(*args, **kwargs):
     if 'first' not in kwargs:
@@ -15,5 +22,5 @@ def check_key(*args, **kwargs):
         elif args[0] is None and kwargs['select']:
             return []
     for key in args:
-        assert isinstance(key, (int, str))
+        assert isinstance(key, (int, long, basestring))
     return list(args)
