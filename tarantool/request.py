@@ -27,6 +27,8 @@ from tarantool.const import (
     IPROTO_OPS,
     # IPROTO_INDEX_BASE,
     IPROTO_SCHEMA_ID,
+    IPROTO_SQL_TEXT,
+    IPROTO_SQL_BIND,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
@@ -37,6 +39,7 @@ from tarantool.const import (
     REQUEST_TYPE_UPSERT,
     REQUEST_TYPE_CALL16,
     REQUEST_TYPE_CALL,
+    REQUEST_TYPE_EXECUTE,
     REQUEST_TYPE_EVAL,
     REQUEST_TYPE_AUTHENTICATE,
     REQUEST_TYPE_JOIN,
@@ -331,4 +334,20 @@ class RequestOK(Request):
         super(RequestOK, self).__init__(conn)
         request_body = msgpack.dumps({IPROTO_CODE: self.request_type,
                                       IPROTO_SYNC: sync})
+        self._body = request_body
+
+
+class RequestExecute(Request):
+    '''
+    Represents EXECUTE request
+    '''
+    request_type = REQUEST_TYPE_EXECUTE
+
+    # pylint: disable=W0231
+    def __init__(self, conn, sql, args):
+        super(RequestExecute, self).__init__(conn)
+
+        request_body = msgpack.dumps({IPROTO_SQL_TEXT: sql,
+                                      IPROTO_SQL_BIND: args})
+
         self._body = request_body

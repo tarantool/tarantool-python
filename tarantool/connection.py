@@ -34,7 +34,8 @@ from tarantool.request import (
     RequestSubscribe,
     RequestUpdate,
     RequestUpsert,
-    RequestAuthenticate
+    RequestAuthenticate,
+    RequestExecute
 )
 from tarantool.space import Space
 from tarantool.const import (
@@ -785,3 +786,23 @@ class Connection(object):
         Need override for async io connection
         '''
         return 0
+
+    def execute(self, query, params=None):
+        '''
+        Execute SQL request.
+        Execute SQL query in database. 
+        
+        :param query: SQL syntax query 
+        :type query: str
+        
+        :param params: Bind values to use in query
+        :type params: list, dict
+
+        :return: query result data 
+        :rtype: list
+        '''
+        if not params:
+            params = []
+        request = RequestExecute(self, query, params)
+        response = self._send_request(request)
+        return response
