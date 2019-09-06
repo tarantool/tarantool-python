@@ -106,9 +106,9 @@ On Windows:
 
 .. _`Tarantool`:
 .. _`Tarantool Database`:
-.. _`Tarantool Homepage`: http://tarantool.org
+.. _`Tarantool Homepage`: https://tarantool.io
 .. _`Tarantool at Github`: https://github.com/tarantool/tarantool
-.. _`Tarantool User Guide`: http://tarantool.org/doc/book/index.html
-.. _`Client-server protocol specification`: http://tarantool.org/doc/dev_guide/box-protocol.html
+.. _`Tarantool User Guide`: https://www.tarantool.io/en/doc/latest/
+.. _`Client-server protocol specification`: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/
 .. _`Sophia`: http://sophia.systems
 .. _`BSD licensed`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
