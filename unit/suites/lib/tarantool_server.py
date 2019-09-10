@@ -46,8 +46,7 @@ class TarantoolServer(object):
     default_cfg = {
             "custom_proc_title": "\"tarantool-python testing\"",
             "slab_alloc_arena":                             0.5,
-            "pid_file":                           "\"box.pid\"",
-            "rows_per_wal":                                 200}
+            "pid_file":                           "\"box.pid\""}
 
     @property
     def logfile_path(self):
