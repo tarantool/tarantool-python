@@ -39,14 +39,14 @@ class RunnerException(object):
 
 class TarantoolServer(object):
     default_tarantool = {
-            "bin":           "tarantool",
-            "logfile":   "tarantool.log",
-            "init":           "init.lua"}
+            "bin":     "tarantool",
+            "logfile": "tarantool.log",
+            "init":    "init.lua"}
 
     default_cfg = {
             "custom_proc_title": "\"tarantool-python testing\"",
-            "slab_alloc_arena":                             0.5,
-            "pid_file":                           "\"box.pid\""}
+            "memtx_memory":      0.5 * 1024**3,  # 0.5 GiB
+            "pid_file":          "\"box.pid\""}
 
     @property
     def logfile_path(self):
