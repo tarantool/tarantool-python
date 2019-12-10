@@ -91,7 +91,12 @@ class Connection(object):
                  connect_now=True,
                  encoding=ENCODING_DEFAULT,
                  call_16=False,
-                 connection_timeout=CONNECTION_TIMEOUT):
+                 connection_timeout=CONNECTION_TIMEOUT,
+                 pack_default=None,
+                 unpack_object_hook=None,
+                 unpack_list_hook=None,
+                 unpack_object_pairs_hook=None,
+                 unpack_ext_hook=None):
         '''
         Initialize a connection to the server.
 
@@ -126,6 +131,13 @@ class Connection(object):
         self.encoding = encoding
         self.call_16 = call_16
         self.connection_timeout = connection_timeout
+        self.pack_default = pack_default
+        self.unpack_hooks = {
+            "object_hook": unpack_object_hook,
+            "list_hook": unpack_list_hook,
+            "object_pairs_hook": unpack_object_pairs_hook,
+            "ext_hook": unpack_ext_hook,
+        }
         if connect_now:
             self.connect()
 
