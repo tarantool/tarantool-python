@@ -132,12 +132,13 @@ class Connection(object):
         self.call_16 = call_16
         self.connection_timeout = connection_timeout
         self.pack_default = pack_default
-        self.unpack_hooks = {
+        unpack_hooks = {
             "object_hook": unpack_object_hook,
             "list_hook": unpack_list_hook,
             "object_pairs_hook": unpack_object_pairs_hook,
             "ext_hook": unpack_ext_hook,
         }
+        self.unpack_hooks = {k: v for (k, v) in unpack_hooks.items() if v is not None}
         if connect_now:
             self.connect()
 
