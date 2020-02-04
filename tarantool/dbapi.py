@@ -25,7 +25,7 @@ class Cursor:
 
     def execute(self, query, params=None):
         if params:
-            query = query % tuple("'%s'" % param for param in params)
+            query = query % tuple(str(param) if isinstance(param, bool) else "'%s'" % param for param in params)
 
         response = self._c.execute(query)
 
