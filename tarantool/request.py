@@ -7,7 +7,6 @@ Request types definitions
 import msgpack
 import hashlib
 
-
 from tarantool.const import (
     IPROTO_CODE,
     IPROTO_SYNC,
@@ -49,6 +48,7 @@ from tarantool.utils import (
     strxor,
     binary_types
 )
+
 
 class Request(object):
     '''
@@ -137,7 +137,7 @@ class RequestAuthenticate(Request):
         request_body = msgpack.dumps({IPROTO_USER_NAME: user,
                                       IPROTO_TUPLE: ("chap-sha1", scramble)})
         self._body = request_body
-    
+
     def header(self, length):
         self._sync = self.conn.generate_sync()
         # Set IPROTO_SCHEMA_ID: 0 to avoid SchemaReloadException

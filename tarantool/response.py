@@ -35,7 +35,7 @@ class Response(Sequence):
     and parses binary packet received from the server.
     '''
 
-    def __init__(self, conn, response):
+    def __init__(self, conn, response, use_list=False):
         '''
         Create an instance of `Response` using data received from the server.
 
@@ -54,11 +54,11 @@ class Response(Sequence):
             # Get rid of the following warning.
             # > PendingDeprecationWarning: encoding is deprecated,
             # > Use raw=False instead.
-            unpacker = msgpack.Unpacker(use_list=True, raw=False)
+            unpacker = msgpack.Unpacker(use_list=use_list, raw=False)
         elif conn.encoding is not None:
-            unpacker = msgpack.Unpacker(use_list=True, encoding=conn.encoding)
+            unpacker = msgpack.Unpacker(use_list=use_list, encoding=conn.encoding)
         else:
-            unpacker = msgpack.Unpacker(use_list=True)
+            unpacker = msgpack.Unpacker(use_list=use_list)
 
         unpacker.feed(response)
         header = unpacker.unpack()

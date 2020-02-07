@@ -11,6 +11,7 @@ import socket
 
 import ctypes
 import ctypes.util
+
 try:
     from ctypes import c_ssize_t
 except ImportError:
@@ -293,12 +294,11 @@ class Connection(object):
                 retbytes = self._sys_recv(sock_fd, buf, 1, flag)
 
                 err = 0
-                if os.name!= 'nt':
+                if os.name != 'nt':
                     err = ctypes.get_errno()
                 else:
                     err = ctypes.get_last_error()
                     self._socket.setblocking(True)
-
 
                 WWSAEWOULDBLOCK = 10035
                 if (retbytes < 0) and (err == errno.EAGAIN or
@@ -791,10 +791,10 @@ class Connection(object):
         '''
         Execute SQL request.
         Execute SQL query in database. 
-        
-        :param query: SQL syntax query 
+
+        :param query: SQL syntax query
         :type query: str
-        
+
         :param params: Bind values to use in query
         :type params: list, dict
 

@@ -1,6 +1,9 @@
 """
 Supports python 3.6 and above
 """
+from copy import deepcopy
+
+from tarantool.error import InterfaceError
 
 from .connection import Connection as BaseConnection
 from . import error
@@ -13,6 +16,7 @@ class Cursor:
     rows = []
     position = 0
     autocommit = True
+    _rowcount = 0
 
     def __init__(self, connection):
         self._c = connection
@@ -31,6 +35,15 @@ class Cursor:
 
         if len(response.body) > 1:
             self.rows = tuple(response.body.values())[1]
+        else:
+            self.rows = []
+        if 'UPDATE' not in query or 'INSERT' not in query:
+            try:
+                self._rowcount = response.rowcount
+            except InterfaceError:
+                pass
+        else:
+            self._rowcount = 1
         return response
 
     def lastrowid(self):
@@ -38,7 +51,7 @@ class Cursor:
 
     @property
     def rowcount(self):
-        return len(self._c.rows)
+        return self._rowcount
 
     def executemany(self, query, params):
         return self.execute(query, params)
@@ -48,7 +61,7 @@ class Cursor:
 
     def fetchmany(self, size):
         self._lastrowid += size
-        items = self.rows.copy()
+        items = deepcopy(self.rows)
         self.rows = []
         return items
 
