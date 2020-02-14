@@ -1,12 +1,12 @@
 """
 Supports python 3.6 and above
 """
+import re
 from copy import deepcopy
 
 from tarantool.error import InterfaceError
 
 from .connection import Connection as BaseConnection
-from . import error
 
 
 class Cursor:
@@ -28,16 +28,27 @@ class Cursor:
         self._c.close()
 
     def execute(self, query, params=None):
-        if params:
-            query = query % tuple(str(param) if isinstance(param, bool) else "'%s'" % param for param in params)
+        def convert_param(p):
+            print('PARAM: ', p)
+            if isinstance(p, bool):
+                return str(p)
+            elif p is None:
+                return "NULL"
+            return "'%s'" % p
 
+        if params:
+            query = query % tuple(convert_param(param) for param in params)
+
+        print(query)
         response = self._c.execute(query)
 
         if len(response.body) > 1:
             self.rows = tuple(response.body.values())[1]
         else:
             self.rows = []
-        if 'UPDATE' not in query or 'INSERT' not in query:
+
+        rc_pattern = re.compile(r'^(UPDATE|INSERT)')
+        if rc_pattern.match(query):
             try:
                 self._rowcount = response.rowcount
             except InterfaceError:
@@ -46,6 +57,7 @@ class Cursor:
             self._rowcount = 1
         return response
 
+    @property
     def lastrowid(self):
         return self._lastrowid
 
@@ -78,19 +90,6 @@ class Cursor:
 class Connection(BaseConnection):
     rows = []
     _cursor = None
-
-    # DBAPI Extension: supply exceptions as attributes on the connection
-    Warning = Warning
-    Error = error.Error
-    InterfaceError = error.InterfaceError
-    DataError = error.DataError
-    DatabaseError = error.DatabaseError
-    OperationalError = error.OperationalError
-    IntegrityError = error.IntegrityError
-    InternalError = error.InternalError
-    ProgrammingError = error.ProgrammingError
-    NotSupportedError = error.NotSupportedError
-    ImproperlyConfigured = Exception
 
     server_version = 1
 

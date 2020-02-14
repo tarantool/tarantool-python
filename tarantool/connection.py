@@ -56,6 +56,12 @@ from tarantool.error import (
     InterfaceError,
     SchemaError,
     NetworkWarning,
+    OperationalError,
+    DataError,
+    IntegrityError,
+    InternalError,
+    ProgrammingError,
+    NotSupportedError,
     SchemaReloadException,
     warn
 )
@@ -78,11 +84,20 @@ class Connection(object):
     Also this class provides low-level interface to data manipulation
     (insert/delete/update/select).
     '''
+    # DBAPI Extension: supply exceptions as attributes on the connection
     Error = tarantool.error
     DatabaseError = DatabaseError
     InterfaceError = InterfaceError
     SchemaError = SchemaError
     NetworkError = NetworkError
+    Warning = Warning
+    DataError = DataError
+    OperationalError = OperationalError
+    IntegrityError = IntegrityError
+    InternalError = InternalError
+    ProgrammingError = ProgrammingError
+    NotSupportedError = NotSupportedError
+    ImproperlyConfigured = Exception
 
     def __init__(self, host, port,
                  user=None,
