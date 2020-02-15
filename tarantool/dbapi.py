@@ -27,25 +27,21 @@ class Cursor:
     def close(self):
         self._c.close()
 
+    def _convert_param(self, p):
+        if isinstance(p, bool):
+            return str(p)
+        elif p is None:
+            return "NULL"
+        return "'%s'" % p
+
     def execute(self, query, params=None):
-        def convert_param(p):
-            print('PARAM: ', p)
-            if isinstance(p, bool):
-                return str(p)
-            elif p is None:
-                return "NULL"
-            return "'%s'" % p
-
         if params:
-            query = query % tuple(convert_param(param) for param in params)
+            query = query % tuple(self._convert_param(param) for param in params)
 
-        print(query)
+        # print(query)
         response = self._c.execute(query)
 
-        if len(response.body) > 1:
-            self.rows = tuple(response.body.values())[1]
-        else:
-            self.rows = []
+        self.rows = tuple(response.body.values())[1] if len(response.body) > 1 else []
 
         rc_pattern = re.compile(r'^(UPDATE|INSERT)')
         if rc_pattern.match(query):
@@ -55,6 +51,17 @@ class Cursor:
                 pass
         else:
             self._rowcount = 1
+
+        def extract_last_row_id(body):  # Need to be checked
+            try:
+                val = tuple(tuple(body.items())[0][-1].items())[-1][-1][0]
+            except TypeError:
+                val = 1
+            return val
+
+        u_pattern = re.compile(r'^INSERT')
+        if u_pattern.match(query):
+            self._lastrowid = extract_last_row_id(response.body)
         return response
 
     @property
@@ -72,7 +79,6 @@ class Cursor:
         pass
 
     def fetchmany(self, size):
-        self._lastrowid += size
         items = deepcopy(self.rows)
         self.rows = []
         return items

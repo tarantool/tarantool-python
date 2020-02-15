@@ -244,4 +244,6 @@ class Response(Sequence):
             output.pop()
         return ''.join(output)
 
-    __repr__ = __str__
+    def __repr__(self):
+        return self.__str__()
+
