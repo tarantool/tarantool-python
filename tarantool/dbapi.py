@@ -2,9 +2,14 @@
 Supports python 3.6 and above
 """
 import re
+from collections import deque
 from copy import deepcopy
+from itertools import islice
 
-from tarantool.error import InterfaceError
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
+
+from tarantool.error import InterfaceError, ProgrammingError
 
 from .connection import Connection as BaseConnection
 
@@ -12,27 +17,38 @@ from .connection import Connection as BaseConnection
 class Cursor:
     _lastrowid = 0
     description = None
-    arraysize = None
-    rows = []
     position = 0
+    arraysize = 100
     autocommit = True
     _rowcount = 0
+    ui_pattern = re.compile(r'^(UPDATE|INSERT)')
+    u_pattern = re.compile(r'^INSERT')
 
     def __init__(self, connection):
         self._c = connection
+        self.rows = []
 
     def callproc(self, procname, *params):
         pass
 
-    def close(self):
-        self._c.close()
+    def close(self):  # TODO: Find out how to implement closing connection correctly
+        pass
 
-    def _convert_param(self, p):
+    @staticmethod
+    def _convert_param(p):
+        if p is None:
+            return "NULL"
         if isinstance(p, bool):
             return str(p)
-        elif p is None:
-            return "NULL"
         return "'%s'" % p
+
+    @staticmethod
+    def extract_last_row_id(body):  # Need to be checked
+        try:
+            val = tuple(tuple(body.items())[0][-1].items())[-1][-1][0]
+        except TypeError:
+            val = 1
+        return val
 
     def execute(self, query, params=None):
         if params:
@@ -43,25 +59,16 @@ class Cursor:
 
         self.rows = tuple(response.body.values())[1] if len(response.body) > 1 else []
 
-        rc_pattern = re.compile(r'^(UPDATE|INSERT)')
-        if rc_pattern.match(query):
+        if self.ui_pattern.match(query):
             try:
                 self._rowcount = response.rowcount
             except InterfaceError:
-                pass
+                self._rowcount = 1
         else:
             self._rowcount = 1
 
-        def extract_last_row_id(body):  # Need to be checked
-            try:
-                val = tuple(tuple(body.items())[0][-1].items())[-1][-1][0]
-            except TypeError:
-                val = 1
-            return val
-
-        u_pattern = re.compile(r'^INSERT')
-        if u_pattern.match(query):
-            self._lastrowid = extract_last_row_id(response.body)
+        if self.u_pattern.match(query):
+            self._lastrowid = self.extract_last_row_id(response.body)
         return response
 
     @property
@@ -76,15 +83,21 @@ class Cursor:
         return self.execute(query, params)
 
     def fetchone(self):
-        pass
+        return self.rows[0] if len(self.rows) else None
 
     def fetchmany(self, size):
+        if len(self.rows) < size:
+            items = self.rows
+            self.rows = []
+        else:
+            items, self.rows = self.rows[:size], self.rows[size:]
+
+        return items if len(items) else []
+
+    def fetchall(self):
         items = deepcopy(self.rows)
         self.rows = []
         return items
-
-    def fetchall(self):
-        pass
 
     def setinputsizes(self, sizes):
         pass
@@ -94,30 +107,24 @@ class Cursor:
 
 
 class Connection(BaseConnection):
-    rows = []
     _cursor = None
 
-    server_version = 1
+    server_version = 2
 
     def commit(self):
         pass
 
+    def rollback(self):
+        pass
+
     def close(self):
-        '''
-        Close connection to the server
-        '''
         if self._socket:
             self._socket.close()
             self._socket = None
 
-    def rollback(self):
-        pass
-
-    @classmethod
-    def cache(cls, cursor):
-        cls._cursor = cursor
+    def _set_cursor(self):
+        self._cursor = Cursor(self)
+        return self._cursor
 
     def cursor(self, params=None):
-        if not self._cursor:
-            self._cursor = Cursor(self)
-        return self._cursor
+        return self._cursor or self._set_cursor()
