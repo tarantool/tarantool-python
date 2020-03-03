@@ -2,25 +2,20 @@
 Supports python 3.6 and above
 """
 import re
-from collections import deque
 from copy import deepcopy
-from itertools import islice
 
-from pycallgraph import PyCallGraph
-from pycallgraph.output import GraphvizOutput
-
-from tarantool.error import InterfaceError, ProgrammingError
+from tarantool.error import InterfaceError
 
 from .connection import Connection as BaseConnection
 
 
 class Cursor:
     _lastrowid = 0
+    _rowcount = 0
     description = None
     position = 0
-    arraysize = 100
+    arraysize = 200
     autocommit = True
-    _rowcount = 0
     ui_pattern = re.compile(r'^(UPDATE|INSERT)')
     u_pattern = re.compile(r'^INSERT')
 
@@ -43,18 +38,17 @@ class Cursor:
         return "'%s'" % p
 
     @staticmethod
-    def extract_last_row_id(body):  # Need to be checked
+    def _extract_last_row_id(body):  # Need to be checked
         try:
             val = tuple(tuple(body.items())[0][-1].items())[-1][-1][0]
         except TypeError:
-            val = 1
+            val = -1
         return val
 
     def execute(self, query, params=None):
         if params:
             query = query % tuple(self._convert_param(param) for param in params)
 
-        # print(query)
         response = self._c.execute(query)
 
         self.rows = tuple(response.body.values())[1] if len(response.body) > 1 else []
@@ -68,8 +62,11 @@ class Cursor:
             self._rowcount = 1
 
         if self.u_pattern.match(query):
-            self._lastrowid = self.extract_last_row_id(response.body)
+            self._lastrowid = self._extract_last_row_id(response.body)
         return response
+
+    def executemany(self, query, params):
+        return self.execute(query, params)
 
     @property
     def lastrowid(self):
@@ -78,9 +75,6 @@ class Cursor:
     @property
     def rowcount(self):
         return self._rowcount
-
-    def executemany(self, query, params):
-        return self.execute(query, params)
 
     def fetchone(self):
         return self.rows[0] if len(self.rows) else None
