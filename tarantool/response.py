@@ -54,11 +54,20 @@ class Response(Sequence):
             # Get rid of the following warning.
             # > PendingDeprecationWarning: encoding is deprecated,
             # > Use raw=False instead.
-            unpacker = msgpack.Unpacker(use_list=True, raw=False, strict_map_key=False)
+            if msgpack.version >= (1, 0, 0):
+                unpacker = msgpack.Unpacker(use_list=True, raw=False, strict_map_key=False)
+            else:
+                unpacker = msgpack.Unpacker(use_list=True, raw=False)
         elif conn.encoding is not None:
-            unpacker = msgpack.Unpacker(use_list=True, encoding=conn.encoding)
+            if msgpack.version >= (1, 0, 0):
+                unpacker = msgpack.Unpacker(use_list=True, encoding=conn.encoding, strict_map_key=False)
+            else:
+                unpacker = msgpack.Unpacker(use_list=True, encoding=conn.encoding)
         else:
-            unpacker = msgpack.Unpacker(use_list=True)
+            if msgpack.version >= (1, 0, 0):
+                unpacker = msgpack.Unpacker(use_list=True, strict_map_key=False)
+            else:
+                unpacker = msgpack.Unpacker(use_list=True)
 
         unpacker.feed(response)
         header = unpacker.unpack()
