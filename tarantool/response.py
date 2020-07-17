@@ -35,7 +35,7 @@ class Response(Sequence):
     and parses binary packet received from the server.
     '''
 
-    def __init__(self, conn, response, use_list=False):
+    def __init__(self, conn, response, use_list=True):
         '''
         Create an instance of `Response` using data received from the server.
 
