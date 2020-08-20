@@ -12,9 +12,12 @@ env:
       - OS=el DIST=7
       - OS=fedora DIST=28
       - OS=fedora DIST=29
+      - OS=fedora DIST=30
       - OS=ubuntu DIST=trusty
       - OS=ubuntu DIST=xenial
       - OS=ubuntu DIST=bionic
+      - OS=ubuntu DIST=eoan
+      - OS=ubuntu DIST=focal
       - OS=debian DIST=jessie
       - OS=debian DIST=stretch
       - OS=debian DIST=buster
