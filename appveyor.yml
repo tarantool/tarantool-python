@@ -23,7 +23,7 @@ install:
   # install runtime dependencies
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   # install testing dependencies
-  - "%PYTHON%\\python.exe -m pip install pyyaml%PYYAML%"
+  - "%PYTHON%\\python.exe -m pip install pyyaml%PYYAML% dbapi-compliance==1.15.0"
 
 build: off
 

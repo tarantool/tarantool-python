@@ -9,9 +9,10 @@ from .test_dml import TestSuite_Request
 from .test_protocol import TestSuite_Protocol
 from .test_reconnect import TestSuite_Reconnect
 from .test_mesh import TestSuite_Mesh
+from .test_dbapi import TestSuite_DBAPI
 
 test_cases = (TestSuite_Schema, TestSuite_Request, TestSuite_Protocol,
-              TestSuite_Reconnect, TestSuite_Mesh)
+              TestSuite_Reconnect, TestSuite_Mesh, TestSuite_DBAPI)
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestSuite()

@@ -11,7 +11,7 @@ sudo apt-get -q -y install tarantool
 
 # Install testing dependencies.
 pip install -r requirements.txt
-pip install pyyaml
+pip install pyyaml dbapi-compliance==1.15.0
 
 # Run tests.
 python setup.py test
