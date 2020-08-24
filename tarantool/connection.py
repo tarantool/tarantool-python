@@ -108,6 +108,7 @@ class Connection(object):
                  connect_now=True,
                  encoding=ENCODING_DEFAULT,
                  call_16=False,
+                 use_list=True,
                  connection_timeout=CONNECTION_TIMEOUT):
         '''
         Initialize a connection to the server.
@@ -142,6 +143,7 @@ class Connection(object):
         self.error = True
         self.encoding = encoding
         self.call_16 = call_16
+        self.use_list = use_list
         self.connection_timeout = connection_timeout
         if connect_now:
             self.connect()

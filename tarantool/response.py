@@ -53,7 +53,7 @@ class Response(Sequence):
         # created in the __new__().
         # super(Response, self).__init__()
 
-        kwargs = dict(use_list=True)
+        kwargs = dict(use_list=conn.use_list)
         if msgpack.version >= (1, 0, 0):
             # XXX: Explain why it is necessary.
             kwargs['strict_map_key'] = False
