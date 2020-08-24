@@ -32,6 +32,13 @@ except NameError:
     class Error(Exception):
         '''Base class for error exceptions'''
 
+try:
+    class Warning(StandardError):
+        pass
+except NameError:
+    class Warning(Exception):
+        pass
+
 
 class DatabaseError(Error):
     '''Error related to the database engine'''
@@ -48,6 +55,34 @@ class ConfigurationError(Error):
     Error of initialization with a user-provided configuration.
     '''
 
+
+class InternalError(DatabaseError):
+    pass
+
+
+class OperationalError(DatabaseError):
+    pass
+
+
+class ProgrammingError(DatabaseError):
+    pass
+
+
+class IntegrityError(DatabaseError):
+    pass
+
+
+class DataError(DatabaseError):
+    pass
+
+
+class NotSupportedError(DatabaseError):
+    pass
+
+
+__all__ = ("Warning", "Error", "InterfaceError", "DatabaseError", "DataError",
+           "OperationalError", "IntegrityError", "InternalError",
+           "ProgrammingError", "NotSupportedError",)
 
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":
