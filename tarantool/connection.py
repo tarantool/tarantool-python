@@ -34,7 +34,8 @@ from tarantool.request import (
     RequestSubscribe,
     RequestUpdate,
     RequestUpsert,
-    RequestAuthenticate
+    RequestAuthenticate,
+    RequestExecute
 )
 from tarantool.space import Space
 from tarantool.const import (
@@ -250,17 +251,18 @@ class Connection(object):
 
     def _send_request_wo_reconnect(self, request):
         '''
-        :rtype: `Response` instance
+        :rtype: `Response` instance or subclass
 
         :raise: NetworkError
         '''
-        assert isinstance(request, Request)
+        if not issubclass(type(request), Request):
+            raise NetworkError
 
         response = None
         while True:
             try:
                 self._socket.sendall(bytes(request))
-                response = Response(self, self._read_response())
+                response = request.response_class(self, self._read_response())
                 break
             except SchemaReloadException as e:
                 self.update_schema(e.schema_version)
@@ -785,3 +787,22 @@ class Connection(object):
         Need override for async io connection
         '''
         return 0
+
+    def execute(self, query, params=None):
+        '''
+        Execute SQL request.
+
+        :param query: SQL syntax query
+        :type query: str
+
+        :param params: Bind values to use in query
+        :type params: list, dict
+
+        :return: query result data
+        :rtype: list
+        '''
+        if not params:
+            params = []
+        request = RequestExecute(self, query, params)
+        response = self._send_request(request)
+        return response

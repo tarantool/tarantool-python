@@ -17,7 +17,10 @@ from tarantool.const import (
     IPROTO_ERROR,
     IPROTO_SYNC,
     IPROTO_SCHEMA_ID,
-    REQUEST_TYPE_ERROR
+    REQUEST_TYPE_ERROR,
+    IPROTO_SQL_INFO,
+    IPROTO_SQL_INFO_ROW_COUNT,
+    IPROTO_SQL_INFO_AUTOINCREMENT_IDS
 )
 from tarantool.error import (
     DatabaseError,
@@ -245,3 +248,30 @@ class Response(Sequence):
         return ''.join(output)
 
     __repr__ = __str__
+
+
+class ResponseExecute(Response):
+    @property
+    def lastrowid(self):
+        if self.body is None:
+            raise InterfaceError("Trying to access data, when there's no data")
+        info = self.body.get(IPROTO_SQL_INFO)
+
+        if info is None:
+            return None
+
+        lastrowids = info.get(IPROTO_SQL_INFO_AUTOINCREMENT_IDS)
+
+        return lastrowids[-1] if lastrowids else None
+
+    @property
+    def rowcount(self):
+        if self._body is None:
+            raise InterfaceError("Trying to access data, when there's no data")
+
+        info = self._body.get(IPROTO_SQL_INFO)
+
+        if info is None:
+            return -1
+
+        return info.get(IPROTO_SQL_INFO_ROW_COUNT, -1)
