@@ -16,7 +16,7 @@ pip install "${PYTHON_MSGPACK:-msgpack==1.0.0}"
 python -c 'import msgpack; print(msgpack.version)'
 
 # Install testing dependencies.
-pip install pyyaml
+pip install pyyaml dbapi-compliance==1.15.0
 
 # Run tests.
 python setup.py test
