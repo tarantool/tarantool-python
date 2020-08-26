@@ -65,7 +65,19 @@ class Request(object):
         self._sync = None
         self._body = ''
 
-        self.packer = msgpack.Packer()
+        packer_kwargs = dict()
+
+        # use_bin_type=True is default since msgpack-1.0.0.
+        #
+        # The option controls whether to pack binary (non-unicode)
+        # string values as mp_bin or as mp_str.
+        #
+        # The default behaviour of the connector is to pack both
+        # bytes and Unicode strings as mp_str.
+        if msgpack.version >= (1, 0, 0):
+            packer_kwargs['use_bin_type'] = False
+
+        self.packer = msgpack.Packer(**packer_kwargs)
 
     def _dumps(self, src):
         return self.packer.pack(src)
