@@ -50,15 +50,21 @@ class Response(Sequence):
         # created in the __new__().
         # super(Response, self).__init__()
 
+        unpacker_kwargs = dict()
+
+        # Decode msgpack arrays into Python lists (not tuples).
+        unpacker_kwargs['use_list'] = True
+
+        # Use raw=False instead of encoding='utf-8'.
         if msgpack.version >= (0, 5, 2) and conn.encoding == 'utf-8':
             # Get rid of the following warning.
             # > PendingDeprecationWarning: encoding is deprecated,
             # > Use raw=False instead.
-            unpacker = msgpack.Unpacker(use_list=True, raw=False)
+            unpacker_kwargs['raw'] = False
         elif conn.encoding is not None:
-            unpacker = msgpack.Unpacker(use_list=True, encoding=conn.encoding)
-        else:
-            unpacker = msgpack.Unpacker(use_list=True)
+            unpacker_kwargs['encoding'] = conn.encoding
+
+        unpacker = msgpack.Unpacker(**unpacker_kwargs)
 
         unpacker.feed(response)
         header = unpacker.unpack()
