@@ -64,6 +64,23 @@ class Response(Sequence):
         elif conn.encoding is not None:
             unpacker_kwargs['encoding'] = conn.encoding
 
+        # raw=False is default since msgpack-1.0.0.
+        #
+        # The option decodes mp_str to bytes, not a Unicode
+        # string (when True).
+        if msgpack.version >= (1, 0, 0) and conn.encoding is None:
+            unpacker_kwargs['raw'] = True
+
+        # encoding option is not supported since msgpack-1.0.0,
+        # but it is handled in the Connection constructor.
+        assert(msgpack.version < (1, 0, 0) or conn.encoding in (None, 'utf-8'))
+
+        # strict_map_key=True is default since msgpack-1.0.0.
+        #
+        # The option forbids non-string keys in a map (when True).
+        if msgpack.version >= (1, 0, 0):
+            unpacker_kwargs['strict_map_key'] = False
+
         unpacker = msgpack.Unpacker(**unpacker_kwargs)
 
         unpacker.feed(response)

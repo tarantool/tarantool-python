@@ -52,6 +52,7 @@ from tarantool.error import (
     NetworkError,
     DatabaseError,
     InterfaceError,
+    ConfigurationError,
     SchemaError,
     NetworkWarning,
     SchemaReloadException,
@@ -79,6 +80,7 @@ class Connection(object):
     Error = tarantool.error
     DatabaseError = DatabaseError
     InterfaceError = InterfaceError
+    ConfigurationError = ConfigurationError
     SchemaError = SchemaError
     NetworkError = NetworkError
 
@@ -101,6 +103,11 @@ class Connection(object):
         creates network connection.
                              if False than you have to call connect() manualy.
         '''
+
+        if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
+            raise ConfigurationError("Only None and 'utf-8' encoding option " +
+                                     "values are supported with msgpack>=1.0.0")
+
         if os.name == 'nt':
             libc = ctypes.WinDLL(
                 ctypes.util.find_library('Ws2_32'), use_last_error=True
