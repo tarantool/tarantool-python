@@ -10,32 +10,83 @@ from tarantool.utils import (
     integer_types,
 )
 from tarantool.error import (
+    Error,
     SchemaError,
     DatabaseError
 )
 import tarantool.const as const
 
 
+class RecursionError(Error):
+    """Report the situation when max recursion depth is reached.
+
+       This is internal error for <to_unicode_recursive> caller
+       and it should be re-raised properly be the caller.
+    """
+
+
+def to_unicode(s):
+    if isinstance(s, bytes):
+        return s.decode(encoding='utf-8')
+    return s
+
+
+def to_unicode_recursive(x, max_depth):
+    """Same as to_unicode(), but traverses over dictionaries,
+       lists and tuples recursivery.
+
+       x: value to convert
+
+       max_depth: 1 accepts a scalar, 2 accepts a list of scalars,
+       etc.
+    """
+    if max_depth <= 0:
+        raise RecursionError('Max recursion depth is reached')
+
+    if isinstance(x, dict):
+        res = dict()
+        for key, val in x.items():
+            key = to_unicode_recursive(key, max_depth - 1)
+            val = to_unicode_recursive(val, max_depth - 1)
+            res[key] = val
+        return res
+
+    if isinstance(x, list) or isinstance(x, tuple):
+        res = []
+        for val in x:
+            val = to_unicode_recursive(val, max_depth - 1)
+            res.append(val)
+        if isinstance(x, tuple):
+            return tuple(res)
+        return res
+
+    return to_unicode(x)
+
+
 class SchemaIndex(object):
     def __init__(self, index_row, space):
         self.iid = index_row[1]
         self.name = index_row[2]
-        if isinstance(self.name, bytes):
-            self.name = self.name.decode()
+        self.name = to_unicode(index_row[2])
         self.index = index_row[3]
         self.unique = index_row[4]
         self.parts = []
-        if isinstance(index_row[5], (list, tuple)):
-            for val in index_row[5]:
+        try:
+            parts_raw = to_unicode_recursive(index_row[5], 3)
+        except RecursionError as e:
+            errmsg = 'Unexpected index parts structure: ' + str(e)
+            raise SchemaError(errmsg)
+        if isinstance(parts_raw, (list, tuple)):
+            for val in parts_raw:
                 if isinstance(val, dict):
                     self.parts.append((val['field'], val['type']))
                 else:
                     self.parts.append((val[0], val[1]))
         else:
-            for i in range(index_row[5]):
+            for i in range(parts_raw):
                 self.parts.append((
-                    index_row[5 + 1 + i * 2],
-                    index_row[5 + 2 + i * 2]
+                    to_unicode(index_row[5 + 1 + i * 2]),
+                    to_unicode(index_row[5 + 2 + i * 2])
                 ))
         self.space = space
         self.space.indexes[self.iid] = self
@@ -52,16 +103,19 @@ class SchemaSpace(object):
     def __init__(self, space_row, schema):
         self.sid = space_row[0]
         self.arity = space_row[1]
-        self.name = space_row[2]
-        if isinstance(self.name, bytes):
-            self.name = self.name.decode()
+        self.name = to_unicode(space_row[2])
         self.indexes = {}
         self.schema = schema
         self.schema[self.sid] = self
         if self.name:
             self.schema[self.name] = self
         self.format = dict()
-        for part_id, part in enumerate(space_row[6]):
+        try:
+            format_raw = to_unicode_recursive(space_row[6], 3)
+        except RecursionError as e:
+            errmsg = 'Unexpected space format structure: ' + str(e)
+            raise SchemaError(errmsg)
+        for part_id, part in enumerate(format_raw):
             part['id'] = part_id
             self.format[part['name']] = part
             self.format[part_id     ] = part
@@ -78,6 +132,8 @@ class Schema(object):
         self.con = con
 
     def get_space(self, space):
+        space = to_unicode(space)
+
         try:
             return self.schema[space]
         except KeyError:
@@ -135,6 +191,9 @@ class Schema(object):
             SchemaSpace(row, self.schema)
 
     def get_index(self, space, index):
+        space = to_unicode(space)
+        index = to_unicode(index)
+
         _space = self.get_space(space)
         try:
             return _space.indexes[index]
@@ -203,6 +262,9 @@ class Schema(object):
         return index_row
 
     def get_field(self, space, field):
+        space = to_unicode(space)
+        field = to_unicode(field)
+
         _space = self.get_space(space)
         try:
             return _space.format[field]
