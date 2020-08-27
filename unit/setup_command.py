@@ -23,7 +23,7 @@ class test(setuptools.Command):
         Find all tests in test/tarantool/ and run them
         '''
 
-        tests = unittest.defaultTestLoader.discover('unit')
+        tests = unittest.defaultTestLoader.discover('unit', pattern='suites')
         test_runner = unittest.TextTestRunner(verbosity=2)
         result = test_runner.run(tests)
         if not result.wasSuccessful():
