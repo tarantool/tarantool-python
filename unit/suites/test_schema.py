@@ -7,15 +7,19 @@ import unittest
 import tarantool
 from .lib.tarantool_server import TarantoolServer
 
-class TestSuite_Schema(unittest.TestCase):
+class TestSuite_Schema_Abstract(unittest.TestCase):
+    # Define 'encoding' field in a concrete class.
+
     @classmethod
     def setUpClass(self):
-        print(' SCHEMA '.center(70, '='), file=sys.stderr)
+        params = 'connection.encoding: {}'.format(repr(self.encoding))
+        print(' SCHEMA ({}) '.format(params).center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
         self.srv.script = 'unit/suites/box.lua'
         self.srv.start()
-        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
+        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
+                                        encoding=self.encoding)
         self.sch = self.con.schema
 
     def setUp(self):
@@ -225,3 +229,11 @@ class TestSuite_Schema(unittest.TestCase):
         self.con.close()
         self.srv.stop()
         self.srv.clean()
+
+
+class TestSuite_Schema_UnicodeConnection(TestSuite_Schema_Abstract):
+    encoding = 'utf-8'
+
+
+class TestSuite_Schema_BinaryConnection(TestSuite_Schema_Abstract):
+    encoding = None
