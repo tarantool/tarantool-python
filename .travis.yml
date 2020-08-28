@@ -8,6 +8,15 @@ cache: false
 env:
     matrix:
       - TARGET=test
+        PYTHON_MSGPACK=msgpack-python==0.4.0
+      - TARGET=test
+        PYTHON_MSGPACK=msgpack==0.5.0
+      - TARGET=test
+        PYTHON_MSGPACK=msgpack==0.6.0
+      - TARGET=test
+        PYTHON_MSGPACK=msgpack==0.6.2
+      - TARGET=test
+        PYTHON_MSGPACK=msgpack==1.0.0
       - OS=el DIST=6
       - OS=el DIST=7
       - OS=fedora DIST=28
