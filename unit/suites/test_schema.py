@@ -7,6 +7,33 @@ import unittest
 import tarantool
 from .lib.tarantool_server import TarantoolServer
 
+
+# FIXME: I'm quite sure that there is a simpler way to count
+# a method calls, but I failed to find any. It seems, I should
+# look at unittest.mock more thoroughly.
+class MethodCallCounter:
+    def __init__(self, obj, method_name):
+        self._call_count = 0
+        self._bind(obj, method_name)
+
+    def _bind(self, obj, method_name):
+        self._obj = obj
+        self._method_name = method_name
+        self._saved_method = getattr(obj, method_name)
+        def wrapper(_, *args, **kwargs):
+            self._call_count += 1
+            return self._saved_method(*args, **kwargs)
+        bound_wrapper = wrapper.__get__(obj.__class__, obj)
+        setattr(obj, method_name, bound_wrapper)
+
+    def unbind(self):
+        if self._saved_method is not None:
+            setattr(self._obj, self._method_name, self._saved_method)
+
+    def call_count(self):
+        return self._call_count
+
+
 class TestSuite_Schema_Abstract(unittest.TestCase):
     # Define 'encoding' field in a concrete class.
 
@@ -26,6 +53,25 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         # prevent a remote tarantool from clean our session
         if self.srv.is_started():
             self.srv.touch_lock()
+
+        # Count calls of fetch methods. See <fetch_count>.
+        self.fetch_space_counter = MethodCallCounter(self.sch, 'fetch_space')
+        self.fetch_index_counter = MethodCallCounter(self.sch, 'fetch_index')
+
+    def tearDown(self):
+        self.fetch_space_counter.unbind()
+        self.fetch_index_counter.unbind()
+
+    @property
+    def fetch_count(self):
+        """Amount of fetch_{space,index}() calls.
+
+           It is initialized to zero before each test case.
+        """
+        res = 0
+        res += self.fetch_space_counter.call_count()
+        res += self.fetch_index_counter.call_count()
+        return res
 
     def test_00_authenticate(self):
         self.assertIsNone(self.srv.admin("box.schema.user.create('test', { password = 'test' })"))
@@ -104,6 +150,9 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self.assertEqual(space.sid, 288)
         self.assertEqual(space.name, '_index')
         self.assertEqual(space.arity, 1)
+
+        # Verify that no schema fetches occurs.
+        self.assertEqual(self.fetch_count, 0)
 
     def test_05_01_index_name___name__(self):
         self.con.flush_schema()
@@ -218,6 +267,9 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self.assertEqual(index.iid, 2)
         self.assertEqual(index.name, 'name')
         self.assertEqual(len(index.parts), 1)
+
+        # Verify that no schema fetches occurs.
+        self.assertEqual(self.fetch_count, 0)
 
     def test_07_schema_version_update(self):
         _space_len = len(self.con.select('_space'))
