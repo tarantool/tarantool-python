@@ -1,1 +1,1 @@
-msgpack-python>=0.4.0
+msgpack>=0.4.0

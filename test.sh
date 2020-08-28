@@ -9,8 +9,13 @@ echo "deb http://download.tarantool.org/tarantool/2x/ubuntu/ ${release} main" | 
 sudo apt-get update > /dev/null
 sudo apt-get -q -y install tarantool
 
+# Install module requirements.
+#
+# Keep it in sync with requirements.txt.
+pip install "${PYTHON_MSGPACK:-msgpack==1.0.0}"
+python -c 'import msgpack; print(msgpack.version)'
+
 # Install testing dependencies.
-pip install -r requirements.txt
 pip install pyyaml
 
 # Run tests.
