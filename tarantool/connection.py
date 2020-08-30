@@ -34,7 +34,8 @@ from tarantool.request import (
     RequestSubscribe,
     RequestUpdate,
     RequestUpsert,
-    RequestAuthenticate
+    RequestAuthenticate,
+    RequestExecute
 )
 from tarantool.space import Space
 from tarantool.const import (
@@ -257,7 +258,7 @@ class Connection(object):
 
     def _send_request_wo_reconnect(self, request):
         '''
-        :rtype: `Response` instance
+        :rtype: `Response` instance or subclass
 
         :raise: NetworkError
         '''
@@ -267,7 +268,7 @@ class Connection(object):
         while True:
             try:
                 self._socket.sendall(bytes(request))
-                response = Response(self, self._read_response())
+                response = request.response_class(self, self._read_response())
                 break
             except SchemaReloadException as e:
                 self.update_schema(e.schema_version)
@@ -792,3 +793,36 @@ class Connection(object):
         Need override for async io connection
         '''
         return 0
+
+    def execute(self, query, params=None):
+        '''
+        Execute SQL request.
+
+        Tarantool binary protocol for SQL requests
+        supports "qmark" and "named" param styles.
+        Sequence of values can be used for "qmark" style.
+        A mapping is used for "named" param style
+        without leading colon in the keys.
+
+        Example for "qmark" arguments:
+        >>> args = ['email@example.com']
+        >>> c.execute('select * from "users" where "email"=?', args)
+
+        Example for "named" arguments:
+        >>> args = {'email': 'email@example.com'}
+        >>> c.execute('select * from "users" where "email"=:email', args)
+
+        :param query: SQL syntax query
+        :type query: str
+
+        :param params: Bind values to use in the query.
+        :type params: list, dict
+
+        :return: query result data
+        :rtype: `Response` instance
+        '''
+        if not params:
+            params = []
+        request = RequestExecute(self, query, params)
+        response = self._send_request(request)
+        return response
