@@ -26,6 +26,15 @@ import warnings
 
 
 try:
+    class Warning(StandardError):
+        '''Exception raised for important warnings
+        like data truncations while inserting, etc. '''
+except NameError:
+    class Warning(Exception):
+        '''Exception raised for important warnings
+        like data truncations while inserting, etc. '''
+
+try:
     class Error(StandardError):
         '''Base class for error exceptions'''
 except NameError:
@@ -33,13 +42,60 @@ except NameError:
         '''Base class for error exceptions'''
 
 
-class DatabaseError(Error):
-    '''Error related to the database engine'''
-
-
 class InterfaceError(Error):
     '''
-    Error related to the database interface rather than the database itself
+    Exception raised for errors that are related to the database interface
+    rather than the database itself.
+    '''
+
+
+class DatabaseError(Error):
+    '''Exception raised for errors that are related to the database.'''
+
+
+class DataError(DatabaseError):
+    '''
+    Exception raised for errors that are due to problems with the processed
+    data like division by zero, numeric value out of range, etc.
+    '''
+
+
+class OperationalError(DatabaseError):
+    '''
+    Exception raised for errors that are related to the database's operation
+    and not necessarily under the control of the programmer, e.g. an
+    unexpected disconnect occurs, the data source name is not found,
+    a transaction could not be processed, a memory allocation error occurred
+    during processing, etc.
+    '''
+
+
+class IntegrityError(DatabaseError):
+    '''
+    Exception raised when the relational integrity of the database is affected,
+    e.g. a foreign key check fails.
+    '''
+
+
+class InternalError(DatabaseError):
+    '''
+    Exception raised when the database encounters an internal error, e.g. the
+    cursor is not valid anymore, the transaction is out of sync, etc.
+    '''
+
+
+class ProgrammingError(DatabaseError):
+    '''
+    Exception raised when the database encounters an internal error, e.g. the
+    cursor is not valid anymore, the transaction is out of sync, etc.
+    '''
+
+
+class NotSupportedError(DatabaseError):
+    '''
+    Exception raised in case a method or database API was used which is not
+    supported by the database, e.g. requesting a .rollback() on a connection
+    that does not support transaction or has transactions turned off.
     '''
 
 
@@ -48,6 +104,10 @@ class ConfigurationError(Error):
     Error of initialization with a user-provided configuration.
     '''
 
+
+__all__ = ("Warning", "Error", "InterfaceError", "DatabaseError", "DataError",
+           "OperationalError", "IntegrityError", "InternalError",
+           "ProgrammingError", "NotSupportedError")
 
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":
