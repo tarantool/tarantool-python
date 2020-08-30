@@ -50,13 +50,21 @@ from tarantool.const import (
     ITERATOR_ALL
 )
 from tarantool.error import (
+    Error,
     NetworkError,
     DatabaseError,
     InterfaceError,
     ConfigurationError,
     SchemaError,
     NetworkWarning,
+    OperationalError,
+    DataError,
+    IntegrityError,
+    InternalError,
+    ProgrammingError,
+    NotSupportedError,
     SchemaReloadException,
+    Warning,
     warn
 )
 from tarantool.schema import Schema
@@ -78,12 +86,20 @@ class Connection(object):
     Also this class provides low-level interface to data manipulation
     (insert/delete/update/select).
     '''
-    Error = tarantool.error
+    # DBAPI Extension: supply exceptions as attributes on the connection
+    Error = Error
     DatabaseError = DatabaseError
     InterfaceError = InterfaceError
     ConfigurationError = ConfigurationError
     SchemaError = SchemaError
     NetworkError = NetworkError
+    Warning = Warning
+    DataError = DataError
+    OperationalError = OperationalError
+    IntegrityError = IntegrityError
+    InternalError = InternalError
+    ProgrammingError = ProgrammingError
+    NotSupportedError = NotSupportedError
 
     def __init__(self, host, port,
                  user=None,
@@ -145,6 +161,13 @@ class Connection(object):
         '''
         self._socket.close()
         self._socket = None
+
+    def is_closed(self):
+        '''
+        Returns the state of the Connection instance
+        :rtype: Boolean
+        '''
+        return self._socket is None
 
     def connect_basic(self):
         if self.host == None:
