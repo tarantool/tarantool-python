@@ -17,7 +17,10 @@ from tarantool.const import (
     IPROTO_ERROR,
     IPROTO_SYNC,
     IPROTO_SCHEMA_ID,
-    REQUEST_TYPE_ERROR
+    REQUEST_TYPE_ERROR,
+    IPROTO_SQL_INFO,
+    IPROTO_SQL_INFO_ROW_COUNT,
+    IPROTO_SQL_INFO_AUTOINCREMENT_IDS
 )
 from tarantool.error import (
     DatabaseError,
@@ -268,3 +271,43 @@ class Response(Sequence):
         return ''.join(output)
 
     __repr__ = __str__
+
+
+class ResponseExecute(Response):
+    @property
+    def autoincrement_ids(self):
+        """
+        Returns a list with the new primary-key value
+        (or values) for an INSERT in a table defined with
+        PRIMARY KEY AUTOINCREMENT
+        (NOT result set size)
+
+        :rtype: list or None
+        """
+        if self._return_code != 0:
+            return None
+        info = self._body.get(IPROTO_SQL_INFO)
+
+        if info is None:
+            return None
+
+        autoincrement_ids = info.get(IPROTO_SQL_INFO_AUTOINCREMENT_IDS)
+
+        return autoincrement_ids
+
+    @property
+    def affected_row_count(self):
+        """
+        Returns the number of changed rows for responses
+        to DML requests and None for DQL requests.
+
+        :rtype: int
+        """
+        if self._return_code != 0:
+            return None
+        info = self._body.get(IPROTO_SQL_INFO)
+
+        if info is None:
+            return None
+
+        return info.get(IPROTO_SQL_INFO_ROW_COUNT)

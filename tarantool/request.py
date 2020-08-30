@@ -4,10 +4,17 @@
 Request types definitions
 '''
 
+import collections
 import msgpack
 import hashlib
 
+try:
+    collectionsAbc = collections.abc
+except AttributeError:
+    collectionsAbc = collections
 
+
+from tarantool.error import DatabaseError
 from tarantool.const import (
     IPROTO_CODE,
     IPROTO_SYNC,
@@ -27,6 +34,8 @@ from tarantool.const import (
     IPROTO_OPS,
     # IPROTO_INDEX_BASE,
     IPROTO_SCHEMA_ID,
+    IPROTO_SQL_TEXT,
+    IPROTO_SQL_BIND,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
@@ -37,11 +46,13 @@ from tarantool.const import (
     REQUEST_TYPE_UPSERT,
     REQUEST_TYPE_CALL16,
     REQUEST_TYPE_CALL,
+    REQUEST_TYPE_EXECUTE,
     REQUEST_TYPE_EVAL,
     REQUEST_TYPE_AUTHENTICATE,
     REQUEST_TYPE_JOIN,
     REQUEST_TYPE_SUBSCRIBE
 )
+from tarantool.response import Response, ResponseExecute
 from tarantool.utils import (
     strxor,
     binary_types
@@ -64,6 +75,7 @@ class Request(object):
         self.conn = conn
         self._sync = None
         self._body = ''
+        self.response_class = Response
 
         packer_kwargs = dict()
 
@@ -360,3 +372,24 @@ class RequestOK(Request):
         request_body = self._dumps({IPROTO_CODE: self.request_type,
                                     IPROTO_SYNC: sync})
         self._body = request_body
+
+
+class RequestExecute(Request):
+    '''
+    Represents EXECUTE SQL request
+    '''
+    request_type = REQUEST_TYPE_EXECUTE
+
+    def __init__(self, conn, sql, args):
+        super(RequestExecute, self).__init__(conn)
+        if isinstance(args, collectionsAbc.Mapping):
+            args = [{":%s" % name: value} for name, value in args.items()]
+        elif not isinstance(args, collectionsAbc.Sequence):
+            raise TypeError("Parameter type '%s' is not supported. "
+                            "Must be a mapping or sequence" % type(args))
+
+        request_body = self._dumps({IPROTO_SQL_TEXT: sql,
+                                    IPROTO_SQL_BIND: args})
+
+        self._body = request_body
+        self.response_class = ResponseExecute
