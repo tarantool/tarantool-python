@@ -55,8 +55,9 @@ class Response(Sequence):
 
         unpacker_kwargs = dict()
 
-        # Decode msgpack arrays into Python lists (not tuples).
-        unpacker_kwargs['use_list'] = True
+        # Decode msgpack arrays into Python lists by default (not tuples).
+        # Can be configured in the Connection init
+        unpacker_kwargs['use_list'] = conn.use_list
 
         # Use raw=False instead of encoding='utf-8'.
         if msgpack.version >= (0, 5, 2) and conn.encoding == 'utf-8':
