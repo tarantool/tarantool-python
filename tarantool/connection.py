@@ -93,6 +93,7 @@ class Connection(object):
                  reconnect_delay=RECONNECT_DELAY,
                  connect_now=True,
                  encoding=ENCODING_DEFAULT,
+                 use_list=True,
                  call_16=False,
                  connection_timeout=CONNECTION_TIMEOUT):
         '''
@@ -132,6 +133,7 @@ class Connection(object):
         self.connected = False
         self.error = True
         self.encoding = encoding
+        self.use_list = use_list
         self.call_16 = call_16
         self.connection_timeout = connection_timeout
         if connect_now:
