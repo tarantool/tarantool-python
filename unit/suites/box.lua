@@ -1,5 +1,5 @@
 #!/usr/bin/env tarantool
-os = require('os')
+local os = require('os')
 
 require('console').listen(os.getenv("ADMIN_PORT"))
 box.cfg{
