@@ -61,13 +61,14 @@ Redis. It's open source, `BSD licensed`_.
 Features
 --------
 
+    * ANSI SQL, including views, joins, referential and check constraints
     * Lua packages for non-blocking I/O, fibers and HTTP
     * MsgPack data format and MsgPack based client-server protocol
     * Two data engines:
-        * 100% in-memory with optional persistence
-        * 2-level disk-based B-tree, to use with large data sets (powered by `Sophia`_)
+        * memtx - the in-memory storage engine with optional persistence
+        * vinyl - the on-disk storage engine to use with large data sets
     * secondary key and index iterators support (can be non-unique and composite)
-    * multiple index types: HASH, BITSET, TREE
+    * multiple index types: HASH, BITSET, TREE, RTREE
     * asynchronous master-master replication
     * authentication and access control
 
@@ -110,5 +111,4 @@ On Windows:
 .. _`Tarantool at Github`: https://github.com/tarantool/tarantool
 .. _`Tarantool User Guide`: https://www.tarantool.io/en/doc/latest/
 .. _`Client-server protocol specification`: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/
-.. _`Sophia`: http://sophia.systems
 .. _`BSD licensed`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
