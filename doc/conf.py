@@ -21,7 +21,7 @@ import sys, os
 # Read package version without importing it
 for line in open(os.path.join(os.path.dirname(os.path.abspath('.')), "tarantool", "__init__.py")):
     if line.startswith("__version__"):
-        exec line
+        exec(line)
         break
 
 # -- General configuration -----------------------------------------------------
