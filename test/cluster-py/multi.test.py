@@ -18,11 +18,11 @@ INSTANCE_N = 2
 def check_connection(con):
     try:
         s = con.space('test')
-        print s.select()
+        print(s.select())
     except NetworkError:
-        print 'NetworkError !'
+        print('NetworkError !')
     except Exception as e:
-        print e
+        print(e)
 
 
 # Start instances
