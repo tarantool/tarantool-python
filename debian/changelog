@@ -1,3 +1,12 @@
+tarantool-python (0.7.1-0) unstable; urgency=medium
+
+    ## Overview
+
+    It is pure technical release. It fixes the dependency on the msgpack
+    library.
+
+ -- Alexander Turenko <alexander.turenko@tarantool.org> Mon, 28 Dec 2020 04:01:30 +0300
+
 tarantool-python (0.7.0-0) unstable; urgency=medium
 
     ## Overview
