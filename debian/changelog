@@ -1,3 +1,84 @@
+tarantool-python (0.7.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release offers two major features: SQL support and implementation
+    of the Database API (PEP-0249).
+
+    Simple example of using SQL:
+
+     | #!/usr/bin/env python
+     |
+     | # In tarantool console:
+     | #
+     | # tarantool> box.cfg{listen = 'localhost:3301'}
+     | # tarantool> box.schema.user.create('me', {password = 'secret'})
+     | # tarantool> box.schema.user.grant('me','read,write,execute,create,drop,alter','universe')
+     |
+     | from pprint import pprint
+     | import tarantool
+     |
+     | connection = tarantool.connect(host='localhost', port=3301, user='me', password='secret')
+     | res = connection.execute('SELECT :foo, :bar', {'foo': 5, 'bar': 6})
+     | pprint(res)
+     |
+     | # Those properties are None for SELECT, shown for the reference.
+     | print('autoincrement_ids: {}'.format(res.autoincrement_ids))
+     | print('affected_row_count: {}'.format(res.affected_row_count))
+
+    See the similar example implemented using the Database API on the
+    [wiki page][1].
+
+    The Database API becomes the base for the [django-tarantool][2] backend.
+
+    Aside of those changes, the release provides compatibility with the new
+    version of the msgpack library (1.0.0) and fixes several tricky cases
+    around `encoding=None` option.
+
+    [1]: https://github.com/tarantool/tarantool-python/wiki/PEP-249-Database-API
+    [2]: https://pypi.org/project/django-tarantool/
+
+    ## Breaking changes
+
+    This release should not break existing code.
+
+    ## New features
+
+    * Support msgpack 1.0.0 (#155, PR #173).
+    * Added SQL support (`<connection>.execute()` method) (#159, PR #161).
+    * Allow to receive a Tarantool tuple as a Python tuple, not a list, with
+      `use_list=False` connection option (#166, PR #161).
+    * Support the Database API (PEP-0249) (PR #161).
+
+    ## Bugfixes
+
+    * schema: support encoding=None connections (PR #172).
+
+    ## Other
+
+    Infrastructure, CI / CD, testing, readme, pure development changes,
+    which do not affect an end user directly.
+
+    Note: testing changes that were introduced as part of a feature / a
+    bugfix are not listed here.
+
+    * deployment: fixed README.rst and setup.py points, where `twine` or
+      pypi.org complains (PR #147).
+    * readme: fixed links to tarantool documentation (PR #151).
+    * test: eliminate deprecated box.cfg options (8ff9a3f9, bd37703c).
+    * gitignore: add .idea (e49f5f05).
+    * ci: dropped Ubuntu Disco, which reaches EOL (21e3ebf6).
+    * ci: added Fedora 30, Ubuntu Eoan and Focal (PR #165).
+    * ci: deploy to 2_3 and 2_4 repositories (PR #165).
+    * ci: worked around PyYAML installation problem on AppVeyor (PR #165).
+    * ci: verify on Python 3.8 (PR #161).
+    * test: fixed luacheck warnings (#178, PR #179).
+    * readme: refreshed the description of tarantool features (PR #180).
+    * test: ensure compatibility with Python 3 for some testing /
+      documentation building code (PR #181).
+
+ -- Alexander Turenko <alexander.turenko@tarantool.org> Mon, 28 Dec 2020 03:11:10 +0300
+
 tarantool-python (0.6.6-0) unstable; urgency=medium
 
     ## Breaking changes
