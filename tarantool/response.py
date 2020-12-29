@@ -263,7 +263,7 @@ class Response(Sequence):
                     'code': self.strerror[0],
                     'reason': self.return_message
                 }
-            }, sort_keys = True, indent = 4)
+            }, sort_keys = True, indent = 4, separators=(', ', ': '))
         output = []
         for tpl in self._data or ():
             output.extend(("- ", repr(tpl), "\n"))
