@@ -29,6 +29,25 @@ from tarantool.error import (
     tnt_strerror
 )
 
+def deep_convert_dict(obj):
+    if isinstance(obj, dict):
+        ret = []
+        for k, v in sorted(obj.items()):
+            if hasattr(v, '__getitem__'):
+                ret.append((k, deep_convert_dict(v)))
+            else:
+                ret.append((k, v))
+        return ret
+    if isinstance(obj, list):
+        ret = []
+        for v in obj:
+            if hasattr(v, '__getitem__'):
+                ret.append(deep_convert_dict(v))
+            else:
+                ret.append(v)
+        return ret
+    else:
+        return obj
 
 class Response(Sequence):
     '''
@@ -266,6 +285,7 @@ class Response(Sequence):
             }, sort_keys = True, indent = 4, separators=(', ', ': '))
         output = []
         for tpl in self._data or ():
+            tpl = deep_convert_dict(tpl)
             output.extend(("- ", repr(tpl), "\n"))
         if len(output) > 0:
             output.pop()
