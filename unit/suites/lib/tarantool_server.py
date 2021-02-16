@@ -194,6 +194,7 @@ class TarantoolServer(object):
         self.wait_until_started()
 
     def stop(self):
+        self.admin.disconnect()
         if self.process.poll() is None:
             self.process.terminate()
             self.process.wait()
