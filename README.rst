@@ -97,7 +97,7 @@ On Linux:
 On Windows:
 
 * Setup a Linux machine with installed tarantool (called ``remote`` later).
-* (on ``remote``) Copy ``unit/suites/lib/tarantool_python_ci.lua`` to
+* (on ``remote``) Copy ``test/suites/lib/tarantool_python_ci.lua`` to
   ``/etc/tarantool/instances.available``.
 * (on ``remote``) Run ``tarantoolctl start tarantool_python_ci``.
 * Set the following environment variables:

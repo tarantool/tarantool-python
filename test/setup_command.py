@@ -10,7 +10,7 @@ from glob import glob
 
 class test(setuptools.Command):
     user_options = []
-    description = 'Run unit tests'
+    description = 'Run tests'
 
     def initialize_options(self):
         pass
@@ -23,7 +23,7 @@ class test(setuptools.Command):
         Find all tests in test/tarantool/ and run them
         '''
 
-        tests = unittest.defaultTestLoader.discover('unit', pattern='suites')
+        tests = unittest.defaultTestLoader.discover('test', pattern='suites')
         test_runner = unittest.TextTestRunner(verbosity=2)
         result = test_runner.run(tests)
         if not result.wasSuccessful():

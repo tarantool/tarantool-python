@@ -43,7 +43,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         print(' SCHEMA ({}) '.format(params).center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
-        self.srv.script = 'unit/suites/box.lua'
+        self.srv.script = 'test/suites/box.lua'
         self.srv.start()
         self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
                                         encoding=self.encoding)

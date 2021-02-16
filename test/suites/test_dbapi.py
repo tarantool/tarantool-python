@@ -26,7 +26,7 @@ class TestSuite_DBAPI(dbapi20.DatabaseAPI20Test):
         print(' DBAPI '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
-        self.srv.script = 'unit/suites/box.lua'
+        self.srv.script = 'test/suites/box.lua'
         self.srv.start()
         self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
         self.driver = dbapi
