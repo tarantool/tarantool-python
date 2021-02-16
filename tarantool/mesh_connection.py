@@ -35,6 +35,7 @@ except NameError:
 
 
 def parse_uri(uri):
+    # TODO: Support Unix sockets.
     def parse_error(uri, msg):
         msg = 'URI "%s": %s' % (uri, msg)
         return None, msg
@@ -59,31 +60,53 @@ def parse_uri(uri):
 
 
 def validate_address(address):
-    messages = []
+    def format_error(address, err):
+        return None, 'Address %s: %s' % (str(address), err)
 
-    if isinstance(address, dict):
-        if "host" not in address:
-            messages.append("host key must be set")
-        elif not isinstance(address["host"], string_types):
-            messages.append("host value must be string type")
+    if not isinstance(address, dict):
+        return format_error(address, 'address must be a dict')
 
-        if "port" not in address:
-            messages.append("port is not set")
-        elif not isinstance(address["port"], int):
-            messages.append("port value must be int type")
-        elif address["port"] == 0:
-            messages.append("port value must not be zero")
-        elif address["port"] > 65535:
-            messages.append("port value must not be above 65535")
-    else:
-        messages.append("address must be a dict")
+    if 'port' not in address or address['port'] is None:
+        return format_error(address, 'port is not set or None')
 
-    if messages:
-        messages_str = ', '.join(messages)
-        msg = 'Address %s: %s' % (str(address), messages_str)
-        return None, msg
+    if isinstance(address['port'], int):
+        # Looks like an inet address.
 
-    return True, None
+        # Validate host.
+        if 'host' not in address or address['host'] is None:
+            return format_error(address,
+                                'host is mandatory for an inet address')
+        if not isinstance(address['host'], string_types):
+            return format_error(address,
+                                'host must be a string for an inet address')
+
+        # Validate port.
+        if not isinstance(address['port'], int):
+            return format_error(address,
+                                'port must be an int for an inet address')
+        if address['port'] < 1 or address['port'] > 65535:
+            return format_error(address, 'port must be in range [1, 65535] '
+                                         'for an inet address')
+
+        # Looks okay.
+        return True, None
+    elif isinstance(address['port'], string_types):
+        # Looks like a unix address.
+
+        # Expect no host.
+        if 'host' in address and address['host'] is not None:
+            return format_error(
+                address, 'host must be unset or None for a unix address')
+
+        # Validate port.
+        if not isinstance(address['port'], string_types):
+            return format_error(address,
+                                'port must be a string for a unix address')
+
+        # Looks okay.
+        return True, None
+
+    return format_error(address, 'port must be an int or a string')
 
 
 class RoundRobinStrategy(object):
