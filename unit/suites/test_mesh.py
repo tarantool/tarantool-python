@@ -8,7 +8,9 @@ import warnings
 from time import sleep
 import tarantool
 from tarantool.error import (
+    NetworkError,
     ConfigurationError,
+    NetworkWarning,
     ClusterDiscoveryWarning,
 )
 from .lib.tarantool_server import TarantoolServer
@@ -69,6 +71,40 @@ class TestSuite_Mesh(unittest.TestCase):
         self.get_all_nodes_func_name = 'get_all_nodes'
         self.define_cluster_function(self.get_all_nodes_func_name,
                                      self.servers)
+
+    def test_00_basic(self):
+        def assert_srv_id(con, srv_id):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', category=NetworkWarning)
+                resp = con.call('srv_id')
+            self.assertEqual(resp.data and resp.data[0], srv_id)
+
+        con = tarantool.MeshConnection(addrs=[
+            {'host': self.host_1, 'port': self.port_1},
+            {'host': self.host_2, 'port': self.port_2},
+        ], user='test', password='test')
+
+        # Response from instance#1.
+        assert_srv_id(con, 1)
+
+        # Stop instance#1 -- response from instance#2.
+        self.srv.stop()
+        assert_srv_id(con, 2)
+
+        # Start instance#1, stop instance#2 -- response from
+        # instance#1 again.
+        self.srv.start()
+        self.srv.admin('function srv_id() return 1 end')
+        self.srv2.stop()
+        assert_srv_id(con, 1)
+
+        # Stop instance #2 -- NetworkError (because we have no
+        # alive servers anymore).
+        self.srv.stop()
+        with self.assertRaises(NetworkError):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', category=NetworkWarning)
+                con.ping()
 
     def test_01_contructor(self):
         # Verify that an error is risen when no addresses are

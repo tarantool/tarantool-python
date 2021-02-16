@@ -1,7 +1,6 @@
 .PHONY: test
 test:
 	python setup.py test
-	cd test && ./test-run.py
 coverage:
 	python -m coverage run -p --source=. setup.py test
 cov-html:
