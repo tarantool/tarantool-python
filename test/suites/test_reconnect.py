@@ -15,7 +15,7 @@ class TestSuite_Reconnect(unittest.TestCase):
         print(' RECONNECT '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
-        self.srv.script = 'unit/suites/box.lua'
+        self.srv.script = 'test/suites/box.lua'
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
