@@ -70,37 +70,39 @@ class Request(object):
     '''
     request_type = None
 
-    def __init__(self, conn):
+    def __init__(self, conn, packer=None):
         self._bytes = None
         self.conn = conn
         self._sync = None
         self._body = ''
         self.response_class = Response
+        self.packer = packer
 
-        packer_kwargs = dict()
+        if self.packer is None:
+            packer_kwargs = dict()
 
-        # use_bin_type=True is default since msgpack-1.0.0.
-        #
-        # The option controls whether to pack binary (non-unicode)
-        # string values as mp_bin or as mp_str.
-        #
-        # The default behaviour of the connector is to pack both
-        # bytes and Unicode strings as mp_str.
-        #
-        # msgpack-0.5.0 (and only this version) warns when the
-        # option is unset:
-        #
-        #  | FutureWarning: use_bin_type option is not specified.
-        #  | Default value of the option will be changed in future
-        #  | version.
-        #
-        # The option is supported since msgpack-0.4.0, so we can
-        # just always set it for all msgpack versions to get rid
-        # of the warning on msgpack-0.5.0 and to keep our
-        # behaviour on msgpack-1.0.0.
-        packer_kwargs['use_bin_type'] = False
+            # use_bin_type=True is default since msgpack-1.0.0.
+            #
+            # The option controls whether to pack binary (non-unicode)
+            # string values as mp_bin or as mp_str.
+            #
+            # The default behaviour of the connector is to pack both
+            # bytes and Unicode strings as mp_str.
+            #
+            # msgpack-0.5.0 (and only this version) warns when the
+            # option is unset:
+            #
+            #  | FutureWarning: use_bin_type option is not specified.
+            #  | Default value of the option will be changed in future
+            #  | version.
+            #
+            # The option is supported since msgpack-0.4.0, so we can
+            # just always set it for all msgpack versions to get rid
+            # of the warning on msgpack-0.5.0 and to keep our
+            # behaviour on msgpack-1.0.0.
+            packer_kwargs['use_bin_type'] = False
 
-        self.packer = msgpack.Packer(**packer_kwargs)
+            self.packer = msgpack.Packer(**packer_kwargs)
 
     def _dumps(self, src):
         return self.packer.pack(src)
@@ -269,10 +271,10 @@ class RequestCall(Request):
     request_type = REQUEST_TYPE_CALL
 
     # pylint: disable=W0231
-    def __init__(self, conn, name, args, call_16):
+    def __init__(self, conn, name, args, call_16, packer=None):
         if call_16:
             self.request_type = REQUEST_TYPE_CALL16
-        super(RequestCall, self).__init__(conn)
+        super(RequestCall, self).__init__(conn, packer=packer)
         assert isinstance(args, (list, tuple))
 
         request_body = self._dumps({IPROTO_FUNCTION_NAME: name,

@@ -281,7 +281,7 @@ class Connection(object):
         # Read the packet
         return self._recv(length)
 
-    def _send_request_wo_reconnect(self, request):
+    def _send_request_wo_reconnect(self, request, unpacker=None):
         '''
         :rtype: `Response` instance or subclass
 
@@ -293,7 +293,7 @@ class Connection(object):
         while True:
             try:
                 self._socket.sendall(bytes(request))
-                response = request.response_class(self, self._read_response())
+                response = request.response_class(self, self._read_response(), unpacker=unpacker)
                 break
             except SchemaReloadException as e:
                 self.update_schema(e.schema_version)
@@ -364,7 +364,7 @@ class Connection(object):
             attempt += 1
         self.handshake()
 
-    def _send_request(self, request):
+    def _send_request(self, request, unpacker=None):
         '''
         Send the request to the server through the socket.
         Return an instance of `Response` class.
@@ -378,7 +378,7 @@ class Connection(object):
 
         self._opt_reconnect()
 
-        return self._send_request_wo_reconnect(request)
+        return self._send_request_wo_reconnect(request, unpacker=unpacker)
 
     def load_schema(self):
         self.schema.fetch_space_all()
@@ -392,7 +392,7 @@ class Connection(object):
         self.schema.flush()
         self.load_schema()
 
-    def call(self, func_name, *args):
+    def call(self, func_name, *args, msgpack_packer=None, msgpack_unpacker=None):
         '''
         Execute CALL request. Call stored Lua function.
 
@@ -409,8 +409,9 @@ class Connection(object):
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
 
-        request = RequestCall(self, func_name, args, self.call_16)
-        response = self._send_request(request)
+        request = RequestCall(self, func_name, args, self.call_16,
+                              packer=msgpack_packer)
+        response = self._send_request(request, unpacker=msgpack_unpacker)
         return response
 
     def eval(self, expr, *args):

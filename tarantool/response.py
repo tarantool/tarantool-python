@@ -38,7 +38,7 @@ class Response(Sequence):
     and parses binary packet received from the server.
     '''
 
-    def __init__(self, conn, response):
+    def __init__(self, conn, response, unpacker=None):
         '''
         Create an instance of `Response` using data received from the server.
 
@@ -53,39 +53,40 @@ class Response(Sequence):
         # created in the __new__().
         # super(Response, self).__init__()
 
-        unpacker_kwargs = dict()
+        if unpacker is None:
+            unpacker_kwargs = dict()
 
-        # Decode msgpack arrays into Python lists by default (not tuples).
-        # Can be configured in the Connection init
-        unpacker_kwargs['use_list'] = conn.use_list
+            # Decode msgpack arrays into Python lists by default (not tuples).
+            # Can be configured in the Connection init
+            unpacker_kwargs['use_list'] = conn.use_list
 
-        # Use raw=False instead of encoding='utf-8'.
-        if msgpack.version >= (0, 5, 2) and conn.encoding == 'utf-8':
-            # Get rid of the following warning.
-            # > PendingDeprecationWarning: encoding is deprecated,
-            # > Use raw=False instead.
-            unpacker_kwargs['raw'] = False
-        elif conn.encoding is not None:
-            unpacker_kwargs['encoding'] = conn.encoding
+            # Use raw=False instead of encoding='utf-8'.
+            if msgpack.version >= (0, 5, 2) and conn.encoding == 'utf-8':
+                # Get rid of the following warning.
+                # > PendingDeprecationWarning: encoding is deprecated,
+                # > Use raw=False instead.
+                unpacker_kwargs['raw'] = False
+            elif conn.encoding is not None:
+                unpacker_kwargs['encoding'] = conn.encoding
 
-        # raw=False is default since msgpack-1.0.0.
-        #
-        # The option decodes mp_str to bytes, not a Unicode
-        # string (when True).
-        if msgpack.version >= (1, 0, 0) and conn.encoding is None:
-            unpacker_kwargs['raw'] = True
+            # raw=False is default since msgpack-1.0.0.
+            #
+            # The option decodes mp_str to bytes, not a Unicode
+            # string (when True).
+            if msgpack.version >= (1, 0, 0) and conn.encoding is None:
+                unpacker_kwargs['raw'] = True
 
-        # encoding option is not supported since msgpack-1.0.0,
-        # but it is handled in the Connection constructor.
-        assert(msgpack.version < (1, 0, 0) or conn.encoding in (None, 'utf-8'))
+            # encoding option is not supported since msgpack-1.0.0,
+            # but it is handled in the Connection constructor.
+            assert(msgpack.version < (1, 0, 0) or conn.encoding in (None, 'utf-8'))
 
-        # strict_map_key=True is default since msgpack-1.0.0.
-        #
-        # The option forbids non-string keys in a map (when True).
-        if msgpack.version >= (1, 0, 0):
-            unpacker_kwargs['strict_map_key'] = False
+            # strict_map_key=True is default since msgpack-1.0.0.
+            #
+            # The option forbids non-string keys in a map (when True).
+            if msgpack.version >= (1, 0, 0):
+                unpacker_kwargs['strict_map_key'] = False
 
-        unpacker = msgpack.Unpacker(**unpacker_kwargs)
+            unpacker = msgpack.Unpacker(**unpacker_kwargs)
 
         unpacker.feed(response)
         header = unpacker.unpack()
