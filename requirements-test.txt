@@ -1,0 +1,4 @@
+dbapi-compliance==1.15.0
+# Use this pyyaml version to be compatible with Python34-x64 on Windows.
+# See for more details http://help.appveyor.com/discussions/problems/28023.
+pyyaml==5.2b1
