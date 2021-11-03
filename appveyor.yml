@@ -4,12 +4,6 @@ environment:
     - PYTHON: "C:\\Python27-x64"
     - PYTHON: "C:\\Python34"
     - PYTHON: "C:\\Python34-x64"
-      # Workaround the build problem [1] by choosing a PyYAML
-      # version for which PyPI provides a wheel for this platform
-      # and Python version / build.
-      #
-      # [1]: http://help.appveyor.com/discussions/problems/28023
-      PYYAML: "==5.2b1"
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36"
@@ -23,7 +17,7 @@ install:
   # install runtime dependencies
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   # install testing dependencies
-  - "%PYTHON%\\python.exe -m pip install pyyaml%PYYAML% dbapi-compliance==1.15.0"
+  - "%PYTHON%\\python.exe -m pip install -r requirements-test.txt"
 
 build: off
 
