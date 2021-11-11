@@ -7,11 +7,12 @@ import unittest
 
 import tarantool
 from .lib.tarantool_server import TarantoolServer
+from .lib.skip import skip_or_run_sql_test
 
 
 class TestSuite_Execute(unittest.TestCase):
     ddl = 'create table %s (id INTEGER PRIMARY KEY AUTOINCREMENT, ' \
-           'name varchar(20))'
+          'name varchar(20))'
 
     dml_params = [
         {'id': None, 'name': 'Michael'},
@@ -30,6 +31,7 @@ class TestSuite_Execute(unittest.TestCase):
         self.srv.start()
         self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
 
+    @skip_or_run_sql_test
     def setUp(self):
         # prevent a remote tarantool from clean our session
         if self.srv.is_started():

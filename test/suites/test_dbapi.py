@@ -10,6 +10,7 @@ import dbapi20
 import tarantool
 from tarantool import dbapi
 from .lib.tarantool_server import TarantoolServer
+from .lib.skip import skip_or_run_sql_test
 
 
 class TestSuite_DBAPI(dbapi20.DatabaseAPI20Test):
@@ -34,6 +35,7 @@ class TestSuite_DBAPI(dbapi20.DatabaseAPI20Test):
             host=self.srv.host,
             port=self.srv.args['primary'])
 
+    @skip_or_run_sql_test
     def setUp(self):
         # prevent a remote tarantool from clean our session
         if self.srv.is_started():
