@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (PR #192).
 
 ### Changed
+- **Breaking**: drop Python 2 support (PR #207).
 - **Breaking**: change binary types encode/decode for Python 3
   to support working with varbinary (PR #211, #105).
   With Python 2 the behavior of the connector remains the same.
