@@ -6,7 +6,7 @@ import sys
 import unittest
 import tarantool
 
-from .lib.skip import skip_or_run_mp_bin_test, skip_or_run_varbinary_test
+from .lib.skip import skip_or_run_varbinary_test
 from .lib.tarantool_server import TarantoolServer
 
 class TestSuite_Encoding(unittest.TestCase):
@@ -99,7 +99,6 @@ class TestSuite_Encoding(unittest.TestCase):
         resp = self.con_encoding_utf8.eval("return box.space['%s']:get('%s')" % (space, data))
         self.assertSequenceEqual(resp, [[data]])
 
-    @skip_or_run_mp_bin_test
     @skip_or_run_varbinary_test
     def test_01_03_bytes_encode_for_encoding_utf8_behavior(self):
         data_id = 103
@@ -111,7 +110,6 @@ class TestSuite_Encoding(unittest.TestCase):
         resp = self.con_encoding_utf8.select(space, [ data ], index='varbin')
         self.assertSequenceEqual(resp, [[data_id, data]])
 
-    @skip_or_run_mp_bin_test
     @skip_or_run_varbinary_test
     def test_01_04_varbinary_decode_for_encoding_utf8_behavior(self):
         data_id = 104
@@ -162,7 +160,6 @@ class TestSuite_Encoding(unittest.TestCase):
         resp = self.con_encoding_none.select(space, [data])
         self.assertSequenceEqual(resp, [[data]])
 
-    @skip_or_run_mp_bin_test
     @skip_or_run_varbinary_test
     def test_02_04_varbinary_decode_for_encoding_none_behavior(self):
         data_id = 204

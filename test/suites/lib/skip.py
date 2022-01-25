@@ -80,12 +80,3 @@ def skip_or_run_varbinary_test(func):
     return skip_or_run_test_tarantool(func, '2.2.1',
                                       'does not support VARBINARY type')
 
-
-def skip_or_run_mp_bin_test(func):
-    """Decorator to skip or run mp_bin-related tests depending on
-    the Python version.
-
-    Python 2 connector do not support mp_bin.
-    """
-
-    return skip_or_run_test_python_major(func, 3, 'does not support mp_bin')
