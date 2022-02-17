@@ -56,7 +56,7 @@ What is Tarantool?
 
 `Tarantool`_ is a NoSQL database running inside a Lua program. It combines the
 network programming power of Node.JS with data persistency capabilities of
-Redis. It's open source, `BSD licensed`_.
+Redis. It's open source, `BSD-2-Clause`_ licensed.
 
 Features
 --------
@@ -114,6 +114,6 @@ On Windows:
 .. _`Tarantool at Github`: https://github.com/tarantool/tarantool
 .. _`Tarantool User Guide`: https://www.tarantool.io/en/doc/latest/
 .. _`Client-server protocol specification`: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/
-.. _`BSD licensed`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
+.. _`BSD-2-Clause`: https://opensource.org/licenses/BSD-2-Clause
 .. _`asynctnt`: https://github.com/igorcoding/asynctnt
 .. _`feature comparison table`: https://www.tarantool.io/en/doc/latest/book/connectors/#python-feature-comparison
