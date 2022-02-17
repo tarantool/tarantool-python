@@ -85,6 +85,9 @@ NOTE
 
 This driver is synchronous, so connection mustn't be shared between threads/processes.
 
+Look at `asynctnt`_ for asynchronous Python driver based on asyncio. See
+also the `feature comparison table`_.
+
 Run tests
 ^^^^^^^^^
 
@@ -112,3 +115,5 @@ On Windows:
 .. _`Tarantool User Guide`: https://www.tarantool.io/en/doc/latest/
 .. _`Client-server protocol specification`: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/
 .. _`BSD licensed`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
+.. _`asynctnt`: https://github.com/igorcoding/asynctnt
+.. _`feature comparison table`: https://www.tarantool.io/en/doc/latest/book/connectors/#python-feature-comparison
