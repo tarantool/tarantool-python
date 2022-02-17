@@ -117,3 +117,8 @@ On Windows:
 .. _`BSD-2-Clause`: https://opensource.org/licenses/BSD-2-Clause
 .. _`asynctnt`: https://github.com/igorcoding/asynctnt
 .. _`feature comparison table`: https://www.tarantool.io/en/doc/latest/book/connectors/#python-feature-comparison
+
+License
+^^^^^^^
+
+BSD-2-Clause. See the ``LICENSE`` file.
