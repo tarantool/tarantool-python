@@ -4,6 +4,7 @@
 Request types definitions
 '''
 
+import sys
 import collections
 import msgpack
 import hashlib
@@ -84,8 +85,26 @@ class Request(object):
         # The option controls whether to pack binary (non-unicode)
         # string values as mp_bin or as mp_str.
         #
-        # The default behaviour of the connector is to pack both
-        # bytes and Unicode strings as mp_str.
+        # The default behaviour of the Python 2 connector is to pack
+        # both bytes and Unicode strings as mp_str.
+        #
+        # The default behaviour of the Python 3 connector (since
+        # default encoding is "utf-8") is to pack bytes as mp_bin
+        # and Unicode strings as mp_str. encoding=None mode must
+        # be used to work with non-utf strings.
+        #
+        # encoding = 'utf-8'
+        #
+        # Python 3 -> Tarantool          -> Python 3
+        # str      -> mp_str (string)    -> str
+        # bytes    -> mp_bin (varbinary) -> bytes
+        #
+        # encoding = None
+        #
+        # Python 3 -> Tarantool          -> Python 3
+        # bytes    -> mp_str (string)    -> bytes
+        # str      -> mp_str (string)    -> bytes
+        #             mp_bin (varbinary) -> bytes
         #
         # msgpack-0.5.0 (and only this version) warns when the
         # option is unset:
@@ -98,7 +117,10 @@ class Request(object):
         # just always set it for all msgpack versions to get rid
         # of the warning on msgpack-0.5.0 and to keep our
         # behaviour on msgpack-1.0.0.
-        packer_kwargs['use_bin_type'] = False
+        if conn.encoding is None or sys.version_info.major == 2:
+            packer_kwargs['use_bin_type'] = False
+        else:
+            packer_kwargs['use_bin_type'] = True
 
         self.packer = msgpack.Packer(**packer_kwargs)
 

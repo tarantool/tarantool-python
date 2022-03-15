@@ -11,6 +11,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (PR #192).
 
 ### Changed
+- **Breaking**: change binary types encode/decode for Python 3
+  to support working with varbinary (PR #211, #105).
+  With Python 2 the behavior of the connector remains the same.
+
+  Before this patch:
+
+  * encoding="utf-8" (default)
+
+    | Python 3 | -> | Tarantool          | -> | Python 3 |
+    |----------|----|--------------------|----|----------|
+    | str      | -> | mp_str (string)    | -> | str      |
+    | bytes    | -> | mp_str (string)    | -> | str      |
+    |          |    | mp_bin (varbinary) | -> | bytes    |
+
+  * encoding=None
+
+    | Python 3 | -> | Tarantool          | -> | Python 3 |
+    |----------|----|--------------------|----|----------|
+    | bytes    | -> | mp_str (string)    | -> | bytes    |
+    | str      | -> | mp_str (string)    | -> | bytes    |
+    |          |    | mp_bin (varbinary) | -> | bytes    |
+
+  Using bytes as key was not supported by several methods (delete,
+  update, select).
+
+  After this patch:
+
+  * encoding="utf-8" (default)
+
+    | Python 3 | -> | Tarantool          | -> | Python 3 |
+    |----------|----|--------------------|----|----------|
+    | str      | -> | mp_str (string)    | -> | str      |
+    | bytes    | -> | mp_bin (varbinary) | -> | bytes    |
+
+  * encoding=None
+
+    | Python 3 | -> | Tarantool          | -> | Python 3 |
+    |----------|----|--------------------|----|----------|
+    | bytes    | -> | mp_str (string)    | -> | bytes    |
+    | str      | -> | mp_str (string)    | -> | bytes    |
+    |          |    | mp_bin (varbinary) | -> | bytes    |
+
+  Using bytes as key are now supported by all methods.
+
+  Thus, encoding="utf-8" connection may be used to work with
+  utf-8 strings and varbinary and encodine=None connection
+  may be used to work with non-utf-8 strings.
+
 - Clarify license of the project (BSD-2-Clause) (PR #210, #197).
 - Migrate CI to GitHub Actions (PR #213, PR #216, #182).
 - Various improvements and fixes in README (PR #210, PR #215).
