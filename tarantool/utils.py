@@ -6,7 +6,10 @@ import uuid
 if sys.version_info.major == 2:
     string_types     = (basestring, )
     integer_types    = (int, long)
+    supported_types  = integer_types + string_types + (float,)
+
     ENCODING_DEFAULT = None
+
     if sys.version_info.minor < 6:
         binary_types = (str, )
     else:
@@ -17,10 +20,13 @@ if sys.version_info.major == 2:
         return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
 
 elif sys.version_info.major == 3:
-    binary_types  = (bytes, )
-    string_types  = (str, )
-    integer_types = (int, )
+    binary_types    = (bytes, )
+    string_types    = (str, )
+    integer_types   = (int, )
+    supported_types = integer_types + string_types + binary_types + (float,)
+
     ENCODING_DEFAULT = "utf-8"
+
     from base64 import decodebytes as base64_decode
 
     def strxor(rhs, lhs):
@@ -43,7 +49,7 @@ def check_key(*args, **kwargs):
         elif args[0] is None and kwargs['select']:
             return []
     for key in args:
-        assert isinstance(key, integer_types + string_types + (float,))
+        assert isinstance(key, supported_types)
     return list(args)
 
 
