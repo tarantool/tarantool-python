@@ -8,6 +8,7 @@ import os
 import time
 import errno
 import socket
+import abc
 
 import ctypes
 import ctypes.util
@@ -76,8 +77,92 @@ from tarantool.utils import (
     ENCODING_DEFAULT,
 )
 
+# Based on https://realpython.com/python-interface/
+class ConnectionInterface(metaclass=abc.ABCMeta):
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return (hasattr(subclass, 'close') and
+                callable(subclass.close) and
+                hasattr(subclass, 'is_closed') and
+                callable(subclass.is_closed) and
+                hasattr(subclass, 'connect') and
+                callable(subclass.connect) and
+                hasattr(subclass, 'call') and
+                callable(subclass.call) and
+                hasattr(subclass, 'eval') and
+                callable(subclass.eval) and
+                hasattr(subclass, 'replace') and
+                callable(subclass.replace) and
+                hasattr(subclass, 'insert') and
+                callable(subclass.insert) and
+                hasattr(subclass, 'delete') and
+                callable(subclass.delete) and
+                hasattr(subclass, 'upsert') and
+                callable(subclass.upsert) and
+                hasattr(subclass, 'update') and
+                callable(subclass.update) and
+                hasattr(subclass, 'ping') and
+                callable(subclass.ping) and
+                hasattr(subclass, 'select') and
+                callable(subclass.select) and
+                hasattr(subclass, 'execute') and
+                callable(subclass.execute) or
+                NotImplemented)
 
-class Connection(object):
+    @abc.abstractmethod
+    def close(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def is_closed(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def connect(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def call(self, func_name, *args, **kwargs):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def eval(self, expr, *args, **kwargs):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def replace(self, space_name, values):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def insert(self, space_name, values):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete(self, space_name, key, **kwargs):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upsert(self, space_name, tuple_value, op_list, **kwargs):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def update(self, space_name, key, op_list, **kwargs):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def ping(self, notime):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def select(self, space_name, key, **kwargs):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def execute(self, query, params, **kwargs):
+        raise NotImplementedError
+
+
+class Connection(ConnectionInterface):
     '''
     Represents connection to the Tarantool server.
 
