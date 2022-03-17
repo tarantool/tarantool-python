@@ -1,0 +1,167 @@
+name: testing
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  run_tests_linux:
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tarantool:
+          - '1.10'
+          - '2.8'
+          - '2.x-latest'
+        python:
+          - '2.7'
+          - '3.5'
+          - '3.6'
+          - '3.7'
+          - '3.8'
+          - '3.9'
+          - '3.10'
+        msgpack-deps:
+          # latest msgpack will be installed as a part of requirements.txt
+          - ''
+
+        # Adding too many elements to three-dimentional matrix results in
+        # too many test cases. It causes GitHub webpages to fail with 
+        # "This page is taking too long to load." error. Thus we use
+        # pairwise testing.
+        include:
+          - tarantool: '2.8'
+            python: '3.10'
+            msgpack-deps: 'msgpack-python==0.4.0'
+          - tarantool: '2.8'
+            python: '3.10'
+            msgpack-deps: 'msgpack==0.5.0'
+          - tarantool: '2.8'
+            python: '3.10'
+            msgpack-deps: 'msgpack==0.6.2'
+          - tarantool: '2.8'
+            python: '3.10'
+            msgpack-deps: 'msgpack==1.0.0'
+
+    steps:
+      - name: Clone the connector
+        uses: actions/checkout@v2
+
+      - name: Install tarantool ${{ matrix.tarantool }}
+        if: matrix.tarantool != '2.x-latest'
+        uses: tarantool/setup-tarantool@v1
+        with:
+          tarantool-version: ${{ matrix.tarantool }}
+
+      - name: Install latest tarantool 2.x
+        if: matrix.tarantool == '2.x-latest'
+        run: |
+          curl -L https://tarantool.io/pre-release/2/installer.sh | sudo bash
+          sudo apt install -y tarantool tarantool-dev
+
+      - name: Setup Python for tests
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install specific version of msgpack package
+        if: startsWith(matrix.msgpack-deps, 'msgpack==') == true
+        run: |
+          pip install ${{ matrix.msgpack-deps }}
+
+      - name: Install specific version of msgpack-python package
+        # msgpack package is a replacement for deprecated msgpack-python.
+        # To test compatibility with msgpack-python we must ignore
+        # requirements.txt install of msgpack package by overwriting it
+        # with sed.
+        if: startsWith(matrix.msgpack-deps, 'msgpack-python==') == true
+        run: |
+          pip install ${{ matrix.msgpack-deps }}
+          sed -i -e "s/^msgpack.*$/${{ matrix.msgpack-deps }}/" requirements.txt
+
+      - name: Install package requirements
+        run: pip install -r requirements.txt
+
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+
+      - name: Run tests
+        run: make test
+
+  run_tests_windows:
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tarantool:
+          - '1.10'
+          - '2.8'
+        python:
+          - '2.7'
+          - '3.10'
+
+    steps:
+      - name: Clone the connector
+        uses: actions/checkout@v2
+
+      - name: Setup Python for tests
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install connector requirements
+        run: pip install -r requirements.txt
+
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+
+      - name: Setup WSL for tarantool
+        uses: Vampire/setup-wsl@v1
+        with:
+          distribution: Ubuntu-20.04
+
+      - name: Install tarantool ${{ matrix.tarantool }} for WSL
+        shell: wsl-bash_Ubuntu-20.04 {0}
+        run: |
+          curl -L https://tarantool.io/installer.sh | VER=${{ matrix.tarantool }} bash -s -- --type "release"
+          sudo apt install -y tarantool tarantool-dev
+
+      - name: Setup test tarantool instance
+        shell: wsl-bash_Ubuntu-20.04 {0}
+        run: |
+          rm -f ./tarantool.pid ./tarantool.log
+          TNT_PID=$(tarantool ./test/suites/lib/tarantool_python_ci.lua > tarantool.log 2>&1 & echo $!)
+          touch tarantool.pid
+          echo $TNT_PID > ./tarantool.pid
+
+      - name: Run tests
+        env:
+          REMOTE_TARANTOOL_HOST: localhost
+          REMOTE_TARANTOOL_CONSOLE_PORT: 3302
+        run: make test
+
+      - name: Stop test tarantool instance
+        if: ${{ always() }}
+        shell: wsl-bash_Ubuntu-20.04 {0}
+        run: |
+          cat tarantool.log || true
+          kill $(cat tarantool.pid) || true

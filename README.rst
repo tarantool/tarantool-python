@@ -11,11 +11,8 @@ This package is a pure-python client library for `Tarantool`_.
 .. _`GitHub`: https://github.com/tarantool/tarantool-python
 .. _`Issue tracker`: https://github.com/tarantool/tarantool-python/issues
 
-.. image:: https://travis-ci.org/tarantool/tarantool-python.svg?branch=master
-    :target: https://travis-ci.org/tarantool/tarantool-python
-
-.. image:: https://ci.appveyor.com/api/projects/status/github/tarantool/tarantool-python?branch=master
-    :target: https://ci.appveyor.com/project/tarantool/tarantool-python
+.. image:: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml/badge.svg?branch=master
+    :target: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml
 
 Download and Install
 --------------------
