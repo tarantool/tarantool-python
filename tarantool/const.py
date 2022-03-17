@@ -96,3 +96,9 @@ RECONNECT_MAX_ATTEMPTS = 10
 RECONNECT_DELAY = 0.1
 # Default cluster nodes list refresh interval (seconds)
 CLUSTER_DISCOVERY_DELAY = 60
+# Default cluster nodes state refresh interval (seconds)
+POOL_REFRESH_DELAY = 1
+# Default maximum number of attempts to reconnect for pool instance
+POOL_INSTANCE_RECONNECT_MAX_ATTEMPTS = 0
+# Default delay between attempts to reconnect (seconds)
+POOL_INSTANCE_RECONNECT_DELAY = 0

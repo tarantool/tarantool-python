@@ -223,6 +223,21 @@ class ClusterDiscoveryWarning(UserWarning):
     pass
 
 
+class ClusterConnectWarning(UserWarning):
+    '''Warning related to cluster pool connection'''
+    pass
+
+
+class PoolTolopogyWarning(UserWarning):
+    '''Warning related to ro/rw cluster pool topology'''
+    pass
+
+
+class PoolTolopogyError(DatabaseError):
+    '''Exception raised due to unsatisfying ro/rw cluster pool topology'''
+    pass
+
+
 # always print this warnings
 warnings.filterwarnings("always", category=NetworkWarning)
 
