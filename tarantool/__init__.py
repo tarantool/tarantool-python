@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
+import sys
+
 from tarantool.connection import Connection
 from tarantool.mesh_connection import MeshConnection
 from tarantool.const import (
@@ -76,3 +78,8 @@ def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
 __all__ = ['connect', 'Connection', 'connectmesh', 'MeshConnection', 'Schema',
            'Error', 'DatabaseError', 'NetworkError', 'NetworkWarning',
            'SchemaError', 'dbapi']
+
+# ConnectionPool is supported only for Python 3.7 or newer.
+if sys.version_info.major >= 3 and sys.version_info.minor >= 7:
+    from tarantool.connection_pool import ConnectionPool, Mode
+    __all__.extend(['ConnectionPool', 'Mode'])

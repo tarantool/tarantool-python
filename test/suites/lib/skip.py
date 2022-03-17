@@ -18,8 +18,18 @@ def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
             func(self, *args, **kwargs)
 
         if not hasattr(self, 'tnt_version'):
+            srv = None
+
+            if hasattr(self, 'servers'):
+                srv = self.servers[0]
+
+            if hasattr(self, 'srv'):
+                srv = self.srv
+
+            assert srv is not None
+
             self.__class__.tnt_version = re.match(
-                r'[\d.]+', self.srv.admin('box.info.version')[0]
+                r'[\d.]+', srv.admin('box.info.version')[0]
             ).group()
 
         tnt_version = pkg_resources.parse_version(self.tnt_version)
@@ -34,9 +44,8 @@ def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
     return wrapper
 
 
-def skip_or_run_test_python_major(func, REQUIRED_PYTHON_MAJOR, msg):
-    """Decorator to skip or run tests depending on the Python major
-    version.
+def skip_or_run_test_python(func, REQUIRED_PYTHON_VERSION, msg):
+    """Decorator to skip or run tests depending on the Python version.
 
     Also, it can be used with the 'setUp' method for skipping
     the whole test suite.
@@ -47,9 +56,12 @@ def skip_or_run_test_python_major(func, REQUIRED_PYTHON_MAJOR, msg):
         if func.__name__ == 'setUp':
             func(self, *args, **kwargs)
 
-        major = sys.version_info.major
-        if major != REQUIRED_PYTHON_MAJOR:
-            self.skipTest('Python %s connector %s' % (major, msg))
+        ver = sys.version_info
+        python_version_str = '%d.%d' % (ver.major, ver.minor)
+        python_version = pkg_resources.parse_version(python_version_str)
+        support_version = pkg_resources.parse_version(REQUIRED_PYTHON_VERSION)
+        if python_version < support_version:
+            self.skipTest('Python %s connector %s' % (python_version, msg))
 
         if func.__name__ != 'setUp':
             func(self, *args, **kwargs)
@@ -79,4 +91,13 @@ def skip_or_run_varbinary_test(func):
 
     return skip_or_run_test_tarantool(func, '2.2.1',
                                       'does not support VARBINARY type')
+
+
+def skip_or_run_conn_pool_test(func):
+    """Decorator to skip or run ConnectionPool tests depending on
+    the Python version.
+    """
+
+    return skip_or_run_test_python(func, '3.7',
+                                   'does not support ConnectionPool')
 

@@ -9,6 +9,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Reusable testing workflow for integration with tarantool artifacts
   (PR #192).
+- Connection pool with master discovery (PR #211, #196).
+
+  ConnectionPool is supported only for Python 3.7 or newer.
+  Authenticated user must be able to call `box.info` on instances.
+
+  ConnectionPool updates information about each server state (RO/RW)
+  on initial connect and then asynchronously in separate threads.
+  Application retries must be written considering the asynchronous nature
+  of cluster state refresh. User does not need to use any synchronization
+  mechanisms in requests, it's all handled with ConnectionPool methods.
+
+  ConnectionPool API is the same as a plain Connection API.
+  On each request, a connection is chosen to execute this request.
+  A connection is chosen based on a request mode:
+  * Mode.ANY chooses any instance.
+  * Mode.RW chooses an RW instance.
+  * Mode.RO chooses an RO instance.
+  * Mode.PREFER_RW chooses an RW instance, if possible, RO instance
+    otherwise.
+  * Mode.PREFER_RO chooses an RO instance, if possible, RW instance
+    otherwise.
+  All requests that are guaranteed to write (insert, replace, delete,
+  upsert, update) use RW mode by default. select uses ANY by default. You
+  can set the mode explicitly. call, eval, execute and ping requests
+  require to set the mode explicitly.
+
+  Example:
+  ```python
+  pool = tarantool.ConnectionPool(
+      addrs=[
+          {'host': '108.177.16.0', 'port': 3301},
+          {'host': '108.177.16.0', 'port': 3302},
+      ],
+      user='test',
+      password='test',)
+
+  pool.call('some_write_procedure', arg, mode=tarantool.Mode.RW)
+  ```
 
 ### Changed
 - **Breaking**: drop Python 2 support (PR #207).
