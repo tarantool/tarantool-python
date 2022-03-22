@@ -1,5 +1,5 @@
-Python driver for Tarantool 1.6
-===============================
+Python driver for Tarantool
+===========================
 
 This package is a pure-python client library for `Tarantool`_.
 
