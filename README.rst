@@ -65,8 +65,10 @@ Features
 * Lua packages for non-blocking I/O, fibers and HTTP
 * MsgPack data format and MsgPack based client-server protocol
 * Two data engines:
+
   * memtx - the in-memory storage engine with optional persistence
   * vinyl - the on-disk storage engine to use with large data sets
+
 * secondary key and index iterators support (can be non-unique and composite)
 * multiple index types: HASH, BITSET, TREE, RTREE
 * asynchronous master-master replication
