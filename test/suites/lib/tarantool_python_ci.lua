@@ -179,17 +179,32 @@ clean = function()
     end)
 
     local _FUNC_NAME = 3
+    local _FUNC_LANGUAGE = 5
     local allowed_funcs = {
         ['box.schema.user.info'] = true,
     }
+    local allowed_langs = {
+        ['SQL_BUILTIN'] = true,
+    }
     box.space._func:pairs():map(function(tuple)
         local name = tuple[_FUNC_NAME]
-        return name
-    end):filter(function(name)
-        return not allowed_funcs[name]
-    end):each(function(name)
-        box.schema.func.drop(name)
+        local lang = tuple[_FUNC_LANGUAGE]
+        return { name = name, lang = lang }
+    end):filter(function(prop)
+        return not allowed_funcs[prop.name]
+    end):filter(function(prop)
+        return not allowed_langs[prop.lang]
+    end):each(function(prop)
+        box.schema.func.drop(prop.name)
     end)
+
+    local sql_builtin_func_count = box.space._func:pairs():map(function(tuple)
+        local lang = tuple[_FUNC_LANGUAGE]
+        if lang == 'SQL_BUILTIN' then
+            return 1
+        end
+        return 0
+    end):sum()
 
     cleanup_cluster()
 
@@ -333,8 +348,9 @@ clean = function()
     local user_count = box.space._user:count()
     assert(user_count == 4 or user_count == 5,
         'box.space._user:count() should be 4 (1.10) or 5 (2.0)')
-    assert(box.space._func:count() == 1,
-        'box.space._func:count() should be only one')
+    assert(box.space._func:count() == 1 + sql_builtin_func_count,
+        'box.space._func:count() should be 1 (1.10 and >= 2.10)' ..
+        ' or 1 + count of SQL_BUILTIN functions (>= 2.2.1, < 2.10)')
     assert(box.space._cluster:count() == 1,
         'box.space._cluster:count() should be only one')
 
