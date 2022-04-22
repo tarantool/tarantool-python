@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   ConnectionPool is supported only for Python 3.7 or newer.
   Authenticated user must be able to call `box.info` on instances.
+  For example, to give grants to `'guest'` user, evaluate
+  ```lua
+  box.schema.func.create('box.info')
+  box.schema.user.grant('guest', 'execute', 'function', 'box.info')
+  ```
+  on Tarantool instances.
 
   ConnectionPool updates information about each server state (RO/RW)
   on initial connect and then asynchronously in separate threads.

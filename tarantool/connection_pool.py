@@ -220,6 +220,12 @@ class ConnectionPool(ConnectionInterface):
 
         :param list addrs: List of {host: , port:} dictionaries,
         describing server addresses.
+        :user str Username used to authenticate. User must be able
+        to call box.info function. For example, to give grants to 
+        'guest' user, evaluate
+          box.schema.func.create('box.info')
+          box.schema.user.grant('guest', 'execute', 'function', 'box.info')
+        on Tarantool instances.
         :param int reconnect_max_attempts: Max attempts to reconnect
         for each connection in the pool. Be careful with reconnect
         parameters in ConnectionPool since every status refresh is
