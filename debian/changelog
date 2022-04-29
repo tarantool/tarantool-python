@@ -1,3 +1,189 @@
+tarantool-python (0.8.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    The most interesting feature offered by this release is connection pool with
+    automatic master discovery support.
+
+    Consider a simple example.
+
+    In tarantool:
+
+    ```lua
+    #!/usr/bin/env tarantool
+
+    box.cfg({listen = os.getenv('LISTEN') or 3301})
+    box.once('init', function()
+        -- Connection pool calls box.info() to monitor tarantool
+        -- instances.
+        box.schema.func.create('box.info')
+        box.schema.user.grant('guest', 'execute', 'function', 'box.info')
+
+        box.schema.space.create('s')
+        box.space.s:create_index('pk')
+        box.schema.user.grant('guest', 'read,write', 'space', 's')
+
+        box.schema.func.create('foo')
+        box.schema.user.grant('guest', 'execute', 'function', 'foo')
+    end)
+
+    -- Do a write request.
+    local function foo(tuple)
+        box.space.s:replace(tuple)
+    end
+    _G.foo = foo
+    ```
+
+    In Python:
+
+    ```python
+    #!/usr/bin/env python
+
+    import tarantool
+
+    # Create a connection pool.
+    pool = tarantool.ConnectionPool(addrs=[
+        {'host': '127.0.0.1', 'port': 3301},
+        {'host': '127.0.0.1', 'port': 3302},
+    ])
+
+    # Use the space API.
+    pool.replace('s', [1, 2, 3])
+    tuple = pool.select('s', [1])
+
+    # Call a function.
+    pool.call('foo', [[1, 2, 3]], mode=tarantool.Mode.RW)
+    ```
+
+    This release also provides more natural mapping of msgpack string/binary types
+    into Python string/binary types. Now `string` in tarantool is marshalled
+    from/to `str` in Python and `varbinary` in tarantool` is marshalled from/to
+    `bytes` in Python. See details below.
+
+    ## Breaking changes
+
+    This release keeps existing APIs the same, but there are important
+    string/binary marshalling changes and Python 2 tear down. We expect that most
+    of existing code will not require any changes, but, please, take a look on the
+    information below.
+
+    `MeshConnection` is now considered as deprecated in favor of the newly
+    introduced `ConnectionPool`. We will remove `MeshConnection` in one of future
+    releases.
+
+    Python 2 support was dropped. We test the connector since Python 3.5 to 3.10.
+    The new connection pool requires Python 3.7 or newer.
+
+    Msgpack string/binary types mapping from/to Python types was changed. The
+    behaviour is the following.
+
+    **tarantool-python 0.7.1 and older:**
+
+    * `encoding='utf-8'` (default)
+
+      | Python 3 | -> | Tarantool          | -> | Python 3 |
+      |----------|----|--------------------|----|----------|
+      | str      | -> | mp_str (string)    | -> | str      |
+      | bytes    | -> | mp_str (string)    | -> | str      |
+      |          |    | mp_bin (varbinary) | -> | bytes    |
+
+    * `encoding=None`
+
+      | Python 3 | -> | Tarantool          | -> | Python 3 |
+      |----------|----|--------------------|----|----------|
+      | bytes    | -> | mp_str (string)    | -> | bytes    |
+      | str      | -> | mp_str (string)    | -> | bytes    |
+      |          |    | mp_bin (varbinary) | -> | bytes    |
+
+    **tarantool-python 0.8.0 and newer:**
+
+    * `encoding='utf-8'` (default)
+
+      | Python 3 | -> | Tarantool          | -> | Python 3 |
+      |----------|----|--------------------|----|----------|
+      | str      | -> | mp_str (string)    | -> | str      |
+      | bytes    | -> | mp_bin (varbinary) | -> | bytes    |
+
+    * `encoding=None`
+
+      | Python 3 | -> | Tarantool          | -> | Python 3 |
+      |----------|----|--------------------|----|----------|
+      | bytes    | -> | mp_str (string)    | -> | bytes    |
+      | str      | -> | mp_str (string)    | -> | bytes    |
+      |          |    | mp_bin (varbinary) | -> | bytes    |
+
+    If you use `varbinary` for storing binary data (and `string` for ASCII or
+    UTF-8 texts), default `encoding='utf-8'` mode should work fine.
+
+    If binary data is stored in `string` fields, consider `encoding=None`
+    parameter.
+
+    ## New features
+
+    - Connection pool with master discovery (#196, PR #207).
+
+      `ConnectionPool` is supported only for Python 3.7 or newer.
+
+      Authenticated user must be able to call `box.info` on instances.
+
+      `ConnectionPool` updates information about each server state (RO/RW) on
+      initial connect and then asynchronously in separate threads. Application
+      retries must be written considering the asynchronous nature of cluster state
+      refresh. User does not need to use any synchronization mechanisms in
+      requests, it's all handled with `ConnectionPool` methods.
+
+      `ConnectionPool` API is the same as a plain Connection API. On each request,
+      a connection is chosen to execute this request. A connection is chosen based
+      on a request mode:
+
+      * `Mode.ANY` chooses any instance.
+      * `Mode.RW` chooses an RW instance.
+      * `Mode.RO` chooses an RO instance.
+      * `Mode.PREFER_RW` chooses an RW instance, if possible, RO instance
+        otherwise.
+      * `Mode.PREFER_RO` chooses an RO instance, if possible, RW instance
+        otherwise.
+
+      `insert`, `replace`, `delete`, `upsert`, `update` use RW mode by default.
+
+      `select` uses ANY by default.
+
+      `call`, `eval`, `execute` and `ping` require to set the mode explicitly.
+    - **[Breaking]** `varbinary` field type is now fully supported and does not
+      fail on decoding of non-UTF-8 data (#105, PR #211).
+
+      It requires incompatible binary/string marshalling changes. See the
+      'Breaking changes' section for details.
+    - Support a value of `bytes` type as a key for `delete`, `update`, `select`
+      (#105, PR #211).
+
+      Now `bytes` can be used as keys in all methods.
+
+    ## Bugfixes
+
+    - Hold string representation of a response object (PR #186).
+
+      We want to keep it the same for different Python versions. It sometimes
+      useful for writing tests using the connector.
+    - Unix sockets in `MeshConnection` are now supported (#111, PR #189).
+
+      It was supported in 0.6.5, but broken then in 0.6.6.
+
+    ## Testing
+
+    - Migrated CI to GitHub Actions (#182, PR #213, PR #216).
+    - Added a workflow for integration testing of tarantool's changes against this
+      connector (PR #192).
+    - Dropped test-run submodule (#111, PR #189).
+    - Run SQL tests only on tarantool 2.X (#194, PR #195).
+
+    ## Other
+
+    - Fixed formatting and wording in README (PR #215).
+    - Clarified license of the project (BSD-2-Clause) (#197, PR #210).
+
+ -- Alexander Turenko <alexander.turenko@tarantool.org> Fri, 29 Apr 2022 22:30:00 +0300
+
 tarantool-python (0.7.1-0) unstable; urgency=medium
 
     ## Overview

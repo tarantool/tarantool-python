@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## 0.8.0 - 2022-04-29
+
+### Added
 - Reusable testing workflow for integration with tarantool artifacts
   (PR #192).
 - Connection pool with master discovery (PR #207, #196).
