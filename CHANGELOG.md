@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Reusable testing workflow for integration with tarantool artifacts
   (PR #192).
-- Connection pool with master discovery (PR #211, #196).
+- Connection pool with master discovery (PR #207, #196).
 
   ConnectionPool is supported only for Python 3.7 or newer.
   Authenticated user must be able to call `box.info` on instances.
