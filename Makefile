@@ -1,6 +1,8 @@
 .PHONY: test
 test:
 	python setup.py test
+testdata:
+	cd ./test/data/; ./generate.sh
 coverage:
 	python -m coverage run -p --source=. setup.py test
 cov-html:

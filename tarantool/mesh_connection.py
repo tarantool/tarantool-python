@@ -21,6 +21,11 @@ from tarantool.const import (
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
+    DEFAULT_TRANSPORT,
+    DEFAULT_SSL_KEY_FILE,
+    DEFAULT_SSL_CERT_FILE,
+    DEFAULT_SSL_CA_FILE,
+    DEFAULT_SSL_CIPHERS,
     CLUSTER_DISCOVERY_DELAY,
 )
 
@@ -32,6 +37,14 @@ try:
     string_types = basestring
 except NameError:
     string_types = str
+
+default_addr_opts = {
+    'transport': DEFAULT_TRANSPORT,
+    'ssl_key_file': DEFAULT_SSL_KEY_FILE,
+    'ssl_cert_file': DEFAULT_SSL_CERT_FILE,
+    'ssl_ca_file': DEFAULT_SSL_CA_FILE,
+    'ssl_ciphers': DEFAULT_SSL_CIPHERS
+}
 
 
 def parse_uri(uri):
@@ -47,19 +60,39 @@ def parse_uri(uri):
     if uri.count(':') != 1:
         return parse_error(uri, 'does not match host:port scheme')
 
-    host, port_str = uri.split(':', 1)
+    host, opts_str = uri.split(':', 1)
     if not host:
         return parse_error(uri, 'host value is empty')
 
+    opts_array = opts_str.split('?', 1)
+    port_str = opts_array[0]
+    if len(opts_array) > 1:
+        opts_str = opts_array[1]
+    else:
+        opts_str = ""
+
+    result = {'host': host}
     try:
-        port = int(port_str)
+        result['port'] = int(port_str)
     except ValueError:
         return parse_error(uri, 'port should be a number')
 
-    return {'host': host, 'port': port}, None
+    for k, v in default_addr_opts.items():
+        result[k] = v
+
+    if opts_str != "":
+        for opt_str in opts_str.split('&'):
+            opt = opt_str.split('=')
+            if len(opt) != 2:
+                continue
+            for k in default_addr_opts:
+                if k == opt[0]:
+                    result[k] = opt[1]
+
+    return result, None
 
 
-def validate_address(address):
+def prepare_address(address):
     def format_error(address, err):
         return None, 'Address %s: %s' % (str(address), err)
 
@@ -69,44 +102,62 @@ def validate_address(address):
     if 'port' not in address or address['port'] is None:
         return format_error(address, 'port is not set or None')
 
-    if isinstance(address['port'], int):
+    result = {}
+    for k, v in address.items():
+        result[k] = v
+    # Set default values.
+    for k, v in default_addr_opts.items():
+        if k not in result:
+            result[k] = v
+
+    if isinstance(result['port'], int):
         # Looks like an inet address.
 
         # Validate host.
-        if 'host' not in address or address['host'] is None:
-            return format_error(address,
-                                'host is mandatory for an inet address')
-        if not isinstance(address['host'], string_types):
-            return format_error(address,
-                                'host must be a string for an inet address')
+        if 'host' not in result or result['host'] is None:
+            return format_error(result,
+                                'host is mandatory for an inet result')
+        if not isinstance(result['host'], string_types):
+            return format_error(result,
+                                'host must be a string for an inet result')
 
         # Validate port.
-        if not isinstance(address['port'], int):
-            return format_error(address,
-                                'port must be an int for an inet address')
-        if address['port'] < 1 or address['port'] > 65535:
-            return format_error(address, 'port must be in range [1, 65535] '
-                                         'for an inet address')
+        if not isinstance(result['port'], int):
+            return format_error(result,
+                                'port must be an int for an inet result')
+        if result['port'] < 1 or result['port'] > 65535:
+            return format_error(result, 'port must be in range [1, 65535] '
+                                         'for an inet result')
 
         # Looks okay.
-        return True, None
-    elif isinstance(address['port'], string_types):
+        return result, None
+    elif isinstance(result['port'], string_types):
         # Looks like a unix address.
 
         # Expect no host.
-        if 'host' in address and address['host'] is not None:
+        if 'host' in result and result['host'] is not None:
             return format_error(
-                address, 'host must be unset or None for a unix address')
+                result, 'host must be unset or None for a unix result')
 
         # Validate port.
-        if not isinstance(address['port'], string_types):
-            return format_error(address,
-                                'port must be a string for a unix address')
+        if not isinstance(result['port'], string_types):
+            return format_error(result,
+                                'port must be a string for a unix result')
 
         # Looks okay.
-        return True, None
+        return result, None
 
-    return format_error(address, 'port must be an int or a string')
+    return format_error(result, 'port must be an int or a string')
+
+
+def update_connection(conn, address):
+    conn.host = address["host"]
+    conn.port = address["port"]
+    conn.transport = address['transport']
+    conn.ssl_key_file = address['ssl_key_file']
+    conn.ssl_cert_file = address['ssl_cert_file']
+    conn.ssl_ca_file = address['ssl_ca_file']
+    conn.ssl_ciphers = address['ssl_ciphers']
 
 
 class RoundRobinStrategy(object):
@@ -168,7 +219,7 @@ class MeshConnection(Connection):
         function get_cluster_nodes()
             return {
                 '192.168.0.1:3301',
-                '192.168.0.2:3302',
+                '192.168.0.2:3302?transport=ssl&ssl_ca_file=/path/to/ca.cert',
                 -- ...
             }
         end
@@ -212,6 +263,11 @@ class MeshConnection(Connection):
                  encoding=ENCODING_DEFAULT,
                  call_16=False,
                  connection_timeout=CONNECTION_TIMEOUT,
+                 transport=DEFAULT_TRANSPORT,
+                 ssl_key_file=DEFAULT_SSL_KEY_FILE,
+                 ssl_cert_file=DEFAULT_SSL_CERT_FILE,
+                 ssl_ca_file=DEFAULT_SSL_CA_FILE,
+                 ssl_ciphers=DEFAULT_SSL_CIPHERS,
                  addrs=None,
                  strategy_class=RoundRobinStrategy,
                  cluster_discovery_function=None,
@@ -223,33 +279,39 @@ class MeshConnection(Connection):
             addrs = addrs[:]
 
         if host and port:
-            addrs.insert(0, {'host': host, 'port': port})
+            addrs.insert(0, {'host': host,
+                             'port': port,
+                             'transport': transport,
+                             'ssl_key_file': ssl_key_file,
+                             'ssl_cert_file': ssl_cert_file,
+                             'ssl_ca_file': ssl_ca_file,
+                             'ssl_ciphers': ssl_ciphers})
 
         # Verify that at least one address is provided.
         if not addrs:
             raise ConfigurationError(
                 'Neither "host" and "port", nor "addrs" arguments are set')
 
-        # Verify addresses.
+        # Prepare addresses for usage.
+        new_addrs = []
         for addr in addrs:
-            ok, msg = validate_address(addr)
-            if not ok:
+            new_addr, msg = prepare_address(addr)
+            if not new_addr:
                 raise ConfigurationError(msg)
+            new_addrs.append(new_addr)
+        addrs = new_addrs
 
         self.strategy_class = strategy_class
         self.strategy = strategy_class(addrs)
-
         addr = self.strategy.getnext()
-        host = addr['host']
-        port = addr['port']
 
         self.cluster_discovery_function = cluster_discovery_function
         self.cluster_discovery_delay = cluster_discovery_delay
         self.last_nodes_refresh = 0
 
         super(MeshConnection, self).__init__(
-            host=host,
-            port=port,
+            host=addr['host'],
+            port=addr['port'],
             user=user,
             password=password,
             socket_timeout=socket_timeout,
@@ -258,7 +320,12 @@ class MeshConnection(Connection):
             connect_now=connect_now,
             encoding=encoding,
             call_16=call_16,
-            connection_timeout=connection_timeout)
+            connection_timeout=connection_timeout,
+            transport=addr['transport'],
+            ssl_key_file=addr['ssl_key_file'],
+            ssl_cert_file=addr['ssl_cert_file'],
+            ssl_ca_file=addr['ssl_ca_file'],
+            ssl_ciphers=addr['ssl_ciphers'])
 
     def connect(self):
         super(MeshConnection, self).connect()
@@ -280,8 +347,7 @@ class MeshConnection(Connection):
             except NetworkError as e:
                 last_error = e
                 addr = self.strategy.getnext()
-                self.host = addr["host"]
-                self.port = addr["port"]
+                update_connection(self, addr)
 
         if last_error:
             raise last_error
@@ -315,7 +381,7 @@ class MeshConnection(Connection):
             warn(msg, ClusterDiscoveryWarning)
             return
 
-        # Validate received address list.
+        # Prepare for usage received address list.
         new_addrs = []
         for uri in resp.data[0]:
             addr, msg = parse_uri(uri)
@@ -323,12 +389,12 @@ class MeshConnection(Connection):
                 warn(msg, ClusterDiscoveryWarning)
                 continue
 
-            ok, msg = validate_address(addr)
-            if not ok:
+            new_addr, msg = prepare_address(addr)
+            if not new_addr:
                 warn(msg, ClusterDiscoveryWarning)
                 continue
 
-            new_addrs.append(addr)
+            new_addrs.append(new_addr)
 
         if not new_addrs:
             msg = "got no correct URIs, skipped addresses updating"
@@ -340,12 +406,17 @@ class MeshConnection(Connection):
 
         # Disconnect from a current instance if it was gone from
         # an instance list and connect to one of new instances.
-        current_addr = {'host': self.host, 'port': self.port}
+        current_addr = {'host': self.host,
+                        'port': self.port,
+                        'transport': self.transport,
+                        'ssl_key_file': self.ssl_key_file,
+                        'ssl_cert_file': self.ssl_cert_file,
+                        'ssl_ca_file': self.ssl_ca_file,
+                        'ssl_ciphers': self.ssl_ciphers}
         if current_addr not in self.strategy.addrs:
             self.close()
             addr = self.strategy.getnext()
-            self.host = addr['host']
-            self.port = addr['port']
+            update_connection(self, addr)
             self._opt_reconnect()
 
     def _send_request(self, request):

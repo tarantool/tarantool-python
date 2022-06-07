@@ -22,14 +22,11 @@ from tarantool.error import (
     PoolTolopogyError,
     PoolTolopogyWarning,
     ConfigurationError,
-    DatabaseError,
     NetworkError,
-    NetworkWarning,
-    tnt_strerror,
     warn
 )
 from tarantool.utils import ENCODING_DEFAULT
-from tarantool.mesh_connection import validate_address
+from tarantool.mesh_connection import prepare_address
 
 
 class Mode(Enum):
@@ -190,6 +187,7 @@ class ConnectionPool(ConnectionInterface):
     ConnectionPool API is the same as a plain Connection API.
     On each request, a connection is chosen to execute this request.
     Connection is selected based on request mode:
+
     * Mode.ANY chooses any instance.
     * Mode.RW chooses an RW instance.
     * Mode.RO chooses an RO instance.
@@ -197,6 +195,7 @@ class ConnectionPool(ConnectionInterface):
       otherwise.
     * Mode.PREFER_RO chooses an RO instance, if possible, RW instance
       otherwise.
+
     All requests that are guaranteed to write (insert, replace, delete,
     upsert, update) use RW mode by default. select uses ANY by default. You
     can set the mode explicitly. call, eval, execute and ping requests
@@ -218,39 +217,55 @@ class ConnectionPool(ConnectionInterface):
         '''
         Initialize connections to the cluster of servers.
 
-        :param list addrs: List of {host: , port:} dictionaries,
-        describing server addresses.
-        :user str Username used to authenticate. User must be able
-        to call box.info function. For example, to give grants to 
-        'guest' user, evaluate
-          box.schema.func.create('box.info')
-          box.schema.user.grant('guest', 'execute', 'function', 'box.info')
-        on Tarantool instances.
+        :param list addrs: List of
+
+            .. code-block:: python
+
+                {
+                  host: "str",          # optional
+                  port: int or "str",   # mandatory
+                  transport: "str",     # optional
+                  ssl_key_file: "str",  # optional
+                  ssl_cert_file: "str", # optional
+                  ssl_ca_file: "str",   # optional
+                  ssl_ciphers: "str"    # optional
+                }
+
+            dictionaries, describing server addresses.
+            See :func:`tarantool.Connection` parameters with same names.
+        :param str user: Username used to authenticate. User must be able
+            to call box.info function. For example, to give grants to
+            'guest' user, evaluate
+            box.schema.func.create('box.info')
+            box.schema.user.grant('guest', 'execute', 'function', 'box.info')
+            on Tarantool instances.
         :param int reconnect_max_attempts: Max attempts to reconnect
-        for each connection in the pool. Be careful with reconnect
-        parameters in ConnectionPool since every status refresh is
-        also a request with reconnection. Default is 0 (fail after
-        first attempt).
+            for each connection in the pool. Be careful with reconnect
+            parameters in ConnectionPool since every status refresh is
+            also a request with reconnection. Default is 0 (fail after
+            first attempt).
         :param float reconnect_delay: Time between reconnect
-        attempts for each connection in the pool. Be careful with
-        reconnect parameters in ConnectionPool since every status
-        refresh is also a request with reconnection. Default is 0.
+            attempts for each connection in the pool. Be careful with
+            reconnect parameters in ConnectionPool since every status
+            refresh is also a request with reconnection. Default is 0.
         :param StrategyInterface strategy_class: Class for choosing
-        instance based on request mode. By default, round-robin
-        strategy is used.
+            instance based on request mode. By default, round-robin
+            strategy is used.
         :param int refresh_delay: Minimal time between RW/RO status
-        refreshes.
+            refreshes.
         '''
 
         if not isinstance(addrs, list) or len(addrs) == 0:
             raise ConfigurationError("addrs must be non-empty list")
 
-        # Verify addresses.
+        # Prepare addresses for usage.
+        new_addrs = []
         for addr in addrs:
-            ok, msg = validate_address(addr)
-            if not ok:
+            new_addr, msg = prepare_address(addr)
+            if not new_addr:
                 raise ConfigurationError(msg)
-        self.addrs = addrs
+            new_addrs.append(new_addr)
+        self.addrs = new_addrs
 
         # Create connections
         self.pool = {}
@@ -272,7 +287,12 @@ class ConnectionPool(ConnectionInterface):
                     connect_now=False, # Connect in ConnectionPool.connect()
                     encoding=encoding,
                     call_16=call_16,
-                    connection_timeout=connection_timeout)
+                    connection_timeout=connection_timeout,
+                    transport=addr['transport'],
+                    ssl_key_file=addr['ssl_key_file'],
+                    ssl_cert_file=addr['ssl_cert_file'],
+                    ssl_ca_file=addr['ssl_ca_file'],
+                    ssl_ciphers=addr['ssl_ciphers'])
             )
 
         if connect_now:
@@ -464,7 +484,7 @@ class ConnectionPool(ConnectionInterface):
     def select(self, space_name, key, *, mode=Mode.ANY, **kwargs):
         '''
         :param tarantool.Mode mode: Request mode (default is
-        ANY).
+            ANY).
         '''
 
         return self._send(mode, 'select', space_name, key, **kwargs)
