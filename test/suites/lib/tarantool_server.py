@@ -14,6 +14,11 @@ import subprocess
 
 from .tarantool_admin import TarantoolAdmin
 
+from tarantool.const import (
+    SSL_TRANSPORT
+)
+
+
 def check_port(port, rais=True):
     try:
         sock = socket.create_connection(("localhost", port))
@@ -23,7 +28,8 @@ def check_port(port, rais=True):
         raise RuntimeError("The server is already running on port {0}".format(port))
     return False
 
-def find_port(port = None):
+
+def find_port(port=None):
     if port is None:
         port = random.randrange(3300, 9999)
     while port < 9999:
@@ -113,13 +119,23 @@ class TarantoolServer(object):
             self._log_des.close()
         delattr(self, '_log_des')
 
-    def __new__(cls):
+    def __new__(cls,
+                transport=None,
+                ssl_key_file=None,
+                ssl_cert_file=None,
+                ssl_ca_file=None,
+                ssl_ciphers=None):
         if os.name == 'nt':
             from .remote_tarantool_server import RemoteTarantoolServer
             return RemoteTarantoolServer()
         return super(TarantoolServer, cls).__new__(cls)
 
-    def __init__(self):
+    def __init__(self,
+                 transport=None,
+                 ssl_key_file=None,
+                 ssl_cert_file=None,
+                 ssl_ca_file=None,
+                 ssl_ciphers=None):
         os.popen('ulimit -c unlimited')
         self.host = 'localhost'
         self.args = {}
@@ -129,6 +145,11 @@ class TarantoolServer(object):
         self.vardir = tempfile.mkdtemp(prefix='var_', dir=os.getcwd())
         self.find_exe()
         self.process = None
+        self.transport = transport
+        self.ssl_key_file = ssl_key_file
+        self.ssl_cert_file = ssl_cert_file
+        self.ssl_ca_file = ssl_ca_file
+        self.ssl_ciphers = ssl_ciphers
 
     def find_exe(self):
         if 'TARANTOOL_BOX_PATH' in os.environ:
@@ -140,9 +161,27 @@ class TarantoolServer(object):
                 return os.path.abspath(exe)
         raise RuntimeError("Can't find server executable in " + os.environ["PATH"])
 
+    def generate_listen(self, port, port_only):
+        if not port_only and self.transport == SSL_TRANSPORT:
+            listen = self.host + ":" + str(port) + "?transport=ssl&"
+            if self.ssl_key_file:
+                listen += "ssl_key_file={}&".format(self.ssl_key_file)
+            if self.ssl_cert_file:
+                listen += "ssl_cert_file={}&".format(self.ssl_cert_file)
+            if self.ssl_ca_file:
+                listen += "ssl_ca_file={}&".format(self.ssl_ca_file)
+            if self.ssl_ciphers:
+                listen += "ssl_ciphers={}&".format(self.ssl_ciphers)
+            listen = listen[:-1]
+        else:
+            listen = str(port)
+        return listen
+
     def generate_configuration(self):
-        os.putenv("PRIMARY_PORT", str(self.args['primary']))
-        os.putenv("ADMIN_PORT", str(self.args['admin']))
+        primary_listen = self.generate_listen(self.args['primary'], False)
+        admin_listen = self.generate_listen(self.args['admin'], True)
+        os.putenv("LISTEN", primary_listen)
+        os.putenv("ADMIN", admin_listen)
 
     def prepare_args(self):
         return shlex.split(self.binary if not self.script else self.script_dst)
@@ -188,7 +227,7 @@ class TarantoolServer(object):
             os.chmod(self.script_dst, 0o777)
         args = self.prepare_args()
         self.process = subprocess.Popen(args,
-                cwd = self.vardir,
+                cwd=self.vardir,
                 stdout=self.log_des,
                 stderr=self.log_des)
         self.wait_until_started()

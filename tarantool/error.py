@@ -21,6 +21,11 @@ The PEP-249 says that database related exceptions must be inherited as follows:
 
 import os
 import socket
+try:
+    import ssl
+    is_ssl_supported = True
+except ImportError:
+    is_ssl_supported = False
 import sys
 import warnings
 
@@ -216,6 +221,19 @@ class NetworkError(DatabaseError):
 class NetworkWarning(UserWarning):
     '''Warning related to network'''
     pass
+
+class SslError(DatabaseError):
+    '''Error related to SSL'''
+
+    def __init__(self, orig_exception=None, *args):
+        self.errno = 0
+        if hasattr(orig_exception, 'errno'):
+            self.errno = orig_exception.errno
+        if orig_exception:
+            if is_ssl_supported and isinstance(orig_exception, ssl.SSLError):
+                super(SslError, self).__init__(orig_exception, *args)
+            else:
+                super(SslError, self).__init__(orig_exception, *args)
 
 
 class ClusterDiscoveryWarning(UserWarning):

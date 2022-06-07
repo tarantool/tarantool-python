@@ -8,6 +8,12 @@ import os
 import time
 import errno
 import socket
+try:
+    import ssl
+    is_ssl_supported = True
+except ImportError:
+    is_ssl_supported = False
+import sys
 import abc
 
 import ctypes
@@ -19,7 +25,6 @@ except ImportError:
 
 import msgpack
 
-import tarantool.error
 from tarantool.response import Response
 from tarantool.request import (
     Request,
@@ -44,6 +49,12 @@ from tarantool.const import (
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
+    DEFAULT_TRANSPORT,
+    SSL_TRANSPORT,
+    DEFAULT_SSL_KEY_FILE,
+    DEFAULT_SSL_CERT_FILE,
+    DEFAULT_SSL_CA_FILE,
+    DEFAULT_SSL_CIPHERS,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE,
@@ -53,6 +64,7 @@ from tarantool.const import (
 from tarantool.error import (
     Error,
     NetworkError,
+    SslError,
     DatabaseError,
     InterfaceError,
     ConfigurationError,
@@ -196,15 +208,28 @@ class Connection(ConnectionInterface):
                  encoding=ENCODING_DEFAULT,
                  use_list=True,
                  call_16=False,
-                 connection_timeout=CONNECTION_TIMEOUT):
+                 connection_timeout=CONNECTION_TIMEOUT,
+                 transport=DEFAULT_TRANSPORT,
+                 ssl_key_file=DEFAULT_SSL_KEY_FILE,
+                 ssl_cert_file=DEFAULT_SSL_CERT_FILE,
+                 ssl_ca_file=DEFAULT_SSL_CA_FILE,
+                 ssl_ciphers=DEFAULT_SSL_CIPHERS):
         '''
         Initialize a connection to the server.
 
         :param str host: Server hostname or IP-address
         :param int port: Server port
         :param bool connect_now: if True (default) than __init__() actually
-        creates network connection.
-                             if False than you have to call connect() manualy.
+            creates network connection. if False than you have to call
+            connect() manualy.
+        :param str transport: It enables SSL encryption for a connection if set
+            to ssl. At least Python 3.5 is required for SSL encryption.
+        :param str ssl_key_file: A path to a private SSL key file.
+        :param str ssl_cert_file: A path to an SSL certificate file.
+        :param str ssl_ca_file: A path to a trusted certificate authorities
+            (CA) file.
+        :param str ssl_ciphers: A colon-separated (:) list of SSL cipher suites
+            the connection can use.
         '''
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
@@ -237,6 +262,11 @@ class Connection(ConnectionInterface):
         self.use_list = use_list
         self.call_16 = call_16
         self.connection_timeout = connection_timeout
+        self.transport = transport
+        self.ssl_key_file = ssl_key_file
+        self.ssl_cert_file = ssl_cert_file
+        self.ssl_ca_file = ssl_ca_file
+        self.ssl_ciphers = ssl_ciphers
         if connect_now:
             self.connect()
 
@@ -255,7 +285,7 @@ class Connection(ConnectionInterface):
         return self._socket is None
 
     def connect_basic(self):
-        if self.host == None:
+        if self.host is None:
             self.connect_unix()
         else:
             self.connect_tcp()
@@ -263,6 +293,7 @@ class Connection(ConnectionInterface):
     def connect_tcp(self):
         '''
         Create connection to the host and port specified in __init__().
+
         :raise: `NetworkError`
         '''
 
@@ -282,6 +313,7 @@ class Connection(ConnectionInterface):
     def connect_unix(self):
         '''
         Create connection to the host and port specified in __init__().
+
         :raise: `NetworkError`
         '''
 
@@ -297,6 +329,73 @@ class Connection(ConnectionInterface):
         except socket.error as e:
             self.connected = False
             raise NetworkError(e)
+
+    def wrap_socket_ssl(self):
+        '''
+        Wrap an existing socket with SSL socket.
+
+        :raise: SslError
+        :raise: `ssl.SSLError`
+        '''
+        if not is_ssl_supported:
+            raise SslError("SSL is unsupported by the python.")
+
+        ver = sys.version_info
+        if ver[0] < 3 or (ver[0] == 3 and ver[1] < 5):
+            raise SslError("SSL transport is supported only since " +
+                           "python 3.5")
+
+        if ((self.ssl_cert_file is None and self.ssl_key_file is not None)
+           or (self.ssl_cert_file is not None and self.ssl_key_file is None)):
+            raise SslError("ssl_cert_file and ssl_key_file should be both " +
+                           "configured or not")
+
+        try:
+            if hasattr(ssl, 'TLSVersion'):
+                # Since python 3.7
+                context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+                # Reset to default OpenSSL values.
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+                # Require TLSv1.2, because other protocol versions don't seem
+                # to support the GOST cipher.
+                context.minimum_version = ssl.TLSVersion.TLSv1_2
+                context.maximum_version = ssl.TLSVersion.TLSv1_2
+            else:
+                # Deprecated, but it works for python < 3.7
+                context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+
+            if self.ssl_cert_file:
+                # If the password argument is not specified and a password is
+                # required, OpenSSL’s built-in password prompting mechanism
+                # will be used to interactively prompt the user for a password.
+                #
+                # We should disable this behaviour, because a python
+                # application that uses the connector unlikely assumes
+                # interaction with a human + a Tarantool implementation does
+                # not support this at least for now.
+                def password_raise_error():
+                    raise SslError("a password for decrypting the private " +
+                                   "key is unsupported")
+                context.load_cert_chain(certfile=self.ssl_cert_file,
+                                        keyfile=self.ssl_key_file,
+                                        password=password_raise_error)
+
+            if self.ssl_ca_file:
+                context.load_verify_locations(cafile=self.ssl_ca_file)
+                context.verify_mode = ssl.CERT_REQUIRED
+                # A Tarantool implementation does not check hostname. We don't
+                # do that too. As a result we don't set here:
+                # context.check_hostname = True
+
+            if self.ssl_ciphers:
+                context.set_ciphers(self.ssl_ciphers)
+
+            self._socket = context.wrap_socket(self._socket)
+        except SslError as e:
+            raise e
+        except Exception as e:
+            raise SslError(e)
 
     def handshake(self):
         greeting_buf = self._recv(IPROTO_GREETING_SIZE)
@@ -316,11 +415,16 @@ class Connection(ConnectionInterface):
         since it is called when you create an `Connection` instance.
 
         :raise: `NetworkError`
+        :raise: `SslError`
         '''
         try:
             self.connect_basic()
+            if self.transport == SSL_TRANSPORT:
+                self.wrap_socket_ssl()
             self.handshake()
             self.load_schema()
+        except SslError as e:
+            raise e
         except Exception as e:
             self.connected = False
             raise NetworkError(e)
@@ -447,6 +551,8 @@ class Connection(ConnectionInterface):
                 raise NetworkError(
                     socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
+        if self.transport == SSL_TRANSPORT:
+            self.wrap_socket_ssl()
         self.handshake()
 
     def _send_request(self, request):

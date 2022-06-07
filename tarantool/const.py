@@ -94,6 +94,18 @@ SOCKET_TIMEOUT = None
 RECONNECT_MAX_ATTEMPTS = 10
 # Default delay between attempts to reconnect (seconds)
 RECONNECT_DELAY = 0.1
+# Default value for transport
+DEFAULT_TRANSPORT = ""
+# Value for SSL transport
+SSL_TRANSPORT = "ssl"
+# Default value for a path to SSL key file
+DEFAULT_SSL_KEY_FILE = None
+# Default value for a path to SSL certificate file
+DEFAULT_SSL_CERT_FILE = None
+# Default value for a path to SSL certificatea uthorities file
+DEFAULT_SSL_CA_FILE = None
+# Default value for list of SSL ciphers
+DEFAULT_SSL_CIPHERS = None
 # Default cluster nodes list refresh interval (seconds)
 CLUSTER_DISCOVERY_DELAY = 60
 # Default cluster nodes state refresh interval (seconds)
