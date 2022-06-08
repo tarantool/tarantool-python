@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - SSL support (PR #220, #217).
+- Tarantool Enterprise testing workflow on GitHub actions (PR #220).
 
 ### Changed
 

@@ -3,16 +3,19 @@ name: testing
 on:
   push:
   pull_request:
+  pull_request_target:
+    types: [labeled]
 
 jobs:
-  run_tests_linux:
+  run_tests_ce_linux:
     # We want to run on external PRs, but not on our own internal
     # PRs as they'll be run by the push to the branch.
     #
     # The main trick is described here:
     # https://github.com/Dart-Code/Dart-Code/pull/2375
-    if: github.event_name == 'push' ||
-      github.event.pull_request.head.repo.full_name != github.repository
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
 
     runs-on: ubuntu-20.04
 
@@ -97,14 +100,93 @@ jobs:
       - name: Run tests
         run: make test
 
-  run_tests_windows:
+  run_tests_ee_linux:
+    # The same as for run_tests_ce_linux, but it does not run on pull requests
+    # from forks by default. Tests will run only when the pull request is
+    # labeled with `full-ci`. To avoid security problems, the label must be
+    # reset manually for every run.
+    #
+    # We need to use `pull_request_target` because it has access to base
+    # repository secrets unlike `pull_request`.
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request_target' &&
+        github.event.pull_request.head.repo.full_name != github.repository &&
+        github.event.label.name == 'full-ci')
+
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tarantool:
+          - '1.10.11-0-gf0b0e7ecf-r470'
+          - '2.8.3-21-g7d35cd2be-r470'
+          - '2.10.0-1-gfa775b383-r486-linux-x86_64'
+        python: ['3.5', '3.6', '3.7', '3.8', '3.9', '3.10']
+        msgpack-deps:
+          # latest msgpack will be installed as a part of requirements.txt
+          - ''
+
+    steps:
+      - name: Clone the connector
+        uses: actions/checkout@v2
+        # This is needed for pull_request_target because this event runs in the
+        # context of the base commit of the pull request. It works fine for
+        # `push` and `workflow_dispatch` because the default behavior is used
+        # if `ref` and `repository` are empty.
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+
+      - name: Install tarantool ${{ matrix.tarantool }}
+        run: |
+          ARCHIVE_NAME=tarantool-enterprise-bundle-${{ matrix.tarantool }}.tar.gz
+          curl -O -L https://${{ secrets.SDK_DOWNLOAD_TOKEN }}@download.tarantool.io/enterprise/${ARCHIVE_NAME}
+          tar -xzf ${ARCHIVE_NAME}
+          rm -f ${ARCHIVE_NAME}
+
+      - name: Setup Python for tests
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install specific version of msgpack package
+        if: startsWith(matrix.msgpack-deps, 'msgpack==') == true
+        run: |
+          pip install ${{ matrix.msgpack-deps }}
+
+      - name: Install specific version of msgpack-python package
+        # msgpack package is a replacement for deprecated msgpack-python.
+        # To test compatibility with msgpack-python we must ignore
+        # requirements.txt install of msgpack package by overwriting it
+        # with sed.
+        if: startsWith(matrix.msgpack-deps, 'msgpack-python==') == true
+        run: |
+          pip install ${{ matrix.msgpack-deps }}
+          sed -i -e "s/^msgpack.*$/${{ matrix.msgpack-deps }}/" requirements.txt
+
+      - name: Install package requirements
+        run: pip install -r requirements.txt
+
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+
+      - name: Run tests
+        run: |
+          source tarantool-enterprise/env.sh
+          make test
+        env:
+          TEST_TNT_SSL: ${{ matrix.tarantool == '2.10.0-1-gfa775b383-r486-linux-x86_64' }}
+
+  run_tests_ce_windows:
     # We want to run on external PRs, but not on our own internal
     # PRs as they'll be run by the push to the branch.
     #
     # The main trick is described here:
     # https://github.com/Dart-Code/Dart-Code/pull/2375
     if: github.event_name == 'push' ||
-      github.event.pull_request.head.repo.full_name != github.repository
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
 
     runs-on: windows-2022
 
