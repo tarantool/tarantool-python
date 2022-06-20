@@ -1,3 +1,107 @@
+tarantool-python (0.9.0-0) unstable; urgency=medium
+    ## Overview
+
+    This release features SSL support.
+
+    To use encrypted connection with Tarantool Enterprise Edition
+    instance, pass "ssl" `transport` parameter on connect:
+
+    ```python
+    con = tarantool.Connection(
+        host, port,
+        user=user,
+        password=pass,
+        transport="ssl")
+    ```
+
+    To verify the server, set client trusted certificate
+    authorities (CA) file with `ssl_ca_file` parameter:
+
+    ```python
+    con = tarantool.Connection(
+        host, port,
+        user=user,
+        password=password,
+        transport="ssl",
+        ssl_ca_file=client_ca_file)
+    ```
+    
+    If the server authenticates clients using certificates issued by
+    given CA, you must provide private SSL key file with `ssl_key_file`
+    parameter and SSL certificate file with `ssl_cert_file` parameter.
+    Otherwise, these parameters are optional.
+
+    ```python
+    con = tarantool.Connection(
+        host, port,
+        user=user,
+        password=password,
+        transport="ssl",
+        ssl_key_file=client_key_file,
+        ssl_cert_file=client_cert_file)
+    ```
+
+    To set SSL ciphers, set them with `ssl_ciphers` parameter as
+    a colon-separated (:) string:
+
+    ```python
+    con = tarantool.Connection(
+        host, port,
+        user=user,
+        password=password,
+        transport="ssl",
+        ssl_ciphers=client_ssl_ciphers)
+    ```
+
+    ConnectionPool and MeshConnection also support these parameters.
+
+    ```python
+    mesh = tarantool.MeshConnection(
+        addrs={
+            "host": host,
+            "post": port,
+            "transport": "ssl",
+            "ssl_key_file": client_key_file,
+            "ssl_cert_file": client_cert_file,
+            "ssl_ca_file": client_ca_file,
+            "ssl_ciphers": client_ssl_ciphers,
+        },
+        user=user,
+        password=password)
+    ```
+
+    ```python
+    pool = tarantool.ConnectionPool(
+        addrs={
+            "host": host,
+            "post": port,
+            "transport": "ssl",
+            "ssl_key_file": client_key_file,
+            "ssl_cert_file": client_cert_file,
+            "ssl_ca_file": client_ca_file,
+            "ssl_ciphers": client_ssl_ciphers,
+        },
+        user=user,
+        password=password)
+    ```
+
+    See [Tarantool Enterprise Edition manual](https://www.tarantool.io/en/enterprise_doc/security/#enterprise-iproto-encryption)
+    for details. 
+
+    ## Breaking changes
+
+    There are no breaking changes in the release.
+
+    ## New features
+
+    * SSL support (PR #220, #217).
+
+    ## Testing
+
+    * Tarantool Enterprise testing workflow on GitHub actions (PR #220).
+
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org> Mon, 20 Jun 2022 18:00:00 +0300
+
 tarantool-python (0.8.0-0) unstable; urgency=medium
 
     ## Overview
