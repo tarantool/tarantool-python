@@ -9,6 +9,11 @@ from tarantool.const import (
     SOCKET_TIMEOUT,
     RECONNECT_MAX_ATTEMPTS,
     RECONNECT_DELAY,
+    DEFAULT_TRANSPORT,
+    DEFAULT_SSL_KEY_FILE,
+    DEFAULT_SSL_CERT_FILE,
+    DEFAULT_SSL_CA_FILE,
+    DEFAULT_SSL_CIPHERS
 )
 
 from tarantool.error import (
@@ -24,14 +29,18 @@ from tarantool.schema import (
 )
 
 from tarantool.utils import (
-    ENCODING_DEFAULT
+    ENCODING_DEFAULT,
 )
 
 __version__ = "0.8.0"
 
 
 def connect(host="localhost", port=33013, user=None, password=None,
-            encoding=ENCODING_DEFAULT):
+            encoding=ENCODING_DEFAULT, transport=DEFAULT_TRANSPORT,
+            ssl_key_file=DEFAULT_SSL_KEY_FILE,
+            ssl_cert_file=DEFAULT_SSL_CERT_FILE,
+            ssl_ca_file=DEFAULT_SSL_CA_FILE,
+            ssl_ciphers=DEFAULT_SSL_CIPHERS):
     '''
     Create a connection to the Tarantool server.
 
@@ -50,7 +59,12 @@ def connect(host="localhost", port=33013, user=None, password=None,
                       reconnect_max_attempts=RECONNECT_MAX_ATTEMPTS,
                       reconnect_delay=RECONNECT_DELAY,
                       connect_now=True,
-                      encoding=encoding)
+                      encoding=encoding,
+                      transport=transport,
+                      ssl_key_file=ssl_key_file,
+                      ssl_cert_file=ssl_cert_file,
+                      ssl_ca_file=ssl_ca_file,
+                      ssl_ciphers=ssl_ciphers)
 
 
 def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
