@@ -1,7 +1,7 @@
 .. encoding: utf-8
 
-Клиентская библиотека для базы данных Tarantool
-===============================================
+Клиентская библиотека для платформы Tarantool
+=============================================
 
 :Версия: |version|
 
@@ -17,8 +17,8 @@
         $ pip install tarantool
 
 
-`Tarantool`_ – это очень быстрая in-memory база данных "ключ-значение".
-Изначально разработана в `Mail.Ru`_ и выпущена под лицензией `BSD`_.
+`Tarantool`_ – это очень быстрая платформа in-memory-вычислений.
+Изначально разработана в `VK`_ и выпущена под лицензией `BSD`_.
 
 
 
@@ -30,7 +30,7 @@
    quick-start.ru
    guide.ru
 
-.. seealso:: `Tarantool/Box User Guide`_
+.. seealso:: `Документация Tarantool`_
 
 
 Справочник по API
@@ -56,9 +56,9 @@
 
 
 .. _`Tarantool`:
-.. _`Tarantool homepage`: http://tarantool.org
-.. _`Tarantool/Box User Guide`: http://tarantool.org/tarantool_user_guide.html
-.. _`Mail.Ru`: http://mail.ru
+.. _`Tarantool homepage`: https://tarantool.io
+.. _`Документация Tarantool`: https://www.tarantool.io/en/doc/latest/
+.. _`VK`: https://vk.company
 .. _`BSD`:
 .. _`BSD license`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
 .. _`PyPI`: http://pypi.python.org/pypi/tarantool

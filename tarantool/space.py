@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 '''
-This module provides :class:`~tarantool.space.Space` class.
-It is an object-oriented wrapper for request over Tarantool space.
+This module provides the :class:`~tarantool.space.Space` class.
+It is an object-oriented wrapper for requests to a Tarantool space.
 '''
 
 
 class Space(object):
     '''
     Object-oriented wrapper for accessing a particular space.
-    Encapsulates the identifier of the space and provides more convenient
+    Encapsulates the identifier of the space and provides a more convenient
     syntax for database operations.
     '''
 
@@ -17,7 +17,7 @@ class Space(object):
         '''
         Create Space instance.
 
-        :param connection: Object representing connection to the server
+        :param connection: object representing connection to the server
         :type connection: :class:`~tarantool.connection.Connection` instance
         :param int space_name: space no or name to insert a record
         :type space_name: int or str
@@ -28,56 +28,56 @@ class Space(object):
 
     def insert(self, *args, **kwargs):
         '''
-        Execute INSERT request.
+        Execute an INSERT request.
 
-        See `~tarantool.connection.insert` for more information
+        See `~tarantool.connection.insert` for more information.
         '''
         return self.connection.insert(self.space_no, *args, **kwargs)
 
     def replace(self, *args, **kwargs):
         '''
-        Execute REPLACE request.
+        Execute a REPLACE request.
 
-        See `~tarantool.connection.replace` for more information
+        See `~tarantool.connection.replace` for more information.
         '''
         return self.connection.replace(self.space_no, *args, **kwargs)
 
     def delete(self, *args, **kwargs):
         '''
-        Execute DELETE request.
+        Execute a DELETE request.
 
-        See `~tarantool.connection.delete` for more information
+        See `~tarantool.connection.delete` for more information.
         '''
         return self.connection.delete(self.space_no, *args, **kwargs)
 
     def update(self, *args, **kwargs):
         '''
-        Execute UPDATE request.
+        Execute an UPDATE request.
 
-        See `~tarantool.connection.update` for more information
+        See `~tarantool.connection.update` for more information.
         '''
         return self.connection.update(self.space_no, *args, **kwargs)
 
     def upsert(self, *args, **kwargs):
         '''
-        Execute UPDATE request.
+        Execute an UPDATE request.
 
-        See `~tarantool.connection.upsert` for more information
+        See `~tarantool.connection.upsert` for more information.
         '''
         return self.connection.upsert(self.space_no, *args, **kwargs)
 
     def select(self, *args, **kwargs):
         '''
-        Execute SELECT request.
+        Execute a SELECT request.
 
-        See `~tarantool.connection.select` for more information
+        See `~tarantool.connection.select` for more information.
         '''
         return self.connection.select(self.space_no, *args, **kwargs)
 
     def call(self, func_name, *args, **kwargs):
         '''
-        Execute CALL request. Call stored Lua function.
+        Execute a CALL request. Call a stored Lua function.
 
-        It's deprecated, use `~tarantool.connection.call` instead
+        Deprecated, use `~tarantool.connection.call` instead.
         '''
         return self.connection.call(func_name, *args, **kwargs)

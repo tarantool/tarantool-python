@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-This module provides MeshConnection class with automatic switch
-between tarantool instances and basic Round-Robin strategy.
+This module provides the MeshConnection class with automatic switch
+between Tarantool instances by the basic round-robin strategy.
 '''
 
 import time
@@ -204,15 +204,16 @@ class MeshConnection(Connection):
    Represents a connection to a cluster of Tarantool servers.
 
    This class uses Connection to connect to one of the nodes of the cluster.
-   The initial list of nodes is passed to the constructor in 'addrs' parameter.
-   The class set in 'strategy_class' parameter is used to select a node from
-   the list and switch nodes in case of unavailability of the current node.
+   The initial list of nodes is passed to the constructor in the 
+   'addrs' parameter. The class set in the 'strategy_class' parameter
+   is used to select a node from the list and switch nodes in case the
+   current node is unavailable.
 
-   'cluster_discovery_function' param of the constructor sets the name of a
-   stored Lua function used to refresh the list of available nodes. The
-   function takes no parameters and returns a list of strings in format
-   'host:port'. A generic function for getting the list of nodes looks like
-   this:
+   The 'cluster_discovery_function' param of the constructor sets the name
+   of the stored Lua function used to refresh the list of available nodes.
+   The function takes no parameters and returns a list of strings in the
+   format 'host:port'. A generic function for getting the list of nodes
+   looks like this:
 
     .. code-block:: lua
 
@@ -224,9 +225,9 @@ class MeshConnection(Connection):
             }
         end
 
-    You may put in this list whatever you need depending on your cluster
-    topology. Chances are you'll want to make the list of nodes from nodes'
-    replication config. Here is an example for it:
+    You can put in this list whatever you need, depending on your
+    cluster topology. Chances are you'll want to derive the list of nodes
+    from the nodes' replication configuration. Here is an example:
 
     .. code-block:: lua
 
@@ -245,7 +246,7 @@ class MeshConnection(Connection):
                 end
             end
 
-            -- if your replication config doesn't contain the current node
+            -- if your replication config doesn't contain the current node,
             -- you have to add it manually like this:
             table.insert(nodes, '192.168.0.1:3301')
 
@@ -354,8 +355,8 @@ class MeshConnection(Connection):
 
     def _opt_refresh_instances(self):
         '''
-        Refresh list of tarantool instances in a cluster.
-        Reconnect if a current instance was gone from the list.
+        Refresh the list of tarantool instances in a cluster.
+        Reconnect if the current instance has disappeared from the list.
         '''
         now = time.time()
 
@@ -370,14 +371,14 @@ class MeshConnection(Connection):
         try:
             resp = self._send_request_wo_reconnect(request)
         except DatabaseError as e:
-            msg = 'got "%s" error, skipped addresses updating' % str(e)
+            msg = 'got "%s" error, skipped address updates' % str(e)
             warn(msg, ClusterDiscoveryWarning)
             return
 
         if not resp.data or not resp.data[0] or \
                 not isinstance(resp.data[0], list):
             msg = "got incorrect response instead of URI list, " + \
-                  "skipped addresses updating"
+                  "skipped address updates"
             warn(msg, ClusterDiscoveryWarning)
             return
 
@@ -397,7 +398,7 @@ class MeshConnection(Connection):
             new_addrs.append(new_addr)
 
         if not new_addrs:
-            msg = "got no correct URIs, skipped addresses updating"
+            msg = "got no correct URIs, skipped address updates"
             warn(msg, ClusterDiscoveryWarning)
             return
 
@@ -421,11 +422,12 @@ class MeshConnection(Connection):
 
     def _send_request(self, request):
         '''
-        Update instances list if "cluster_discovery_function" is provided and a
-        last update was more then "cluster_discovery_delay" seconds ago.
+        Update the instances list if `cluster_discovery_function`
+        is provided and the last update was more than
+        `cluster_discovery_delay` seconds ago.
 
-        After that perform a request as usual and return an instance of
-        `Response` class.
+        After that, perform a request as usual and return an instance of
+        the `Response` class.
 
         :param request: object representing a request
         :type request: `Request` instance

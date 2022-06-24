@@ -14,35 +14,39 @@ This package is a pure-python client library for `Tarantool`_.
 .. image:: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml/badge.svg?branch=master
     :target: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml
 
-Download and Install
+Download and install
 --------------------
 
-The recommended way to install ``tarantool`` package is using PIP
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+With pip (recommended)
+^^^^^^^^^^^^^^^^^^^^^^
 
-For Tarantool version < 1.6.0 you must get ``0.3.*`` connector version::
+The recommended way to install the ``tarantool`` package is using ``pip``.
+
+For Tarantool version < 1.6.0, get the ``0.3.*`` connector version::
 
     $ pip install tarantool\<0.4
 
-For later Tarantool use version ``0.5.*`` connector version::
+For a later Tarantool version, get the ``0.5.*`` connector version::
 
     $ pip install tarantool\>0.4
 
-You can also download zip archive, unpack it and run
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ZIP archive
+^^^^^^^^^^^
 
-.. code-block:: console
+You can also download zip archive, unpack it and run::
 
     $ python setup.py install
 
-To install development version of the package using pip
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Development version
+^^^^^^^^^^^^^^^^^^^
 
-For Tarantool version < 1.6.0 you must get ``stable`` branch::
+You can also install the development version of the package using ``pip``.
+
+For Tarantool version < 1.6.0, get the ``stable`` branch::
 
     $ pip install git+https://github.com/tarantool/tarantool-python.git@stable
 
-For later Tarantool use ``master`` branch::
+For a later Tarantool version, use the ``master`` branch::
 
     $ pip install git+https://github.com/tarantool/tarantool-python.git@master
 
@@ -51,41 +55,42 @@ For later Tarantool use ``master`` branch::
 What is Tarantool?
 ------------------
 
-`Tarantool`_ is a NoSQL database running inside a Lua program. It combines the
-network programming power of Node.JS with data persistency capabilities of
-Redis. It's open source, `BSD-2-Clause`_ licensed.
+`Tarantool`_ is an in-memory NoSQL database with a Lua application server on board.
+It combines the network programming power of Node.JS
+with data persistency capabilities of Redis.
+It's open-source, licensed under `BSD-2-Clause`_.
 
 Features
 --------
 
 * ANSI SQL, including views, joins, referential and check constraints
-* Lua packages for non-blocking I/O, fibers and HTTP
-* MsgPack data format and MsgPack based client-server protocol
+* Lua packages for non-blocking I/O, fibers, and HTTP
+* MsgPack data format and MsgPack-based client-server protocol
 * Two data engines:
 
-  * memtx - the in-memory storage engine with optional persistence
-  * vinyl - the on-disk storage engine to use with large data sets
+  * memtx – in-memory storage engine with optional persistence
+  * vinyl – on-disk storage engine to use with larger data sets
 
-* secondary key and index iterators support (can be non-unique and composite)
-* multiple index types: HASH, BITSET, TREE, RTREE
-* asynchronous master-master replication
-* authentication and access control
+* Secondary key and index iterator support (can be non-unique and composite)
+* Multiple index types: HASH, BITSET, TREE, RTREE
+* Asynchronous master-master replication
+* Authentication and access control
 
 See More
 ^^^^^^^^
 
-* `Tarantool Homepage`_
-* `Tarantool at Github`_
-* `Tarantool User Guide`_
-* `Client-server Protocol Specification`_
+* `Tarantool homepage`_
+* `Tarantool on GitHub`_
+* `Tarantool documentation`_
+* `Client-server protocol specification`_
 
 NOTE
 ^^^^
 
 This driver is synchronous, so connection mustn't be shared between threads/processes.
 
-Look at `asynctnt`_ for asynchronous Python driver based on asyncio. See
-also the `feature comparison table`_.
+If you're looking for an asynchronous Python driver based on ``asyncio``,
+consider using `asynctnt`_ . See also the `feature comparison table`_.
 
 Run tests
 ^^^^^^^^^
@@ -98,10 +103,11 @@ On Linux:
 
 On Windows:
 
-* Setup a Linux machine with installed tarantool (called ``remote`` later).
-* (on ``remote``) Copy ``test/suites/lib/tarantool_python_ci.lua`` to
+* Setup a Linux machine with Tarantool installed.
+  This machine will be referred to as ``remote`` in this instruction.
+* (On ``remote``) Copy ``test/suites/lib/tarantool_python_ci.lua`` to
   ``/etc/tarantool/instances.available``.
-* (on ``remote``) Run ``tarantoolctl start tarantool_python_ci``.
+* (On ``remote``) Run ``tarantoolctl start tarantool_python_ci``.
 * Set the following environment variables:
   * ``REMOTE_TARANTOOL_HOST=...``,
   * ``REMOTE_TARANTOOL_CONSOLE_PORT=3302``.
@@ -109,9 +115,9 @@ On Windows:
 
 .. _`Tarantool`:
 .. _`Tarantool Database`:
-.. _`Tarantool Homepage`: https://tarantool.io
-.. _`Tarantool at Github`: https://github.com/tarantool/tarantool
-.. _`Tarantool User Guide`: https://www.tarantool.io/en/doc/latest/
+.. _`Tarantool homepage`: https://tarantool.io
+.. _`Tarantool on GitHub`: https://github.com/tarantool/tarantool
+.. _`Tarantool documentation`: https://www.tarantool.io/en/doc/latest/
 .. _`Client-server protocol specification`: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/
 .. _`BSD-2-Clause`: https://opensource.org/licenses/BSD-2-Clause
 .. _`asynctnt`: https://github.com/igorcoding/asynctnt

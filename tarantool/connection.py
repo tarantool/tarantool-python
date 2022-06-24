@@ -180,7 +180,7 @@ class Connection(ConnectionInterface):
 
     This class is responsible for connection and network exchange with
     the server.
-    Also this class provides low-level interface to data manipulation
+    It also provides a low-level interface for data manipulation
     (insert/delete/update/select).
     '''
     # DBAPI Extension: supply exceptions as attributes on the connection
@@ -217,24 +217,25 @@ class Connection(ConnectionInterface):
         '''
         Initialize a connection to the server.
 
-        :param str host: Server hostname or IP-address
-        :param int port: Server port
-        :param bool connect_now: if True (default) than __init__() actually
-            creates network connection. if False than you have to call
-            connect() manualy.
-        :param str transport: It enables SSL encryption for a connection if set
-            to ssl. At least Python 3.5 is required for SSL encryption.
-        :param str ssl_key_file: A path to a private SSL key file.
-        :param str ssl_cert_file: A path to an SSL certificate file.
-        :param str ssl_ca_file: A path to a trusted certificate authorities
-            (CA) file.
-        :param str ssl_ciphers: A colon-separated (:) list of SSL cipher suites
-            the connection can use.
+        :param str host: server hostname or IP address
+        :param int port: server port
+        :param bool connect_now: if True (default), __init__() actually
+            creates a network connection; if False, you have to call
+            connect() manually
+        :param str transport: set to `ssl` to enable
+            SSL encryption for a connection.
+            SSL encryption requires Python >= 3.5
+        :param str ssl_key_file: path to the private SSL key file
+        :param str ssl_cert_file: path to the SSL certificate file
+        :param str ssl_ca_file: path to the trusted certificate authority
+            (CA) file
+        :param str ssl_ciphers: colon-separated (:) list of SSL cipher suites
+            the connection can use
         '''
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
-            raise ConfigurationError("Only None and 'utf-8' encoding option " +
-                                     "values are supported with msgpack>=1.0.0")
+            raise ConfigurationError("msgpack>=1.0.0 only supports None and " +
+                                     "'utf-8' encoding option values")
 
         if os.name == 'nt':
             libc = ctypes.WinDLL(
@@ -272,14 +273,14 @@ class Connection(ConnectionInterface):
 
     def close(self):
         '''
-        Close connection to the server
+        Close a connection to the server.
         '''
         self._socket.close()
         self._socket = None
 
     def is_closed(self):
         '''
-        Returns the state of the Connection instance
+        Returns the state of a Connection instance.
         :rtype: Boolean
         '''
         return self._socket is None
@@ -292,7 +293,7 @@ class Connection(ConnectionInterface):
 
     def connect_tcp(self):
         '''
-        Create connection to the host and port specified in __init__().
+        Create a connection to the host and port specified in __init__().
 
         :raise: `NetworkError`
         '''
@@ -312,7 +313,7 @@ class Connection(ConnectionInterface):
 
     def connect_unix(self):
         '''
-        Create connection to the host and port specified in __init__().
+        Create a connection to the host and port specified in __init__().
 
         :raise: `NetworkError`
         '''
@@ -332,13 +333,13 @@ class Connection(ConnectionInterface):
 
     def wrap_socket_ssl(self):
         '''
-        Wrap an existing socket with SSL socket.
+        Wrap an existing socket with an SSL socket.
 
         :raise: SslError
         :raise: `ssl.SSLError`
         '''
         if not is_ssl_supported:
-            raise SslError("SSL is unsupported by the python.")
+            raise SslError("Your version of Python doesn't support SSL")
 
         ver = sys.version_info
         if ver[0] < 3 or (ver[0] == 3 and ver[1] < 5):
@@ -347,8 +348,8 @@ class Connection(ConnectionInterface):
 
         if ((self.ssl_cert_file is None and self.ssl_key_file is not None)
            or (self.ssl_cert_file is not None and self.ssl_key_file is None)):
-            raise SslError("ssl_cert_file and ssl_key_file should be both " +
-                           "configured or not")
+            raise SslError("Both ssl_cert_file and ssl_key_file should be " +
+                           "configured or unconfigured")
 
         try:
             if hasattr(ssl, 'TLSVersion'):
@@ -375,7 +376,7 @@ class Connection(ConnectionInterface):
                 # interaction with a human + a Tarantool implementation does
                 # not support this at least for now.
                 def password_raise_error():
-                    raise SslError("a password for decrypting the private " +
+                    raise SslError("Password for decrypting the private " +
                                    "key is unsupported")
                 context.load_cert_chain(certfile=self.ssl_cert_file,
                                         keyfile=self.ssl_key_file,
@@ -410,9 +411,9 @@ class Connection(ConnectionInterface):
 
     def connect(self):
         '''
-        Create connection to the host and port specified in __init__().
-        Usually there is no need to call this method directly,
-        since it is called when you create an `Connection` instance.
+        Create a connection to the host and port specified in __init__().
+        Usually, there is no need to call this method directly,
+        because it is called when you create a `Connection` instance.
 
         :raise: `NetworkError`
         :raise: `SslError`
@@ -438,7 +439,7 @@ class Connection(ConnectionInterface):
                 self._socket.close()
                 err = socket.error(
                     errno.ECONNRESET,
-                    "Too big packet. Closing connection to server"
+                    "Packet too large. Closing connection to server"
                 )
                 raise NetworkError(err)
             except socket.error:
@@ -460,7 +461,7 @@ class Connection(ConnectionInterface):
 
     def _read_response(self):
         '''
-        Read response from the transport (socket)
+        Read response from the transport (socket).
 
         :return: tuple of the form (header, body)
         :rtype: tuple of two byte arrays
@@ -492,8 +493,9 @@ class Connection(ConnectionInterface):
 
     def _opt_reconnect(self):
         '''
-        Check that connection is alive using low-level recv from libc(ctypes)
-        **Due to bug in python - timeout is internal python construction.
+        Check that the connection is alive
+        using low-level recv from libc(ctypes).
+        **Bug in Python: timeout is an internal Python construction.
         '''
         if not self._socket:
             return self.connect()
@@ -545,7 +547,7 @@ class Connection(ConnectionInterface):
             else:
                 if self.connected:
                     break
-            warn("Reconnect attempt %d of %d" %
+            warn("Reconnecting, attempt %d of %d" %
                  (attempt, self.reconnect_max_attempts), NetworkWarning)
             if attempt == self.reconnect_max_attempts:
                 raise NetworkError(
@@ -557,8 +559,8 @@ class Connection(ConnectionInterface):
 
     def _send_request(self, request):
         '''
-        Send the request to the server through the socket.
-        Return an instance of `Response` class.
+        Send a request to the server through the socket.
+        Return an instance of the `Response` class.
 
         :param request: object representing a request
         :type request: `Request` instance
@@ -585,7 +587,7 @@ class Connection(ConnectionInterface):
 
     def call(self, func_name, *args):
         '''
-        Execute CALL request. Call stored Lua function.
+        Execute a CALL request. Call a stored Lua function.
 
         :param func_name: stored Lua function name
         :type func_name: str
@@ -606,7 +608,7 @@ class Connection(ConnectionInterface):
 
     def eval(self, expr, *args):
         '''
-        Execute EVAL request. Eval Lua expression.
+        Execute an EVAL request. Eval a Lua expression.
 
         :param expr: Lua expression
         :type expr: str
@@ -627,8 +629,8 @@ class Connection(ConnectionInterface):
 
     def replace(self, space_name, values):
         '''
-        Execute REPLACE request.
-        It won't throw error if there's no tuple with this PK exists
+        Execute a REPLACE request.
+        Doesn't throw an error if there is no tuple with the specified PK.
 
         :param int space_name: space id to insert a record
         :type space_name: int or str
@@ -645,9 +647,9 @@ class Connection(ConnectionInterface):
 
     def authenticate(self, user, password):
         '''
-        Execute AUTHENTICATE request.
+        Execute an AUTHENTICATE request.
 
-        :param string user: user to authenticate with
+        :param string user: user to authenticate
         :param string password: password for the user
 
         :rtype: `Response` instance
@@ -720,10 +722,10 @@ class Connection(ConnectionInterface):
 
     def insert(self, space_name, values):
         '''
-        Execute INSERT request.
-        It will throw error if there's tuple with same PK exists.
+        Execute an INSERT request.
+        Throws an error if there is a tuple with the same PK.
 
-        :param int space_name: space id to insert a record
+        :param int space_name: space id to insert the record
         :type space_name: int or str
         :param values: record to be inserted. The tuple must contain
             only scalar (integer or strings) values
@@ -739,7 +741,7 @@ class Connection(ConnectionInterface):
     def delete(self, space_name, key, **kwargs):
         '''
         Execute DELETE request.
-        Delete single record identified by `key`. If you're using secondary
+        Delete a single record identified by `key`. If you're using a secondary
         index, it must be unique.
 
         :param space_name: space number or name to delete a record
@@ -763,33 +765,33 @@ class Connection(ConnectionInterface):
         '''
         Execute UPSERT request.
 
-        If there is an existing tuple which matches the key fields of
+        If an existing tuple matches the key fields of
         `tuple_value`, then the request has the same effect as UPDATE
         and the [(field_1, symbol_1, arg_1), ...] parameter is used.
 
-        If there is no existing tuple which matches the key fields of
+        If there is no tuple matching the key fields of
         `tuple_value`, then the request has the same effect as INSERT
         and the `tuple_value` parameter is used. However, unlike insert
-        or update, upsert will not read a tuple and perform error checks
+        or update, upsert will neither read the tuple nor perform error checks
         before returning -- this is a design feature which enhances
         throughput but requires more caution on the part of the user.
 
-        If you're using secondary index, it must be unique.
+        If you're using a secondary index, it must be unique.
 
-        List of operations allows to update individual fields.
+        The list of operations allows updating individual fields.
+        
+        For every operation, you must provide the field number to apply this
+        operation to.
 
         *Allowed operations:*
-
-        (For every operation you must provide field number, to apply this
-        operation to)
 
         * `+` for addition (values must be numeric)
         * `-` for subtraction (values must be numeric)
         * `&` for bitwise AND (values must be unsigned numeric)
         * `|` for bitwise OR (values must be unsigned numeric)
         * `^` for bitwise XOR (values must be unsigned numeric)
-        * `:` for string splice (you must provide `offset`, `count` and `value`
-          for this operation)
+        * `:` for string splice (you must provide `offset`, `count`,
+          and `value` for this operation)
         * `!` for insertion (provide any element to insert)
         * `=` for assignment (provide any element to assign)
         * `#` for deletion (provide count of fields to delete)
@@ -798,11 +800,11 @@ class Connection(ConnectionInterface):
         :type space_name: int or str
         :param index: index number or name to update a record
         :type index: int or str
-        :param tuple_value: tuple, that
+        :param tuple_value: tuple
         :type tuple_value:
         :param op_list: list of operations. Each operation
-            is tuple of three (or more) values
-        :type op_list: a list of the form [(symbol_1, field_1, arg_1),
+            is a tuple of three (or more) values
+        :type op_list: list of the form [(symbol_1, field_1, arg_1),
             (symbol_2, field_2, arg_2_1, arg_2_2, arg_2_3),...]
 
         :rtype: `Response` instance
@@ -811,14 +813,15 @@ class Connection(ConnectionInterface):
 
         .. code-block:: python
 
-            # 'ADD' 55 to second field
-            # Assign 'x' to third field
+            # 'ADD' 55 to the second field
+            # Assign 'x' to the third field
             [('+', 2, 55), ('=', 3, 'x')]
-            # 'OR' third field with '1'
-            # Cut three symbols starting from second and replace them with '!!'
-            # Insert 'hello, world' field before fifth element of tuple
+            # 'OR' the third field with '1'
+            # Cut three symbols, starting from the second,
+            # and replace them with '!!'
+            # Insert 'hello, world' field before the fifth element of the tuple
             [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
-            # Delete two fields starting with second field
+            # Delete two fields, starting with the second field
             [('#', 2, 2)]
         '''
         index_name = kwargs.get("index", 0)
@@ -834,28 +837,28 @@ class Connection(ConnectionInterface):
 
     def update(self, space_name, key, op_list, **kwargs):
         '''
-        Execute UPDATE request.
+        Execute an UPDATE request.
 
         The `update` function supports operations on fields — assignment,
         arithmetic (if the field is unsigned numeric), cutting and pasting
-        fragments of a field, deleting or inserting a field. Multiple
+        fragments of the field, deleting or inserting a field. Multiple
         operations can be combined in a single update request, and in this
         case they are performed atomically and sequentially. Each operation
-        requires specification of a field number. When multiple operations are
-        present, the field number for each operation is assumed to be relative
+        requires that you specify a field number. With multiple operations,
+        the field number for each operation is assumed to be relative
         to the most recent state of the tuple, that is, as if all previous
-        operations in a multi-operation update have already been applied.
+        operations in the multi-operation update have already been applied.
         In other words, it is always safe to merge multiple update invocations
         into a single invocation, with no change in semantics.
 
-        Update single record identified by `key`.
+        Update a single record identified by `key`.
 
-        List of operations allows to update individual fields.
+        The list of operations allows updating individual fields.
+        
+        For every operation, you must provide the field number to apply this
+        operation to.
 
         *Allowed operations:*
-
-        (For every operation you must provide field number, to apply this
-        operation to)
 
         * `+` for addition (values must be numeric)
         * `-` for subtraction (values must be numeric)
@@ -868,15 +871,15 @@ class Connection(ConnectionInterface):
         * `=` for assignment (provide any element to assign)
         * `#` for deletion (provide count of fields to delete)
 
-        :param space_name: space number or name to update a record
+        :param space_name: space number or name to update the record
         :type space_name: int or str
-        :param index: index number or name to update a record
+        :param index: index number or name to update the record
         :type index: int or str
-        :param key: key that identifies a record
+        :param key: key that identifies the record
         :type key: int or str
         :param op_list: list of operations. Each operation
-            is tuple of three (or more) values
-        :type op_list: a list of the form [(symbol_1, field_1, arg_1),
+            is a tuple of three (or more) values
+        :type op_list: list of the form [(symbol_1, field_1, arg_1),
             (symbol_2, field_2, arg_2_1, arg_2_2, arg_2_3), ...]
 
         :rtype: ``Response`` instance
@@ -886,13 +889,14 @@ class Connection(ConnectionInterface):
         .. code-block:: python
 
             # 'ADD' 55 to second field
-            # Assign 'x' to third field
+            # Assign 'x' to the third field
             [('+', 2, 55), ('=', 3, 'x')]
-            # 'OR' third field with '1'
-            # Cut three symbols starting from second and replace them with '!!'
-            # Insert 'hello, world' field before fifth element of tuple
+            # 'OR' the third field with '1'
+            # Cut three symbols, starting from second,
+            # and replace them with '!!'
+            # Insert 'hello, world' field before the fifth element of the tuple
             [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
-            # Delete two fields starting with second field
+            # Delete two fields, starting with the second field
             [('#', 2, 2)]
         '''
         index_name = kwargs.get("index", 0)
@@ -908,8 +912,8 @@ class Connection(ConnectionInterface):
 
     def ping(self, notime=False):
         '''
-        Execute PING request.
-        Send empty request and receive empty response from server.
+        Execute a PING request.
+        Send an empty request and receive an empty response from the server.
 
         :return: response time in seconds
         :rtype: float
@@ -926,15 +930,15 @@ class Connection(ConnectionInterface):
 
     def select(self, space_name, key=None, **kwargs):
         '''
-        Execute SELECT request.
+        Execute a SELECT request.
         Select and retrieve data from the database.
 
-        :param space_name: specifies which space to query
+        :param space_name: space to query
         :type space_name: int or str
-        :param values: values to search over the index
+        :param values: values to search by index
         :type values: list, tuple, set, frozenset of tuples
-        :param index: specifies which index to use (default is **0** which
-            means that the **primary index** will be used)
+        :param index: index to search by (default is **0**, which
+            means that the **primary index** is used)
         :type index: int or str
         :param offset: offset in the resulting tuple set
         :type offset: int
@@ -943,13 +947,13 @@ class Connection(ConnectionInterface):
 
         :rtype: `Response` instance
 
-        You may use names for index/space. Matching id's -> names connector
-        will get from server.
+        You can use index/space names. The driver will get
+        the matching id's -> names from the server.
 
-        Select one single record (from space=0 and using index=0)
+        Select a single record (from space=0 and using index=0)
         >>> select(0, 1)
 
-        Select single record from space=0 (with name='space') using
+        Select a single record from space=0 (with name='space') using
         composite index=1 (with name '_name').
         >>> select(0, [1,'2'], index=1)
         # OR
@@ -992,10 +996,11 @@ class Connection(ConnectionInterface):
 
     def space(self, space_name):
         '''
-        Create `Space` instance for particular space
+        Create a `Space` instance for a particular space.
 
-        `Space` instance encapsulates the identifier of the space and provides
-        more convenient syntax for accessing the database space.
+        A `Space` instance encapsulates the identifier
+        of the space and provides a more convenient syntax
+        for accessing the database space.
 
         :param space_name: identifier of the space
         :type space_name: int or str
@@ -1006,19 +1011,19 @@ class Connection(ConnectionInterface):
 
     def generate_sync(self):
         '''
-        Need override for async io connection
+        Need override for async io connection.
         '''
         return 0
 
     def execute(self, query, params=None):
         '''
-        Execute SQL request.
+        Execute an SQL request.
 
-        Tarantool binary protocol for SQL requests
+        The Tarantool binary protocol for SQL requests
         supports "qmark" and "named" param styles.
-        Sequence of values can be used for "qmark" style.
+        A sequence of values can be used for "qmark" style.
         A mapping is used for "named" param style
-        without leading colon in the keys.
+        without the leading colon in the keys.
 
         Example for "qmark" arguments:
         >>> args = ['email@example.com']
@@ -1031,7 +1036,7 @@ class Connection(ConnectionInterface):
         :param query: SQL syntax query
         :type query: str
 
-        :param params: Bind values to use in the query.
+        :param params: bind values to use in the query
         :type params: list, dict
 
         :return: query result data
