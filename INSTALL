@@ -1,17 +1,17 @@
 Installing tarantool-python
 ===========================
 
-The simplest (and recommended) way to install tarantool-python
+Here is the simplest (and recommended) way to install tarantool-python.
 
-using `pip`::
+Using `pip`::
 
     $ pip install tarantool
 
-or `easy_install`::
+Using `easy_install`::
 
     $ easy_install tarantool
 
 
-You can also download a source tarball and install the package using distutils script::
+You can also download the source tarball and install the package using distutils script::
 
     # python setup.py install

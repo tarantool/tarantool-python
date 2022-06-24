@@ -35,15 +35,16 @@ class Response(Sequence):
     Represents a single response from the server in compliance with the
     Tarantool protocol.
     Responsible for data encapsulation (i.e. received list of tuples)
-    and parses binary packet received from the server.
+    and parsing of binary packets received from the server.
     '''
 
     def __init__(self, conn, response):
         '''
-        Create an instance of `Response` using data received from the server.
+        Create an instance of `Response`
+        using the data received from the server.
 
-        __init__() itself reads data from the socket, parses response body and
-        sets appropriate instance attributes.
+        __init__() reads data from the socket, parses the response body, and
+        sets the appropriate instance attributes.
 
         :param body: body of the response
         :type body: array of bytes
@@ -125,37 +126,37 @@ class Response(Sequence):
 
     def __getitem__(self, idx):
         if self._data is None:
-            raise InterfaceError("Trying to access data, when there's no data")
+            raise InterfaceError("Trying to access data when there's no data")
         return self._data.__getitem__(idx)
 
     def __len__(self):
         if self._data is None:
-            raise InterfaceError("Trying to access data, when there's no data")
+            raise InterfaceError("Trying to access data when there's no data")
         return len(self._data)
 
     def __contains__(self, item):
         if self._data is None:
-            raise InterfaceError("Trying to access data, when there's no data")
+            raise InterfaceError("Trying to access data when there's no data")
         return item in self._data
 
     def __iter__(self):
         if self._data is None:
-            raise InterfaceError("Trying to access data, when there's no data")
+            raise InterfaceError("Trying to access data when there's no data")
         return iter(self._data)
 
     def __reversed__(self):
         if self._data is None:
-            raise InterfaceError("Trying to access data, when there's no data")
+            raise InterfaceError("Trying to access data when there's no data")
         return reversed(self._data)
 
     def index(self, *args):
         if self._data is None:
-            raise InterfaceError("Trying to access data, when there's no data")
+            raise InterfaceError("Trying to access data when there's no data")
         return self._data.index(*args)
 
     def count(self, item):
         if self._data is None:
-            raise InterfaceError("Trying to access data, when there's no data")
+            raise InterfaceError("Trying to access data when there's no data")
         return self._data.count(item)
 
     @property
@@ -173,7 +174,7 @@ class Response(Sequence):
         :type: dict
 
         Required field in the server response.
-        Contains raw response body.
+        Contains the raw response body.
         '''
         return self._body
 
@@ -183,7 +184,7 @@ class Response(Sequence):
         :type: int
 
         Required field in the server response.
-        Contains response type id.
+        Contains the response type id.
         '''
         return self._code
 
@@ -193,7 +194,7 @@ class Response(Sequence):
         :type: int
 
         Required field in the server response.
-        Contains response header IPROTO_SYNC.
+        Contains the response header IPROTO_SYNC.
         '''
         return self._sync
 
@@ -203,9 +204,10 @@ class Response(Sequence):
         :type: int
 
         Required field in the server response.
-        Value of :attr:`return_code` can be ``0`` if request was sucessfull
-        or contains an error code.
-        If :attr:`return_code` is non-zero than :attr:`return_message`
+        If the request was successful,
+        the value of :attr:`return_code` is ``0``.
+        Otherwise, :attr:`return_code` contains an error code.
+        If :attr:`return_code` is non-zero, :attr:`return_message`
         contains an error message.
         '''
         return self._return_code
@@ -216,7 +218,7 @@ class Response(Sequence):
         :type: object
 
         Required field in the server response.
-        Contains list of tuples of SELECT, REPLACE and DELETE requests
+        Contains the list of tuples for SELECT, REPLACE and DELETE requests
         and arbitrary data for CALL.
         '''
         return self._data
@@ -226,8 +228,8 @@ class Response(Sequence):
         '''
         :type: str
 
-        It may be ER_OK if request was successful,
-        or contain error code string.
+        Contains ER_OK if the request was successful,
+        or contains an error code string.
         '''
         return tnt_strerror(self._return_code)
 
@@ -237,7 +239,7 @@ class Response(Sequence):
         :type: str
 
         The error message returned by the server in case
-        of :attr:`return_code` is non-zero.
+        :attr:`return_code` is non-zero.
         '''
         return self._return_message
 
@@ -252,8 +254,8 @@ class Response(Sequence):
 
     def __str__(self):
         '''
-        Return user friendy string representation of the object.
-        Useful for the interactive sessions and debuging.
+        Return a user-friendy string representation of the object.
+        Useful for interactive sessions and debuging.
 
         :rtype: str or None
         '''
@@ -281,7 +283,7 @@ class ResponseExecute(Response):
         Returns a list with the new primary-key value
         (or values) for an INSERT in a table defined with
         PRIMARY KEY AUTOINCREMENT
-        (NOT result set size)
+        (NOT result set size).
 
         :rtype: list or None
         """

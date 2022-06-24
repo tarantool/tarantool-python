@@ -182,23 +182,23 @@ class PoolTask():
 
 class ConnectionPool(ConnectionInterface):
     '''
-    Represents pool of connections to the cluster of Tarantool servers.
+    Represents the pool of connections to a cluster of Tarantool servers.
 
-    ConnectionPool API is the same as a plain Connection API.
-    On each request, a connection is chosen to execute this request.
-    Connection is selected based on request mode:
+    ConnectionPool API is the same as Connection API.
+    On each request, a connection is chosen to execute the request.
+    The connection is selected based on request mode:
 
     * Mode.ANY chooses any instance.
     * Mode.RW chooses an RW instance.
     * Mode.RO chooses an RO instance.
-    * Mode.PREFER_RW chooses an RW instance, if possible, RO instance
+    * Mode.PREFER_RW chooses an RW instance, if possible, an RO instance
       otherwise.
-    * Mode.PREFER_RO chooses an RO instance, if possible, RW instance
+    * Mode.PREFER_RO chooses an RO instance, if possible, an RW instance
       otherwise.
 
-    All requests that are guaranteed to write (insert, replace, delete,
-    upsert, update) use RW mode by default. select uses ANY by default. You
-    can set the mode explicitly. call, eval, execute and ping requests
+    All requests that guarantee to write data (insert, replace, delete,
+    upsert, update) use the RW mode by default. select uses ANY by default. You
+    can set the mode explicitly. The call, eval, execute, and ping requests
     require to set the mode explicitly.
     '''
     def __init__(self,
@@ -215,7 +215,7 @@ class ConnectionPool(ConnectionInterface):
                  strategy_class=RoundRobinStrategy,
                  refresh_delay=POOL_REFRESH_DELAY):
         '''
-        Initialize connections to the cluster of servers.
+        Initialize connections to a cluster of servers.
 
         :param list addrs: List of
 
@@ -231,11 +231,11 @@ class ConnectionPool(ConnectionInterface):
                   ssl_ciphers: "str"    # optional
                 }
 
-            dictionaries, describing server addresses.
-            See :func:`tarantool.Connection` parameters with same names.
+            dictionaries describing server addresses.
+            See similar :func:`tarantool.Connection` parameters.
         :param str user: Username used to authenticate. User must be able
-            to call box.info function. For example, to give grants to
-            'guest' user, evaluate
+            to call the box.info function. For example, to grant permissions to
+            the 'guest' user, evaluate:
             box.schema.func.create('box.info')
             box.schema.user.grant('guest', 'execute', 'function', 'box.info')
             on Tarantool instances.
@@ -249,7 +249,7 @@ class ConnectionPool(ConnectionInterface):
             reconnect parameters in ConnectionPool since every status
             refresh is also a request with reconnection. Default is 0.
         :param StrategyInterface strategy_class: Class for choosing
-            instance based on request mode. By default, round-robin
+            instance based on request mode. By default, the round-robin
             strategy is used.
         :param int refresh_delay: Minimal time between RW/RO status
             refreshes.

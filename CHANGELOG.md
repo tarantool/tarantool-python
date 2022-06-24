@@ -37,22 +37,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ConnectionPool updates information about each server state (RO/RW)
   on initial connect and then asynchronously in separate threads.
   Application retries must be written considering the asynchronous nature
-  of cluster state refresh. User does not need to use any synchronization
+  of cluster state refresh. The user does not need to use any synchronization
   mechanisms in requests, it's all handled with ConnectionPool methods.
 
-  ConnectionPool API is the same as a plain Connection API.
-  On each request, a connection is chosen to execute this request.
-  A connection is chosen based on a request mode:
-  * Mode.ANY chooses any instance.
-  * Mode.RW chooses an RW instance.
-  * Mode.RO chooses an RO instance.
-  * Mode.PREFER_RW chooses an RW instance, if possible, RO instance
+  ConnectionPool API is the same as the plain Connection API.
+  On each request, a connection is chosen to execute the request.
+  A connection is chosen based on the request mode:
+  * `Mode.ANY` chooses any instance.
+  * `Mode.RW` chooses an RW instance.
+  * `Mode.RO` chooses an RO instance.
+  * `Mode.PREFER_RW` chooses an RW instance, if possible, an RO instance
     otherwise.
-  * Mode.PREFER_RO chooses an RO instance, if possible, RW instance
+  * `Mode.PREFER_RO` chooses an RO instance, if possible, an RW instance
     otherwise.
-  All requests that are guaranteed to write (insert, replace, delete,
-  upsert, update) use RW mode by default. select uses ANY by default. You
-  can set the mode explicitly. call, eval, execute and ping requests
+  All requests that guarantee to write data (insert, replace, delete,
+  upsert, update) use the RW mode by default.
+  The select request uses `ANY` by default. You
+  can set the mode explicitly. The call, eval, execute, and ping requests
   require to set the mode explicitly.
 
   Example:
@@ -69,14 +70,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ```
 
 ### Changed
-- **Breaking**: drop Python 2 support (PR #207).
-- **Breaking**: change binary types encode/decode for Python 3
-  to support working with varbinary (PR #211, #105).
-  With Python 2 the behavior of the connector remains the same.
+- **Breaking change**: Python 2 support dropped (PR #207).
+- **Breaking change**: `encode`/`decode` binary types for Python 3 changed
+  to support working with `varbinary` (PR #211, #105).
+  With Python 2, the behavior of the connector remains the same.
 
   Before this patch:
 
-  * encoding="utf-8" (default)
+  * `encoding="utf-8"` (default)
 
     | Python 3 | -> | Tarantool          | -> | Python 3 |
     |----------|----|--------------------|----|----------|
@@ -84,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     | bytes    | -> | mp_str (string)    | -> | str      |
     |          |    | mp_bin (varbinary) | -> | bytes    |
 
-  * encoding=None
+  * `encoding=None`
 
     | Python 3 | -> | Tarantool          | -> | Python 3 |
     |----------|----|--------------------|----|----------|
@@ -92,12 +93,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     | str      | -> | mp_str (string)    | -> | bytes    |
     |          |    | mp_bin (varbinary) | -> | bytes    |
 
-  Using bytes as key was not supported by several methods (delete,
-  update, select).
+  Several method (delete, update, select) did not support
+  using `bytes` as key.
 
   After this patch:
 
-  * encoding="utf-8" (default)
+  * `encoding="utf-8"` (default)
 
     | Python 3 | -> | Tarantool          | -> | Python 3 |
     |----------|----|--------------------|----|----------|
@@ -112,13 +113,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     | str      | -> | mp_str (string)    | -> | bytes    |
     |          |    | mp_bin (varbinary) | -> | bytes    |
 
-  Using bytes as key are now supported by all methods.
+  All methods now support using `bytes` as key.
 
-  Thus, encoding="utf-8" connection may be used to work with
-  utf-8 strings and varbinary and encodine=None connection
-  may be used to work with non-utf-8 strings.
+  Thus, an `encoding="utf-8"` connection may be used to work with
+  UTF-8 strings and `varbinary`, and an `encoding=None` connection
+  may be used to work with non-UTF-8 strings.
 
-- Clarify license of the project (BSD-2-Clause) (PR #210, #197).
+- Clarify the license of the project (BSD-2-Clause) (PR #210, #197).
 - Migrate CI to GitHub Actions (PR #213, PR #216, #182).
 - Various improvements and fixes in README (PR #210, PR #215).
 
@@ -141,15 +142,15 @@ the dependency on the msgpack library.
 
 ### Added
 - Support msgpack 1.0.0 (#155, PR #173).
-- SQL support (<connection>.execute() method) (#159, PR #161).
-- Allow to receive a Tarantool tuple as a Python tuple, not a list, with
-    use_list=False connection option (#166, PR #161).
+- SQL support (the method `<connection>.execute()`) (#159, PR #161).
+- Allow receiving a Tarantool tuple as a Python tuple, not a list, with
+    the `use_list=False` connection option (#166, PR #161).
 - Support the Database API (PEP-0249) (PR #161).
 
 ### Changed
 - Various improvements in README (PR #147, PR #151, PR #180).
 
 ### Fixed
-- Support encoding=None connections (PR #172).
+- Support `encoding=None` connections (PR #172).
 - Various improvements and fixes in tests (8ff9a3f, bd37703, PR #165,
   #178, PR #179, PR #181).

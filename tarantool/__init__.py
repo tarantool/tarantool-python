@@ -70,9 +70,9 @@ def connect(host="localhost", port=33013, user=None, password=None,
 def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
                 password=None, encoding=ENCODING_DEFAULT):
     '''
-    Create a connection to the mesh of Tarantool servers.
+    Create a connection to a mesh of Tarantool servers.
 
-    :param list addrs: A list of maps: {'host':(HOSTNAME|IP_ADDR), 'port':PORT}.
+    :param list addrs: List of maps: {'host':(HOSTNAME|IP_ADDR), 'port':PORT}.
 
     :rtype: :class:`~tarantool.mesh_connection.MeshConnection`
 

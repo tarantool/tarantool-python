@@ -21,9 +21,10 @@ class Cursor:
         """
         Call a stored database procedure with the given name. The sequence of
         parameters must contain one entry for each argument that the
-        procedure expects. The result of the call is returned as modified
-        copy of the input sequence. Input parameters are left untouched,
-        output and input/output parameters replaced with possibly new values.
+        procedure expects. The result of the call is returned as a modified
+        copy of the input sequence. The input parameters are left untouched,
+        the output and input/output parameters replaced with
+        possibly new values.
         """
         raise NotSupportedError("callproc() method is not supported")
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=R0903
 '''
-This module provides :class:`~tarantool.schema.Schema` class.
+This module provides the :class:`~tarantool.schema.Schema` class.
 It is a Tarantool schema description.
 '''
 
@@ -20,7 +20,7 @@ import tarantool.const as const
 class RecursionError(Error):
     """Report the situation when max recursion depth is reached.
 
-       This is internal error for <to_unicode_recursive> caller
+       This is an internal error of <to_unicode_recursive> caller,
        and it should be re-raised properly be the caller.
     """
 
@@ -32,8 +32,8 @@ def to_unicode(s):
 
 
 def to_unicode_recursive(x, max_depth):
-    """Same as to_unicode(), but traverses over dictionaries,
-       lists and tuples recursivery.
+    """Same as to_unicode(), but traverses recursively over dictionaries,
+       lists and tuples.
 
        x: value to convert
 

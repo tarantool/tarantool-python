@@ -1,7 +1,7 @@
 .. encoding: utf-8
 
-Python client library for Tarantool Database
-============================================
+Python client library for Tarantool
+===================================
 
 :Version: |version|
 
@@ -12,13 +12,13 @@ Python client library for Tarantool Database
 
     **Install**
 
-    .. code-block:: none
+    .. code-block:: bash
 
         $ pip install tarantool
 
 
-`Tarantool`_ is a damn fast key/value data store originally designed by 
-`Mail.Ru`_ and released under the terms of `BSD license`_.
+`Tarantool`_ is a damn fast in-memory computing platform originally designed by 
+`VK`_ and released under the terms of `BSD license`_.
 
 
 
@@ -30,7 +30,7 @@ Documentation
    quick-start.en
    guide.en
 
-.. seealso:: `Tarantool/Box User Guide`_
+.. seealso:: `Tarantool documentation`_
 
 
 API Reference
@@ -55,9 +55,9 @@ API Reference
 
 
 .. _`Tarantool`:
-.. _`Tarantool homepage`: http://tarantool.org
-.. _`Tarantool/Box User Guide`: http://tarantool.org/doc/book/index.html
-.. _`Mail.Ru`: http://mail.ru
+.. _`Tarantool homepage`: https://tarantool.io
+.. _`Tarantool documentation`: https://www.tarantool.io/en/doc/latest/
+.. _`VK`: https://vk.company
 .. _`BSD`:
 .. _`BSD license`: http://www.gnu.org/licenses/license-list.html#ModifiedBSD
 .. _`PyPI`: http://pypi.python.org/pypi/tarantool
