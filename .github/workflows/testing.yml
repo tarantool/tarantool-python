@@ -123,9 +123,6 @@ jobs:
           - '2.8.3-21-g7d35cd2be-r470'
           - '2.10.0-1-gfa775b383-r486-linux-x86_64'
         python: ['3.5', '3.6', '3.7', '3.8', '3.9', '3.10']
-        msgpack-deps:
-          # latest msgpack will be installed as a part of requirements.txt
-          - ''
 
     steps:
       - name: Clone the connector
@@ -149,21 +146,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-
-      - name: Install specific version of msgpack package
-        if: startsWith(matrix.msgpack-deps, 'msgpack==') == true
-        run: |
-          pip install ${{ matrix.msgpack-deps }}
-
-      - name: Install specific version of msgpack-python package
-        # msgpack package is a replacement for deprecated msgpack-python.
-        # To test compatibility with msgpack-python we must ignore
-        # requirements.txt install of msgpack package by overwriting it
-        # with sed.
-        if: startsWith(matrix.msgpack-deps, 'msgpack-python==') == true
-        run: |
-          pip install ${{ matrix.msgpack-deps }}
-          sed -i -e "s/^msgpack.*$/${{ matrix.msgpack-deps }}/" requirements.txt
 
       - name: Install package requirements
         run: pip install -r requirements.txt
