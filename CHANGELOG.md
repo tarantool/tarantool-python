@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- Bump msgpack requirement to 1.0.4 (PR #223).
+  The only reason of this bump is various vulnerability fixes,
+  msgpack>=0.4.0 and msgpack-python==0.4.0 are still supported.
 
 ### Fixed
 

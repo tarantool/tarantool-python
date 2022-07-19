@@ -53,7 +53,7 @@ jobs:
             msgpack-deps: 'msgpack==0.6.2'
           - tarantool: '2.8'
             python: '3.10'
-            msgpack-deps: 'msgpack==1.0.0'
+            msgpack-deps: 'msgpack==1.0.4'
 
     steps:
       - name: Clone the connector
@@ -77,16 +77,12 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install specific version of msgpack package
-        if: startsWith(matrix.msgpack-deps, 'msgpack==') == true
-        run: |
-          pip install ${{ matrix.msgpack-deps }}
-
-      - name: Install specific version of msgpack-python package
-        # msgpack package is a replacement for deprecated msgpack-python.
-        # To test compatibility with msgpack-python we must ignore
-        # requirements.txt install of msgpack package by overwriting it
-        # with sed.
-        if: startsWith(matrix.msgpack-deps, 'msgpack-python==') == true
+        # We want to enforce using modern msgpack since it has
+        # various vulnerability fixes. But the code is compatible
+        # with older msgpack versions and msgpack-python package.
+        # To this test compatibility we must ignore requirements.txt
+        # install of the newer msgpack package by overwriting it with sed.
+        if: matrix.msgpack-deps != ''
         run: |
           pip install ${{ matrix.msgpack-deps }}
           sed -i -e "s/^msgpack.*$/${{ matrix.msgpack-deps }}/" requirements.txt
