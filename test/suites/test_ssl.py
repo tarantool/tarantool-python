@@ -242,6 +242,17 @@ class TestSuite_Ssl(unittest.TestCase):
                 client_cert_file=self.cert_file,
                 client_ca_file=self.ca_file,
                 client_ciphers="TLS_AES_128_GCM_SHA256"),
+            SslTestCase(
+                name="key_crt_ca_gost_cipher_server_and_client",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_ca_file=self.ca_file,
+                server_ciphers="GOST2012-GOST8912-GOST8912",
+                client_key_file=self.key_file,
+                client_cert_file=self.cert_file,
+                client_ca_file=self.ca_file,
+                client_ciphers="GOST2012-GOST8912-GOST8912"),
         ]
         for t in testcases:
             with self.subTest(msg=t.name):
