@@ -109,10 +109,20 @@ class ConfigurationError(Error):
     Error of initialization with a user-provided configuration.
     '''
 
+class MsgpackError(Error):
+    '''
+    Error with encoding or decoding of MP_EXT types
+    '''
+
+class MsgpackWarning(UserWarning):
+    '''
+    Warning with encoding or decoding of MP_EXT types
+    '''
 
 __all__ = ("Warning", "Error", "InterfaceError", "DatabaseError", "DataError",
            "OperationalError", "IntegrityError", "InternalError",
-           "ProgrammingError", "NotSupportedError")
+           "ProgrammingError", "NotSupportedError", "MsgpackError",
+           "MsgpackWarning")
 
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":

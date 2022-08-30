@@ -43,6 +43,38 @@ def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
 
     return wrapper
 
+def skip_or_run_test_pcall_require(func, REQUIRED_TNT_MODULE, msg):
+    """Decorator to skip or run tests depending on tarantool
+    module requre success or fail.
+
+    Also, it can be used with the 'setUp' method for skipping
+    the whole test suite.
+    """
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if func.__name__ == 'setUp':
+            func(self, *args, **kwargs)
+
+        srv = None
+
+        if hasattr(self, 'servers'):
+            srv = self.servers[0]
+
+        if hasattr(self, 'srv'):
+            srv = self.srv
+
+        assert srv is not None
+
+        resp = srv.admin("pcall(require, '%s')" % REQUIRED_TNT_MODULE)
+        if not resp[0]:
+            self.skipTest('Tarantool %s' % (msg, ))
+
+        if func.__name__ != 'setUp':
+            func(self, *args, **kwargs)
+
+    return wrapper
+
 
 def skip_or_run_test_python(func, REQUIRED_PYTHON_VERSION, msg):
     """Decorator to skip or run tests depending on the Python version.
@@ -101,3 +133,13 @@ def skip_or_run_conn_pool_test(func):
     return skip_or_run_test_python(func, '3.7',
                                    'does not support ConnectionPool')
 
+def skip_or_run_decimal_test(func):
+    """Decorator to skip or run decimal-related tests depending on
+    the tarantool version.
+
+    Tarantool supports decimal type only since 2.2.1 version.
+    See https://github.com/tarantool/tarantool/issues/692
+    """
+
+    return skip_or_run_test_pcall_require(func, 'decimal',
+                                      'does not support decimal type')
