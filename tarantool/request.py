@@ -59,6 +59,8 @@ from tarantool.utils import (
     binary_types
 )
 
+from tarantool.msgpack_ext.packer import default as packer_default
+
 class Request(object):
     '''
     Represents a single request to the server in compliance with the
@@ -121,6 +123,8 @@ class Request(object):
             packer_kwargs['use_bin_type'] = False
         else:
             packer_kwargs['use_bin_type'] = True
+
+        packer_kwargs['default'] = packer_default
 
         self.packer = msgpack.Packer(**packer_kwargs)
 

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+- Decimal type support (#203).
 
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).

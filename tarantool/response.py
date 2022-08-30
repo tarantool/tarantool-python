@@ -29,6 +29,7 @@ from tarantool.error import (
     tnt_strerror
 )
 
+from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 class Response(Sequence):
     '''
@@ -85,6 +86,8 @@ class Response(Sequence):
         # The option forbids non-string keys in a map (when True).
         if msgpack.version >= (1, 0, 0):
             unpacker_kwargs['strict_map_key'] = False
+
+        unpacker_kwargs['ext_hook'] = unpacker_ext_hook
 
         unpacker = msgpack.Unpacker(**unpacker_kwargs)
 
