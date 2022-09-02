@@ -143,3 +143,14 @@ def skip_or_run_decimal_test(func):
 
     return skip_or_run_test_pcall_require(func, 'decimal',
                                       'does not support decimal type')
+
+def skip_or_run_UUID_test(func):
+    """Decorator to skip or run UUID-related tests depending on
+    the tarantool version.
+
+    Tarantool supports UUID type only since 2.4.1 version.
+    See https://github.com/tarantool/tarantool/issues/4268
+    """
+
+    return skip_or_run_test_tarantool(func, '2.4.1',
+                                      'does not support UUID type')
