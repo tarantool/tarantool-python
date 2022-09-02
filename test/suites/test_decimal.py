@@ -16,10 +16,10 @@ from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_decimal_test
 from tarantool.error import MsgpackError, MsgpackWarning
 
-class TestSuite_MsgpackExt(unittest.TestCase):
+class TestSuite_Decimal(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        print(' MSGPACK EXT TYPES '.center(70, '='), file=sys.stderr)
+        print(' DECIMAL EXT TYPE '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
         self.srv.script = 'test/suites/box.lua'
@@ -50,7 +50,7 @@ class TestSuite_MsgpackExt(unittest.TestCase):
         self.adm("box.space['test']:truncate()")
 
 
-    valid_decimal_cases = {
+    valid_cases = {
         'simple_decimal_1': {
             'python': decimal.Decimal('0.7'),
             'msgpack': (b'\x01\x7c'),
@@ -219,47 +219,47 @@ class TestSuite_MsgpackExt(unittest.TestCase):
         },
     }
 
-    def test_decimal_msgpack_decode(self):
-        for name in self.valid_decimal_cases.keys():
+    def test_msgpack_decode(self):
+        for name in self.valid_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.valid_decimal_cases[name]
+                case = self.valid_cases[name]
 
-                self.assertEqual(unpacker_ext_hook(1, decimal_case['msgpack']),
-                                 decimal_case['python'])
+                self.assertEqual(unpacker_ext_hook(1, case['msgpack']),
+                                 case['python'])
 
     @skip_or_run_decimal_test
-    def test_decimal_tarantool_decode(self):
-        for name in self.valid_decimal_cases.keys():
+    def test_tarantool_decode(self):
+        for name in self.valid_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.valid_decimal_cases[name]
+                case = self.valid_cases[name]
 
-                self.adm(f"box.space['test']:replace{{'{name}', {decimal_case['tarantool']}}}")
+                self.adm(f"box.space['test']:replace{{'{name}', {case['tarantool']}}}")
 
                 self.assertSequenceEqual(
                     self.con.select('test', name),
-                    [[name, decimal_case['python']]])
+                    [[name, case['python']]])
 
-    def test_decimal_msgpack_encode(self):
-        for name in self.valid_decimal_cases.keys():
+    def test_msgpack_encode(self):
+        for name in self.valid_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.valid_decimal_cases[name]
+                case = self.valid_cases[name]
 
-                self.assertEqual(packer_default(decimal_case['python']),
-                                 msgpack.ExtType(code=1, data=decimal_case['msgpack']))
+                self.assertEqual(packer_default(case['python']),
+                                 msgpack.ExtType(code=1, data=case['msgpack']))
 
     @skip_or_run_decimal_test
-    def test_decimal_tarantool_encode(self):
-        for name in self.valid_decimal_cases.keys():
+    def test_tarantool_encode(self):
+        for name in self.valid_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.valid_decimal_cases[name]
+                case = self.valid_cases[name]
 
-                self.con.insert('test', [name, decimal_case['python']])
+                self.con.insert('test', [name, case['python']])
 
                 lua_eval = f"""
                     local tuple = box.space['test']:get('{name}')
                     assert(tuple ~= nil)
 
-                    local dec = {decimal_case['tarantool']}
+                    local dec = {case['tarantool']}
                     if tuple[2] == dec then
                         return true
                     else
@@ -271,7 +271,7 @@ class TestSuite_MsgpackExt(unittest.TestCase):
                 self.assertSequenceEqual(self.con.eval(lua_eval), [True])
 
 
-    error_decimal_cases = {
+    error_cases = {
         'decimal_limit_break_head_1': {
             'python': decimal.Decimal('999999999999999999999999999999999999999'),
         },
@@ -298,31 +298,31 @@ class TestSuite_MsgpackExt(unittest.TestCase):
         },
     }
 
-    def test_decimal_msgpack_encode_error(self):
-        for name in self.error_decimal_cases.keys():
+    def test_msgpack_encode_error(self):
+        for name in self.error_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.error_decimal_cases[name]
+                case = self.error_cases[name]
 
                 msg = 'Decimal cannot be encoded: Tarantool decimal ' + \
                       'supports a maximum of 38 digits.'
                 self.assertRaisesRegex(
                     MsgpackError, msg,
-                    lambda: packer_default(decimal_case['python']))
+                    lambda: packer_default(case['python']))
 
     @skip_or_run_decimal_test
-    def test_decimal_tarantool_encode_error(self):
-        for name in self.error_decimal_cases.keys():
+    def test_tarantool_encode_error(self):
+        for name in self.error_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.error_decimal_cases[name]
+                case = self.error_cases[name]
 
                 msg = 'Decimal cannot be encoded: Tarantool decimal ' + \
                       'supports a maximum of 38 digits.'
                 self.assertRaisesRegex(
                     MsgpackError, msg,
-                    lambda: self.con.insert('test', [name, decimal_case['python']]))
+                    lambda: self.con.insert('test', [name, case['python']]))
 
 
-    precision_loss_decimal_cases = {
+    precision_loss_cases = {
         'decimal_limit_break_tail_1': {
             'python': decimal.Decimal('1.00000000000000000000000000000000000001'),
             'msgpack': (b'\x00\x1c'),
@@ -379,10 +379,10 @@ class TestSuite_MsgpackExt(unittest.TestCase):
         },
     }
 
-    def test_decimal_msgpack_encode_with_precision_loss(self):
-        for name in self.precision_loss_decimal_cases.keys():
+    def test_msgpack_encode_with_precision_loss(self):
+        for name in self.precision_loss_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.precision_loss_decimal_cases[name]
+                case = self.precision_loss_cases[name]
 
                 msg = 'Decimal encoded with loss of precision: ' + \
                       'Tarantool decimal supports a maximum of 38 digits.'
@@ -390,30 +390,30 @@ class TestSuite_MsgpackExt(unittest.TestCase):
                 self.assertWarnsRegex(
                     MsgpackWarning, msg,
                     lambda: self.assertEqual(
-                                packer_default(decimal_case['python']),
-                                msgpack.ExtType(code=1, data=decimal_case['msgpack'])
+                                packer_default(case['python']),
+                                msgpack.ExtType(code=1, data=case['msgpack'])
                             )
                     )
                 
 
     @skip_or_run_decimal_test
-    def test_decimal_tarantool_encode_with_precision_loss(self):
-        for name in self.precision_loss_decimal_cases.keys():
+    def test_tarantool_encode_with_precision_loss(self):
+        for name in self.precision_loss_cases.keys():
             with self.subTest(msg=name):
-                decimal_case = self.precision_loss_decimal_cases[name]
+                case = self.precision_loss_cases[name]
 
                 msg = 'Decimal encoded with loss of precision: ' + \
                       'Tarantool decimal supports a maximum of 38 digits.'
 
                 self.assertWarnsRegex(
                     MsgpackWarning, msg,
-                    lambda: self.con.insert('test', [name, decimal_case['python']]))
+                    lambda: self.con.insert('test', [name, case['python']]))
 
                 lua_eval = f"""
                     local tuple = box.space['test']:get('{name}')
                     assert(tuple ~= nil)
 
-                    local dec = {decimal_case['tarantool']}
+                    local dec = {case['tarantool']}
                     if tuple[2] == dec then
                         return true
                     else
@@ -423,6 +423,7 @@ class TestSuite_MsgpackExt(unittest.TestCase):
                 """
 
                 self.assertSequenceEqual(self.con.eval(lua_eval), [True])
+
 
     @classmethod
     def tearDownClass(self):
