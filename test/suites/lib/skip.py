@@ -154,3 +154,14 @@ def skip_or_run_UUID_test(func):
 
     return skip_or_run_test_tarantool(func, '2.4.1',
                                       'does not support UUID type')
+
+def skip_or_run_datetime_test(func):
+    """Decorator to skip or run datetime-related tests depending on
+    the tarantool version.
+
+    Tarantool supports datetime type only since 2.10.0 version.
+    See https://github.com/tarantool/tarantool/issues/5941
+    """
+
+    return skip_or_run_test_pcall_require(func, 'datetime',
+                                      'does not support datetime type')

@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Decimal type support (#203).
 - UUID type support (#202).
+- Datetime type support and tarantool.Datetime type (#204).
+
+  Tarantool datetime objects are decoded to `tarantool.Datetime`
+  type. `tarantool.Datetime` may be encoded to Tarantool datetime
+  objects.
+
+  You can create `tarantool.Datetime` objects either from msgpack
+  data or by using the same API as in Tarantool:
+
+  ```python
+  dt1 = tarantool.Datetime(year=2022, month=8, day=31,
+                           hour=18, minute=7, sec=54,
+                           nsec=308543321)
+
+  dt2 = tarantool.Datetime(timestamp=1661969274)
+
+  dt3 = tarantool.Datetime(timestamp=1661969274, nsec=308543321)
+  ```
+
+  `tarantool.Datetime` exposes `year`, `month`, `day`, `hour`,
+  `minute`, `sec`, `nsec`, `timestamp` and `value` (integer epoch time
+  with nanoseconds precision) properties if you need to convert
+  `tarantool.Datetime` to any other kind of datetime object:
+
+  ```python
+  pdt = pandas.Timestamp(year=dt.year, month=dt.month, day=dt.day,
+                         hour=dt.hour, minute=dt.minute, second=dt.sec,
+                         microsecond=(dt.nsec // 1000),
+                         nanosecond=(dt.nsec % 1000))
+  ```
 
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
