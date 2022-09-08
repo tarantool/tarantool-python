@@ -106,6 +106,70 @@ class Interval():
             self.nsec = nsec
             self.adjust = adjust
 
+    def __add__(self, other):
+        if not isinstance(other, Interval):
+            raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+
+        # Tarantool saves adjust of the first argument
+        #
+        # Tarantool 2.10.1-0-g482d91c66
+        #
+        # tarantool> dt1 = datetime.interval.new{year = 2, adjust='last'}
+        # ---
+        # ...
+        #
+        # tarantool> dt2 = datetime.interval.new{year = 1, adjust='excess'}
+        # ---
+        # ...
+        #
+        # tarantool> (dt1 + dt2).adjust
+        # ---
+        # - 'cdata<enum 112>: 2'
+        # ...
+
+        return Interval(
+            year = self.year + other.year,
+            month = self.month + other.month,
+            day = self.day + other.day,
+            hour = self.hour + other.hour,
+            minute = self.minute + other.minute,
+            sec = self.sec + other.sec,
+            nsec = self.nsec + other.nsec,
+            adjust = self.adjust,
+        )
+
+    def __sub__(self, other):
+        if not isinstance(other, Interval):
+            raise TypeError(f"unsupported operand type(s) for -: '{type(self)}' and '{type(other)}'")
+
+        # Tarantool saves adjust of the first argument
+        #
+        # Tarantool 2.10.1-0-g482d91c66
+        #
+        # tarantool> dt1 = datetime.interval.new{year = 2, adjust='last'}
+        # ---
+        # ...
+        #
+        # tarantool> dt2 = datetime.interval.new{year = 1, adjust='excess'}
+        # ---
+        # ...
+        #
+        # tarantool> (dt1 - dt2).adjust
+        # ---
+        # - 'cdata<enum 112>: 2'
+        # ...
+
+        return Interval(
+            year = self.year - other.year,
+            month = self.month - other.month,
+            day = self.day - other.day,
+            hour = self.hour - other.hour,
+            minute = self.minute - other.minute,
+            sec = self.sec - other.sec,
+            nsec = self.nsec - other.nsec,
+            adjust = self.adjust,
+        )
+
     def __eq__(self, other):
         if not isinstance(other, Interval):
             return False
