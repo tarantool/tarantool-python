@@ -86,6 +86,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Its attributes (same as in init API) are exposed, so you can
   use them if needed.
 
+- Datetime interval arithmetic support (#229).
+
+  Valid operations:
+  - `tarantool.Datetime` + `tarantool.Interval` = `tarantool.Datetime`
+  - `tarantool.Datetime` + `tarantool.Interval` = `tarantool.Datetime`
+  - `tarantool.Datetime` - `tarantool.Datetime` = `tarantool.Interval`
+  - `tarantool.Interval` + `tarantool.Interval` = `tarantool.Interval`
+  - `tarantool.Interval` - `tarantool.Interval` = `tarantool.Interval`
+
+  Since `tarantool.Interval` could contain `month` and `year` fields
+  and such operations could be ambiguous, you can use `adjust` field
+  to tune the logic. The behavior is the same as in Tarantool, see
+  [Interval arithmetic RFC](https://github.com/tarantool/tarantool/wiki/Datetime-Internals#interval-arithmetic).
+
+  - `tarantool.IntervalAdjust.NONE` -- only truncation toward the end of
+    month performed (default mode).
+
+    ```python
+    >>> dt = tarantool.Datetime(year=2022, month=3, day=31)
+    datetime: Timestamp('2022-03-31 00:00:00'), tz: ""
+    >>> di = tarantool.Interval(month=1, adjust=tarantool.IntervalAdjust.NONE)
+    >>> dt + di
+    datetime: Timestamp('2022-04-30 00:00:00'), tz: ""
+    ```
+
+  - `tarantool.IntervalAdjust.EXCESS` -- overflow mode, without any snap
+    or truncation to the end of month, straight addition of days in month,
+    stopping over month boundaries if there is less number of days.
+
+    ```python
+    >>> dt = tarantool.Datetime(year=2022, month=1, day=31)
+    datetime: Timestamp('2022-01-31 00:00:00'), tz: ""
+    >>> di = tarantool.Interval(month=1, adjust=tarantool.IntervalAdjust.EXCESS)
+    >>> dt + di
+    datetime: Timestamp('2022-03-02 00:00:00'), tz: ""
+    ```
+
+  - `tarantool.IntervalAdjust.LAST` -- mode when day snaps to the end of month,
+    if happens.
+
+    ```python
+    >>> dt = tarantool.Datetime(year=2022, month=2, day=28)
+    datetime: Timestamp('2022-02-28 00:00:00'), tz: ""
+    >>> di = tarantool.Interval(month=1, adjust=tarantool.IntervalAdjust.LAST)
+    >>> dt + di
+    datetime: Timestamp('2022-03-31 00:00:00'), tz: ""
+    ```
+
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
   The only reason of this bump is various vulnerability fixes,

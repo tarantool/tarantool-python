@@ -38,6 +38,16 @@ class TestSuite_Datetime(unittest.TestCase):
 
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
             box.schema.user.grant('test', 'read,write,execute', 'universe')
+
+            local function add(arg1, arg2)
+                return arg1 + arg2
+            end
+            rawset(_G, 'add', add)
+
+            local function sub(arg1, arg2)
+                return arg1 - arg2
+            end
+            rawset(_G, 'sub', sub)
         """)
 
         self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
@@ -320,6 +330,207 @@ class TestSuite_Datetime(unittest.TestCase):
         self.assertRaisesRegex(
             MsgpackError, 'Failed to create datetime with ambiguous timezone "AET"',
             lambda: unpacker_ext_hook(4, case))
+
+
+    datetime_subtraction_cases = {
+        'date': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3),
+            'arg_2': tarantool.Datetime(year=2010, month=2, day=1),
+            'res': tarantool.Interval(year=-2, month=0, day=2),
+        },
+        'datetime': {
+            'arg_1': tarantool.Datetime(year=2001, month=2, day=3, hour=1, minute=2, sec=30),
+            'arg_2': tarantool.Datetime(year=2002, month=1, day=31, hour=3, minute=0, sec=20),
+            'res': tarantool.Interval(year=-1, month=1, day=-28, hour=-2, minute=2, sec=10),
+        },
+        'datetime_with_nsec': {
+            'arg_1': tarantool.Datetime(year=2001, month=2, day=3, hour=1, minute=2,
+                                        sec=30, nsec=10000000),
+            'arg_2': tarantool.Datetime(year=2002, month=1, day=31, hour=3, minute=0,
+                                        sec=10, nsec=9876543),
+            'res': tarantool.Interval(year=-1, month=1, day=-28, hour=-2, minute=2,
+                                      sec=20, nsec=123457),
+        },
+        'heterogenous': {
+            'arg_1': tarantool.Datetime(year=2001, month=2, day=3, hour=1, minute=2),
+            'arg_2': tarantool.Datetime(year=2001, month=2, day=3, sec=30,
+                                        nsec=9876543),
+            'res': tarantool.Interval(hour=1, minute=2, sec=-30, nsec=-9876543),
+        },
+    }
+
+    def test_python_datetime_subtraction(self):
+        for name in self.datetime_subtraction_cases.keys():
+            with self.subTest(msg=name):
+                case = self.datetime_subtraction_cases[name]
+
+                self.assertEqual(case['arg_1'] - case['arg_2'], case['res'])
+
+    @skip_or_run_datetime_test
+    def test_tarantool_datetime_subtraction(self):
+        for name in self.datetime_subtraction_cases.keys():
+            with self.subTest(msg=name):
+                case = self.datetime_subtraction_cases[name]
+
+                self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
+                                         [case['res']])
+
+
+    datetime_subtraction_different_timezones_case = {
+        'arg_1': tarantool.Datetime(year=2001, month=2, day=3, tz='UTC'),
+        'arg_2': tarantool.Datetime(year=2001, month=2, day=3, tz='MSK'),
+        'res': tarantool.Interval(day=1, hour=-21),
+    }
+
+    def test_python_datetime_subtraction_different_timezones(self):
+        case = self.datetime_subtraction_different_timezones_case
+
+        self.assertEqual(case['arg_1'] - case['arg_2'], case['res'])
+
+    @skip_or_run_datetime_test
+    @unittest.expectedFailure # See https://github.com/tarantool/tarantool/issues/7698
+    def test_tarantool_datetime_subtraction_different_timezones(self):
+        case = self.datetime_subtraction_different_timezones_case
+
+        self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
+                                         [case['res']])
+
+
+    interval_arithmetic_cases = {
+        'year': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3),
+            'arg_2': tarantool.Interval(year=1),
+            'res_add': tarantool.Datetime(year=2009, month=2, day=3),
+            'res_sub': tarantool.Datetime(year=2007, month=2, day=3),
+        },
+        'date': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3),
+            'arg_2': tarantool.Interval(year=1, month=2, day=3),
+            'res_add': tarantool.Datetime(year=2009, month=4, day=6),
+            'res_sub': tarantool.Datetime(year=2006, month=11, day=30),
+        },
+        'date_days_overflow': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3),
+            'arg_2': tarantool.Interval(year=1, month=2, day=30),
+            'res_add': tarantool.Datetime(year=2009, month=5, day=3),
+            'res_sub': tarantool.Datetime(year=2006, month=11, day=3),
+        },
+        'time': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3),
+            'arg_2': tarantool.Interval(hour=1, minute=2, sec=3),
+            'res_add': tarantool.Datetime(year=2008, month=2, day=3, hour=1, minute=2, sec=3),
+            'res_sub': tarantool.Datetime(year=2008, month=2, day=2, hour=22, minute=57, sec=57),
+        },
+        'time_secs_overflow': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3),
+            'arg_2': tarantool.Interval(hour=1, minute=2, sec=13003),
+            'res_add': tarantool.Datetime(year=2008, month=2, day=3, hour=4, minute=38, sec=43),
+            'res_sub': tarantool.Datetime(year=2008, month=2, day=2, hour=19, minute=21, sec=17),
+        },
+        'nsecs': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43),
+            'arg_2': tarantool.Interval(nsec=10000023),
+            'res_add': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43,
+                                      nsec=10000023),
+            'res_sub': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=42,
+                                      nsec=989999977),
+        },
+        'zero': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43),
+            'arg_2': tarantool.Interval(),
+            'res_add': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43),
+            'res_sub': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43),
+        },
+        'month_non_last_day_none_adjust': {
+            'arg_1': tarantool.Datetime(year=2009, month=1, day=30),
+            'arg_2': tarantool.Interval(month=13, adjust=tarantool.IntervalAdjust.NONE),
+            'res_add': tarantool.Datetime(year=2010, month=2, day=28),
+            'res_sub': tarantool.Datetime(year=2007, month=12, day=30),
+        },
+        'month_non_last_day_none_adjust_negative': {
+            'arg_1': tarantool.Datetime(year=2009, month=1, day=30),
+            'arg_2': tarantool.Interval(month=11, adjust=tarantool.IntervalAdjust.NONE),
+            'res_add': tarantool.Datetime(year=2009, month=12, day=30),
+            'res_sub': tarantool.Datetime(year=2008, month=2, day=29),
+        },
+        'month_non_last_day_excess_adjust': {
+            'arg_1': tarantool.Datetime(year=2009, month=1, day=30),
+            'arg_2': tarantool.Interval(month=13, adjust=tarantool.IntervalAdjust.EXCESS),
+            'res_add': tarantool.Datetime(year=2010, month=3, day=2),
+            'res_sub': tarantool.Datetime(year=2007, month=12, day=30),
+        },
+        'month_non_last_day_excess_adjust_negative': {
+            'arg_1': tarantool.Datetime(year=2009, month=1, day=30),
+            'arg_2': tarantool.Interval(month=11, adjust=tarantool.IntervalAdjust.EXCESS),
+            'res_add': tarantool.Datetime(year=2009, month=12, day=30),
+            'res_sub': tarantool.Datetime(year=2008, month=3, day=1),
+        },
+        'month_non_last_day_last_adjust': {
+            'arg_1': tarantool.Datetime(year=2009, month=3, day=30),
+            'arg_2': tarantool.Interval(month=2, adjust=tarantool.IntervalAdjust.LAST),
+            'res_add': tarantool.Datetime(year=2009, month=5, day=30),
+            'res_sub': tarantool.Datetime(year=2009, month=1, day=30),
+        },
+        'month_overflow_last_day_last_adjust': {
+            'arg_1': tarantool.Datetime(year=2009, month=2, day=28),
+            'arg_2': tarantool.Interval(month=1, adjust=tarantool.IntervalAdjust.LAST),
+            'res_add': tarantool.Datetime(year=2009, month=3, day=31),
+            'res_sub': tarantool.Datetime(year=2009, month=1, day=31),
+        },
+    }
+
+    def test_python_datetime_addition(self):
+        for name in self.interval_arithmetic_cases.keys():
+            with self.subTest(msg=name):
+                case = self.interval_arithmetic_cases[name]
+
+                self.assertEqual(case['arg_1'] + case['arg_2'], case['res_add'])
+
+    def test_python_datetime_subtraction(self):
+        for name in self.interval_arithmetic_cases.keys():
+            with self.subTest(msg=name):
+                case = self.interval_arithmetic_cases[name]
+
+                self.assertEqual(case['arg_1'] - case['arg_2'], case['res_sub'])
+
+    @skip_or_run_datetime_test
+    def test_tarantool_datetime_addition(self):
+        for name in self.interval_arithmetic_cases.keys():
+            with self.subTest(msg=name):
+                case = self.interval_arithmetic_cases[name]
+
+                self.assertSequenceEqual(self.con.call('add', case['arg_1'], case['arg_2']),
+                                         [case['res_add']])
+
+    @skip_or_run_datetime_test
+    def test_tarantool_datetime_subtraction(self):
+        for name in self.interval_arithmetic_cases.keys():
+            with self.subTest(msg=name):
+                case = self.interval_arithmetic_cases[name]
+
+                self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
+                                         [case['res_sub']])
+
+
+    datetime_addition_winter_time_switch_case = {
+        'arg_1': tarantool.Datetime(year=2008, month=1, day=1, hour=12, tz='Europe/Moscow'),
+        'arg_2': tarantool.Interval(month=6),
+        'res': tarantool.Datetime(year=2008, month=7, day=1, hour=12, tz='Europe/Moscow'),
+    }
+
+    def test_python_datetime_addition_winter_time_switch(self):
+        case = self.datetime_addition_winter_time_switch_case
+
+        self.assertEqual(case['arg_1'] + case['arg_2'], case['res'])
+
+    @skip_or_run_datetime_test
+    @unittest.expectedFailure # See https://github.com/tarantool/tarantool/issues/7700
+    def test_tarantool_datetime_addition_winter_time_switch(self):
+        case = self.datetime_addition_winter_time_switch_case
+
+        self.assertSequenceEqual(self.con.call('add', case['arg_1'], case['arg_2']),
+                                 [case['res']])
+
 
     @classmethod
     def tearDownClass(self):

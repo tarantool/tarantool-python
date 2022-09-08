@@ -6,6 +6,8 @@ import pytz
 import tarantool.msgpack_ext.types.timezones as tt_timezones
 from tarantool.error import MsgpackError
 
+from tarantool.msgpack_ext.types.interval import Interval, Adjust
+
 # https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-datetime-type
 #
 # The datetime MessagePack representation looks like this:
@@ -47,6 +49,7 @@ BYTEORDER = 'little'
 NSEC_IN_SEC = 1000000000
 NSEC_IN_MKSEC = 1000
 SEC_IN_MIN = 60
+MONTH_IN_YEAR = 12
 
 def get_bytes_as_int(data, cursor, size):
     part = data[cursor:cursor + size]
@@ -167,6 +170,83 @@ class Datetime():
         else:
             self._datetime = datetime
             self._tz = ''
+
+    def _interval_operation(self, other, sign=1):
+        self_dt = self._datetime
+
+        # https://github.com/tarantool/tarantool/wiki/Datetime-Internals#date-adjustions-and-leap-years
+        months = other.year * MONTH_IN_YEAR + other.month
+
+        res = self_dt + pandas.DateOffset(months = sign * months)
+
+        # pandas.DateOffset works exactly like Adjust.NONE
+        if other.adjust == Adjust.EXCESS:
+            if self_dt.day > res.day:
+                res = res + pandas.DateOffset(days = self_dt.day - res.day)
+        elif other.adjust == Adjust.LAST:
+            if self_dt.is_month_end:
+                # day replaces days
+                res = res.replace(day = res.days_in_month)
+
+        res = res + pandas.Timedelta(weeks = sign * other.week,
+                                     days = sign * other.day,
+                                     hours = sign * other.hour,
+                                     minutes = sign * other.minute,
+                                     seconds = sign * other.sec,
+                                     microseconds = sign * (other.nsec // NSEC_IN_MKSEC),
+                                     nanoseconds = sign * (other.nsec % NSEC_IN_MKSEC))
+
+        if res.tzinfo is not None:
+            tzoffset = compute_offset(res)
+        else:
+            tzoffset = 0
+        return Datetime(year=res.year, month=res.month, day=res.day,
+                        hour=res.hour, minute=res.minute, sec=res.second,
+                        nsec=res.nanosecond + res.microsecond * NSEC_IN_MKSEC,
+                        tzoffset=tzoffset, tz=self.tz)
+
+    def __add__(self, other):
+        if not isinstance(other, Interval):
+            raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+
+        return self._interval_operation(other, sign=1)
+
+    def __sub__(self, other):
+        if isinstance(other, Datetime):
+            self_dt = self._datetime
+            other_dt = other._datetime
+
+            # Tarantool datetime subtraction ignores timezone info, but it is a bug:
+            #
+            # Tarantool 2.10.1-0-g482d91c66
+            #
+            # tarantool> datetime.new{tz='MSK'} - datetime.new{tz='UTC'}
+            # ---
+            # - +0 seconds
+            # ...
+            #
+            # Refer to https://github.com/tarantool/tarantool/issues/7698
+            # for possible updates.
+
+            if self_dt.tzinfo != other_dt.tzinfo:
+                other_dt = other_dt.tz_convert(self_dt.tzinfo)
+
+            self_nsec = self_dt.microsecond * NSEC_IN_MKSEC + self_dt.nanosecond
+            other_nsec = other_dt.microsecond * NSEC_IN_MKSEC + other_dt.nanosecond
+
+            return Interval(
+                year = self_dt.year - other_dt.year,
+                month = self_dt.month - other_dt.month,
+                day = self_dt.day - other_dt.day,
+                hour = self_dt.hour - other_dt.hour,
+                minute = self_dt.minute - other_dt.minute,
+                sec = self_dt.second - other_dt.second,
+                nsec = self_nsec - other_nsec,
+            )
+        elif isinstance(other, Interval):
+            return self._interval_operation(other, sign=-1)
+        else:
+            raise TypeError(f"unsupported operand type(s) for -: '{type(self)}' and '{type(other)}'")
 
     def __eq__(self, other):
         if isinstance(other, Datetime):
