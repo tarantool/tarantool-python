@@ -67,6 +67,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   You may use `tz` property to get timezone name of a datetime object.
 
+- Datetime interval type support and tarantool.Interval type (#229).
+
+  Tarantool datetime interval objects are decoded to `tarantool.Interval`
+  type. `tarantool.Interval` may be encoded to Tarantool interval
+  objects.
+
+  You can create `tarantool.Interval` objects either from msgpack
+  data or by using the same API as in Tarantool:
+
+  ```python
+  di = tarantool.Interval(year=-1, month=2, day=3,
+                          hour=4, minute=-5, sec=6,
+                          nsec=308543321,
+                          adjust=tarantool.IntervalAdjust.NONE)
+  ```
+
+  Its attributes (same as in init API) are exposed, so you can
+  use them if needed.
+
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
   The only reason of this bump is various vulnerability fixes,
