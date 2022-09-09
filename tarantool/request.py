@@ -4,14 +4,10 @@ Request types definitions
 '''
 
 import sys
-import collections
 import msgpack
 import hashlib
 
-try:
-    collectionsAbc = collections.abc
-except AttributeError:
-    collectionsAbc = collections
+from collections.abc import Sequence, Mapping
 
 
 from tarantool.error import DatabaseError
@@ -406,9 +402,9 @@ class RequestExecute(Request):
 
     def __init__(self, conn, sql, args):
         super(RequestExecute, self).__init__(conn)
-        if isinstance(args, collectionsAbc.Mapping):
+        if isinstance(args, Mapping):
             args = [{":%s" % name: value} for name, value in args.items()]
-        elif not isinstance(args, collectionsAbc.Sequence):
+        elif not isinstance(args, Sequence):
             raise TypeError("Parameter type '%s' is not supported. "
                             "Must be a mapping or sequence" % type(args))
 
