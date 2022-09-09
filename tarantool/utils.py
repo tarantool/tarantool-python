@@ -2,38 +2,14 @@
 import sys
 import uuid
 
-# Compatibility layer for Python2/Python3
-if sys.version_info.major == 2:
-    string_types     = (basestring, )
-    integer_types    = (int, long)
-    supported_types  = integer_types + string_types + (float,)
+supported_types = (int, str, bytes, float,)
 
-    ENCODING_DEFAULT = None
+ENCODING_DEFAULT = "utf-8"
 
-    if sys.version_info.minor < 6:
-        binary_types = (str, )
-    else:
-        binary_types = (bytes, )
-    from base64 import decodestring as base64_decode
+from base64 import decodebytes as base64_decode
 
-    def strxor(rhs, lhs):
-        return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(rhs, lhs))
-
-elif sys.version_info.major == 3:
-    binary_types    = (bytes, )
-    string_types    = (str, )
-    integer_types   = (int, )
-    supported_types = integer_types + string_types + binary_types + (float,)
-
-    ENCODING_DEFAULT = "utf-8"
-
-    from base64 import decodebytes as base64_decode
-
-    def strxor(rhs, lhs):
-        return bytes([x ^ y for x, y in zip(rhs, lhs)])
-
-else:
-    pass # unreachable
+def strxor(rhs, lhs):
+    return bytes([x ^ y for x, y in zip(rhs, lhs)])
 
 def check_key(*args, **kwargs):
     if 'first' not in kwargs:

@@ -85,7 +85,6 @@ from tarantool.utils import (
     check_key,
     greeting_decode,
     version_id,
-    string_types,
     ENCODING_DEFAULT,
 )
 
@@ -640,7 +639,7 @@ class Connection(ConnectionInterface):
 
         :rtype: `Response` instance
         '''
-        if isinstance(space_name, string_types):
+        if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         request = RequestReplace(self, space_name, values)
         return self._send_request(request)
@@ -697,7 +696,7 @@ class Connection(ConnectionInterface):
     def _ops_process(self, space, update_ops):
         new_ops = []
         for op in update_ops:
-            if isinstance(op[1], string_types):
+            if isinstance(op[1], str):
                 op = list(op)
                 op[1] = self.schema.get_field(space, op[1])['id']
             new_ops.append(op)
@@ -733,7 +732,7 @@ class Connection(ConnectionInterface):
 
         :rtype: `Response` instance
         '''
-        if isinstance(space_name, string_types):
+        if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         request = RequestInsert(self, space_name, values)
         return self._send_request(request)
@@ -754,9 +753,9 @@ class Connection(ConnectionInterface):
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
-        if isinstance(space_name, string_types):
+        if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, string_types):
+        if isinstance(index_name, str):
             index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestDelete(self, space_name, index_name, key)
         return self._send_request(request)
@@ -826,9 +825,9 @@ class Connection(ConnectionInterface):
         '''
         index_name = kwargs.get("index", 0)
 
-        if isinstance(space_name, string_types):
+        if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, string_types):
+        if isinstance(index_name, str):
             index_name = self.schema.get_index(space_name, index_name).iid
         op_list = self._ops_process(space_name, op_list)
         request = RequestUpsert(self, space_name, index_name, tuple_value,
@@ -902,9 +901,9 @@ class Connection(ConnectionInterface):
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
-        if isinstance(space_name, string_types):
+        if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, string_types):
+        if isinstance(index_name, str):
             index_name = self.schema.get_index(space_name, index_name).iid
         op_list = self._ops_process(space_name, op_list)
         request = RequestUpdate(self, space_name, index_name, key, op_list)
@@ -985,9 +984,9 @@ class Connection(ConnectionInterface):
         # tuples)
         key = check_key(key, select=True)
 
-        if isinstance(space_name, string_types):
+        if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, string_types):
+        if isinstance(index_name, str):
             index_name = self.schema.get_index(space_name, index_name).iid
         request = RequestSelect(self, space_name, index_name, key, offset,
                                 limit, iterator_type)
