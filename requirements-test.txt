@@ -1,3 +1,4 @@
 git+https://github.com/baztian/dbapi-compliance.git@ea7cb1b4#egg=dbapi-compliance
 pyyaml==6.0
 importlib-metadata >= 1.0 ; python_version < '3.8'
+pylint
