@@ -33,11 +33,6 @@ from tarantool.request import (
     RequestCall
 )
 
-try:
-    string_types = basestring
-except NameError:
-    string_types = str
-
 default_addr_opts = {
     'transport': DEFAULT_TRANSPORT,
     'ssl_key_file': DEFAULT_SSL_KEY_FILE,
@@ -55,7 +50,7 @@ def parse_uri(uri):
 
     if not uri:
         return parse_error(uri, 'should not be None or empty string')
-    if not isinstance(uri, string_types):
+    if not isinstance(uri, str):
         return parse_error(uri, 'should be of a string type')
     if uri.count(':') != 1:
         return parse_error(uri, 'does not match host:port scheme')
@@ -117,7 +112,7 @@ def prepare_address(address):
         if 'host' not in result or result['host'] is None:
             return format_error(result,
                                 'host is mandatory for an inet result')
-        if not isinstance(result['host'], string_types):
+        if not isinstance(result['host'], str):
             return format_error(result,
                                 'host must be a string for an inet result')
 
@@ -131,7 +126,7 @@ def prepare_address(address):
 
         # Looks okay.
         return result, None
-    elif isinstance(result['port'], string_types):
+    elif isinstance(result['port'], str):
         # Looks like a unix address.
 
         # Expect no host.
@@ -140,7 +135,7 @@ def prepare_address(address):
                 result, 'host must be unset or None for a unix result')
 
         # Validate port.
-        if not isinstance(result['port'], string_types):
+        if not isinstance(result['port'], str):
             return format_error(result,
                                 'port must be a string for a unix result')
 

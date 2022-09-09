@@ -56,7 +56,6 @@ from tarantool.const import (
 from tarantool.response import Response, ResponseExecute
 from tarantool.utils import (
     strxor,
-    binary_types
 )
 
 from tarantool.msgpack_ext.packer import default as packer_default
@@ -187,7 +186,7 @@ class RequestAuthenticate(Request):
             sha = hashlib.sha1()
             for i in values:
                 if i is not None:
-                    if isinstance(i, binary_types):
+                    if isinstance(i, bytes):
                         sha.update(i)
                     else:
                         sha.update(i.encode())
