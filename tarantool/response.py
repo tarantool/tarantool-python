@@ -1,11 +1,6 @@
 # pylint: disable=C0301,W0105,W0401,W0614
 
-try:
-    # Python 3.3+
-    from collections.abc import Sequence
-except ImportError:
-    # Python 2
-    from collections import Sequence
+from collections.abc import Sequence
 
 import json
 import msgpack
