@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Tarantool python client library documentation build configuration file, created by
 # sphinx-quickstart on Tue Nov 29 06:29:57 2011.
 #

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 This module provides the MeshConnection class with automatic switch
 between Tarantool instances by the basic round-robin strategy.

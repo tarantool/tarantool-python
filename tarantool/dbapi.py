@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from tarantool.connection import Connection as BaseConnection
 from tarantool.error import *
 
