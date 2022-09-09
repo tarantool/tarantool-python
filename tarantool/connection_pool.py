@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import abc
 import itertools
 import queue

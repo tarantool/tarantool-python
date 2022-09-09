@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # pylint: disable=R0903
 '''
 This module provides the :class:`~tarantool.schema.Schema` class.
