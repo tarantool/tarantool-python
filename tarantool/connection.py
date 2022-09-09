@@ -17,10 +17,7 @@ import abc
 
 import ctypes
 import ctypes.util
-try:
-    from ctypes import c_ssize_t
-except ImportError:
-    from ctypes import c_longlong as c_ssize_t
+from ctypes import c_ssize_t
 
 import msgpack
 
