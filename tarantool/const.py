@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # pylint: disable=C0301,W0105,W0401,W0614
 
 IPROTO_CODE = 0x00
