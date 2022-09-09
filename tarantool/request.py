@@ -1,4 +1,3 @@
-# pylint: disable=C0301,W0105,W0401,W0614
 """
 Request types definitions. For internal use only, there is no API to
 send pre-build request objects.
@@ -206,7 +205,6 @@ class RequestInsert(Request):
 
     request_type = REQUEST_TYPE_INSERT
 
-    # pylint: disable=W0231
     def __init__(self, conn, space_no, values):
         """
         :param conn: Request sender.
@@ -322,7 +320,6 @@ class RequestReplace(Request):
 
     request_type = REQUEST_TYPE_REPLACE
 
-    # pylint: disable=W0231
     def __init__(self, conn, space_no, values):
         """
         :param conn: Request sender.
@@ -353,7 +350,6 @@ class RequestDelete(Request):
 
     request_type = REQUEST_TYPE_DELETE
 
-    # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, key):
         """
         :param conn: Request sender.
@@ -387,7 +383,6 @@ class RequestSelect(Request):
 
     request_type = REQUEST_TYPE_SELECT
 
-    # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, key, offset, limit, iterator):
         """
         :param conn: Request sender.
@@ -433,7 +428,6 @@ class RequestUpdate(Request):
 
     request_type = REQUEST_TYPE_UPDATE
 
-    # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, key, op_list):
         """
         :param conn: Request sender.
@@ -473,7 +467,6 @@ class RequestCall(Request):
 
     request_type = REQUEST_TYPE_CALL
 
-    # pylint: disable=W0231
     def __init__(self, conn, name, args, call_16):
         """
         :param conn: Request sender.
@@ -510,7 +503,6 @@ class RequestEval(Request):
 
     request_type = REQUEST_TYPE_EVAL
 
-    # pylint: disable=W0231
     def __init__(self, conn, name, args):
         """
         :param conn: Request sender.
@@ -558,7 +550,6 @@ class RequestUpsert(Request):
 
     request_type = REQUEST_TYPE_UPSERT
 
-    # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, tuple_value, op_list):
         """
         :param conn: Request sender.
@@ -598,7 +589,6 @@ class RequestJoin(Request):
 
     request_type = REQUEST_TYPE_JOIN
 
-    # pylint: disable=W0231
     def __init__(self, conn, server_uuid):
         """
         :param conn: Request sender.
@@ -620,7 +610,6 @@ class RequestSubscribe(Request):
 
     request_type = REQUEST_TYPE_SUBSCRIBE
 
-    # pylint: disable=W0231
     def __init__(self, conn, cluster_uuid, server_uuid, vclock):
         """
         :param conn: Request sender.
@@ -656,7 +645,6 @@ class RequestOK(Request):
 
     request_type = REQUEST_TYPE_OK
 
-    # pylint: disable=W0231
     def __init__(self, conn, sync):
         """
         :param conn: Request sender.

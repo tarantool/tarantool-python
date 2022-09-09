@@ -1,5 +1,3 @@
-# pylint: disable=C0301,W0105,W0401,W0614
-
 import sys
 
 from tarantool.connection import Connection
