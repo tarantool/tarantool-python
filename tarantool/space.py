@@ -1,4 +1,3 @@
-# pylint: disable=C0301,W0105,W0401,W0614
 """
 Space type definition. It is an object-oriented wrapper for requests to
 a Tarantool server space.

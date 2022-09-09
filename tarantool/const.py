@@ -1,5 +1,3 @@
-# pylint: disable=C0301,W0105,W0401,W0614
-
 IPROTO_REQUEST_TYPE = 0x00
 IPROTO_SYNC = 0x01
 # replication keys (header)

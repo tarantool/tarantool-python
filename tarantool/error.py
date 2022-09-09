@@ -1,4 +1,3 @@
-# pylint: disable=C0301,W0105,W0401,W0614
 """
 Python DB API compatible exceptions, see `PEP-249`_.
 
@@ -391,7 +390,7 @@ def warn(message, warning_class):
     :type warning_class: :class:`~tarantool.error.Warning`
     """
 
-    frame = sys._getframe(2)  # pylint: disable=W0212
+    frame = sys._getframe(2)
     module_name = frame.f_globals.get("__name__")
     line_no = frame.f_lineno
     warnings.warn_explicit(message, warning_class, module_name, line_no)

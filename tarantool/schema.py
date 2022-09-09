@@ -1,4 +1,3 @@
-# pylint: disable=R0903
 """
 Schema types definitions. For internal use only, there is no API to use
 pre-build schema objects.
