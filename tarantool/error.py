@@ -5,7 +5,7 @@ http://www.python.org/dev/peps/pep-0249/
 
 The PEP-249 says that database related exceptions must be inherited as follows:
 
-    StandardError
+    Exception
     |__Warning
     |__Error
        |__InterfaceError
@@ -29,21 +29,13 @@ import sys
 import warnings
 
 
-try:
-    class Warning(StandardError):
-        '''Exception raised for important warnings
-        like data truncations while inserting, etc. '''
-except NameError:
-    class Warning(Exception):
-        '''Exception raised for important warnings
-        like data truncations while inserting, etc. '''
 
-try:
-    class Error(StandardError):
-        '''Base class for error exceptions'''
-except NameError:
-    class Error(Exception):
-        '''Base class for error exceptions'''
+class Warning(Exception):
+    '''Exception raised for important warnings
+    like data truncations while inserting, etc. '''
+
+class Error(Exception):
+    '''Base class for error exceptions'''
 
 
 class InterfaceError(Error):
