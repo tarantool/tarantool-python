@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import sys
 import unittest
 from tarantool.utils import greeting_decode, version_id
