@@ -3,6 +3,9 @@ from copy import deepcopy
 import pandas
 import pytz
 
+import tarantool.msgpack_ext.types.timezones as tt_timezones
+from tarantool.error import MsgpackError
+
 # https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-datetime-type
 #
 # The datetime MessagePack representation looks like this:
@@ -63,6 +66,17 @@ def compute_offset(timestamp):
     # There is no precision loss since offset is in minutes
     return int(utc_offset.total_seconds()) // SEC_IN_MIN
 
+def get_python_tzinfo(tz, error_class):
+    if tz in pytz.all_timezones:
+        return pytz.timezone(tz)
+
+    # Checked with timezones/validate_timezones.py
+    tt_tzinfo = tt_timezones.timezoneAbbrevInfo[tz]
+    if (tt_tzinfo['category'] & tt_timezones.TZ_AMBIGUOUS) != 0:
+        raise error_class(f'Failed to create datetime with ambiguous timezone "{tz}"')
+
+    return pytz.FixedOffset(tt_tzinfo['offset'])
+
 def msgpack_decode(data):
     cursor = 0
     seconds, cursor = get_bytes_as_int(data, cursor, SECONDS_SIZE_BYTES)
@@ -84,23 +98,29 @@ def msgpack_decode(data):
     datetime = pandas.to_datetime(total_nsec, unit='ns')
 
     if tzindex != 0:
-        raise NotImplementedError
+        if tzindex not in tt_timezones.indexToTimezone:
+            raise MsgpackError(f'Failed to decode datetime with unknown tzindex "{tzindex}"')
+        tz = tt_timezones.indexToTimezone[tzindex]
+        tzinfo = get_python_tzinfo(tz, MsgpackError)
+        return datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo), tz
     elif tzoffset != 0:
         tzinfo = pytz.FixedOffset(tzoffset)
-        return datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo)
+        return datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo), ''
     else:
-        return datetime
+        return datetime, ''
 
 class Datetime():
     def __init__(self, data=None, *, timestamp=None, year=None, month=None,
                  day=None, hour=None, minute=None, sec=None, nsec=None,
-                 tzoffset=0):
+                 tzoffset=0, tz=''):
         if data is not None:
             if not isinstance(data, bytes):
                 raise ValueError('data argument (first positional argument) ' +
                                  'expected to be a "bytes" instance')
 
-            self._datetime = msgpack_decode(data)
+            datetime, tz = msgpack_decode(data)
+            self._datetime = datetime
+            self._tz = tz
             return
 
         # The logic is same as in Tarantool, refer to datetime API.
@@ -133,11 +153,20 @@ class Datetime():
                                         microsecond=microsecond,
                                         nanosecond=nanosecond)
 
-        if tzoffset != 0:
-            tzinfo = pytz.FixedOffset(tzoffset)
-            datetime = datetime.replace(tzinfo=tzinfo)
+        if tz != '':
+            if tz not in tt_timezones.timezoneToIndex:
+                raise ValueError(f'Unknown Tarantool timezone "{tz}"')
 
-        self._datetime = datetime
+            tzinfo = get_python_tzinfo(tz, ValueError)
+            self._datetime = datetime.replace(tzinfo=tzinfo)
+            self._tz = tz
+        elif tzoffset != 0:
+            tzinfo = pytz.FixedOffset(tzoffset)
+            self._datetime = datetime.replace(tzinfo=tzinfo)
+            self._tz = ''
+        else:
+            self._datetime = datetime
+            self._tz = ''
 
     def __eq__(self, other):
         if isinstance(other, Datetime):
@@ -151,7 +180,7 @@ class Datetime():
         return self._datetime.__str__()
 
     def __repr__(self):
-        return f'datetime: {self._datetime.__repr__()}'
+        return f'datetime: {self._datetime.__repr__()}, tz: "{self.tz}"'
 
     def __copy__(self):
         cls = self.__class__
@@ -207,6 +236,10 @@ class Datetime():
         return 0
 
     @property
+    def tz(self):
+        return self._tz
+
+    @property
     def value(self):
         return self._datetime.value
 
@@ -214,7 +247,12 @@ class Datetime():
         seconds = self.value // NSEC_IN_SEC
         nsec = self.nsec
         tzoffset = self.tzoffset
-        tzindex = 0
+
+        tz = self.tz
+        if tz != '':
+            tzindex = tt_timezones.timezoneToIndex[tz]
+        else:
+            tzindex = 0
 
         buf = get_int_as_bytes(seconds, SECONDS_SIZE_BYTES)
 
