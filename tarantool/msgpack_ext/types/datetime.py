@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 import pandas
+import pytz
 
 # https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-datetime-type
 #
@@ -42,6 +43,7 @@ BYTEORDER = 'little'
 
 NSEC_IN_SEC = 1000000000
 NSEC_IN_MKSEC = 1000
+SEC_IN_MIN = 60
 
 def get_bytes_as_int(data, cursor, size):
     part = data[cursor:cursor + size]
@@ -49,6 +51,17 @@ def get_bytes_as_int(data, cursor, size):
 
 def get_int_as_bytes(data, size):
     return data.to_bytes(size, byteorder=BYTEORDER, signed=True)
+
+def compute_offset(timestamp):
+    utc_offset = timestamp.tzinfo.utcoffset(timestamp)
+
+    # `None` offset is a valid utcoffset implementation,
+    # but it seems that pytz timezones never return `None`:
+    # https://github.com/pandas-dev/pandas/issues/15986
+    assert utc_offset is not None
+
+    # There is no precision loss since offset is in minutes
+    return int(utc_offset.total_seconds()) // SEC_IN_MIN
 
 def msgpack_decode(data):
     cursor = 0
@@ -67,16 +80,21 @@ def msgpack_decode(data):
     else:
         raise MsgpackError(f'Unexpected datetime payload length {data_len}')
 
-    if (tzoffset != 0) or (tzindex != 0):
-        raise NotImplementedError
-
     total_nsec = seconds * NSEC_IN_SEC + nsec
+    datetime = pandas.to_datetime(total_nsec, unit='ns')
 
-    return pandas.to_datetime(total_nsec, unit='ns')
+    if tzindex != 0:
+        raise NotImplementedError
+    elif tzoffset != 0:
+        tzinfo = pytz.FixedOffset(tzoffset)
+        return datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo)
+    else:
+        return datetime
 
 class Datetime():
     def __init__(self, data=None, *, timestamp=None, year=None, month=None,
-                 day=None, hour=None, minute=None, sec=None, nsec=None):
+                 day=None, hour=None, minute=None, sec=None, nsec=None,
+                 tzoffset=0):
         if data is not None:
             if not isinstance(data, bytes):
                 raise ValueError('data argument (first positional argument) ' +
@@ -99,9 +117,9 @@ class Datetime():
                     raise ValueError('timestamp must be int if nsec provided')
 
                 total_nsec = timestamp * NSEC_IN_SEC + nsec
-                self._datetime = pandas.to_datetime(total_nsec, unit='ns')
+                datetime = pandas.to_datetime(total_nsec, unit='ns')
             else:
-                self._datetime = pandas.to_datetime(timestamp, unit='s')
+                datetime = pandas.to_datetime(timestamp, unit='s')
         else:
             if nsec is not None:
                 microsecond = nsec // NSEC_IN_MKSEC
@@ -110,10 +128,16 @@ class Datetime():
                 microsecond = 0
                 nanosecond = 0
 
-            self._datetime = pandas.Timestamp(year=year, month=month, day=day,
-                                              hour=hour, minute=minute, second=sec,
-                                              microsecond=microsecond,
-                                              nanosecond=nanosecond)
+            datetime = pandas.Timestamp(year=year, month=month, day=day,
+                                        hour=hour, minute=minute, second=sec,
+                                        microsecond=microsecond,
+                                        nanosecond=nanosecond)
+
+        if tzoffset != 0:
+            tzinfo = pytz.FixedOffset(tzoffset)
+            datetime = datetime.replace(tzinfo=tzinfo)
+
+        self._datetime = datetime
 
     def __eq__(self, other):
         if isinstance(other, Datetime):
@@ -177,13 +201,19 @@ class Datetime():
         return self._datetime.timestamp()
 
     @property
+    def tzoffset(self):
+        if self._datetime.tzinfo is not None:
+            return compute_offset(self._datetime)
+        return 0
+
+    @property
     def value(self):
         return self._datetime.value
 
     def msgpack_encode(self):
         seconds = self.value // NSEC_IN_SEC
         nsec = self.nsec
-        tzoffset = 0
+        tzoffset = self.tzoffset
         tzindex = 0
 
         buf = get_int_as_bytes(seconds, SECONDS_SIZE_BYTES)

@@ -40,6 +40,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
                          nanosecond=(dt.nsec % 1000))
   ```
 
+- Offset in datetime type support (#204).
+
+  Use `tzoffset` parameter to set up offset timezone:
+
+  ```python
+  dt = tarantool.Datetime(year=2022, month=8, day=31,
+                          hour=18, minute=7, sec=54,
+                          nsec=308543321, tzoffset=180)
+  ```
+
+  You may use `tzoffset` property to get timezone offset of a datetime
+  object.
+
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
   The only reason of this bump is various vulnerability fixes,

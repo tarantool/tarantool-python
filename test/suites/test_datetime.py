@@ -53,7 +53,7 @@ class TestSuite_Datetime(unittest.TestCase):
 
     def test_Datetime_class_API(self):
         dt = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
-                                nsec=308543321)
+                                nsec=308543321, tzoffset=180)
 
         self.assertEqual(dt.year, 2022)
         self.assertEqual(dt.month, 8)
@@ -63,8 +63,9 @@ class TestSuite_Datetime(unittest.TestCase):
         self.assertEqual(dt.sec, 54)
         self.assertEqual(dt.nsec, 308543321)
         # Both Tarantool and pandas prone to precision loss for timestamp() floats
-        self.assertEqual(dt.timestamp, 1661969274.308543)
-        self.assertEqual(dt.value, 1661969274308543321)
+        self.assertEqual(dt.timestamp, 1661958474.308543)
+        self.assertEqual(dt.tzoffset, 180)
+        self.assertEqual(dt.value, 1661958474308543321)
 
 
     datetime_class_invalid_init_cases = {
@@ -157,6 +158,30 @@ class TestSuite_Datetime(unittest.TestCase):
             'python': tarantool.Datetime(timestamp=1661969274, nsec=308543321),
             'msgpack': (b'\x7a\xa3\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\x00\x00\x00\x00'),
             'tarantool': r"datetime.new({timestamp=1661969274, nsec=308543321})",
+        },
+        'datetime_with_positive_offset': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321, tzoffset=180),
+            'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\x00\x00'),
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+                         r"nsec=308543321, tzoffset=180})",
+        },
+        'datetime_with_negative_offset': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321, tzoffset=-60),
+            'msgpack': (b'\x8a\xb1\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xc4\xff\x00\x00'),
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+                         r"nsec=308543321, tzoffset=-60})",
+        },
+        'timestamp_with_positive_offset': {
+            'python': tarantool.Datetime(timestamp=1661969274, tzoffset=180),
+            'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x00\x00\x00\x00\xb4\x00\x00\x00'),
+            'tarantool': r"datetime.new({timestamp=1661969274, tzoffset=180})",
+        },
+        'timestamp_with_negative_offset': {
+            'python': tarantool.Datetime(timestamp=1661969274, tzoffset=-60),
+            'msgpack': (b'\x8a\xb1\x0f\x63\x00\x00\x00\x00\x00\x00\x00\x00\xc4\xff\x00\x00'),
+            'tarantool': r"datetime.new({timestamp=1661969274, tzoffset=-60})",
         },
     }
 
