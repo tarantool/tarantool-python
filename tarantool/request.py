@@ -81,9 +81,6 @@ class Request(object):
         # The option controls whether to pack binary (non-unicode)
         # string values as mp_bin or as mp_str.
         #
-        # The default behaviour of the Python 2 connector is to pack
-        # both bytes and Unicode strings as mp_str.
-        #
         # The default behaviour of the Python 3 connector (since
         # default encoding is "utf-8") is to pack bytes as mp_bin
         # and Unicode strings as mp_str. encoding=None mode must
@@ -113,7 +110,7 @@ class Request(object):
         # just always set it for all msgpack versions to get rid
         # of the warning on msgpack-0.5.0 and to keep our
         # behaviour on msgpack-1.0.0.
-        if conn.encoding is None or sys.version_info.major == 2:
+        if conn.encoding is None:
             packer_kwargs['use_bin_type'] = False
         else:
             packer_kwargs['use_bin_type'] = True
