@@ -1,7 +1,7 @@
-'''
+"""
 This module provides the MeshConnection class with automatic switch
 between Tarantool instances by the basic round-robin strategy.
-'''
+"""
 
 import time
 
@@ -194,8 +194,8 @@ class RoundRobinStrategy(object):
 
 
 class MeshConnection(Connection):
-    '''
    Represents a connection to a cluster of Tarantool servers.
+    """
 
    This class uses Connection to connect to one of the nodes of the cluster.
    The initial list of nodes is passed to the constructor in the 
@@ -246,7 +246,7 @@ class MeshConnection(Connection):
 
             return nodes
         end
-    '''
+    """
 
     def __init__(self, host=None, port=None,
                  user=None,
@@ -328,10 +328,10 @@ class MeshConnection(Connection):
             self._opt_refresh_instances()
 
     def _opt_reconnect(self):
-        '''
+        """
         Attempt to connect "reconnect_max_attempts" times to each
         available address.
-        '''
+        """
 
         last_error = None
         for _ in range(len(self.strategy.addrs)):
@@ -348,10 +348,10 @@ class MeshConnection(Connection):
             raise last_error
 
     def _opt_refresh_instances(self):
-        '''
+        """
         Refresh the list of tarantool instances in a cluster.
         Reconnect if the current instance has disappeared from the list.
-        '''
+        """
         now = time.time()
 
         if not self.connected or not self.cluster_discovery_function or \
@@ -415,7 +415,7 @@ class MeshConnection(Connection):
             self._opt_reconnect()
 
     def _send_request(self, request):
-        '''
+        """
         Update the instances list if `cluster_discovery_function`
         is provided and the last update was more than
         `cluster_discovery_delay` seconds ago.
@@ -427,6 +427,6 @@ class MeshConnection(Connection):
         :type request: `Request` instance
 
         :rtype: `Response` instance
-        '''
+        """
         self._opt_refresh_instances()
         return super(MeshConnection, self)._send_request(request)

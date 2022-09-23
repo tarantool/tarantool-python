@@ -1,8 +1,8 @@
 # pylint: disable=R0903
-'''
+"""
 This module provides the :class:`~tarantool.schema.Schema` class.
 It is a Tarantool schema description.
-'''
+"""
 
 from tarantool.error import (
     Error,

@@ -179,7 +179,7 @@ class PoolTask():
 
 
 class ConnectionPool(ConnectionInterface):
-    '''
+    """
     Represents the pool of connections to a cluster of Tarantool servers.
 
     ConnectionPool API is the same as Connection API.
@@ -198,7 +198,7 @@ class ConnectionPool(ConnectionInterface):
     upsert, update) use the RW mode by default. select uses ANY by default. You
     can set the mode explicitly. The call, eval, execute, and ping requests
     require to set the mode explicitly.
-    '''
+    """
     def __init__(self,
                  addrs,
                  user=None,
@@ -212,7 +212,7 @@ class ConnectionPool(ConnectionInterface):
                  connection_timeout=CONNECTION_TIMEOUT,
                  strategy_class=RoundRobinStrategy,
                  refresh_delay=POOL_REFRESH_DELAY):
-        '''
+        """
         Initialize connections to a cluster of servers.
 
         :param list addrs: List of
@@ -251,7 +251,7 @@ class ConnectionPool(ConnectionInterface):
             strategy is used.
         :param int refresh_delay: Minimal time between RW/RO status
             refreshes.
-        '''
+        """
 
         if not isinstance(addrs, list) or len(addrs) == 0:
             raise ConfigurationError("addrs must be non-empty list")
@@ -413,9 +413,9 @@ class ConnectionPool(ConnectionInterface):
         return resp
 
     def call(self, func_name, *args, mode=None):
-        '''
+        """
         :param tarantool.Mode mode: Request mode.
-        '''
+        """
 
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")
@@ -423,9 +423,9 @@ class ConnectionPool(ConnectionInterface):
         return self._send(mode, 'call', func_name, *args)
 
     def eval(self, expr, *args, mode=None):
-        '''
+        """
         :param tarantool.Mode mode: Request mode.
-        '''
+        """
 
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")
@@ -433,46 +433,46 @@ class ConnectionPool(ConnectionInterface):
         return self._send(mode, 'eval', expr, *args)
 
     def replace(self, space_name, values, *, mode=Mode.RW):
-        '''
+        """
         :param tarantool.Mode mode: Request mode (default is RW).
-        '''
+        """
 
         return self._send(mode, 'replace', space_name, values)
 
     def insert(self, space_name, values, *, mode=Mode.RW):
-        '''
+        """
         :param tarantool.Mode mode: Request mode (default is RW).
-        '''
+        """
 
         return self._send(mode, 'insert', space_name, values)
 
     def delete(self, space_name, key, *, mode=Mode.RW, **kwargs):
-        '''
+        """
         :param tarantool.Mode mode: Request mode (default is RW).
-        '''
+        """
 
         return self._send(mode, 'delete', space_name, key, **kwargs)
 
     def upsert(self, space_name, tuple_value, op_list, *, mode=Mode.RW, **kwargs):
-        '''
+        """
         :param tarantool.Mode mode: Request mode (default is RW).
-        '''
+        """
 
         return self._send(mode, 'upsert', space_name, tuple_value,
             op_list, **kwargs)
 
     def update(self, space_name, key, op_list, *, mode=Mode.RW, **kwargs):
-        '''
+        """
         :param tarantool.Mode mode: Request mode (default is RW).
-        '''
+        """
 
         return self._send(mode, 'update', space_name, key, 
             op_list, **kwargs)
 
     def ping(self, *, mode=None, **kwargs):
-        '''
+        """
         :param tarantool.Mode mode: Request mode.
-        '''
+        """
 
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")
@@ -480,17 +480,17 @@ class ConnectionPool(ConnectionInterface):
         return self._send(mode, 'ping', **kwargs)
 
     def select(self, space_name, key, *, mode=Mode.ANY, **kwargs):
-        '''
+        """
         :param tarantool.Mode mode: Request mode (default is
             ANY).
-        '''
+        """
 
         return self._send(mode, 'select', space_name, key, **kwargs)
 
     def execute(self, query, params=None, *, mode=None):
-        '''
+        """
         :param tarantool.Mode mode: Request mode (default is RW).
-        '''
+        """
 
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")

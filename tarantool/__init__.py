@@ -49,7 +49,7 @@ def connect(host="localhost", port=33013, user=None, password=None,
             ssl_cert_file=DEFAULT_SSL_CERT_FILE,
             ssl_ca_file=DEFAULT_SSL_CA_FILE,
             ssl_ciphers=DEFAULT_SSL_CIPHERS):
-    '''
+    """
     Create a connection to the Tarantool server.
 
     :param str host: Server hostname or IP-address
@@ -58,7 +58,7 @@ def connect(host="localhost", port=33013, user=None, password=None,
     :rtype: :class:`~tarantool.connection.Connection`
 
     :raise: `NetworkError`
-    '''
+    """
 
     return Connection(host, port,
                       user=user,
@@ -77,7 +77,7 @@ def connect(host="localhost", port=33013, user=None, password=None,
 
 def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
                 password=None, encoding=ENCODING_DEFAULT):
-    '''
+    """
     Create a connection to a mesh of Tarantool servers.
 
     :param list addrs: List of maps: {'host':(HOSTNAME|IP_ADDR), 'port':PORT}.
@@ -85,7 +85,7 @@ def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
     :rtype: :class:`~tarantool.mesh_connection.MeshConnection`
 
     :raise: `NetworkError`
-    '''
+    """
 
     return MeshConnection(addrs=addrs,
                           user=user,

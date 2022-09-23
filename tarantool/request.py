@@ -1,7 +1,7 @@
 # pylint: disable=C0301,W0105,W0401,W0614
-'''
+"""
 Request types definitions
-'''
+"""
 
 import sys
 import msgpack
@@ -56,7 +56,7 @@ from tarantool.utils import (
 from tarantool.msgpack_ext.packer import default as packer_default
 
 class Request(object):
-    '''
+    """
     Represents a single request to the server in compliance with the
     Tarantool protocol.
     Responsible for data encapsulation and builds binary packet
@@ -64,7 +64,7 @@ class Request(object):
 
     This is the abstract base class. Specific request types
     are implemented by the inherited classes.
-    '''
+    """
     request_type = None
 
     def __init__(self, conn):
@@ -129,12 +129,12 @@ class Request(object):
 
     @property
     def sync(self):
-        '''
+        """
         :type: int
 
         Required field in the server request.
         Contains request header IPROTO_SYNC.
-        '''
+        """
         return self._sync
 
     def header(self, length):
@@ -147,15 +147,15 @@ class Request(object):
 
 
 class RequestInsert(Request):
-    '''
+    """
     Represents INSERT request
-    '''
+    """
     request_type = REQUEST_TYPE_INSERT
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, values):
-        '''
-        '''
+        """
+        """
         super(RequestInsert, self).__init__(conn)
         assert isinstance(values, (tuple, list))
 
@@ -166,9 +166,9 @@ class RequestInsert(Request):
 
 
 class RequestAuthenticate(Request):
-    '''
+    """
     Represents AUTHENTICATE request
-    '''
+    """
     request_type = REQUEST_TYPE_AUTHENTICATE
 
     def __init__(self, conn, salt, user, password):
@@ -204,15 +204,15 @@ class RequestAuthenticate(Request):
 
 
 class RequestReplace(Request):
-    '''
+    """
     Represents REPLACE request
-    '''
+    """
     request_type = REQUEST_TYPE_REPLACE
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, values):
-        '''
-        '''
+        """
+        """
         super(RequestReplace, self).__init__(conn)
         assert isinstance(values, (tuple, list))
 
@@ -223,15 +223,15 @@ class RequestReplace(Request):
 
 
 class RequestDelete(Request):
-    '''
+    """
     Represents DELETE request
-    '''
+    """
     request_type = REQUEST_TYPE_DELETE
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, key):
-        '''
-        '''
+        """
+        """
         super(RequestDelete, self).__init__(conn)
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
@@ -242,9 +242,9 @@ class RequestDelete(Request):
 
 
 class RequestSelect(Request):
-    '''
+    """
     Represents SELECT request
-    '''
+    """
     request_type = REQUEST_TYPE_SELECT
 
     # pylint: disable=W0231
@@ -261,9 +261,9 @@ class RequestSelect(Request):
 
 
 class RequestUpdate(Request):
-    '''
+    """
     Represents UPDATE request
-    '''
+    """
 
     request_type = REQUEST_TYPE_UPDATE
 
@@ -280,9 +280,9 @@ class RequestUpdate(Request):
 
 
 class RequestCall(Request):
-    '''
+    """
     Represents CALL request
-    '''
+    """
     request_type = REQUEST_TYPE_CALL
 
     # pylint: disable=W0231
@@ -299,9 +299,9 @@ class RequestCall(Request):
 
 
 class RequestEval(Request):
-    '''
+    """
     Represents EVAL request
-    '''
+    """
     request_type = REQUEST_TYPE_EVAL
 
     # pylint: disable=W0231
@@ -316,9 +316,9 @@ class RequestEval(Request):
 
 
 class RequestPing(Request):
-    '''
+    """
     Ping body is empty, so body_length == 0 and there's no body
-    '''
+    """
     request_type = REQUEST_TYPE_PING
 
     def __init__(self, conn):
@@ -327,9 +327,9 @@ class RequestPing(Request):
 
 
 class RequestUpsert(Request):
-    '''
+    """
     Represents UPSERT request
-    '''
+    """
 
     request_type = REQUEST_TYPE_UPSERT
 
@@ -346,9 +346,9 @@ class RequestUpsert(Request):
 
 
 class RequestJoin(Request):
-    '''
+    """
     Represents JOIN request
-    '''
+    """
     request_type = REQUEST_TYPE_JOIN
 
     # pylint: disable=W0231
@@ -359,9 +359,9 @@ class RequestJoin(Request):
 
 
 class RequestSubscribe(Request):
-    '''
+    """
     Represents SUBSCRIBE request
-    '''
+    """
     request_type = REQUEST_TYPE_SUBSCRIBE
 
     # pylint: disable=W0231
@@ -378,9 +378,9 @@ class RequestSubscribe(Request):
 
 
 class RequestOK(Request):
-    '''
+    """
     Represents OK acknowledgement
-    '''
+    """
     request_type = REQUEST_TYPE_OK
 
     # pylint: disable=W0231
@@ -392,9 +392,9 @@ class RequestOK(Request):
 
 
 class RequestExecute(Request):
-    '''
+    """
     Represents EXECUTE SQL request
-    '''
+    """
     request_type = REQUEST_TYPE_EXECUTE
 
     def __init__(self, conn, sql, args):

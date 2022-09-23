@@ -26,15 +26,15 @@ from tarantool.error import (
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 class Response(Sequence):
-    '''
+    """
     Represents a single response from the server in compliance with the
     Tarantool protocol.
     Responsible for data encapsulation (i.e. received list of tuples)
     and parsing of binary packets received from the server.
-    '''
+    """
 
     def __init__(self, conn, response):
-        '''
+        """
         Create an instance of `Response`
         using the data received from the server.
 
@@ -43,7 +43,7 @@ class Response(Sequence):
 
         :param body: body of the response
         :type body: array of bytes
-        '''
+        """
 
         # This is not necessary, because underlying list data structures are
         # created in the __new__().
@@ -158,46 +158,46 @@ class Response(Sequence):
 
     @property
     def rowcount(self):
-        '''
+        """
         :type: int
 
         Number of rows affected or returned by a query.
-        '''
+        """
         return len(self)
 
     @property
     def body(self):
-        '''
+        """
         :type: dict
 
         Required field in the server response.
         Contains the raw response body.
-        '''
+        """
         return self._body
 
     @property
     def code(self):
-        '''
+        """
         :type: int
 
         Required field in the server response.
         Contains the response type id.
-        '''
+        """
         return self._code
 
     @property
     def sync(self):
-        '''
+        """
         :type: int
 
         Required field in the server response.
         Contains the response header IPROTO_SYNC.
-        '''
+        """
         return self._sync
 
     @property
     def return_code(self):
-        '''
+        """
         :type: int
 
         Required field in the server response.
@@ -206,56 +206,56 @@ class Response(Sequence):
         Otherwise, :attr:`return_code` contains an error code.
         If :attr:`return_code` is non-zero, :attr:`return_message`
         contains an error message.
-        '''
+        """
         return self._return_code
 
     @property
     def data(self):
-        '''
+        """
         :type: object
 
         Required field in the server response.
         Contains the list of tuples for SELECT, REPLACE and DELETE requests
         and arbitrary data for CALL.
-        '''
+        """
         return self._data
 
     @property
     def strerror(self):
-        '''
+        """
         :type: str
 
         Contains ER_OK if the request was successful,
         or contains an error code string.
-        '''
+        """
         return tnt_strerror(self._return_code)
 
     @property
     def return_message(self):
-        '''
+        """
         :type: str
 
         The error message returned by the server in case
         :attr:`return_code` is non-zero.
-        '''
+        """
         return self._return_message
 
     @property
     def schema_version(self):
-        '''
+        """
         :type: int
 
         Current schema version of request.
-        '''
+        """
         return self._schema_version
 
     def __str__(self):
-        '''
+        """
         Return a user-friendy string representation of the object.
         Useful for interactive sessions and debuging.
 
         :rtype: str or None
-        '''
+        """
         if self.return_code:
             return json.dumps({
                 'error': {

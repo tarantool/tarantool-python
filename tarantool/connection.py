@@ -1,7 +1,7 @@
 # pylint: disable=C0301,W0105,W0401,W0614
-'''
+"""
 This module provides low-level API for Tarantool
-'''
+"""
 
 import os
 import time
@@ -170,14 +170,14 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
 
 class Connection(ConnectionInterface):
-    '''
+    """
     Represents connection to the Tarantool server.
 
     This class is responsible for connection and network exchange with
     the server.
     It also provides a low-level interface for data manipulation
     (insert/delete/update/select).
-    '''
+    """
     # DBAPI Extension: supply exceptions as attributes on the connection
     Error = Error
     DatabaseError = DatabaseError
@@ -209,7 +209,7 @@ class Connection(ConnectionInterface):
                  ssl_cert_file=DEFAULT_SSL_CERT_FILE,
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
                  ssl_ciphers=DEFAULT_SSL_CIPHERS):
-        '''
+        """
         Initialize a connection to the server.
 
         :param str host: server hostname or IP address
@@ -226,7 +226,7 @@ class Connection(ConnectionInterface):
             (CA) file
         :param str ssl_ciphers: colon-separated (:) list of SSL cipher suites
             the connection can use
-        '''
+        """
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
             raise ConfigurationError("msgpack>=1.0.0 only supports None and " +
@@ -267,17 +267,17 @@ class Connection(ConnectionInterface):
             self.connect()
 
     def close(self):
-        '''
+        """
         Close a connection to the server.
-        '''
+        """
         self._socket.close()
         self._socket = None
 
     def is_closed(self):
-        '''
+        """
         Returns the state of a Connection instance.
         :rtype: Boolean
-        '''
+        """
         return self._socket is None
 
     def connect_basic(self):
@@ -287,11 +287,11 @@ class Connection(ConnectionInterface):
             self.connect_tcp()
 
     def connect_tcp(self):
-        '''
+        """
         Create a connection to the host and port specified in __init__().
 
         :raise: `NetworkError`
-        '''
+        """
 
         try:
             # If old socket already exists - close it and re-create
@@ -307,11 +307,11 @@ class Connection(ConnectionInterface):
             raise NetworkError(e)
 
     def connect_unix(self):
-        '''
+        """
         Create a connection to the host and port specified in __init__().
 
         :raise: `NetworkError`
-        '''
+        """
 
         try:
             # If old socket already exists - close it and re-create
@@ -327,12 +327,12 @@ class Connection(ConnectionInterface):
             raise NetworkError(e)
 
     def wrap_socket_ssl(self):
-        '''
+        """
         Wrap an existing socket with an SSL socket.
 
         :raise: SslError
         :raise: `ssl.SSLError`
-        '''
+        """
         if not is_ssl_supported:
             raise SslError("Your version of Python doesn't support SSL")
 
@@ -405,14 +405,14 @@ class Connection(ConnectionInterface):
             self.authenticate(self.user, self.password)
 
     def connect(self):
-        '''
+        """
         Create a connection to the host and port specified in __init__().
         Usually, there is no need to call this method directly,
         because it is called when you create a `Connection` instance.
 
         :raise: `NetworkError`
         :raise: `SslError`
-        '''
+        """
         try:
             self.connect_basic()
             if self.transport == SSL_TRANSPORT:
@@ -455,23 +455,23 @@ class Connection(ConnectionInterface):
         return buf
 
     def _read_response(self):
-        '''
+        """
         Read response from the transport (socket).
 
         :return: tuple of the form (header, body)
         :rtype: tuple of two byte arrays
-        '''
+        """
         # Read packet length
         length = msgpack.unpackb(self._recv(5))
         # Read the packet
         return self._recv(length)
 
     def _send_request_wo_reconnect(self, request):
-        '''
+        """
         :rtype: `Response` instance or subclass
 
         :raise: NetworkError
-        '''
+        """
         assert isinstance(request, Request)
 
         response = None
@@ -487,11 +487,11 @@ class Connection(ConnectionInterface):
         return response
 
     def _opt_reconnect(self):
-        '''
+        """
         Check that the connection is alive
         using low-level recv from libc(ctypes).
         **Bug in Python: timeout is an internal Python construction.
-        '''
+        """
         if not self._socket:
             return self.connect()
 
@@ -553,7 +553,7 @@ class Connection(ConnectionInterface):
         self.handshake()
 
     def _send_request(self, request):
-        '''
+        """
         Send a request to the server through the socket.
         Return an instance of the `Response` class.
 
@@ -561,7 +561,7 @@ class Connection(ConnectionInterface):
         :type request: `Request` instance
 
         :rtype: `Response` instance
-        '''
+        """
         assert isinstance(request, Request)
 
         self._opt_reconnect()
@@ -581,7 +581,7 @@ class Connection(ConnectionInterface):
         self.load_schema()
 
     def call(self, func_name, *args):
-        '''
+        """
         Execute a CALL request. Call a stored Lua function.
 
         :param func_name: stored Lua function name
@@ -590,7 +590,7 @@ class Connection(ConnectionInterface):
         :type args: list or tuple
 
         :rtype: `Response` instance
-        '''
+        """
         assert isinstance(func_name, str)
 
         # This allows to use a tuple or list as an argument
@@ -602,7 +602,7 @@ class Connection(ConnectionInterface):
         return response
 
     def eval(self, expr, *args):
-        '''
+        """
         Execute an EVAL request. Eval a Lua expression.
 
         :param expr: Lua expression
@@ -611,7 +611,7 @@ class Connection(ConnectionInterface):
         :type args: list or tuple
 
         :rtype: `Response` instance
-        '''
+        """
         assert isinstance(expr, str)
 
         # This allows to use a tuple or list as an argument
@@ -623,7 +623,7 @@ class Connection(ConnectionInterface):
         return response
 
     def replace(self, space_name, values):
-        '''
+        """
         Execute a REPLACE request.
         Doesn't throw an error if there is no tuple with the specified PK.
 
@@ -634,21 +634,21 @@ class Connection(ConnectionInterface):
         :type values: tuple
 
         :rtype: `Response` instance
-        '''
+        """
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         request = RequestReplace(self, space_name, values)
         return self._send_request(request)
 
     def authenticate(self, user, password):
-        '''
+        """
         Execute an AUTHENTICATE request.
 
         :param string user: user to authenticate
         :param string password: password for the user
 
         :rtype: `Response` instance
-        '''
+        """
         self.user = user
         self.password = password
         if not self._socket:
@@ -716,7 +716,7 @@ class Connection(ConnectionInterface):
         self.close()  # close connection after SUBSCRIBE
 
     def insert(self, space_name, values):
-        '''
+        """
         Execute an INSERT request.
         Throws an error if there is a tuple with the same PK.
 
@@ -727,14 +727,14 @@ class Connection(ConnectionInterface):
         :type values: tuple
 
         :rtype: `Response` instance
-        '''
+        """
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         request = RequestInsert(self, space_name, values)
         return self._send_request(request)
 
     def delete(self, space_name, key, **kwargs):
-        '''
+        """
         Execute DELETE request.
         Delete a single record identified by `key`. If you're using a secondary
         index, it must be unique.
@@ -745,7 +745,7 @@ class Connection(ConnectionInterface):
         :type key: int or str
 
         :rtype: `Response` instance
-        '''
+        """
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
@@ -757,7 +757,7 @@ class Connection(ConnectionInterface):
         return self._send_request(request)
 
     def upsert(self, space_name, tuple_value, op_list, **kwargs):
-        '''
+        """
         Execute UPSERT request.
 
         If an existing tuple matches the key fields of
@@ -818,7 +818,7 @@ class Connection(ConnectionInterface):
             [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
             # Delete two fields, starting with the second field
             [('#', 2, 2)]
-        '''
+        """
         index_name = kwargs.get("index", 0)
 
         if isinstance(space_name, str):
@@ -831,7 +831,7 @@ class Connection(ConnectionInterface):
         return self._send_request(request)
 
     def update(self, space_name, key, op_list, **kwargs):
-        '''
+        """
         Execute an UPDATE request.
 
         The `update` function supports operations on fields — assignment,
@@ -893,7 +893,7 @@ class Connection(ConnectionInterface):
             [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
             # Delete two fields, starting with the second field
             [('#', 2, 2)]
-        '''
+        """
         index_name = kwargs.get("index", 0)
 
         key = check_key(key)
@@ -906,13 +906,13 @@ class Connection(ConnectionInterface):
         return self._send_request(request)
 
     def ping(self, notime=False):
-        '''
+        """
         Execute a PING request.
         Send an empty request and receive an empty response from the server.
 
         :return: response time in seconds
         :rtype: float
-        '''
+        """
 
         request = RequestPing(self)
         t0 = time.time()
@@ -924,7 +924,7 @@ class Connection(ConnectionInterface):
         return t1 - t0
 
     def select(self, space_name, key=None, **kwargs):
-        '''
+        """
         Execute a SELECT request.
         Select and retrieve data from the database.
 
@@ -962,7 +962,7 @@ class Connection(ConnectionInterface):
         >>> select(0)
         # OR
         >>> select(0, [])
-        '''
+        """
 
         # Initialize arguments and its defaults from **kwargs
         offset = kwargs.get("offset", 0)
@@ -990,7 +990,7 @@ class Connection(ConnectionInterface):
         return response
 
     def space(self, space_name):
-        '''
+        """
         Create a `Space` instance for a particular space.
 
         A `Space` instance encapsulates the identifier
@@ -1001,17 +1001,17 @@ class Connection(ConnectionInterface):
         :type space_name: int or str
 
         :rtype: `Space` instance
-        '''
+        """
         return Space(self, space_name)
 
     def generate_sync(self):
-        '''
+        """
         Need override for async io connection.
-        '''
+        """
         return 0
 
     def execute(self, query, params=None):
-        '''
+        """
         Execute an SQL request.
 
         The Tarantool binary protocol for SQL requests
@@ -1036,7 +1036,7 @@ class Connection(ConnectionInterface):
 
         :return: query result data
         :rtype: `Response` instance
-        '''
+        """
         if not params:
             params = []
         request = RequestExecute(self, query, params)
