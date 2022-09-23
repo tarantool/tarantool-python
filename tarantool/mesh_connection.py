@@ -194,20 +194,20 @@ class RoundRobinStrategy(object):
 
 
 class MeshConnection(Connection):
-   Represents a connection to a cluster of Tarantool servers.
     """
+    Represents a connection to a cluster of Tarantool servers.
 
-   This class uses Connection to connect to one of the nodes of the cluster.
-   The initial list of nodes is passed to the constructor in the 
-   'addrs' parameter. The class set in the 'strategy_class' parameter
-   is used to select a node from the list and switch nodes in case the
-   current node is unavailable.
+    This class uses Connection to connect to one of the nodes of the cluster.
+    The initial list of nodes is passed to the constructor in the 
+    'addrs' parameter. The class set in the 'strategy_class' parameter
+    is used to select a node from the list and switch nodes in case the
+    current node is unavailable.
 
-   The 'cluster_discovery_function' param of the constructor sets the name
-   of the stored Lua function used to refresh the list of available nodes.
-   The function takes no parameters and returns a list of strings in the
-   format 'host:port'. A generic function for getting the list of nodes
-   looks like this:
+    The 'cluster_discovery_function' param of the constructor sets the name
+    of the stored Lua function used to refresh the list of available nodes.
+    The function takes no parameters and returns a list of strings in the
+    format 'host:port'. A generic function for getting the list of nodes
+    looks like this:
 
     .. code-block:: lua
 
