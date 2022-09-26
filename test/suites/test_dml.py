@@ -298,8 +298,26 @@ class TestSuite_Request(unittest.TestCase):
             [[2, 'help', 7]]
         )
 
+    def test_13_unix_socket_connect(self):
+        if sys.platform.startswith("win"):
+            self.skipTest("Skip UNIX socket tests on Windows since it uses remote server")
+
+        self.sock_srv = TarantoolServer(create_unix_socket=True)
+        self.sock_srv.script = 'test/suites/box.lua'
+        self.sock_srv.start()
+
+        self.sock_con = tarantool.connect(self.sock_srv.host, self.sock_srv.args['primary'])
+        self.assertEqual(self.sock_con.ping(notime=True), "Success")
+
     @classmethod
     def tearDownClass(self):
         self.con.close()
         self.srv.stop()
         self.srv.clean()
+
+        if hasattr(self, 'sock_srv'):
+            self.sock_srv.stop()
+            self.sock_srv.clean()
+
+        if hasattr(self, 'sock_con'):
+            self.sock_con.close()
