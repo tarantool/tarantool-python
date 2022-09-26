@@ -86,14 +86,25 @@ from tarantool.utils import (
 
 # Based on https://realpython.com/python-interface/
 class ConnectionInterface(metaclass=abc.ABCMeta):
+    """
+    Represents a connection to a single or multiple Tarantool servers.
+
+    Interface requires that connection objects has methods to open
+    and close a connection, check its status, call procedures and
+    evaluate Lua code on server, make simple data manipulations and
+    execute SQL queries.
+    """
+
     @classmethod
     def __subclasshook__(cls, subclass):
-        return (hasattr(subclass, 'close') and
+        return (hasattr(subclass, 'connect') and
+                callable(subclass.connect) and
+                hasattr(subclass, 'close') and
                 callable(subclass.close) and
                 hasattr(subclass, 'is_closed') and
                 callable(subclass.is_closed) and
-                hasattr(subclass, 'connect') and
-                callable(subclass.connect) and
+                hasattr(subclass, 'ping') and
+                callable(subclass.ping) and
                 hasattr(subclass, 'call') and
                 callable(subclass.call) and
                 hasattr(subclass, 'eval') and
@@ -108,13 +119,15 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
                 callable(subclass.upsert) and
                 hasattr(subclass, 'update') and
                 callable(subclass.update) and
-                hasattr(subclass, 'ping') and
-                callable(subclass.ping) and
                 hasattr(subclass, 'select') and
                 callable(subclass.select) and
                 hasattr(subclass, 'execute') and
                 callable(subclass.execute) or
                 NotImplemented)
+
+    @abc.abstractmethod
+    def connect(self):
+        raise NotImplementedError
 
     @abc.abstractmethod
     def close(self):
@@ -125,7 +138,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def connect(self):
+    def ping(self, notime):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -157,10 +170,6 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def ping(self, notime):
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def select(self, space_name, key, **kwargs):
         raise NotImplementedError
 
@@ -171,12 +180,11 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
 class Connection(ConnectionInterface):
     """
-    Represents connection to the Tarantool server.
+    Represents a connection to a Tarantool server.
 
-    This class is responsible for connection and network exchange with
-    the server.
-    It also provides a low-level interface for data manipulation
-    (insert/delete/update/select).
+    Сonnection objects has methods to open and close a connection,
+    check its status, call procedures and evaluate Lua code on server,
+    make simple data manipulations and execute SQL queries.
     """
     # DBAPI Extension: supply exceptions as attributes on the connection
     Error = Error
