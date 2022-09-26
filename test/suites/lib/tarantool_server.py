@@ -122,7 +122,8 @@ class TarantoolServer(object):
                 ssl_key_file=None,
                 ssl_cert_file=None,
                 ssl_ca_file=None,
-                ssl_ciphers=None):
+                ssl_ciphers=None,
+                create_unix_socket=False):
         if os.name == 'nt':
             from .remote_tarantool_server import RemoteTarantoolServer
             return RemoteTarantoolServer()
@@ -133,12 +134,23 @@ class TarantoolServer(object):
                  ssl_key_file=None,
                  ssl_cert_file=None,
                  ssl_ca_file=None,
-                 ssl_ciphers=None):
+                 ssl_ciphers=None,
+                 create_unix_socket=False):
         os.popen('ulimit -c unlimited')
-        self.host = 'localhost'
-        self.args = {}
-        self.args['primary'] = find_port()
-        self.args['admin'] = find_port(self.args['primary'] + 1)
+
+        if create_unix_socket:
+            self.host = None
+            self.args = {}
+            self._socket = tempfile.NamedTemporaryFile(suffix='.sock', delete=False)
+            self.args['primary'] = self._socket.name
+            self.args['admin'] = find_port()
+        else:
+            self.host = 'localhost'
+            self.args = {}
+            self._socket = None
+            self.args['primary'] = find_port()
+            self.args['admin'] = find_port(self.args['primary'] + 1)
+
         self._admin = self.args['admin']
         self.vardir = tempfile.mkdtemp(prefix='var_', dir=os.getcwd())
         self.find_exe()
@@ -243,6 +255,12 @@ class TarantoolServer(object):
     def clean(self):
         if os.path.isdir(self.vardir):
             shutil.rmtree(self.vardir)
+
+        if os.path.exists(self.args['primary']):
+            os.remove(self.args['primary'])
+
+        if (self._socket is not None) and (not self._socket.file.closed):
+            self._socket.close()
 
     def __del__(self):
         self.stop()
