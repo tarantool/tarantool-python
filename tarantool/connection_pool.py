@@ -446,30 +446,30 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'insert', space_name, values)
 
-    def delete(self, space_name, key, *, mode=Mode.RW, **kwargs):
+    def delete(self, space_name, key, *, index=0, mode=Mode.RW):
         '''
         :param tarantool.Mode mode: Request mode (default is RW).
         '''
 
-        return self._send(mode, 'delete', space_name, key, **kwargs)
+        return self._send(mode, 'delete', space_name, key, index=index)
 
-    def upsert(self, space_name, tuple_value, op_list, *, mode=Mode.RW, **kwargs):
+    def upsert(self, space_name, tuple_value, op_list, *, index=0, mode=Mode.RW):
         '''
         :param tarantool.Mode mode: Request mode (default is RW).
         '''
 
         return self._send(mode, 'upsert', space_name, tuple_value,
-            op_list, **kwargs)
+            op_list, index=index)
 
-    def update(self, space_name, key, op_list, *, mode=Mode.RW, **kwargs):
+    def update(self, space_name, key, op_list, *, index=0, mode=Mode.RW):
         '''
         :param tarantool.Mode mode: Request mode (default is RW).
         '''
 
         return self._send(mode, 'update', space_name, key, 
-            op_list, **kwargs)
+            op_list, index=index)
 
-    def ping(self, *, mode=None, **kwargs):
+    def ping(self, notime=False, *, mode=None):
         '''
         :param tarantool.Mode mode: Request mode.
         '''
@@ -477,15 +477,17 @@ class ConnectionPool(ConnectionInterface):
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")
 
-        return self._send(mode, 'ping', **kwargs)
+        return self._send(mode, 'ping', notime)
 
-    def select(self, space_name, key, *, mode=Mode.ANY, **kwargs):
+    def select(self, space_name, key, *, offset=0, limit=0xffffffff,
+               index=0, iterator=None, mode=Mode.ANY):
         '''
         :param tarantool.Mode mode: Request mode (default is
             ANY).
         '''
 
-        return self._send(mode, 'select', space_name, key, **kwargs)
+        return self._send(mode, 'select', space_name, key, offset=offset, limit=limit,
+                          index=index, iterator=iterator)
 
     def execute(self, query, params=None, *, mode=None):
         '''
