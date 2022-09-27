@@ -142,11 +142,11 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def call(self, func_name, *args, **kwargs):
+    def call(self, func_name, *args):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def eval(self, expr, *args, **kwargs):
+    def eval(self, expr, *args):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -158,23 +158,23 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def delete(self, space_name, key, **kwargs):
+    def delete(self, space_name, key, *, index):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upsert(self, space_name, tuple_value, op_list, **kwargs):
+    def upsert(self, space_name, tuple_value, op_list, *, index=None):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self, space_name, key, op_list, **kwargs):
+    def update(self, space_name, key, op_list, *, index=None):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def select(self, space_name, key, **kwargs):
+    def select(self, space_name, key, *, offset=None, limit=None, index=None, iterator=None):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def execute(self, query, params, **kwargs):
+    def execute(self, query, params):
         raise NotImplementedError
 
 
@@ -842,7 +842,7 @@ class Connection(ConnectionInterface):
         request = RequestInsert(self, space_name, values)
         return self._send_request(request)
 
-    def delete(self, space_name, key, **kwargs):
+    def delete(self, space_name, key, *, index=0):
         """
         Execute DELETE request.
         Delete a single record identified by `key`. If you're using a secondary
@@ -855,17 +855,16 @@ class Connection(ConnectionInterface):
 
         :rtype: `Response` instance
         """
-        index_name = kwargs.get("index", 0)
 
         key = check_key(key)
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, str):
-            index_name = self.schema.get_index(space_name, index_name).iid
-        request = RequestDelete(self, space_name, index_name, key)
+        if isinstance(index, str):
+            index = self.schema.get_index(space_name, index).iid
+        request = RequestDelete(self, space_name, index, key)
         return self._send_request(request)
 
-    def upsert(self, space_name, tuple_value, op_list, **kwargs):
+    def upsert(self, space_name, tuple_value, op_list, *, index=0):
         """
         Execute UPSERT request.
 
@@ -928,18 +927,16 @@ class Connection(ConnectionInterface):
             # Delete two fields, starting with the second field
             [('#', 2, 2)]
         """
-        index_name = kwargs.get("index", 0)
-
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index_name, str):
-            index_name = self.schema.get_index(space_name, index_name).iid
+            index = self.schema.get_index(space_name, index).iid
         op_list = self._ops_process(space_name, op_list)
-        request = RequestUpsert(self, space_name, index_name, tuple_value,
+        request = RequestUpsert(self, space_name, index, tuple_value,
                                 op_list)
         return self._send_request(request)
 
-    def update(self, space_name, key, op_list, **kwargs):
+    def update(self, space_name, key, op_list, *, index=0):
         """
         Execute an UPDATE request.
 
@@ -1003,15 +1000,14 @@ class Connection(ConnectionInterface):
             # Delete two fields, starting with the second field
             [('#', 2, 2)]
         """
-        index_name = kwargs.get("index", 0)
 
         key = check_key(key)
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, str):
-            index_name = self.schema.get_index(space_name, index_name).iid
+        if isinstance(index, str):
+            index = self.schema.get_index(space_name, index).iid
         op_list = self._ops_process(space_name, op_list)
-        request = RequestUpdate(self, space_name, index_name, key, op_list)
+        request = RequestUpdate(self, space_name, index, key, op_list)
         return self._send_request(request)
 
     def ping(self, notime=False):
@@ -1032,7 +1028,7 @@ class Connection(ConnectionInterface):
             return "Success"
         return t1 - t0
 
-    def select(self, space_name, key=None, **kwargs):
+    def select(self, space_name, key=None, *, offset=0, limit=0xffffffff, index=0, iterator=None):
         """
         Execute a SELECT request.
         Select and retrieve data from the database.
@@ -1073,17 +1069,11 @@ class Connection(ConnectionInterface):
         >>> select(0, [])
         """
 
-        # Initialize arguments and its defaults from **kwargs
-        offset = kwargs.get("offset", 0)
-        limit = kwargs.get("limit", 0xffffffff)
-        index_name = kwargs.get("index", 0)
-        iterator_type = kwargs.get("iterator")
-
-        if iterator_type is None:
-            iterator_type = ITERATOR_EQ
+        if iterator is None:
+            iterator = ITERATOR_EQ
             if key is None or (isinstance(key, (list, tuple)) and
                                len(key) == 0):
-                iterator_type = ITERATOR_ALL
+                iterator = ITERATOR_ALL
 
         # Perform smart type checking (scalar / list of scalars / list of
         # tuples)
@@ -1091,10 +1081,10 @@ class Connection(ConnectionInterface):
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, str):
-            index_name = self.schema.get_index(space_name, index_name).iid
-        request = RequestSelect(self, space_name, index_name, key, offset,
-                                limit, iterator_type)
+        if isinstance(index, str):
+            index = self.schema.get_index(space_name, index).iid
+        request = RequestSelect(self, space_name, index, key, offset,
+                                limit, iterator)
         response = self._send_request(request)
         return response
 
