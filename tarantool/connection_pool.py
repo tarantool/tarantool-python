@@ -469,7 +469,7 @@ class ConnectionPool(ConnectionInterface):
         return self._send(mode, 'update', space_name, key, 
             op_list, index=index)
 
-    def ping(self, *, mode=None,):
+    def ping(self, notime=False, *, mode=None):
         """
         :param tarantool.Mode mode: Request mode.
         """
@@ -477,7 +477,7 @@ class ConnectionPool(ConnectionInterface):
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")
 
-        return self._send(mode, 'ping', **kwargs)
+        return self._send(mode, 'ping', notime=notime)
 
     def select(self, space_name, key, *, offset=0, limit=0xffffffff,
                index=0, iterator=None, mode=Mode.ANY):

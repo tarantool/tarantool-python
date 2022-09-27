@@ -929,7 +929,7 @@ class Connection(ConnectionInterface):
         """
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        if isinstance(index_name, str):
+        if isinstance(index, str):
             index = self.schema.get_index(space_name, index).iid
         op_list = self._ops_process(space_name, op_list)
         request = RequestUpsert(self, space_name, index, tuple_value,
