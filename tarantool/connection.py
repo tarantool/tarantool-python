@@ -218,22 +218,123 @@ class Connection(ConnectionInterface):
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
                  ssl_ciphers=DEFAULT_SSL_CIPHERS):
         """
-        Initialize a connection to the server.
+        Initialize a connection to the Tarantool server.
 
-        :param str host: server hostname or IP address
-        :param int port: server port
-        :param bool connect_now: if True (default), __init__() actually
-            creates a network connection; if False, you have to call
-            connect() manually
-        :param str transport: set to `ssl` to enable
-            SSL encryption for a connection.
-            SSL encryption requires Python >= 3.5
-        :param str ssl_key_file: path to the private SSL key file
-        :param str ssl_cert_file: path to the SSL certificate file
-        :param str ssl_ca_file: path to the trusted certificate authority
-            (CA) file
-        :param str ssl_ciphers: colon-separated (:) list of SSL cipher suites
-            the connection can use
+        :param host: server hostname or IP address. Use ``None`` for UNIX sockets
+        :type host: :obj:`str` or :obj:`None`
+
+        :param port: server port or UNIX socket path
+        :type port: :obj:`int` or :obj:`str`
+
+        :param user: user name for authentication on the Tarantool server.
+            Defaults to ``None``
+        :type user: :obj:`str` or :obj:`None`, optional
+
+        :param password: user password for authentication on the Tarantool server.
+            Defaults to ``None``
+        :type password: :obj:`str` or :obj:`None`, optional
+
+        :param socket_timeout: timeout on blocking socket operations, in seconds
+            (see `socket.settimeout() <https://docs.python.org/3/library/socket.html#socket.socket.settimeout>`_).
+            Defaults to ``None``
+        :type socket_timeout: :obj:`float` or :obj:`None`, optional
+
+        :param reconnect_max_attempts: count of maximum attempts to reconnect
+            on API call if connection is lost.
+            Defaults to ``10``
+        :type reconnect_max_attempts: :obj:`int`, optional
+
+        :param reconnect_delay: delay between attempts to reconnect
+            on API call if connection is lost, in seconds.
+            Defaults to ``0.1``
+        :type reconnect_delay: :obj:`float`, optional
+
+        :param bool connect_now: If ``True``, connect to server on initialization.
+            Otherwise, you have to call ``connect()`` manually after initialization.
+            Defaults to ``True``
+        :type connect_now: :obj:`bool`, optional
+
+        :param encoding: ``'utf-8'`` or ``None``. Use ``None`` to work with non-UTF8 strings.
+
+            If ``'utf-8'``, pack Unicode string (:obj:`str`) to
+            msgpack string (`mp_str`_) and unpack msgpack string (`mp_str`_)
+            Unicode string (:obj:`str`),
+            pack :obj:`bytes` to msgpack binary (`mp_bin`_)
+            and unpack msgpack binary (`mp_bin`_) to :obj:`bytes`.
+
+                +--------------+----+-----------+----+--------------+
+                | Python       | -> | Tarantool | -> | Python       |
+                +--------------+----+-----------+----+--------------+
+                | :obj:`str`   | -> | `mp_str`_ | -> | :obj:`str`   |
+                +--------------+----+-----------+----+--------------+
+                | :obj:`bytes` | -> | `mp_bin`_ | -> | :obj:`bytes` |
+                +--------------+----+-----------+----+--------------+
+
+            If ``None``, pack Unicode string (:obj:`str`) and :obj:`bytes`
+            to msgpack string (`mp_str`_), unpacked msgpack string (`mp_str`_)
+            and msgpack binary (`mp_bin`_) to :obj:`bytes`.
+
+                +--------------+----+-----------+----+--------------+
+                | Python       | -> | Tarantool | -> | Python       |
+                +--------------+----+-----------+----+--------------+
+                | :obj:`bytes` | -> | `mp_str`_ | -> | :obj:`bytes` |
+                +--------------+----+-----------+----+--------------+
+                | :obj:`str`   | -> | `mp_str`_ | -> | :obj:`bytes` |
+                +--------------+----+-----------+----+--------------+
+                |              | -> | `mp_bin`_ | -> | :obj:`bytes` |
+                +--------------+----+-----------+----+--------------+
+
+            Defaults to ``'utf-8'``
+        :type encoding: :obj:`str` or :obj:`None`, optional
+
+        :param use_list:
+            If ``True``, unpack msgpack array (`mp_array`_) to :obj:`list`.
+            Otherwise, unpack to :obj:`tuple`.
+            Defaults to ``True``
+        :type use_list: :obj:`bool`, optional
+
+        :param call_16:
+            If ``True``, enables compatibility mode with Tarantool 1.6 and
+            older for `call` operations.
+            Defaults to ``False``
+        :type call_16: :obj:`bool`, optional
+
+        :param connection_timeout: time to establish initial socket connection,
+            in seconds.
+            Defaults to ``None``
+        :type connection_timeout: :obj:`float` or :obj:`None`, optional
+
+        :param transport: ``''`` or ``'ssl'``. Set to ``'ssl'`` to enable
+            SSL encryption for a connection (requires Python >= 3.5).
+            Defaults to ``''``
+        :type transport: :obj:`str`, optional
+
+        :param ssl_key_file: path to a private SSL key file. Mandatory,
+            if server uses a trusted certificate authorities (CA) file.
+            Defaults to ``None``
+        :type ssl_key_file: :obj:`str` or :obj:`None`, optional
+
+        :param str ssl_cert_file: path to a SSL certificate file. Mandatory,
+            if server uses a trusted certificate authorities (CA) file.
+            Defaults to ``None``
+        :type ssl_cert_file: :obj:`str` or :obj:`None`, optional
+
+        :param ssl_ca_file: path to a trusted certificate authority
+            (CA) file.
+            Defaults to ``None``
+        :type ssl_ca_file: :obj:`str` or :obj:`None`, optional
+
+        :param ssl_ciphers: colon-separated (:) list of SSL cipher
+            suites the connection can use.
+            Defaults to ``None``
+        :type ssl_ciphers: :obj:`str` or :obj:`None`, optional
+
+        :raise: `ConfigurationError`
+        :raise: `NetworkError`
+
+        .. _mp_str: https://github.com/msgpack/msgpack/blob/master/spec.md#str-format-family
+        .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
+        .. _mp_array: https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family
         """
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
