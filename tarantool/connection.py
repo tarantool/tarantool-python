@@ -1,6 +1,6 @@
 # pylint: disable=C0301,W0105,W0401,W0614
 """
-This module provides low-level API for Tarantool
+This module provides API for interaction with a Tarantool server
 """
 
 import os
