@@ -389,13 +389,13 @@ class Connection(ConnectionInterface):
         """
         return self._socket is None
 
-    def connect_basic(self):
+    def _connect_basic(self):
         if self.host is None:
-            self.connect_unix()
+            self._connect_unix()
         else:
-            self.connect_tcp()
+            self._connect_tcp()
 
-    def connect_tcp(self):
+    def _connect_tcp(self):
         """
         Create a connection to the host and port specified in __init__().
 
@@ -415,7 +415,7 @@ class Connection(ConnectionInterface):
             self.connected = False
             raise NetworkError(e)
 
-    def connect_unix(self):
+    def _connect_unix(self):
         """
         Create a connection to the host and port specified in __init__().
 
@@ -435,7 +435,7 @@ class Connection(ConnectionInterface):
             self.connected = False
             raise NetworkError(e)
 
-    def wrap_socket_ssl(self):
+    def _wrap_socket_ssl(self):
         """
         Wrap an existing socket with an SSL socket.
 
@@ -502,7 +502,7 @@ class Connection(ConnectionInterface):
         except Exception as e:
             raise SslError(e)
 
-    def handshake(self):
+    def _handshake(self):
         greeting_buf = self._recv(IPROTO_GREETING_SIZE)
         greeting = greeting_decode(greeting_buf)
         if greeting.protocol != "Binary":
@@ -523,10 +523,10 @@ class Connection(ConnectionInterface):
         :raise: `SslError`
         """
         try:
-            self.connect_basic()
+            self._connect_basic()
             if self.transport == SSL_TRANSPORT:
-                self.wrap_socket_ssl()
-            self.handshake()
+                self._wrap_socket_ssl()
+            self._handshake()
             self.load_schema()
         except SslError as e:
             raise e
@@ -645,7 +645,7 @@ class Connection(ConnectionInterface):
         while True:
             time.sleep(self.reconnect_delay)
             try:
-                self.connect_basic()
+                self._connect_basic()
             except NetworkError:
                 pass
             else:
@@ -658,8 +658,8 @@ class Connection(ConnectionInterface):
                     socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
         if self.transport == SSL_TRANSPORT:
-            self.wrap_socket_ssl()
-        self.handshake()
+            self._wrap_socket_ssl()
+        self._handshake()
 
     def _send_request(self, request):
         """
