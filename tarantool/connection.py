@@ -397,13 +397,13 @@ class Connection(ConnectionInterface):
         """
         return self._socket is None
 
-    def _connect_basic(self):
+    def connect_basic(self):
         if self.host is None:
-            self._connect_unix()
+            self.connect_unix()
         else:
-            self._connect_tcp()
+            self.connect_tcp()
 
-    def _connect_tcp(self):
+    def connect_tcp(self):
         """
         Create a connection to the host and port specified in __init__().
 
@@ -423,7 +423,7 @@ class Connection(ConnectionInterface):
             self.connected = False
             raise NetworkError(e)
 
-    def _connect_unix(self):
+    def connect_unix(self):
         """
         Create a connection to the host and port specified in __init__().
 
@@ -443,7 +443,7 @@ class Connection(ConnectionInterface):
             self.connected = False
             raise NetworkError(e)
 
-    def _wrap_socket_ssl(self):
+    def wrap_socket_ssl(self):
         """
         Wrap an existing socket with an SSL socket.
 
@@ -509,7 +509,7 @@ class Connection(ConnectionInterface):
         except Exception as e:
             raise SslError(e)
 
-    def _handshake(self):
+    def handshake(self):
         """
         Process greeting with Tarantool server.
 
@@ -538,10 +538,10 @@ class Connection(ConnectionInterface):
         :raise: :py:exc:`~tarantool.error.DatabaseError`
         """
         try:
-            self._connect_basic()
+            self.connect_basic()
             if self.transport == SSL_TRANSPORT:
-                self._wrap_socket_ssl()
-            self._handshake()
+                self.wrap_socket_ssl()
+            self.handshake()
             self.load_schema()
         except SslError as e:
             raise e
@@ -660,7 +660,7 @@ class Connection(ConnectionInterface):
         while True:
             time.sleep(self.reconnect_delay)
             try:
-                self._connect_basic()
+                self.connect_basic()
             except NetworkError:
                 pass
             else:
@@ -673,8 +673,8 @@ class Connection(ConnectionInterface):
                     socket.error(last_errno, errno.errorcode[last_errno]))
             attempt += 1
         if self.transport == SSL_TRANSPORT:
-            self._wrap_socket_ssl()
-        self._handshake()
+            self.wrap_socket_ssl()
+        self.handshake()
 
     def _send_request(self, request):
         """
