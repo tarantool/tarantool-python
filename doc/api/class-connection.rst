@@ -5,6 +5,4 @@ class :class:`Connection`
 -------------------------
 
 .. autoclass:: Connection
-   :members: close, ping, space
-   
-   .. automethod:: call(func_name, *args)
+   :members: close, is_closed, connect

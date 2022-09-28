@@ -87,7 +87,7 @@ from tarantool.utils import (
 # Based on https://realpython.com/python-interface/
 class ConnectionInterface(metaclass=abc.ABCMeta):
     """
-    Represents a connection to a single or multiple Tarantool servers.
+    Represents a connection to single or multiple Tarantool servers.
 
     Interface requires that connection objects has methods to open
     and close a connection, check its status, call procedures and
@@ -250,7 +250,9 @@ class Connection(ConnectionInterface):
         :type reconnect_delay: :obj:`float`, optional
 
         :param bool connect_now: If ``True``, connect to server on initialization.
-            Otherwise, you have to call ``connect()`` manually after initialization.
+            Otherwise, you have to call
+            :py:meth:`~tarantool.Connection.connect`
+            manually after initialization.
             Defaults to ``True``
         :type connect_now: :obj:`bool`, optional
 
@@ -281,7 +283,7 @@ class Connection(ConnectionInterface):
                 +--------------+----+-----------+----+--------------+
                 | :obj:`str`   | -> | `mp_str`_ | -> | :obj:`bytes` |
                 +--------------+----+-----------+----+--------------+
-                |              | -> | `mp_bin`_ | -> | :obj:`bytes` |
+                |              |    | `mp_bin`_ | -> | :obj:`bytes` |
                 +--------------+----+-----------+----+--------------+
 
             Defaults to ``'utf-8'``
@@ -331,6 +333,7 @@ class Connection(ConnectionInterface):
 
         :raise: `ConfigurationError`
         :raise: `NetworkError`
+        :raise: `SslError`
 
         .. _mp_str: https://github.com/msgpack/msgpack/blob/master/spec.md#str-format-family
         .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
@@ -384,8 +387,9 @@ class Connection(ConnectionInterface):
 
     def is_closed(self):
         """
-        Returns the state of a Connection instance.
-        :rtype: Boolean
+        Returns ``True`` if connection is closed. ``False`` otherwise.
+
+        :rtype: :obj:`bool`
         """
         return self._socket is None
 
@@ -440,7 +444,6 @@ class Connection(ConnectionInterface):
         Wrap an existing socket with an SSL socket.
 
         :raise: SslError
-        :raise: `ssl.SSLError`
         """
         if not is_ssl_supported:
             raise SslError("Your version of Python doesn't support SSL")
@@ -515,9 +518,9 @@ class Connection(ConnectionInterface):
 
     def connect(self):
         """
-        Create a connection to the host and port specified in __init__().
-        Usually, there is no need to call this method directly,
-        because it is called when you create a `Connection` instance.
+        Create a connection to the host and port specified on initialization.
+        There is no need to call this method explicitly until you
+        have set ``connect_now=False`` on initialization.
 
         :raise: `NetworkError`
         :raise: `SslError`
