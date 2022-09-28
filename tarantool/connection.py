@@ -527,7 +527,7 @@ class Connection(ConnectionInterface):
             if self.transport == SSL_TRANSPORT:
                 self._wrap_socket_ssl()
             self._handshake()
-            self.load_schema()
+            self._load_schema()
         except SslError as e:
             raise e
         except Exception as e:
@@ -590,7 +590,7 @@ class Connection(ConnectionInterface):
                 response = request.response_class(self, self._read_response())
                 break
             except SchemaReloadException as e:
-                self.update_schema(e.schema_version)
+                self._update_schema(e.schema_version)
                 continue
 
         return response
@@ -677,17 +677,17 @@ class Connection(ConnectionInterface):
 
         return self._send_request_wo_reconnect(request)
 
-    def load_schema(self):
+    def _load_schema(self):
         self.schema.fetch_space_all()
         self.schema.fetch_index_all()
 
-    def update_schema(self, schema_version):
+    def _update_schema(self, schema_version):
         self.schema_version = schema_version
         self.flush_schema()
 
     def flush_schema(self):
         self.schema.flush()
-        self.load_schema()
+        self._load_schema()
 
     def call(self, func_name, *args):
         """
