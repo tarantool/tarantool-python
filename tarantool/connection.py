@@ -200,6 +200,7 @@ class Connection(ConnectionInterface):
     InternalError = InternalError
     ProgrammingError = ProgrammingError
     NotSupportedError = NotSupportedError
+    SslError = SslError
 
     def __init__(self, host, port,
                  user=None,
@@ -331,9 +332,12 @@ class Connection(ConnectionInterface):
             Defaults to ``None``
         :type ssl_ciphers: :obj:`str` or :obj:`None`, optional
 
-        :raise: `ConfigurationError`
-        :raise: `NetworkError`
-        :raise: `SslError`
+        :raise: :py:exc:`~tarantool.error.ConfigurationError`
+        :raise: :py:exc:`~tarantool.error.NetworkError`
+        :raise: :py:exc:`~tarantool.error.SslError`
+        :raise: :py:exc:`~tarantool.error.SchemaError`
+        :raise: :py:exc:`~tarantool.error.DatabaseError`
+        :raise: :py:exc:`~ValueError`
 
         .. _mp_str: https://github.com/msgpack/msgpack/blob/master/spec.md#str-format-family
         .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
@@ -506,6 +510,12 @@ class Connection(ConnectionInterface):
             raise SslError(e)
 
     def _handshake(self):
+        """
+        Process greeting with Tarantool server.
+
+        :raise: ValueError
+        :raise: NetworkError
+        """
         greeting_buf = self._recv(IPROTO_GREETING_SIZE)
         greeting = greeting_decode(greeting_buf)
         if greeting.protocol != "Binary":
@@ -522,8 +532,10 @@ class Connection(ConnectionInterface):
         There is no need to call this method explicitly until you
         have set ``connect_now=False`` on initialization.
 
-        :raise: `NetworkError`
-        :raise: `SslError`
+        :raise: :py:exc:`~tarantool.error.NetworkError`
+        :raise: :py:exc:`~tarantool.error.SslError`
+        :raise: :py:exc:`~tarantool.error.SchemaError`
+        :raise: :py:exc:`~tarantool.error.DatabaseError`
         """
         try:
             self._connect_basic()

@@ -5,4 +5,4 @@ class :class:`ConnectionPool`
 -----------------------------
 
 .. autoclass:: ConnectionPool
-
+   :members: close, ping
