@@ -113,7 +113,7 @@ class MsgpackWarning(UserWarning):
 __all__ = ("Warning", "Error", "InterfaceError", "DatabaseError", "DataError",
            "OperationalError", "IntegrityError", "InternalError",
            "ProgrammingError", "NotSupportedError", "MsgpackError",
-           "MsgpackWarning")
+           "MsgpackWarning", "ConfigurationError", "SslError")
 
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":

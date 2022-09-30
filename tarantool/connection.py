@@ -89,10 +89,10 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
     """
     Represents a connection to single or multiple Tarantool servers.
 
-    Interface requires that a connection object has methods to open
-    and close a connection, check its status, call procedures and
-    evaluate Lua code on server, make simple data manipulations and
-    execute SQL queries.
+    Interface requires that a connection object has methods to open and
+    close a connection, check its status, call procedures and evaluate
+    Lua code on server, make simple data manipulations and execute SQL
+    queries.
     """
 
     @classmethod
@@ -186,21 +186,36 @@ class Connection(ConnectionInterface):
     check its status, call procedures and evaluate Lua code on server,
     make simple data manipulations and execute SQL queries.
     """
+
     # DBAPI Extension: supply exceptions as attributes on the connection
     Error = Error
+    """:meta private:"""
     DatabaseError = DatabaseError
+    """:meta private:"""
     InterfaceError = InterfaceError
+    """:meta private:"""
     ConfigurationError = ConfigurationError
+    """:meta private:"""
     SchemaError = SchemaError
+    """:meta private:"""
     NetworkError = NetworkError
+    """:meta private:"""
     Warning = Warning
+    """:meta private:"""
     DataError = DataError
+    """:meta private:"""
     OperationalError = OperationalError
+    """:meta private:"""
     IntegrityError = IntegrityError
+    """:meta private:"""
     InternalError = InternalError
+    """:meta private:"""
     ProgrammingError = ProgrammingError
+    """:meta private:"""
     NotSupportedError = NotSupportedError
+    """:meta private:"""
     SslError = SslError
+    """:meta private:"""
 
     def __init__(self, host, port,
                  user=None,
@@ -219,43 +234,47 @@ class Connection(ConnectionInterface):
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
                  ssl_ciphers=DEFAULT_SSL_CIPHERS):
         """
-        :param host: server hostname or IP address. Use ``None`` for UNIX sockets
+        :param host: server hostname or IP address. Use ``None`` for
+            UNIX sockets
         :type host: :obj:`str` or :obj:`None`
 
         :param port: server port or UNIX socket path
         :type port: :obj:`int` or :obj:`str`
 
-        :param user: user name for authentication on the Tarantool server
+        :param user: user name for authentication on the Tarantool
+            server
         :type user: :obj:`str` or :obj:`None`, optional
 
-        :param password: user password for authentication on the Tarantool server
+        :param password: user password for authentication on the
+            Tarantool server
         :type password: :obj:`str` or :obj:`None`, optional
 
-        :param socket_timeout: timeout on blocking socket operations, in seconds
-            (see `socket.settimeout() <https://docs.python.org/3/library/socket.html#socket.socket.settimeout>`_)
+        :param socket_timeout: timeout on blocking socket operations,
+            in seconds (see `socket.settimeout()`_)
         :type socket_timeout: :obj:`float` or :obj:`None`, optional
 
-        :param reconnect_max_attempts: count of maximum attempts to reconnect
-            on API call if connection is lost
+        :param reconnect_max_attempts: count of maximum attempts to
+            reconnect on API call if connection is lost
         :type reconnect_max_attempts: :obj:`int`, optional
 
-        :param reconnect_delay: delay between attempts to reconnect
-            on API call if connection is lost, in seconds
+        :param reconnect_delay: delay between attempts to reconnect on
+            API call if connection is lost, in seconds
         :type reconnect_delay: :obj:`float`, optional
 
-        :param bool connect_now: If ``True``, connect to server on initialization.
-            Otherwise, you have to call
-            :py:meth:`~tarantool.Connection.connect`
-            manually after initialization
+        :param bool connect_now: If ``True``, connect to server on
+            initialization. Otherwise, you have to call
+            :py:meth:`~tarantool.Connection.connect` manually after
+            initialization
         :type connect_now: :obj:`bool`, optional
 
-        :param encoding: ``'utf-8'`` or ``None``. Use ``None`` to work with non-UTF8 strings.
+        :param encoding: ``'utf-8'`` or ``None``. Use ``None`` to work
+            with non-UTF8 strings.
 
-            If ``'utf-8'``, pack Unicode string (:obj:`str`) to
-            msgpack string (`mp_str`_) and unpack msgpack string (`mp_str`_)
-            Unicode string (:obj:`str`),
-            pack :obj:`bytes` to msgpack binary (`mp_bin`_)
-            and unpack msgpack binary (`mp_bin`_) to :obj:`bytes`.
+            If ``'utf-8'``, pack Unicode string (:obj:`str`) to msgpack
+            string (`mp_str`_) and unpack msgpack string (`mp_str`_)
+            Unicode string (:obj:`str`), pack :obj:`bytes` to msgpack
+            binary (`mp_bin`_) and unpack msgpack binary (`mp_bin`_) to
+            :obj:`bytes`.
 
                 +--------------+----+-----------+----+--------------+
                 | Python       | -> | Tarantool | -> | Python       |
@@ -265,9 +284,10 @@ class Connection(ConnectionInterface):
                 | :obj:`bytes` | -> | `mp_bin`_ | -> | :obj:`bytes` |
                 +--------------+----+-----------+----+--------------+
 
-            If ``None``, pack Unicode string (:obj:`str`) and :obj:`bytes`
-            to msgpack string (`mp_str`_), unpacked msgpack string (`mp_str`_)
-            and msgpack binary (`mp_bin`_) to :obj:`bytes`.
+            If ``None``, pack Unicode string (:obj:`str`) and
+            :obj:`bytes` to msgpack string (`mp_str`_), unpacked msgpack
+            string (`mp_str`_) and msgpack binary (`mp_bin`_) to
+            :obj:`bytes`.
 
                 +--------------+----+-----------+----+--------------+
                 | Python       | -> | Tarantool | -> | Python       |
@@ -282,33 +302,35 @@ class Connection(ConnectionInterface):
         :type encoding: :obj:`str` or :obj:`None`, optional
 
         :param use_list:
-            If ``True``, unpack msgpack array (`mp_array`_) to :obj:`list`.
-            Otherwise, unpack to :obj:`tuple`
+            If ``True``, unpack msgpack array (`mp_array`_) to
+            :obj:`list`. Otherwise, unpack to :obj:`tuple`
         :type use_list: :obj:`bool`, optional
 
         :param call_16:
-            If ``True``, enables compatibility mode with Tarantool 1.6 and
-            older for `call` operations
+            If ``True``, enables compatibility mode with Tarantool 1.6
+            and older for `call` operations
         :type call_16: :obj:`bool`, optional
 
-        :param connection_timeout: time to establish initial socket connection,
-            in seconds
+        :param connection_timeout: time to establish initial socket
+            connection, in seconds
         :type connection_timeout: :obj:`float` or :obj:`None`, optional
 
-        :param transport: ``''`` or ``'ssl'``. Set to ``'ssl'`` to enable
-            SSL encryption for a connection (requires Python >= 3.5)
+        :param transport: ``''`` or ``'ssl'``. Set to ``'ssl'`` to
+            enable SSL encryption for a connection (requires
+            Python >= 3.5)
         :type transport: :obj:`str`, optional
 
         :param ssl_key_file: path to a private SSL key file. Mandatory,
             if server uses a trusted certificate authorities (CA) file
         :type ssl_key_file: :obj:`str` or :obj:`None`, optional
 
-        :param str ssl_cert_file: path to a SSL certificate file. Mandatory,
-            if server uses a trusted certificate authorities (CA) file
+        :param str ssl_cert_file: path to a SSL certificate file.
+            Mandatory, if server uses a trusted certificate authorities
+            (CA) file
         :type ssl_cert_file: :obj:`str` or :obj:`None`, optional
 
-        :param ssl_ca_file: path to a trusted certificate authority
-            (CA) file
+        :param ssl_ca_file: path to a trusted certificate authority (CA)
+            file
         :type ssl_ca_file: :obj:`str` or :obj:`None`, optional
 
         :param ssl_ciphers: colon-separated (:) list of SSL cipher
@@ -322,6 +344,7 @@ class Connection(ConnectionInterface):
             :py:exc:`~tarantool.error.SchemaError`,
             :py:exc:`~tarantool.error.DatabaseError`
 
+        .. _socket.settimeout(): https://docs.python.org/3/library/socket.html#socket.socket.settimeout
         .. _mp_str: https://github.com/msgpack/msgpack/blob/master/spec.md#str-format-family
         .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
         .. _mp_array: https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family
@@ -535,9 +558,8 @@ class Connection(ConnectionInterface):
     def connect(self):
         """
         Create a connection to the host and port specified on
-        initialization. There is no need to call this method
-        explicitly until you have set ``connect_now=False`` on
-        initialization.
+        initialization. There is no need to call this method explicitly
+        until you have set ``connect_now=False`` on initialization.
 
         :raise: :py:exc:`~tarantool.error.NetworkError`,
             :py:exc:`~tarantool.error.SslError`,
@@ -646,9 +668,9 @@ class Connection(ConnectionInterface):
 
     def _opt_reconnect(self):
         """
-        Check that the connection is alive using low-level recv
-        from libc(ctypes).
-,
+        Check that the connection is alive using low-level recv from
+        libc(ctypes).
+
         :raise: :py:exc:`~tarantool.error.NetworkError`,
             :py:exc:`~tarantool.error.SslError`
 
@@ -719,10 +741,9 @@ class Connection(ConnectionInterface):
     def _send_request(self, request):
         """
         Send a request to the server through the socket.
-        Return an instance of the `Response` class.
 
-        :param request: object representing a request
-        :type request: `Request` instance
+        :param request:
+        :type request: :py:class:`~tarantool.request.Request`
 
         :rtype: :py:class:`~tarantool.response.Response`
 
@@ -867,8 +888,8 @@ class Connection(ConnectionInterface):
     def authenticate(self, user, password):
         """
         Execute an AUTHENTICATE request: authenticate a connection.
-        There is no need to call this method explicitly until you
-        want to reauthenticate with different parameters.
+        There is no need to call this method explicitly until you want
+        to reauthenticate with different parameters.
 
         :param user: user to authenticate
         :type user: :obj:`str`
@@ -1049,8 +1070,8 @@ class Connection(ConnectionInterface):
 
         :param key: key of a tuple to be deleted
 
-        :param index: index name or index id. If you're using a secondary
-            index, it must be unique. Defaults to primary index
+        :param index: index name or index id. If you're using a
+            secondary index, it must be unique. Defaults to primary index
         :type index: :obj:`str`, :obj:`int`, optional
 
         :rtype: :py:class:`~tarantool.response.Response`
@@ -1080,12 +1101,13 @@ class Connection(ConnectionInterface):
         ``tuple_value``, then the request has the same effect as UPDATE
         and the ``[(field_1, symbol_1, arg_1), ...]`` parameter is used.
 
-        If there is no tuple matching the key fields of
-        ``tuple_value``, then the request has the same effect as INSERT
-        and the ``tuple_value`` parameter is used. However, unlike insert
-        or update, upsert will neither read the tuple nor perform error checks
-        before returning -- this is a design feature which enhances
-        throughput but requires more caution on the part of the user.
+        If there is no tuple matching the key fields of ``tuple_value``,
+        then the request has the same effect as INSERT and the
+        ``tuple_value`` parameter is used. However, unlike insert or
+        update, upsert will neither read the tuple nor perform error
+        checks before returning -- this is a design feature which
+        enhances throughput but requires more caution on the part of the
+        user.
 
         :param space_name: space name or space id
         :type space_name: :obj:`str`, :obj:`int`
@@ -1093,49 +1115,13 @@ class Connection(ConnectionInterface):
         :param tuple_value: tuple to be upserted
         :type tuple_value: :obj:`tuple`, :obj:`list`
 
-        :param op_list: The list of operations to update individual fields.
-            Each operation is a :obj:`tuple` of three (or more) values:
-            ``(operator, field_identifier, value)``.
-
-            Possible operators are:
-
-            * ``'+'`` for addition. values must be numeric
-            * ``'-'`` for subtraction. values must be numeric
-            * ``'&'`` for bitwise AND. values must be unsigned numeric
-            * ``'|'`` for bitwise OR. values must be unsigned numeric
-            * ``'^'`` for bitwise XOR. values must be unsigned numeric
-            * ``':'`` for string splice. you must provide ``offset``, ``count``,
-              and ``value`` for this operation
-            * ``'!'`` for insertion. provide any element to insert)
-            * ``'='`` for assignment. (provide any element to assign)
-            * ``'#'`` for deletion. provide count of fields to delete)
-
-            Possible field_identifiers are:
-
-            * Positive field number. The first field is 1, the second field is 2, and so on.
-            * Negative field number. The last field is -1, the second-last field is -2, and so on.
-              In other words: ``(#tuple + negative field number + 1)``.
-            * Name. If the space was formatted with space_object:format(),
-              then this can be a string for the field ``name``. (Since Tarantool 2.3.1)
-
-            Operation examples:
-
-            .. code-block:: python
-
-                # 'ADD' 55 to the second field
-                # Assign 'x' to the third field
-                [('+', 2, 55), ('=', 3, 'x')]
-                # 'OR' the third field with '1'
-                # Cut three symbols, starting from the second,
-                # and replace them with '!!'
-                # Insert 'hello, world' field before the fifth element of the tuple
-                [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
-                # Delete two fields, starting with the second field
-                [('#', 2, 2)]
+        :param op_list: See :py:meth:`~tarantool.Connection.update`
+            :py:paramref:`~tarantool.Connection.update.params.op_list`
         :type op_list: :obj:`tuple`, :obj:`list`
 
-        :param index: index name or index id. If you're using a secondary
-            index, it must be unique. Defaults to primary index
+        :param index: index name or index id. If you're using a
+            secondary index, it must be unique. Defaults to primary
+            index
         :type index: :obj:`str`, :obj:`int`, optional
 
         :rtype: :py:class:`~tarantool.response.Response`
@@ -1167,9 +1153,9 @@ class Connection(ConnectionInterface):
 
         :param key: key of a tuple to be updated
 
-        :param op_list: The list of operations to update individual fields.
-            Each operation is a :obj:`tuple` of three (or more) values:
-            ``(operator, field_identifier, value)``.
+        :param op_list: The list of operations to update individual
+            fields. Each operation is a :obj:`tuple` of three (or more)
+            values: ``(operator, field_identifier, value)``.
 
             Possible operators are:
 
@@ -1178,19 +1164,22 @@ class Connection(ConnectionInterface):
             * ``'&'`` for bitwise AND. values must be unsigned numeric
             * ``'|'`` for bitwise OR. values must be unsigned numeric
             * ``'^'`` for bitwise XOR. values must be unsigned numeric
-            * ``':'`` for string splice. you must provide ``offset``, ``count``,
-              and ``value`` for this operation
+            * ``':'`` for string splice. you must provide ``offset``,
+              ``count``, and ``value`` for this operation
             * ``'!'`` for insertion. provide any element to insert)
             * ``'='`` for assignment. (provide any element to assign)
             * ``'#'`` for deletion. provide count of fields to delete)
 
             Possible field_identifiers are:
 
-            * Positive field number. The first field is 1, the second field is 2, and so on.
-            * Negative field number. The last field is -1, the second-last field is -2, and so on.
+            * Positive field number. The first field is 1, the second
+              field is 2, and so on.
+            * Negative field number. The last field is -1, the
+              second-last field is -2, and so on.
               In other words: ``(#tuple + negative field number + 1)``.
-            * Name. If the space was formatted with space_object:format(),
-              then this can be a string for the field ``name``. (Since Tarantool 2.3.1)
+            * Name. If the space was formatted with
+              ``space_object:format()``, then this can be a string for
+              the field ``name``. (Since Tarantool 2.3.1)
 
             Operation examples:
 
@@ -1206,10 +1195,12 @@ class Connection(ConnectionInterface):
                 [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
                 # Delete two fields, starting with the second field
                 [('#', 2, 2)]
+
         :type op_list: :obj:`tuple`, :obj:`list`
 
-        :param index: index name or index id. If you're using a secondary
-            index, it must be unique. Defaults to primary index
+        :param index: index name or index id. If you're using a
+            secondary index, it must be unique. Defaults to primary
+            index
         :type index: :obj:`str`, :obj:`int`, optional
 
         :rtype: :py:class:`~tarantool.response.Response`
@@ -1421,7 +1412,8 @@ class Connection(ConnectionInterface):
 
     def space(self, space_name):
         """
-        Create a :py:class:`~tarantool.space.Space` instance for a particular space.
+        Create a :py:class:`~tarantool.space.Space` instance for a
+        particular space.
 
         :param space_name: space name or space id
         :type space_name: :obj:`str`, :obj:`int`
@@ -1430,29 +1422,30 @@ class Connection(ConnectionInterface):
 
         :raise: :py:exc:`~tarantool.error.SchemaError`
         """
+
         return Space(self, space_name)
 
     def generate_sync(self):
         """
-        Generate IPROTO_SYNC code for a request.
-        Since the connector is synchronous, any constant value
-        would be sufficient.
+        Generate IPROTO_SYNC code for a request. Since the connector is
+        synchronous, any constant value would be sufficient.
         
         :return: ``0``
         :rtype: :obj:`int`
 
         :meta private:
         """
+
         return 0
 
     def execute(self, query, params=None):
         """
-        Execute an SQL request: see `documentation`_ for syntax reference.
+        Execute an SQL request: see `documentation`_ for syntax
+        reference.
 
-        The Tarantool binary protocol for SQL requests
-        supports "qmark" and "named" param styles.
-        A sequence of values can be used for "qmark" style.
-        A mapping is used for "named" param style
+        The Tarantool binary protocol for SQL requests supports "qmark"
+        and "named" param styles. A sequence of values can be used for
+        "qmark" style. A mapping is used for "named" param style
         without the leading colon in the keys.
 
         Example for "qmark" arguments:
@@ -1485,6 +1478,7 @@ class Connection(ConnectionInterface):
 
         .. _documentation: https://www.tarantool.io/en/doc/latest/how-to/sql/
         """
+
         if not params:
             params = []
         request = RequestExecute(self, query, params)

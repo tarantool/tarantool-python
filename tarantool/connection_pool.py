@@ -25,19 +25,53 @@ from tarantool.error import (
 )
 from tarantool.utils import ENCODING_DEFAULT
 from tarantool.mesh_connection import prepare_address
-
-
+    
 class Mode(Enum):
+    """
+    Request mode.
+    """
+
     ANY = 1
+    """
+    Send request to any instance
+    """
     RW = 2
+    """
+    Send request to RW instance
+    """
     RO = 3
+    """
+    Send request to RO instance
+    """
     PREFER_RW = 4
+    """
+    Send request to RW instance, if possible, RO instance otherwise
+    """
     PREFER_RO = 5
+    """
+    Send request to RO instance, if possible, RW instance otherwise
+    """
 
 
 class Status(Enum):
+    """
+    Cluster instance status.
+
+    .. _box.info: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
+    .. _box.info.ro: _box.info
+    .. _box.info.status: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
+    """
+
     HEALTHY = 1
+    """
+    Instance is healthy: connection is successful,
+    `box.info.ro`_ could be extracted, `box.info.status`_ is "running".
+    """
     UNHEALTHY = 2
+    """
+    Instance is unhealthy: either connection is failed,
+    `box.info`_ cannot be extracted, `box.info.status`_ is not "running".
+    """
 
 
 @dataclass
