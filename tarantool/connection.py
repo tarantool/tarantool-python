@@ -89,7 +89,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
     """
     Represents a connection to single or multiple Tarantool servers.
 
-    Interface requires that connection objects has methods to open
+    Interface requires that a connection object has methods to open
     and close a connection, check its status, call procedures and
     evaluate Lua code on server, make simple data manipulations and
     execute SQL queries.
@@ -182,7 +182,7 @@ class Connection(ConnectionInterface):
     """
     Represents a connection to a Tarantool server.
 
-    Сonnection objects has methods to open and close a connection,
+    A connection object has methods to open and close a connection,
     check its status, call procedures and evaluate Lua code on server,
     make simple data manipulations and execute SQL queries.
     """
@@ -219,42 +219,34 @@ class Connection(ConnectionInterface):
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
                  ssl_ciphers=DEFAULT_SSL_CIPHERS):
         """
-        Initialize a connection to the Tarantool server.
-
         :param host: server hostname or IP address. Use ``None`` for UNIX sockets
         :type host: :obj:`str` or :obj:`None`
 
         :param port: server port or UNIX socket path
         :type port: :obj:`int` or :obj:`str`
 
-        :param user: user name for authentication on the Tarantool server.
-            Defaults to ``None``
+        :param user: user name for authentication on the Tarantool server
         :type user: :obj:`str` or :obj:`None`, optional
 
-        :param password: user password for authentication on the Tarantool server.
-            Defaults to ``None``
+        :param password: user password for authentication on the Tarantool server
         :type password: :obj:`str` or :obj:`None`, optional
 
         :param socket_timeout: timeout on blocking socket operations, in seconds
-            (see `socket.settimeout() <https://docs.python.org/3/library/socket.html#socket.socket.settimeout>`_).
-            Defaults to ``None``
+            (see `socket.settimeout() <https://docs.python.org/3/library/socket.html#socket.socket.settimeout>`_)
         :type socket_timeout: :obj:`float` or :obj:`None`, optional
 
         :param reconnect_max_attempts: count of maximum attempts to reconnect
-            on API call if connection is lost.
-            Defaults to ``10``
+            on API call if connection is lost
         :type reconnect_max_attempts: :obj:`int`, optional
 
         :param reconnect_delay: delay between attempts to reconnect
-            on API call if connection is lost, in seconds.
-            Defaults to ``0.1``
+            on API call if connection is lost, in seconds
         :type reconnect_delay: :obj:`float`, optional
 
         :param bool connect_now: If ``True``, connect to server on initialization.
             Otherwise, you have to call
             :py:meth:`~tarantool.Connection.connect`
-            manually after initialization.
-            Defaults to ``True``
+            manually after initialization
         :type connect_now: :obj:`bool`, optional
 
         :param encoding: ``'utf-8'`` or ``None``. Use ``None`` to work with non-UTF8 strings.
@@ -267,7 +259,7 @@ class Connection(ConnectionInterface):
 
                 +--------------+----+-----------+----+--------------+
                 | Python       | -> | Tarantool | -> | Python       |
-                +--------------+----+-----------+----+--------------+
+                +==============+====+===========+====+==============+
                 | :obj:`str`   | -> | `mp_str`_ | -> | :obj:`str`   |
                 +--------------+----+-----------+----+--------------+
                 | :obj:`bytes` | -> | `mp_bin`_ | -> | :obj:`bytes` |
@@ -279,7 +271,7 @@ class Connection(ConnectionInterface):
 
                 +--------------+----+-----------+----+--------------+
                 | Python       | -> | Tarantool | -> | Python       |
-                +--------------+----+-----------+----+--------------+
+                +==============+====+===========+====+==============+
                 | :obj:`bytes` | -> | `mp_str`_ | -> | :obj:`bytes` |
                 +--------------+----+-----------+----+--------------+
                 | :obj:`str`   | -> | `mp_str`_ | -> | :obj:`bytes` |
@@ -287,49 +279,40 @@ class Connection(ConnectionInterface):
                 |              |    | `mp_bin`_ | -> | :obj:`bytes` |
                 +--------------+----+-----------+----+--------------+
 
-            Defaults to ``'utf-8'``
         :type encoding: :obj:`str` or :obj:`None`, optional
 
         :param use_list:
             If ``True``, unpack msgpack array (`mp_array`_) to :obj:`list`.
-            Otherwise, unpack to :obj:`tuple`.
-            Defaults to ``True``
+            Otherwise, unpack to :obj:`tuple`
         :type use_list: :obj:`bool`, optional
 
         :param call_16:
             If ``True``, enables compatibility mode with Tarantool 1.6 and
-            older for `call` operations.
-            Defaults to ``False``
+            older for `call` operations
         :type call_16: :obj:`bool`, optional
 
         :param connection_timeout: time to establish initial socket connection,
-            in seconds.
-            Defaults to ``None``
+            in seconds
         :type connection_timeout: :obj:`float` or :obj:`None`, optional
 
         :param transport: ``''`` or ``'ssl'``. Set to ``'ssl'`` to enable
-            SSL encryption for a connection (requires Python >= 3.5).
-            Defaults to ``''``
+            SSL encryption for a connection (requires Python >= 3.5)
         :type transport: :obj:`str`, optional
 
         :param ssl_key_file: path to a private SSL key file. Mandatory,
-            if server uses a trusted certificate authorities (CA) file.
-            Defaults to ``None``
+            if server uses a trusted certificate authorities (CA) file
         :type ssl_key_file: :obj:`str` or :obj:`None`, optional
 
         :param str ssl_cert_file: path to a SSL certificate file. Mandatory,
-            if server uses a trusted certificate authorities (CA) file.
-            Defaults to ``None``
+            if server uses a trusted certificate authorities (CA) file
         :type ssl_cert_file: :obj:`str` or :obj:`None`, optional
 
         :param ssl_ca_file: path to a trusted certificate authority
-            (CA) file.
-            Defaults to ``None``
+            (CA) file
         :type ssl_ca_file: :obj:`str` or :obj:`None`, optional
 
         :param ssl_ciphers: colon-separated (:) list of SSL cipher
-            suites the connection can use.
-            Defaults to ``None``
+            suites the connection can use
         :type ssl_ciphers: :obj:`str` or :obj:`None`, optional
 
         :raise: :py:exc:`~ValueError`,
@@ -884,6 +867,8 @@ class Connection(ConnectionInterface):
     def authenticate(self, user, password):
         """
         Execute an AUTHENTICATE request: authenticate a connection.
+        There is no need to call this method explicitly until you
+        want to reauthenticate with different parameters.
 
         :param user: user to authenticate
         :type user: :obj:`str`
@@ -1007,8 +992,8 @@ class Connection(ConnectionInterface):
         :param server_uuid: UUID of connector "server".
         :type server_uuid: :obj:`str`
 
-        :param vclock: connector "server" vclock.
-        :type vclock: :obj:`dict`
+        :param vclock: connector "server" vclock
+        :type vclock: :obj:`dict`, :obj:`None`, optional
 
         :raise: :py:exc:`~AssertionError`,
             :py:exc:`~tarantool.error.DatabaseError`,
@@ -1065,8 +1050,7 @@ class Connection(ConnectionInterface):
         :param key: key of a tuple to be deleted
 
         :param index: index name or index id. If you're using a secondary
-            index, it must be unique.
-            Defaults to ``0`` (primary index id)
+            index, it must be unique. Defaults to primary index
         :type index: :obj:`str`, :obj:`int`, optional
 
         :rtype: :py:class:`~tarantool.response.Response`
@@ -1151,8 +1135,7 @@ class Connection(ConnectionInterface):
         :type op_list: :obj:`tuple`, :obj:`list`
 
         :param index: index name or index id. If you're using a secondary
-            index, it must be unique.
-            Defaults to ``0`` (primary index)
+            index, it must be unique. Defaults to primary index
         :type index: :obj:`str`, :obj:`int`, optional
 
         :rtype: :py:class:`~tarantool.response.Response`
@@ -1226,8 +1209,7 @@ class Connection(ConnectionInterface):
         :type op_list: :obj:`tuple`, :obj:`list`
 
         :param index: index name or index id. If you're using a secondary
-            index, it must be unique.
-            Defaults to ``0`` (primary index)
+            index, it must be unique. Defaults to primary index
         :type index: :obj:`str`, :obj:`int`, optional
 
         :rtype: :py:class:`~tarantool.response.Response`
@@ -1256,8 +1238,7 @@ class Connection(ConnectionInterface):
         an empty response from the server.
 
         :param notime: If ``False``, returns response time.
-            Otherwise, returns ``'Success'``.
-            Defaults to ``False``
+            Otherwise, returns ``'Success'``
         :type notime: :obj:`bool`, optional
 
         :return: response time or ``'Success'``
@@ -1286,25 +1267,22 @@ class Connection(ConnectionInterface):
         :param space_name: space name or space id
         :type space_name: :obj:`str`, :obj:`int`
 
-        :param key: key of a tuple to be selected.
-            Defaults to ``None``
+        :param key: key of a tuple to be selected
         :type key: optional
 
-        :param offset: number of tuples to skip.
-            Defaults to ``0``
+        :param offset: number of tuples to skip
         :type offset: :obj:`int`, optional
 
-        :param limit: maximum number of tuples.
-            Defaults to ``4294967295``
+        :param limit: maximum number of tuples
         :type limit: :obj:`int`, optional
 
         :param index: index name or index id to select.
-            Defaults to ``0`` (primary index)
+            Defaults to primary index
         :type limit: :obj:`str`, :obj:`int`, optional
 
         :param iterator: index iterator type.
 
-            **Iterator types for TREE indexes**
+            Iterator types for TREE indexes:
 
                 +---------------+-----------+---------------------------------------------+
                 | Iterator type | Arguments | Description                                 |
@@ -1351,7 +1329,7 @@ class Connection(ConnectionInterface):
                 |               |           | index key.                                  |
                 +---------------+-----------+---------------------------------------------+
 
-            **Iterator types for HASH indexes**
+            Iterator types for HASH indexes:
 
                 +---------------+-----------+------------------------------------------------+
                 | Type          | Arguments | Description                                    |
@@ -1381,7 +1359,7 @@ class Connection(ConnectionInterface):
                 |               |           | search value for the next search.              |
                 +---------------+-----------+------------------------------------------------+
 
-            **Iterator types for BITSET indexes**
+            Iterator types for BITSET indexes:
 
                 +----------------------------+-----------+----------------------------------------------+
                 | Type                       | Arguments | Description                                  |
@@ -1410,8 +1388,6 @@ class Connection(ConnectionInterface):
                 |                            |           | Tuples are returned in their order within    |
                 |                            |           | the space.                                   |
                 +----------------------------+-----------+----------------------------------------------+
-
-            Defaults to ``None`` (default iterator for the index is used)
 
         :rtype: :py:class:`~tarantool.response.Response`
 
@@ -1445,28 +1421,33 @@ class Connection(ConnectionInterface):
 
     def space(self, space_name):
         """
-        Create a `Space` instance for a particular space.
+        Create a :py:class:`~tarantool.space.Space` instance for a particular space.
 
-        A `Space` instance encapsulates the identifier
-        of the space and provides a more convenient syntax
-        for accessing the database space.
+        :param space_name: space name or space id
+        :type space_name: :obj:`str`, :obj:`int`
 
-        :param space_name: identifier of the space
-        :type space_name: int or str
+        :rtype: :py:class:`~tarantool.space.Space`
 
-        :rtype: `Space` instance
+        :raise: :py:exc:`~tarantool.error.SchemaError`
         """
         return Space(self, space_name)
 
     def generate_sync(self):
         """
-        Need override for async io connection.
+        Generate IPROTO_SYNC code for a request.
+        Since the connector is synchronous, any constant value
+        would be sufficient.
+        
+        :return: ``0``
+        :rtype: :obj:`int`
+
+        :meta private:
         """
         return 0
 
     def execute(self, query, params=None):
         """
-        Execute an SQL request.
+        Execute an SQL request: see `documentation`_ for syntax reference.
 
         The Tarantool binary protocol for SQL requests
         supports "qmark" and "named" param styles.
@@ -1475,21 +1456,34 @@ class Connection(ConnectionInterface):
         without the leading colon in the keys.
 
         Example for "qmark" arguments:
-        >>> args = ['email@example.com']
-        >>> c.execute('select * from "users" where "email"=?', args)
+
+        .. code-block:: python
+
+            args = ['email@example.com']
+            c.execute('select * from "users" where "email"=?', args)
 
         Example for "named" arguments:
-        >>> args = {'email': 'email@example.com'}
-        >>> c.execute('select * from "users" where "email"=:email', args)
 
-        :param query: SQL syntax query
-        :type query: str
+        .. code-block:: python
 
-        :param params: bind values to use in the query
-        :type params: list, dict
+            args = {'email': 'email@example.com'}
+            c.execute('select * from "users" where "email"=:email', args)
 
-        :return: query result data
-        :rtype: `Response` instance
+        :param query: SQL query
+        :type query: :obj:`str`
+
+        :param params: query bind values
+        :type op_list: :obj:`dict`, :obj:`list`, :obj:`None`, optional
+
+        :rtype: :py:class:`~tarantool.response.Response`
+
+        :raise: :py:exc:`~AssertionError`,
+            :py:exc:`~tarantool.error.DatabaseError`,
+            :py:exc:`~tarantool.error.SchemaError`,
+            :py:exc:`~tarantool.error.NetworkError`,
+            :py:exc:`~tarantool.error.SslError`
+
+        .. _documentation: https://www.tarantool.io/en/doc/latest/how-to/sql/
         """
         if not params:
             params = []
