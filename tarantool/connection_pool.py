@@ -28,25 +28,29 @@ from tarantool.mesh_connection import prepare_address
     
 class Mode(Enum):
     """
-    Request mode.
+    Request mode
     """
 
     ANY = 1
     """
     Send request to any instance
     """
+
     RW = 2
     """
     Send request to RW instance
     """
+
     RO = 3
     """
     Send request to RO instance
     """
+
     PREFER_RW = 4
     """
     Send request to RW instance, if possible, RO instance otherwise
     """
+
     PREFER_RO = 5
     """
     Send request to RO instance, if possible, RW instance otherwise
@@ -55,50 +59,110 @@ class Mode(Enum):
 
 class Status(Enum):
     """
-    Cluster instance status.
+    Cluster instance status
 
+    .. _box.info.ro:
+    .. _box.info.status:
     .. _box.info: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
-    .. _box.info.ro: _box.info
-    .. _box.info.status: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
     """
 
     HEALTHY = 1
     """
     Instance is healthy: connection is successful,
-    `box.info.ro`_ could be extracted, `box.info.status`_ is "running".
+    `box.info.ro`_ could be extracted, `box.info.status`_ is "running"
     """
+
     UNHEALTHY = 2
     """
     Instance is unhealthy: either connection is failed,
-    `box.info`_ cannot be extracted, `box.info.status`_ is not "running".
+    `box.info`_ cannot be extracted, `box.info.status`_ is not "running"
     """
 
 
 @dataclass
 class InstanceState():
+    """
+    Cluster instance state
+    """
+
     status: Status = Status.UNHEALTHY
+    """
+    :type: :py:class:`~tarantool.connection_pool.Status`
+    """
     ro: typing.Optional[bool] = None
+    """
+    :type: :obj:`bool`, optional
+    """
 
 
 def QueueFactory():
+    """
+    Build a queue-based channel
+    """
     return queue.Queue(maxsize=1)
 
 
 @dataclass
 class PoolUnit():
-    addr: dict
-    conn: Connection
-    input_queue: queue.Queue = field(default_factory=QueueFactory)
-    output_queue: queue.Queue = field(default_factory=QueueFactory)
-    thread: typing.Optional[threading.Thread] = None
-    state: InstanceState = field(default_factory=InstanceState)
-    # request_processing_enabled is used to stop requests processing
-    # in background thread on close or destruction.
-    request_processing_enabled: bool = False
+    """
+    Class to store a Tarantool instance metainfo and
+    to work with it as a part of connection pool.
+    """
 
+    addr: dict
+    """
+    ``{"host": host, "port": port}`` info
+
+    :type: :obj:`dict`
+    """
+
+    conn: Connection
+    """
+    :type: :py:class:`~tarantool.Connection`
+    """
+
+    input_queue: queue.Queue = field(default_factory=QueueFactory)
+    """
+    Channel to pass requests for the instance thread
+
+    :type: :obj:`queue.Queue`
+    """
+
+    output_queue: queue.Queue = field(default_factory=QueueFactory)
+    """
+    Channel to receive responses from the instance thread
+
+    :type: :obj:`queue.Queue`
+    """
+
+    thread: typing.Optional[threading.Thread] = None
+    """
+    Background thread to process requests for the instance
+
+    :type: :obj:`threading.Thread`
+    """
+
+    state: InstanceState = field(default_factory=InstanceState)
+    """
+    Current instance state
+
+    :type: :py:class:`~tarantool.connection_pool.InstanceState`
+    """
+
+    request_processing_enabled: bool = False
+    """
+    Flag used to stop requests processing requests in background thread
+    on connection close or destruction.
+
+    :type: :obj:`bool`
+    """
 
 # Based on https://realpython.com/python-interface/
 class StrategyInterface(metaclass=abc.ABCMeta):
+    """
+    Defines strategy to choose a pool instance based on request mode.
+    """
+
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, '__init__') and
@@ -111,6 +175,11 @@ class StrategyInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __init__(self, pool):
+        """
+        :type: :obj:`list` of
+            :py:class:`~tarantool.connection_pool.PoolUnit` objects
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod

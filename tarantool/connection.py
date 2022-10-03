@@ -127,54 +127,119 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def connect(self):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.connect`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def close(self):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.close`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def is_closed(self):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.is_closed`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def ping(self, notime):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.ping`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def call(self, func_name, *args):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.call`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def eval(self, expr, *args):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.eval`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def replace(self, space_name, values):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.replace`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def insert(self, space_name, values):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.insert`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def delete(self, space_name, key, *, index):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.delete`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def upsert(self, space_name, tuple_value, op_list, *, index=None):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.upsert`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def update(self, space_name, key, op_list, *, index=None):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.update`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def select(self, space_name, key, *, offset=None, limit=None, index=None, iterator=None):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.select`
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def execute(self, query, params):
+        """
+        Reference implementation:
+        :py:meth:`~tarantool.Connection.execute`
+        """
+
         raise NotImplementedError
 
 
@@ -191,7 +256,6 @@ class Connection(ConnectionInterface):
     Error = Error
     """:meta private:"""
     DatabaseError = DatabaseError
-    """:meta private:"""
     InterfaceError = InterfaceError
     """:meta private:"""
     ConfigurationError = ConfigurationError
@@ -1071,7 +1135,8 @@ class Connection(ConnectionInterface):
         :param key: key of a tuple to be deleted
 
         :param index: index name or index id. If you're using a
-            secondary index, it must be unique. Defaults to primary index
+            secondary index, it must be unique. Defaults to primary
+            index
         :type index: :obj:`str`, :obj:`int`, optional
 
         :rtype: :py:class:`~tarantool.response.Response`
