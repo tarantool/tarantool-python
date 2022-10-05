@@ -90,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Valid operations:
   - `tarantool.Datetime` + `tarantool.Interval` = `tarantool.Datetime`
-  - `tarantool.Datetime` + `tarantool.Interval` = `tarantool.Datetime`
+  - `tarantool.Datetime` - `tarantool.Interval` = `tarantool.Datetime`
   - `tarantool.Datetime` - `tarantool.Datetime` = `tarantool.Interval`
   - `tarantool.Interval` + `tarantool.Interval` = `tarantool.Interval`
   - `tarantool.Interval` - `tarantool.Interval` = `tarantool.Interval`
