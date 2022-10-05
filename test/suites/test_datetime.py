@@ -388,7 +388,7 @@ class TestSuite_Datetime(unittest.TestCase):
         self.assertEqual(case['arg_1'] - case['arg_2'], case['res'])
 
     @skip_or_run_datetime_test
-    @unittest.expectedFailure # See https://github.com/tarantool/tarantool/issues/7698
+    @unittest.skip('See https://github.com/tarantool/tarantool/issues/7698')
     def test_tarantool_datetime_subtraction_different_timezones(self):
         case = self.datetime_subtraction_different_timezones_case
 
@@ -524,7 +524,7 @@ class TestSuite_Datetime(unittest.TestCase):
         self.assertEqual(case['arg_1'] + case['arg_2'], case['res'])
 
     @skip_or_run_datetime_test
-    @unittest.expectedFailure # See https://github.com/tarantool/tarantool/issues/7700
+    @unittest.skip('See https://github.com/tarantool/tarantool/issues/7700')
     def test_tarantool_datetime_addition_winter_time_switch(self):
         case = self.datetime_addition_winter_time_switch_case
 
