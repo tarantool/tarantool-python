@@ -5,22 +5,16 @@ Python client library for Tarantool
 
 :Version: |version|
 
-.. sidebar:: Download
-
-    * `PyPI`_
-    * `GitHub`_
-
-    **Install**
-
-    .. code-block:: bash
-
-        $ pip install tarantool
-
-
-`Tarantool`_ is a damn fast in-memory computing platform originally designed by 
+`Tarantool`_ is an in-memory computing platform originally designed by 
 `VK`_ and released under the terms of `BSD license`_.
 
+Install Tarantool Python connector with ``pip`` (`PyPI`_ page):
 
+.. code-block:: bash
+
+     $ pip install tarantool
+
+Source code is available on `GitHub`_.
 
 Documentation
 -------------
@@ -28,10 +22,9 @@ Documentation
    :maxdepth: 1
 
    quick-start
-   guide
+   dev-guide
 
 .. seealso:: `Tarantool documentation`_
-
 
 API Reference
 -------------
@@ -52,15 +45,12 @@ API Reference
    api/submodule-space.rst
    api/submodule-utils.rst
 
-
-
 .. Indices and tables
 .. ==================
 .. 
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`
-
 
 .. _`Tarantool`:
 .. _`Tarantool homepage`: https://tarantool.io
