@@ -1,7 +1,7 @@
 # pylint: disable=C0301,W0105,W0401,W0614
-'''
-This module provides low-level API for Tarantool
-'''
+"""
+This module provides API for interaction with a Tarantool server.
+"""
 
 import os
 import time
@@ -86,6 +86,15 @@ from tarantool.utils import (
 
 # Based on https://realpython.com/python-interface/
 class ConnectionInterface(metaclass=abc.ABCMeta):
+    """
+    Represents a connection to single or multiple Tarantool servers.
+
+    Interface requires that a connection object has methods to open and
+    close a connection, check its status, call procedures and evaluate
+    Lua code on server, make simple data manipulations and execute SQL
+    queries.
+    """
+
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, 'close') and
@@ -118,81 +127,211 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def close(self):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.close`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def is_closed(self):
+        """
+        Reference implementation
+        :meth:`~tarantool.Connection.is_closed`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def connect(self):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.connect`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def call(self, func_name, *args):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.call`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def eval(self, expr, *args):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.eval`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def replace(self, space_name, values):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.replace`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def insert(self, space_name, values):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.insert`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def delete(self, space_name, key, *, index=None):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.delete`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def upsert(self, space_name, tuple_value, op_list, *, index=None):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.upsert`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def update(self, space_name, key, op_list, *, index=None):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.update`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def ping(self, notime):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.ping`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def select(self, space_name, key, *, offset=None, limit=None,
                index=None, iterator=None):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.select`.
+        """
+
         raise NotImplementedError
 
     @abc.abstractmethod
     def execute(self, query, params):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.execute`.
+        """
+
         raise NotImplementedError
 
 
 class Connection(ConnectionInterface):
-    '''
-    Represents connection to the Tarantool server.
+    """
+    Represents a connection to the Tarantool server.
 
-    This class is responsible for connection and network exchange with
-    the server.
-    It also provides a low-level interface for data manipulation
-    (insert/delete/update/select).
-    '''
+    A connection object has methods to open and close a connection,
+    check its status, call procedures and evaluate Lua code on server,
+    make simple data manipulations and execute SQL queries.
+    """
+
     # DBAPI Extension: supply exceptions as attributes on the connection
     Error = Error
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.Error`
+    """
+
     DatabaseError = DatabaseError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.DatabaseError`
+    """
+
     InterfaceError = InterfaceError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.InterfaceError`
+    """
+
     ConfigurationError = ConfigurationError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.ConfigurationError`
+    """
+
     SchemaError = SchemaError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.SchemaError`
+    """
+
     NetworkError = NetworkError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.NetworkError`
+    """
+
     Warning = Warning
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.Warning`
+    """
+
     DataError = DataError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.DataError`
+    """
+
     OperationalError = OperationalError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.OperationalError`
+    """
+
     IntegrityError = IntegrityError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.IntegrityError`
+    """
+
     InternalError = InternalError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.InternalError`
+    """
+
     ProgrammingError = ProgrammingError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.ProgrammingError`
+    """
+
     NotSupportedError = NotSupportedError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.NotSupportedError`
+    """
 
     def __init__(self, host, port,
                  user=None,
@@ -210,24 +349,119 @@ class Connection(ConnectionInterface):
                  ssl_cert_file=DEFAULT_SSL_CERT_FILE,
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
                  ssl_ciphers=DEFAULT_SSL_CIPHERS):
-        '''
-        Initialize a connection to the server.
+        """
+        :param host: Server hostname or IP address. Use ``None`` for
+            Unix sockets.
+        :type host: :obj:`str` or :obj:`None`
 
-        :param str host: server hostname or IP address
-        :param int port: server port
-        :param bool connect_now: if True (default), __init__() actually
-            creates a network connection; if False, you have to call
-            connect() manually
-        :param str transport: set to `ssl` to enable
-            SSL encryption for a connection.
-            SSL encryption requires Python >= 3.5
-        :param str ssl_key_file: path to the private SSL key file
-        :param str ssl_cert_file: path to the SSL certificate file
-        :param str ssl_ca_file: path to the trusted certificate authority
-            (CA) file
-        :param str ssl_ciphers: colon-separated (:) list of SSL cipher suites
-            the connection can use
-        '''
+        :param port: Server port or Unix socket path.
+        :type port: :obj:`int` or :obj:`str`
+
+        :param user: User name for authentication on the Tarantool
+            server.
+        :type user: :obj:`str` or :obj:`None`, optional
+
+        :param password: User password for authentication on the
+            Tarantool server.
+        :type password: :obj:`str` or :obj:`None`, optional
+
+        :param socket_timeout: Timeout on blocking socket operations,
+            in seconds (see `socket.settimeout()`_).
+        :type socket_timeout: :obj:`float` or :obj:`None`, optional
+
+        :param reconnect_max_attempts: Count of maximum attempts to
+            reconnect on API call if connection is lost.
+        :type reconnect_max_attempts: :obj:`int`, optional
+
+        :param reconnect_delay: Delay between attempts to reconnect on
+            API call if connection is lost, in seconds.
+        :type reconnect_delay: :obj:`float`, optional
+
+        :param bool connect_now: If ``True``, connect to server on
+            initialization. Otherwise, you have to call
+            :meth:`~tarantool.Connection.connect` manually after
+            initialization.
+        :type connect_now: :obj:`bool`, optional
+
+        :param encoding: ``'utf-8'`` or ``None``. Use ``None`` to work
+            with non-UTF8 strings.
+
+            If ``'utf-8'``, pack Unicode string (:obj:`str`) to
+            MessagePack string (`mp_str`_) and unpack MessagePack string
+            (`mp_str`_) Unicode string (:obj:`str`), pack :obj:`bytes`
+            to MessagePack binary (`mp_bin`_) and unpack MessagePack
+            binary (`mp_bin`_) to :obj:`bytes`.
+
+                +--------------+----+----------------------------------+----+--------------+
+                | Python       | -> | MessagePack (Tarantool/Lua)      | -> | Python       |
+                +==============+====+==================================+====+==============+
+                | :obj:`str`   | -> | `mp_str`_ (``string``)           | -> | :obj:`str`   |
+                +--------------+----+----------------------------------+----+--------------+
+                | :obj:`bytes` | -> | `mp_bin`_ (``binary``/``cdata``) | -> | :obj:`bytes` |
+                +--------------+----+----------------------------------+----+--------------+
+
+            If ``None``, pack Unicode string (:obj:`str`) and
+            :obj:`bytes` to MessagePack string (`mp_str`_), unpack
+            MessagePack string (`mp_str`_) and MessagePack binary
+            (`mp_bin`_) to :obj:`bytes`.
+
+                +--------------+----+----------------------------------+----+--------------+
+                | Python       | -> | MessagePack (Tarantool/Lua)      | -> | Python       |
+                +==============+====+==================================+====+==============+
+                | :obj:`bytes` | -> | `mp_str`_ (``string``)           | -> | :obj:`bytes` |
+                +--------------+----+----------------------------------+----+--------------+
+                | :obj:`str`   | -> | `mp_str`_ (``string``)           | -> | :obj:`bytes` |
+                +--------------+----+----------------------------------+----+--------------+
+                |              | -> | `mp_bin`_ (``binary``/``cdata``) | -> | :obj:`bytes` |
+                +--------------+----+----------------------------------+----+--------------+
+
+        :type encoding: :obj:`str` or :obj:`None`, optional
+
+        :param use_list:
+            If ``True``, unpack MessagePack array (`mp_array`_) to
+            :obj:`list`. Otherwise, unpack to :obj:`tuple`.
+        :type use_list: :obj:`bool`, optional
+
+        :param call_16:
+            If ``True``, enables compatibility mode with Tarantool 1.6
+            and older for `call` operations.
+        :type call_16: :obj:`bool`, optional
+
+        :param connection_timeout: Time to establish initial socket
+            connection, in seconds.
+        :type connection_timeout: :obj:`float` or :obj:`None`, optional
+
+        :param transport: ``''`` or ``'ssl'``. Set to ``'ssl'`` to
+            enable SSL encryption for a connection (requires
+            Python >= 3.5).
+        :type transport: :obj:`str`, optional
+
+        :param ssl_key_file: Path to a private SSL key file. Mandatory,
+            if the server uses a trusted certificate authorities (CA)
+            file.
+        :type ssl_key_file: :obj:`str` or :obj:`None`, optional
+
+        :param str ssl_cert_file: Path to a SSL certificate file.
+            Mandatory, if the server uses a trusted certificate
+            authorities (CA) file.
+        :type ssl_cert_file: :obj:`str` or :obj:`None`, optional
+
+        :param ssl_ca_file: Path to a trusted certificate authority (CA)
+            file.
+        :type ssl_ca_file: :obj:`str` or :obj:`None`, optional
+
+        :param ssl_ciphers: Colon-separated (``:``) list of SSL cipher
+            suites the connection can use.
+        :type ssl_ciphers: :obj:`str` or :obj:`None`, optional
+
+        :raise: :exc:`~tarantool.error.ConfigurationError`,
+            :meth:`~tarantool.Connection.connect` exceptions
+
+        .. _socket.settimeout(): https://docs.python.org/3/library/socket.html#socket.socket.settimeout
+        .. _mp_str: https://github.com/msgpack/msgpack/blob/master/spec.md#str-format-family
+        .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
+        .. _mp_array: https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family
+        """
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
             raise ConfigurationError("msgpack>=1.0.0 only supports None and " +
@@ -268,31 +502,46 @@ class Connection(ConnectionInterface):
             self.connect()
 
     def close(self):
-        '''
+        """
         Close a connection to the server.
-        '''
+        """
+
         self._socket.close()
         self._socket = None
 
     def is_closed(self):
-        '''
-        Returns the state of a Connection instance.
-        :rtype: Boolean
-        '''
+        """
+        Returns ``True`` if connection is closed. ``False`` otherwise.
+
+        :rtype: :obj:`bool`
+        """
+
         return self._socket is None
 
     def connect_basic(self):
+        """
+        Establish a connection to the host and port specified on
+        initialization.
+
+        :raise: :exc:`~tarantool.error.NetworkError`
+
+        :meta private:
+        """
+
         if self.host is None:
             self.connect_unix()
         else:
             self.connect_tcp()
 
     def connect_tcp(self):
-        '''
-        Create a connection to the host and port specified in __init__().
+        """
+        Establish a TCP connection to the host and port specified on
+        initialization.
 
-        :raise: `NetworkError`
-        '''
+        :raise: :exc:`~tarantool.error.NetworkError`
+
+        :meta private:
+        """
 
         try:
             # If old socket already exists - close it and re-create
@@ -308,11 +557,14 @@ class Connection(ConnectionInterface):
             raise NetworkError(e)
 
     def connect_unix(self):
-        '''
-        Create a connection to the host and port specified in __init__().
+        """
+        Create a connection to the Unix socket specified on
+        initialization.
 
-        :raise: `NetworkError`
-        '''
+        :raise: :exc:`~tarantool.error.NetworkError`
+
+        :meta private:
+        """
 
         try:
             # If old socket already exists - close it and re-create
@@ -328,12 +580,14 @@ class Connection(ConnectionInterface):
             raise NetworkError(e)
 
     def wrap_socket_ssl(self):
-        '''
+        """
         Wrap an existing socket with an SSL socket.
 
-        :raise: SslError
-        :raise: `ssl.SSLError`
-        '''
+        :raise: :exc:`~tarantool.error.SslError`
+
+        :meta private:
+        """
+
         if not is_ssl_supported:
             raise SslError("Your version of Python doesn't support SSL")
 
@@ -395,6 +649,15 @@ class Connection(ConnectionInterface):
             raise SslError(e)
 
     def handshake(self):
+        """
+        Process greeting with Tarantool server.
+
+        :raise: :exc:`~ValueError`,
+            :exc:`~tarantool.error.NetworkError`
+
+        :meta private:
+        """
+
         greeting_buf = self._recv(IPROTO_GREETING_SIZE)
         greeting = greeting_decode(greeting_buf)
         if greeting.protocol != "Binary":
@@ -406,14 +669,17 @@ class Connection(ConnectionInterface):
             self.authenticate(self.user, self.password)
 
     def connect(self):
-        '''
-        Create a connection to the host and port specified in __init__().
-        Usually, there is no need to call this method directly,
-        because it is called when you create a `Connection` instance.
+        """
+        Create a connection to the host and port specified on
+        initialization. There is no need to call this method explicitly
+        until you have set ``connect_now=False`` on initialization.
 
-        :raise: `NetworkError`
-        :raise: `SslError`
-        '''
+        :raise: :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
         try:
             self.connect_basic()
             if self.transport == SSL_TRANSPORT:
@@ -427,6 +693,18 @@ class Connection(ConnectionInterface):
             raise NetworkError(e)
 
     def _recv(self, to_read):
+        """
+        Receive binary data from connection socket.
+
+        :param to_read: Amount of data to read, in bytes.
+        :type to_read: :obj:`int`
+
+        :return: Buffer with read data
+        :rtype: :obj:`bytes`
+
+        :meta private:
+        """
+
         buf = b""
         while to_read > 0:
             try:
@@ -456,23 +734,37 @@ class Connection(ConnectionInterface):
         return buf
 
     def _read_response(self):
-        '''
+        """
         Read response from the transport (socket).
 
-        :return: tuple of the form (header, body)
-        :rtype: tuple of two byte arrays
-        '''
+        :return: Tuple of the form ``(header, body)``.
+        :rtype: :obj:`tuple`
+
+        :meta private:
+        """
+
         # Read packet length
         length = msgpack.unpackb(self._recv(5))
         # Read the packet
         return self._recv(length)
 
     def _send_request_wo_reconnect(self, request):
-        '''
-        :rtype: `Response` instance or subclass
+        """
+        Send request without trying to reconnect.
+        Reload schema, if required.
 
-        :raise: NetworkError
-        '''
+        :param request: Request to send.
+        :type request: :class:`~tarantool.request.Request`
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`
+
+        :meta private:
+        """
+
         assert isinstance(request, Request)
 
         response = None
@@ -488,11 +780,17 @@ class Connection(ConnectionInterface):
         return response
 
     def _opt_reconnect(self):
-        '''
-        Check that the connection is alive
-        using low-level recv from libc(ctypes).
-        **Bug in Python: timeout is an internal Python construction.
-        '''
+        """
+        Check that the connection is alive using low-level recv from
+        libc(ctypes).
+
+        :raise: :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        :meta private:
+        """
+
+        # **Bug in Python: timeout is an internal Python construction (???).
         if not self._socket:
             return self.connect()
 
@@ -502,7 +800,7 @@ class Connection(ConnectionInterface):
                 sock_fd = self._socket.fileno()
             except socket.error as e:
                 if e.errno == errno.EBADF:
-                    return errno.ECONNRESET
+                    return errno.ECONNRESETtuple_value
             else:
                 if os.name == 'nt':
                     flag = socket.MSG_PEEK
@@ -554,15 +852,22 @@ class Connection(ConnectionInterface):
         self.handshake()
 
     def _send_request(self, request):
-        '''
+        """
         Send a request to the server through the socket.
-        Return an instance of the `Response` class.
 
-        :param request: object representing a request
-        :type request: `Request` instance
+        :param request: Request to send.
+        :type request: :class:`~tarantool.request.Request`
 
-        :rtype: `Response` instance
-        '''
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        :meta private:
+        """
         assert isinstance(request, Request)
 
         self._opt_reconnect()
@@ -570,28 +875,63 @@ class Connection(ConnectionInterface):
         return self._send_request_wo_reconnect(request)
 
     def load_schema(self):
+        """
+        Fetch space and index schema.
+
+        :raise: :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.DatabaseError`
+
+        :meta private:
+        """
+
         self.schema.fetch_space_all()
         self.schema.fetch_index_all()
 
     def update_schema(self, schema_version):
+        """
+        Set new schema version metainfo, reload space and index schema.
+
+        :param schema_version: New schema version metainfo.
+        :type schema_version: :obj:`int`
+
+        :raise: :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.DatabaseError`
+
+        :meta private:
+        """
+
         self.schema_version = schema_version
         self.flush_schema()
 
     def flush_schema(self):
+        """
+        Reload space and index schema.
+
+        :raise: :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
         self.schema.flush()
         self.load_schema()
 
     def call(self, func_name, *args):
-        '''
-        Execute a CALL request. Call a stored Lua function.
+        """
+        Execute a CALL request: call a stored Lua function.
 
-        :param func_name: stored Lua function name
-        :type func_name: str
-        :param args: list of function arguments
-        :type args: list or tuple
+        :param func_name: Stored Lua function name.
+        :type func_name: :obj:`str`
 
-        :rtype: `Response` instance
-        '''
+        :param args: Stored Lua function arguments.
+        :type args: :obj:`tuple`
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+        """
+
         assert isinstance(func_name, str)
 
         # This allows to use a tuple or list as an argument
@@ -603,16 +943,24 @@ class Connection(ConnectionInterface):
         return response
 
     def eval(self, expr, *args):
-        '''
-        Execute an EVAL request. Eval a Lua expression.
+        """
+        Execute an EVAL request: evaluate a Lua expression.
 
-        :param expr: Lua expression
-        :type expr: str
-        :param args: list of function arguments
-        :type args: list or tuple
+        :param expr: Lua expression.
+        :type expr: :obj:`str`
 
-        :rtype: `Response` instance
-        '''
+        :param args: Lua expression arguments.
+        :type args: :obj:`tuple`
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+        """
+
         assert isinstance(expr, str)
 
         # This allows to use a tuple or list as an argument
@@ -624,32 +972,54 @@ class Connection(ConnectionInterface):
         return response
 
     def replace(self, space_name, values):
-        '''
-        Execute a REPLACE request.
-        Doesn't throw an error if there is no tuple with the specified PK.
+        """
+        Execute a REPLACE request: `replace`_ a tuple in the space.
+        Doesn't throw an error if there is no tuple with the specified
+        primary key.
 
-        :param int space_name: space id to insert a record
-        :type space_name: int or str
-        :param values: record to be inserted. The tuple must contain
-            only scalar (integer or strings) values
-        :type values: tuple
+        :param space_name: Space name or space id.
+        :type space_name: :obj:`str` or :obj:`int`
 
-        :rtype: `Response` instance
-        '''
+        :param values: Tuple to be replaced.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _replace: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/replace/
+        """
+
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         request = RequestReplace(self, space_name, values)
         return self._send_request(request)
 
     def authenticate(self, user, password):
-        '''
-        Execute an AUTHENTICATE request.
+        """
+        Execute an AUTHENTICATE request: authenticate a connection.
+        There is no need to call this method explicitly until you want
+        to reauthenticate with different parameters.
 
-        :param string user: user to authenticate
-        :param string password: password for the user
+        :param user: User to authenticate.
+        :type user: :obj:`str`
 
-        :rtype: `Response` instance
-        '''
+        :param password: Password for the user.
+        :type password: :obj:`str`
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+        """
+
         self.user = user
         self.password = password
         if not self._socket:
@@ -663,6 +1033,19 @@ class Connection(ConnectionInterface):
         return auth_response
 
     def _join_v16(self, server_uuid):
+        """
+        Execute a JOIN request for Tarantool 1.6 and older.
+
+        :param server_uuid: UUID of Tarantool server to join.
+        :type server_uuid: :obj:`str`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+        """
+
         request = RequestJoin(self, server_uuid)
         self._socket.sendall(bytes(request))
 
@@ -674,6 +1057,19 @@ class Connection(ConnectionInterface):
         self.close()  # close connection after JOIN
 
     def _join_v17(self, server_uuid):
+        """
+        Execute a JOIN request for Tarantool 1.7 and newer.
+
+        :param server_uuid: UUID of Tarantool server to join.
+        :type server_uuid: :obj:`str`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+        """
+
         class JoinState:
             Handshake, Initial, Final, Done = range(4)
 
@@ -700,12 +1096,49 @@ class Connection(ConnectionInterface):
         return new_ops
 
     def join(self, server_uuid):
+        """
+        Execute a JOIN request: `join`_ a replicaset.
+
+        :param server_uuid: UUID of connector "server".
+        :type server_uuid: :obj:`str`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _join: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/#iproto-join-0x41
+        """
+
         self._opt_reconnect()
         if self.version_id < version_id(1, 7, 0):
             return self._join_v16(server_uuid)
         return self._join_v17(server_uuid)
 
     def subscribe(self, cluster_uuid, server_uuid, vclock=None):
+        """
+        Execute a SUBSCRIBE request: `subscribe`_ to a replicaset
+        updates. Connection is closed after subscribing.
+
+        :param cluster_uuid: UUID of replicaset cluster.
+        :type cluster_uuid: :obj:`str`
+
+        :param server_uuid: UUID of connector "server".
+        :type server_uuid: :obj:`str`
+
+        :param vclock: Connector "server" vclock.
+        :type vclock: :obj:`dict` or :obj:`None`, optional
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _subscribe: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/#iproto-subscribe-0x42
+        """
+
         vclock = vclock or {}
         request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
         self._socket.sendall(bytes(request))
@@ -717,36 +1150,57 @@ class Connection(ConnectionInterface):
         self.close()  # close connection after SUBSCRIBE
 
     def insert(self, space_name, values):
-        '''
-        Execute an INSERT request.
-        Throws an error if there is a tuple with the same PK.
+        """
+        Execute an INSERT request: `insert`_ a tuple to the space.
+        Throws an error if there is already a tuple with the same
+        primary key.
 
-        :param int space_name: space id to insert the record
-        :type space_name: int or str
-        :param values: record to be inserted. The tuple must contain
-            only scalar (integer or strings) values
-        :type values: tuple
+        :param space_name: Space name or space id.
+        :type space_name: :obj:`str` or :obj:`int`
 
-        :rtype: `Response` instance
-        '''
+        :param values: Record to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _insert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/insert/
+        """
+
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         request = RequestInsert(self, space_name, values)
         return self._send_request(request)
 
     def delete(self, space_name, key, *, index=0):
-        '''
-        Execute DELETE request.
-        Delete a single record identified by `key`. If you're using a secondary
-        index, it must be unique.
+        """
+        Execute a DELETE request: `delete`_ a tuple in the space.
 
-        :param space_name: space number or name to delete a record
-        :type space_name: int or name
-        :param key: key that identifies a record
-        :type key: int or str
+        :param space_name: Space name or space id.
+        :type space_name: :obj:`str` or :obj:`int`
 
-        :rtype: `Response` instance
-        '''
+        :param key: Key of a tuple to be deleted.
+
+        :param index: Index name or index id. If you're using a
+            secondary index, it must be unique. Defaults to primary
+            index.
+        :type index: :obj:`str` or :obj:`int`, optional
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _delete: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/delete/
+        """
 
         key = check_key(key)
         if isinstance(space_name, str):
@@ -757,68 +1211,46 @@ class Connection(ConnectionInterface):
         return self._send_request(request)
 
     def upsert(self, space_name, tuple_value, op_list, *, index=0):
-        '''
-        Execute UPSERT request.
+        """
+        Execute an UPSERT request: `upsert`_ a tuple to the space.
 
         If an existing tuple matches the key fields of
-        `tuple_value`, then the request has the same effect as UPDATE
-        and the [(field_1, symbol_1, arg_1), ...] parameter is used.
+        ``tuple_value``, then the request has the same effect as UPDATE
+        and the ``[(field_1, symbol_1, arg_1), ...]`` parameter is used.
 
-        If there is no tuple matching the key fields of
-        `tuple_value`, then the request has the same effect as INSERT
-        and the `tuple_value` parameter is used. However, unlike insert
-        or update, upsert will neither read the tuple nor perform error checks
-        before returning -- this is a design feature which enhances
-        throughput but requires more caution on the part of the user.
+        If there is no tuple matching the key fields of ``tuple_value``,
+        then the request has the same effect as INSERT and the
+        ``tuple_value`` parameter is used. However, unlike insert or
+        update, upsert will neither read the tuple nor perform error
+        checks before returning -- this is a design feature which
+        enhances throughput but requires more caution on the part of the
+        user.
 
-        If you're using a secondary index, it must be unique.
+        :param space_name: Space name or space id.
+        :type space_name: :obj:`str` or :obj:`int`
 
-        The list of operations allows updating individual fields.
-        
-        For every operation, you must provide the field number to apply this
-        operation to.
+        :param tuple_value: Tuple to be upserted.
+        :type tuple_value: :obj:`tuple` or :obj:`list`
 
-        *Allowed operations:*
+        :param op_list: Refer to :meth:`~tarantool.Connection.update`
+            :paramref:`~tarantool.Connection.update.params.op_list`.
+        :type op_list: :obj:`tuple` or :obj:`list`
 
-        * `+` for addition (values must be numeric)
-        * `-` for subtraction (values must be numeric)
-        * `&` for bitwise AND (values must be unsigned numeric)
-        * `|` for bitwise OR (values must be unsigned numeric)
-        * `^` for bitwise XOR (values must be unsigned numeric)
-        * `:` for string splice (you must provide `offset`, `count`,
-          and `value` for this operation)
-        * `!` for insertion (provide any element to insert)
-        * `=` for assignment (provide any element to assign)
-        * `#` for deletion (provide count of fields to delete)
+        :param index: Index name or index id. If you're using a
+            secondary index, it must be unique. Defaults to primary
+            index.
+        :type index: :obj:`str` or :obj:`int`, optional
 
-        :param space_name: space number or name to update a record
-        :type space_name: int or str
-        :param index: index number or name to update a record
-        :type index: int or str
-        :param tuple_value: tuple
-        :type tuple_value:
-        :param op_list: list of operations. Each operation
-            is a tuple of three (or more) values
-        :type op_list: list of the form [(symbol_1, field_1, arg_1),
-            (symbol_2, field_2, arg_2_1, arg_2_2, arg_2_3),...]
+        :rtype: :class:`~tarantool.response.Response`
 
-        :rtype: `Response` instance
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
 
-        Operation examples:
-
-        .. code-block:: python
-
-            # 'ADD' 55 to the second field
-            # Assign 'x' to the third field
-            [('+', 2, 55), ('=', 3, 'x')]
-            # 'OR' the third field with '1'
-            # Cut three symbols, starting from the second,
-            # and replace them with '!!'
-            # Insert 'hello, world' field before the fifth element of the tuple
-            [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
-            # Delete two fields, starting with the second field
-            [('#', 2, 2)]
-        '''
+        .. _upsert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/upsert/
+        """
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
@@ -830,69 +1262,74 @@ class Connection(ConnectionInterface):
         return self._send_request(request)
 
     def update(self, space_name, key, op_list, *, index=0):
-        '''
-        Execute an UPDATE request.
+        """
+        Execute an UPDATE request: `update`_ a tuple in the space.
 
-        The `update` function supports operations on fields — assignment,
-        arithmetic (if the field is unsigned numeric), cutting and pasting
-        fragments of the field, deleting or inserting a field. Multiple
-        operations can be combined in a single update request, and in this
-        case they are performed atomically and sequentially. Each operation
-        requires that you specify a field number. With multiple operations,
-        the field number for each operation is assumed to be relative
-        to the most recent state of the tuple, that is, as if all previous
-        operations in the multi-operation update have already been applied.
-        In other words, it is always safe to merge multiple update invocations
-        into a single invocation, with no change in semantics.
+        :param space_name: Space name or space id.
+        :type space_name: :obj:`str` or :obj:`int`
 
-        Update a single record identified by `key`.
+        :param key: Key of a tuple to be updated.
 
-        The list of operations allows updating individual fields.
-        
-        For every operation, you must provide the field number to apply this
-        operation to.
+        :param op_list: The list of operations to update individual
+            fields. Each operation is a :obj:`tuple` of three (or more)
+            values: ``(operator, field_identifier, value)``.
 
-        *Allowed operations:*
+            Possible operators are:
 
-        * `+` for addition (values must be numeric)
-        * `-` for subtraction (values must be numeric)
-        * `&` for bitwise AND (values must be unsigned numeric)
-        * `|` for bitwise OR (values must be unsigned numeric)
-        * `^` for bitwise XOR (values must be unsigned numeric)
-        * `:` for string splice (you must provide `offset`, `count` and `value`
-          for this operation)
-        * `!` for insertion (before) (provide any element to insert)
-        * `=` for assignment (provide any element to assign)
-        * `#` for deletion (provide count of fields to delete)
+            * ``'+'`` for addition. values must be numeric
+            * ``'-'`` for subtraction. values must be numeric
+            * ``'&'`` for bitwise AND. values must be unsigned numeric
+            * ``'|'`` for bitwise OR. values must be unsigned numeric
+            * ``'^'`` for bitwise XOR. values must be unsigned numeric
+            * ``':'`` for string splice. you must provide ``offset``,
+              ``count``, and ``value`` for this operation
+            * ``'!'`` for insertion. provide any element to insert)
+            * ``'='`` for assignment. (provide any element to assign)
+            * ``'#'`` for deletion. provide count of fields to delete)
 
-        :param space_name: space number or name to update the record
-        :type space_name: int or str
-        :param index: index number or name to update the record
-        :type index: int or str
-        :param key: key that identifies the record
-        :type key: int or str
-        :param op_list: list of operations. Each operation
-            is a tuple of three (or more) values
-        :type op_list: list of the form [(symbol_1, field_1, arg_1),
-            (symbol_2, field_2, arg_2_1, arg_2_2, arg_2_3), ...]
+            Possible field_identifiers are:
 
-        :rtype: ``Response`` instance
+            * Positive field number. The first field is 1, the second
+              field is 2, and so on.
+            * Negative field number. The last field is -1, the
+              second-last field is -2, and so on.
+              In other words: ``(#tuple + negative field number + 1)``.
+            * Name. If the space was formatted with
+              ``space_object:format()``, then this can be a string for
+              the field ``name`` (Since Tarantool 2.3.1).
 
-        Operation examples:
+            Operation examples:
 
-        .. code-block:: python
+            .. code-block:: python
 
-            # 'ADD' 55 to second field
-            # Assign 'x' to the third field
-            [('+', 2, 55), ('=', 3, 'x')]
-            # 'OR' the third field with '1'
-            # Cut three symbols, starting from second,
-            # and replace them with '!!'
-            # Insert 'hello, world' field before the fifth element of the tuple
-            [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
-            # Delete two fields, starting with the second field
-            [('#', 2, 2)]
-        '''
+                # 'ADD' 55 to the second field
+                # Assign 'x' to the third field
+                [('+', 2, 55), ('=', 3, 'x')]
+                # 'OR' the third field with '1'
+                # Cut three symbols, starting from the second,
+                # and replace them with '!!'
+                # Insert 'hello, world' field before the fifth element of the tuple
+                [('|', 3, 1), (':', 2, 2, 3, '!!'), ('!', 5, 'hello, world')]
+                # Delete two fields, starting with the second field
+                [('#', 2, 2)]
+
+        :type op_list: :obj:`tuple` or :obj:`list`
+
+        :param index: Index name or index id. If you're using a
+            secondary index, it must be unique. Defaults to primary
+            index.
+        :type index: :obj:`str` or :obj:`int`, optional
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _update: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/update/
+        """
 
         key = check_key(key)
         if isinstance(space_name, str):
@@ -904,13 +1341,23 @@ class Connection(ConnectionInterface):
         return self._send_request(request)
 
     def ping(self, notime=False):
-        '''
-        Execute a PING request.
-        Send an empty request and receive an empty response from the server.
+        """
+        Execute a PING request: send an empty request and receive
+        an empty response from the server.
 
-        :return: response time in seconds
-        :rtype: float
-        '''
+        :param notime: If ``False``, returns response time.
+            Otherwise, it returns ``'Success'``.
+        :type notime: :obj:`bool`, optional
+
+        :return: Response time or ``'Success'``.
+        :rtype: :obj:`float` or :obj:`str`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+        """
 
         request = RequestPing(self)
         t0 = time.time()
@@ -922,45 +1369,144 @@ class Connection(ConnectionInterface):
         return t1 - t0
 
     def select(self, space_name, key=None, *, offset=0, limit=0xffffffff, index=0, iterator=None):
-        '''
-        Execute a SELECT request.
-        Select and retrieve data from the database.
+        """
+        Execute a SELECT request: `select`_ a tuple from the space.
 
-        :param space_name: space to query
-        :type space_name: int or str
-        :param values: values to search by index
-        :type values: list, tuple, set, frozenset of tuples
-        :param index: index to search by (default is **0**, which
-            means that the **primary index** is used)
-        :type index: int or str
-        :param offset: offset in the resulting tuple set
-        :type offset: int
-        :param limit: limits the total number of returned tuples
-        :type limit: int
+        :param space_name: Space name or space id.
+        :type space_name: :obj:`str` or :obj:`int`
 
-        :rtype: `Response` instance
+        :param key: Key of a tuple to be selected.
+        :type key: optional
 
-        You can use index/space names. The driver will get
-        the matching id's -> names from the server.
+        :param offset: Number of tuples to skip.
+        :type offset: :obj:`int`, optional
 
-        Select a single record (from space=0 and using index=0)
-        >>> select(0, 1)
+        :param limit: Maximum number of tuples to select.
+        :type limit: :obj:`int`, optional
 
-        Select a single record from space=0 (with name='space') using
-        composite index=1 (with name '_name').
-        >>> select(0, [1,'2'], index=1)
-        # OR
-        >>> select(0, [1,'2'], index='_name')
-        # OR
-        >>> select('space', [1,'2'], index='_name')
-        # OR
-        >>> select('space', [1,'2'], index=1)
+        :param index: Index name or index id to select.
+            Defaults to primary index.
+        :type limit: :obj:`str` or :obj:`int`, optional
 
-        Select all records
-        >>> select(0)
-        # OR
-        >>> select(0, [])
-        '''
+        :param iterator: Index iterator type.
+
+            Iterator types for TREE indexes:
+
+                +---------------+-----------+---------------------------------------------+
+                | Iterator type | Arguments | Description                                 |
+                +===============+===========+=============================================+
+                | ``'EQ'``      | search    | The comparison operator is '==' (equal to). |
+                |               | value     | If an index key is equal to a search value, |
+                |               |           | it matches.                                 |
+                |               |           | Tuples are returned in ascending order by   |
+                |               |           | index key. This is the default.             |
+                +---------------+-----------+---------------------------------------------+
+                | ``'REQ'``     | search    | Matching is the same as for ``'EQ'``.       |
+                |               | value     | Tuples are returned in descending order by  |
+                |               |           | index key.                                  |
+                +---------------+-----------+---------------------------------------------+
+                | ``'GT'``      | search    | The comparison operator is '>' (greater     |
+                |               | value     | than).                                      |
+                |               |           | If an index key is greater than a search    |
+                |               |           | value, it matches.                          |
+                |               |           | Tuples are returned in ascending order by   |
+                |               |           | index key.                                  |
+                +---------------+-----------+---------------------------------------------+
+                | ``'GE'``      | search    | The comparison operator is '>=' (greater    |
+                |               | value     | than or equal to).                          |
+                |               |           | If an index key is greater than or equal to |
+                |               |           | a search value, it matches.                 |
+                |               |           | Tuples are returned in ascending order by   |
+                |               |           | index key.                                  |
+                +---------------+-----------+---------------------------------------------+
+                | ``'ALL'``     | search    | Same as ``'GE'``                            |
+                |               | value     |                                             |
+                |               |           |                                             |
+                +---------------+-----------+---------------------------------------------+
+                | ``'LT'``      | search    | The comparison operator is '<' (less than). |
+                |               | value     | If an index key is less than a search       |
+                |               |           | value, it matches.                          |
+                |               |           | Tuples are returned in descending order by  |
+                |               |           | index key.                                  |
+                +---------------+-----------+---------------------------------------------+
+                | ``'LE'``      | search    | The comparison operator is '<=' (less than  |
+                |               | value     | or equal to).                               |
+                |               |           | If an index key is less than or equal to a  |
+                |               |           | search value, it matches.                   |
+                |               |           | Tuples are returned in descending order by  |
+                |               |           | index key.                                  |
+                +---------------+-----------+---------------------------------------------+
+
+            Iterator types for HASH indexes:
+
+                +---------------+-----------+------------------------------------------------+
+                | Type          | Arguments | Description                                    |
+                +===============+===========+================================================+
+                | ``'ALL'``     | none      | All index keys match.                          |
+                |               |           | Tuples are returned in ascending order by      |
+                |               |           | hash of index key, which will appear to be     |
+                |               |           | random.                                        |
+                +---------------+-----------+------------------------------------------------+
+                | ``'EQ'``      | search    | The comparison operator is '==' (equal to).    |
+                |               | value     | If an index key is equal to a search value,    |
+                |               |           | it matches.                                    |
+                |               |           | The number of returned tuples will be 0 or 1.  |
+                |               |           | This is the default.                           |
+                +---------------+-----------+------------------------------------------------+
+                | ``'GT'``      | search    | The comparison operator is '>' (greater than). |
+                |               | value     | If a hash of an index key is greater than a    |
+                |               |           | hash of a search value, it matches.            |
+                |               |           | Tuples are returned in ascending order by hash |
+                |               |           | of index key, which will appear to be random.  |
+                |               |           | Provided that the space is not being updated,  |
+                |               |           | one can retrieve all the tuples in a space,    |
+                |               |           | N tuples at a time, by using                   |
+                |               |           | ``iterator='GT',limit=N``                      |
+                |               |           | in each search, and using the last returned    |
+                |               |           | value from the previous result as the start    |
+                |               |           | search value for the next search.              |
+                +---------------+-----------+------------------------------------------------+
+
+            Iterator types for BITSET indexes:
+
+                +----------------------------+-----------+----------------------------------------------+
+                | Type                       | Arguments | Description                                  |
+                +============================+===========+==============================================+
+                | ``'ALL'``                  | none      | All index keys match.                        |
+                |                            |           | Tuples are returned in their order within    |
+                |                            |           | the space.                                   |
+                +----------------------------+-----------+----------------------------------------------+
+                | ``'EQ'``                   | bitset    | If an index key is equal to a bitset value,  |
+                |                            | value     | it matches.                                  |
+                |                            |           | Tuples are returned in their order within    |
+                |                            |           | the space. This is the default.              |
+                +----------------------------+-----------+----------------------------------------------+
+                | ``'BITS_ALL_SET'``         | bitset    | If all of the bits which are 1 in the bitset |
+                |                            | value     | value are 1 in the index key, it matches.    |
+                |                            |           | Tuples are returned in their order within    |
+                |                            |           | the space.                                   |
+                +----------------------------+-----------+----------------------------------------------+
+                | ``'BITS_ANY_SET'``         | bitset    | If any of the bits which are 1 in the bitset |
+                |                            | value     | value are 1 in the index key, it matches.    |
+                |                            |           | Tuples are returned in their order within    |
+                |                            |           | the space.                                   |
+                +----------------------------+-----------+----------------------------------------------+
+                | ``'BITS_ALL_NOT_SET'``     | bitset    | If all of the bits which are 1 in the bitset |
+                |                            | value     | value are 0 in the index key, it matches.    |
+                |                            |           | Tuples are returned in their order within    |
+                |                            |           | the space.                                   |
+                +----------------------------+-----------+----------------------------------------------+
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _select: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/select/
+        """
 
         if iterator is None:
             iterator = ITERATOR_EQ
@@ -982,53 +1528,75 @@ class Connection(ConnectionInterface):
         return response
 
     def space(self, space_name):
-        '''
-        Create a `Space` instance for a particular space.
+        """
+        Create a :class:`~tarantool.space.Space` instance for a
+        particular space.
 
-        A `Space` instance encapsulates the identifier
-        of the space and provides a more convenient syntax
-        for accessing the database space.
+        :param space_name: Space name or space id.
+        :type space_name: :obj:`str` or :obj:`int`
 
-        :param space_name: identifier of the space
-        :type space_name: int or str
+        :rtype: :class:`~tarantool.space.Space`
 
-        :rtype: `Space` instance
-        '''
+        :raise: :exc:`~tarantool.error.SchemaError`
+        """
+
         return Space(self, space_name)
 
     def generate_sync(self):
-        '''
-        Need override for async io connection.
-        '''
+        """
+        Generate IPROTO_SYNC code for a request. Since the connector is
+        synchronous, any constant value would be sufficient.
+
+        :return: ``0``
+        :rtype: :obj:`int`
+
+        :meta private:
+        """
+
         return 0
 
     def execute(self, query, params=None):
-        '''
-        Execute an SQL request.
+        """
+        Execute an SQL request: see `documentation`_ for syntax
+        reference.
 
-        The Tarantool binary protocol for SQL requests
-        supports "qmark" and "named" param styles.
-        A sequence of values can be used for "qmark" style.
-        A mapping is used for "named" param style
+        The Tarantool binary protocol for SQL requests supports "qmark"
+        and "named" param styles. A sequence of values can be used for
+        "qmark" style. A mapping is used for "named" param style
         without the leading colon in the keys.
 
         Example for "qmark" arguments:
-        >>> args = ['email@example.com']
-        >>> c.execute('select * from "users" where "email"=?', args)
+
+        .. code-block:: python
+
+            args = ['email@example.com']
+            c.execute('select * from "users" where "email"=?', args)
 
         Example for "named" arguments:
-        >>> args = {'email': 'email@example.com'}
-        >>> c.execute('select * from "users" where "email"=:email', args)
 
-        :param query: SQL syntax query
-        :type query: str
+        .. code-block:: python
 
-        :param params: bind values to use in the query
-        :type params: list, dict
+            args = {'email': 'email@example.com'}
+            c.execute('select * from "users" where "email"=:email', args)
 
-        :return: query result data
-        :rtype: `Response` instance
-        '''
+        :param query: SQL query.
+        :type query: :obj:`str`
+
+        :param params: SQL query bind values.
+        :type params: :obj:`dict` or :obj:`list` or :obj:`None`,
+            optional
+
+        :rtype: :class:`~tarantool.response.Response`
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+
+        .. _documentation: https://www.tarantool.io/en/doc/latest/how-to/sql/
+        """
+
         if not params:
             params = []
         request = RequestExecute(self, query, params)

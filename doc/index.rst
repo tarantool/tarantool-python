@@ -39,10 +39,18 @@ API Reference
    :maxdepth: 2
 
    api/module-tarantool.rst
-   api/class-connection.rst
-   api/class-mesh-connection.rst
-   api/class-space.rst
-   api/class-response.rst
+   api/submodule-connection.rst
+   api/submodule-connection-pool.rst
+   api/submodule-dbapi.rst
+   api/submodule-error.rst
+   api/submodule-mesh-connection.rst
+   api/submodule-msgpack-ext.rst
+   api/submodule-msgpack-ext-types.rst
+   api/submodule-request.rst
+   api/submodule-response.rst
+   api/submodule-schema.rst
+   api/submodule-space.rst
+   api/submodule-utils.rst
 
 
 

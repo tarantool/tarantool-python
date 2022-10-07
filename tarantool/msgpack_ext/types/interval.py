@@ -1,36 +1,47 @@
+"""
+Tarantool `datetime.interval`_ extension type support module.
+
+The interval MessagePack representation looks like this:
+
+.. code-block:: text
+
+    +--------+-------------------------+-------------+----------------+
+    | MP_EXT | Size of packed interval | MP_INTERVAL | PackedInterval |
+    +--------+-------------------------+-------------+----------------+
+
+Packed interval consists of:
+
+* Packed number of non-zero fields.
+* Packed non-null fields.
+
+Each packed field has the following structure:
+
+.. code-block:: text
+
+    +----------+=====================+
+    | field ID |     field value     |
+    +----------+=====================+
+
+The number of defined (non-null) fields can be zero. In this case,
+the packed interval will be encoded as integer 0.
+
+List of the field IDs:
+
+* 0 – year
+* 1 – month
+* 2 – week
+* 3 – day
+* 4 – hour
+* 5 – minute
+* 6 – second
+* 7 – nanosecond
+* 8 – adjust
+"""
+
 import msgpack
 from enum import Enum
 
 from tarantool.error import MsgpackError
-
-# https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-interval-type
-#
-# The interval MessagePack representation looks like this:
-# +--------+-------------------------+-------------+----------------+
-# | MP_EXT | Size of packed interval | MP_INTERVAL | PackedInterval |
-# +--------+-------------------------+-------------+----------------+
-# Packed interval consists of:
-# - Packed number of non-zero fields.
-# - Packed non-null fields.
-#
-# Each packed field has the following structure:
-# +----------+=====================+
-# | field ID |     field value     |
-# +----------+=====================+
-#
-# The number of defined (non-null) fields can be zero. In this case,
-# the packed interval will be encoded as integer 0.
-#
-# List of the field IDs:
-# - 0 – year
-# - 1 – month
-# - 2 – week
-# - 3 – day
-# - 4 – hour
-# - 5 – minute
-# - 6 – second
-# - 7 – nanosecond
-# - 8 – adjust
 
 id_map = {
     0: 'year',
@@ -46,16 +57,87 @@ id_map = {
 
 # https://github.com/tarantool/c-dt/blob/cec6acebb54d9e73ea0b99c63898732abd7683a6/dt_arithmetic.h#L34
 class Adjust(Enum):
-    EXCESS = 0 # DT_EXCESS in c-dt, "excess" in Tarantool
-    NONE = 1 # DT_LIMIT in c-dt, "none" in Tarantool
-    LAST = 2 # DT_SNAP in c-dt, "last" in Tarantool
+    """
+    Interval adjustment mode for year and month arithmetic. Refer to
+    :meth:`~tarantool.Datetime.__add__`.
+    """
+
+    EXCESS = 0
+    """
+    Overflow mode.
+    """
+
+    NONE = 1
+    """
+    Only truncation toward the end of month is performed.
+    """
+
+    LAST = 2
+    """
+    Mode when day snaps to the end of month, if it happens.
+    """
 
 class Interval():
+    """
+    Class representing Tarantool `datetime.interval`_ info.
+
+    You can create :class:`~tarantool.Interval` objects either
+    from MessagePack data or by using the same API as in Tarantool:
+
+    .. code-block:: python
+
+        di = tarantool.Interval(year=-1, month=2, day=3,
+                                hour=4, minute=-5, sec=6,
+                                nsec=308543321,
+                                adjust=tarantool.IntervalAdjust.NONE)
+
+    Its attributes (same as in init API) are exposed, so you can
+    use them if needed.
+
+    .. _datetime.interval: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-interval-type
+    """
+
     def __init__(self, data=None, *, year=0, month=0, week=0,
                  day=0, hour=0, minute=0, sec=0,
                  nsec=0, adjust=Adjust.NONE):
-        # If msgpack data does not contain a field value, it is zero.
-        # If built not from msgpack data, set argument values later. 
+        """
+        :param data: MessagePack binary data to decode. If provided,
+            all other parameters are ignored.
+        :type data: :obj:`bytes`, optional
+
+        :param year: Interval year value.
+        :type year: :obj:`int`, optional
+
+        :param month: Interval month value.
+        :type month: :obj:`int`, optional
+
+        :param week: Interval week value.
+        :type week: :obj:`int`, optional
+
+        :param day: Interval day value.
+        :type day: :obj:`int`, optional
+
+        :param hour: Interval hour value.
+        :type hour: :obj:`int`, optional
+
+        :param minute: Interval minute value.
+        :type minute: :obj:`int`, optional
+
+        :param sec: Interval seconds value.
+        :type sec: :obj:`int`, optional
+
+        :param nsec: Interval nanoseconds value.
+        :type nsec: :obj:`int`, optional
+
+        :param adjust: Interval adjustment rule. Refer to
+            :meth:`~tarantool.Datetime.__add__`.
+        :type adjust: :class:`~tarantool.IntervalAdjust`, optional
+
+        :raise: :exc:`ValueError`
+        """
+
+        # If MessagePack data does not contain a field value, it is zero.
+        # If built not from MessagePack data, set argument values later.
         self.year = 0
         self.month = 0
         self.week = 0
@@ -107,6 +189,22 @@ class Interval():
             self.adjust = adjust
 
     def __add__(self, other):
+        """
+        Valid operations:
+
+        * :class:`~tarantool.Interval` + :class:`~tarantool.Interval`
+          = :class:`~tarantool.Interval`
+
+        Adjust of the first operand is used in result.
+
+        :param other: Second operand.
+        :type other: :class:`~tarantool.Interval`
+
+        :rtype: :class:`~tarantool.Interval`
+
+        :raise: :exc:`TypeError`
+        """
+
         if not isinstance(other, Interval):
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
 
@@ -139,6 +237,22 @@ class Interval():
         )
 
     def __sub__(self, other):
+        """
+        Valid operations:
+
+        * :class:`~tarantool.Interval` - :class:`~tarantool.Interval`
+          = :class:`~tarantool.Interval`
+
+        Adjust of the first operand is used in result.
+
+        :param other: Second operand.
+        :type other: :class:`~tarantool.Interval`
+
+        :rtype: :class:`~tarantool.Interval`
+
+        :raise: :exc:`TypeError`
+        """
+
         if not isinstance(other, Interval):
             raise TypeError(f"unsupported operand type(s) for -: '{type(self)}' and '{type(other)}'")
 
@@ -171,6 +285,15 @@ class Interval():
         )
 
     def __eq__(self, other):
+        """
+        Compare equality of each field, no casts.
+
+        :param other: Second operand.
+        :type other: :class:`~tarantool.Interval`
+
+        :rtype: :obj:`bool`
+        """
+
         if not isinstance(other, Interval):
             return False
 
@@ -198,6 +321,12 @@ class Interval():
     __str__ = __repr__
 
     def msgpack_encode(self):
+        """
+        Encode an interval object.
+
+        :rtype: :obj:`bytes`
+        """
+
         buf = bytes()
 
         count = 0

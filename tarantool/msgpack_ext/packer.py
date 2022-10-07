@@ -1,3 +1,9 @@
+"""
+Tarantool `extension`_ types encoding support.
+
+.. _extension: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/
+"""
+
 from decimal import Decimal
 from uuid import UUID
 from msgpack import ExtType
@@ -18,6 +24,19 @@ encoders = [
 ]
 
 def default(obj):
+    """
+    :class:`msgpack.Packer` encoder.
+
+    :param obj: Object to encode.
+    :type obj: :class:`decimal.Decimal` or :class:`uuid.UUID` or
+        :class:`tarantool.Datetime` or :class:`tarantool.Interval`
+
+    :return: Encoded value.
+    :rtype: :class:`msgpack.ExtType`
+
+    :raise: :exc:`~TypeError`
+    """
+
     for encoder in encoders:
         if isinstance(obj, encoder['type']):
             return ExtType(encoder['ext'].EXT_ID, encoder['ext'].encode(obj))

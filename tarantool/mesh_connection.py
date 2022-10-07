@@ -1,7 +1,6 @@
-'''
-This module provides the MeshConnection class with automatic switch
-between Tarantool instances by the basic round-robin strategy.
-'''
+"""
+This module provides API for interaction with Tarantool servers cluster.
+"""
 
 import time
 
@@ -42,6 +41,19 @@ default_addr_opts = {
 
 
 def parse_uri(uri):
+    """
+    Parse URI received from cluster discovery function.
+
+    :param uri: URI received from cluster discovery function
+    :type uri: :obj:`str`
+
+    :return: First value: `{"host": host, "port": port}` or ``None`` in
+        case of fail, second value: ``None`` or error message in case of
+        fail.
+    :rtype: first value: :obj:`dict` or ``None``,
+        second value: ``None`` or :obj:`str`
+    """
+
     # TODO: Support Unix sockets.
     def parse_error(uri, msg):
         msg = 'URI "%s": %s' % (uri, msg)
@@ -87,6 +99,20 @@ def parse_uri(uri):
 
 
 def prepare_address(address):
+    """
+    Validate address dictionary, fill with default values.
+    For format refer to
+    :paramref:`~tarantool.ConnectionPool.params.addrs`.
+
+    :param address: Address dictionary.
+    :type address: :obj:`dict`
+
+    :return: Address dictionary or ``None`` in case of failure, second
+        value: ``None`` or error message in case of failure.
+    :rtype: first value: :obj:`dict` or ``None``,
+        second value: ``None`` or :obj:`str`
+    """
+
     def format_error(address, err):
         return None, 'Address %s: %s' % (str(address), err)
 
@@ -145,6 +171,16 @@ def prepare_address(address):
 
 
 def update_connection(conn, address):
+    """
+    Update connection info after rotation.
+
+    :param conn: Connection mesh to update.
+    :type conn: :class:`~tarantool.MeshConnection`
+
+    :param address: New active connection address.
+    :type address: :obj:`dict`
+    """
+
     conn.host = address["host"]
     conn.port = address["port"]
     conn.transport = address['transport']
@@ -156,12 +192,25 @@ def update_connection(conn, address):
 
 class RoundRobinStrategy(object):
     """
-    Simple round-robin address rotation
+    Defines strategy to choose next pool server after fail.
     """
+
     def __init__(self, addrs):
+        """
+        :param addrs: Server addresses list, refer to
+            :paramref:`~tarantool.ConnectionPool.params.addrs`.
+        :type addrs: :obj:`list` of :obj:`dict`
+        """
         self.update(addrs)
 
     def update(self, new_addrs):
+        """
+        Refresh the strategy state with new addresses.
+
+        :param new_addrs: Updated server addresses list.
+        :type addrs: :obj:`list` of :obj:`dict`
+        """
+
         # Verify new_addrs is a non-empty list.
         assert new_addrs and isinstance(new_addrs, list)
 
@@ -189,64 +238,21 @@ class RoundRobinStrategy(object):
         self.pos = new_pos
 
     def getnext(self):
+        """
+        Get next cluster server.
+
+        :return: Server address.
+        :rtype: :obj:`dict`
+        """
+
         self.pos = (self.pos + 1) % len(self.addrs)
         return self.addrs[self.pos]
 
 
 class MeshConnection(Connection):
-    '''
-   Represents a connection to a cluster of Tarantool servers.
-
-   This class uses Connection to connect to one of the nodes of the cluster.
-   The initial list of nodes is passed to the constructor in the 
-   'addrs' parameter. The class set in the 'strategy_class' parameter
-   is used to select a node from the list and switch nodes in case the
-   current node is unavailable.
-
-   The 'cluster_discovery_function' param of the constructor sets the name
-   of the stored Lua function used to refresh the list of available nodes.
-   The function takes no parameters and returns a list of strings in the
-   format 'host:port'. A generic function for getting the list of nodes
-   looks like this:
-
-    .. code-block:: lua
-
-        function get_cluster_nodes()
-            return {
-                '192.168.0.1:3301',
-                '192.168.0.2:3302?transport=ssl&ssl_ca_file=/path/to/ca.cert',
-                -- ...
-            }
-        end
-
-    You can put in this list whatever you need, depending on your
-    cluster topology. Chances are you'll want to derive the list of nodes
-    from the nodes' replication configuration. Here is an example:
-
-    .. code-block:: lua
-
-        local uri_lib = require('uri')
-
-        function get_cluster_nodes()
-            local nodes = {}
-
-            local replicas = box.cfg.replication
-
-            for i = 1, #replicas do
-                local uri = uri_lib.parse(replicas[i])
-
-                if uri.host and uri.service then
-                    table.insert(nodes, uri.host .. ':' .. uri.service)
-                end
-            end
-
-            -- if your replication config doesn't contain the current node,
-            -- you have to add it manually like this:
-            table.insert(nodes, '192.168.0.1:3301')
-
-            return nodes
-        end
-    '''
+    """
+    Represents a connection to a cluster of Tarantool servers.
+    """
 
     def __init__(self, host=None, port=None,
                  user=None,
@@ -267,6 +273,147 @@ class MeshConnection(Connection):
                  strategy_class=RoundRobinStrategy,
                  cluster_discovery_function=None,
                  cluster_discovery_delay=CLUSTER_DISCOVERY_DELAY):
+        """
+        :param host: Refer to
+            :paramref:`~tarantool.Connection.params.host`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param port: Refer to
+            :paramref:`~tarantool.Connection.params.host`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param user: Refer to
+            :paramref:`~tarantool.Connection.params.user`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param password: Refer to
+            :paramref:`~tarantool.Connection.params.password`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param socket_timeout: Refer to
+            :paramref:`~tarantool.Connection.params.socket_timeout`.
+            Value would be used for the current active connection.
+
+        :param reconnect_max_attempts: Refer to
+            :paramref:`~tarantool.Connection.params.reconnect_max_attempts`.
+            Value would be used for the current active connection.
+
+        :param reconnect_delay: Refer to
+            :paramref:`~tarantool.Connection.params.reconnect_delay`.
+            Value would be used for the current active connection.
+
+        :param connect_now: If ``True``, connect to server on
+            initialization. Otherwise, you have to call
+            :meth:`~tarantool.MeshConnection.connect` manually after
+            initialization.
+        :type connect_now: :obj:`bool`, optional
+
+        :param encoding: Refer to
+            :paramref:`~tarantool.Connection.params.encoding`.
+            Value would be used for the current active connection.
+
+        :param call_16: Refer to
+            :paramref:`~tarantool.Connection.params.call_16`.
+            Value would be used for the current active connection.
+
+        :param connection_timeout: Refer to
+            :paramref:`~tarantool.Connection.params.connection_timeout`.
+            Value would be used for the current active connection.
+
+        :param transport: Refer to
+            :paramref:`~tarantool.Connection.params.transport`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param ssl_key_file: Refer to
+            :paramref:`~tarantool.Connection.params.ssl_key_file`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param ssl_cert_file: Refer to
+            :paramref:`~tarantool.Connection.params.ssl_cert_file`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param ssl_ca_file: Refer to
+            :paramref:`~tarantool.Connection.params.ssl_ca_file`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param ssl_ciphers: Refer to
+            :paramref:`~tarantool.Connection.params.ssl_ciphers`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param addrs: Cluster servers addresses list. Refer to
+            :paramref:`~tarantool.ConnectionPool.params.addrs`.
+
+        :param strategy_class: Strategy for choosing a server after
+            the current server fails. Defaults to the round-robin
+            strategy.
+        :type strategy_class: :obj:`object`, optional
+
+        :param cluster_discovery_function: sets the name of the stored
+            Lua function used to refresh the list of available nodes.
+            The function takes no parameters and returns a list of
+            strings in the format ``'host:port'``. A generic function
+            for getting the list of nodes looks like this:
+
+            .. code-block:: lua
+
+                function get_cluster_nodes()
+                    return {
+                        '192.168.0.1:3301',
+                        '192.168.0.2:3302?transport=ssl&ssl_ca_file=/path/to/ca.cert',
+                        -- ...
+                    }
+                end
+
+            You can put in this list whatever you need, depending on
+            your cluster topology. Chances are you'll want to derive
+            the list of nodes from the nodes' replication configuration.
+            Here is an example:
+
+            .. code-block:: lua
+
+                local uri_lib = require('uri')
+
+                function get_cluster_nodes()
+                    local nodes = {}
+
+                    local replicas = box.cfg.replication
+
+                    for i = 1, #replicas do
+                        local uri = uri_lib.parse(replicas[i])
+
+                        if uri.host and uri.service then
+                            table.insert(nodes, uri.host .. ':' .. uri.service)
+                        end
+                    end
+
+                    -- if your replication config doesn't contain the current node,
+                    -- you have to add it manually like this:
+                    table.insert(nodes, '192.168.0.1:3301')
+
+                    return nodes
+                end
+
+        :type cluster_discovery_function: :obj:`str` or :obj:`None`,
+            optional
+
+        :param cluster_discovery_delay: Minimal time between address
+            list refresh.
+        :type cluster_discovery_delay: :obj:`float`, optional
+
+        :raises: :exc:`~tarantool.error.ConfigurationError`,
+            :class:`~tarantool.Connection` exceptions,
+            :class:`~tarantool.MeshConnection.connect` exceptions
+        """
+
         if addrs is None:
             addrs = []
         else:
@@ -323,15 +470,29 @@ class MeshConnection(Connection):
             ssl_ciphers=addr['ssl_ciphers'])
 
     def connect(self):
+        """
+        Create a connection to some server in the cluster. Refresh
+        addresses info after success. There is no need to call this
+        method explicitly until you have set ``connect_now=False`` on
+        initialization.
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :class:`~tarantool.Connection.connect` exceptions
+        """
         super(MeshConnection, self).connect()
         if self.connected and self.cluster_discovery_function:
             self._opt_refresh_instances()
 
     def _opt_reconnect(self):
-        '''
-        Attempt to connect "reconnect_max_attempts" times to each
-        available address.
-        '''
+        """
+        Attempt to connect
+        :paramref:`~tarantool.MeshConnection.reconnect_max_attempts`
+        times to each available address.
+
+        :raise: :class:`~tarantool.Connection.connect` exceptions
+        """
 
         last_error = None
         for _ in range(len(self.strategy.addrs)):
@@ -348,10 +509,16 @@ class MeshConnection(Connection):
             raise last_error
 
     def _opt_refresh_instances(self):
-        '''
-        Refresh the list of tarantool instances in a cluster.
+        """
+        Refresh the list of Tarantool instances in a cluster.
         Reconnect if the current instance has disappeared from the list.
-        '''
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :class:`~tarantool.MeshConnection._opt_reconnect` exceptions
+        """
+
         now = time.time()
 
         if not self.connected or not self.cluster_discovery_function or \
@@ -415,18 +582,18 @@ class MeshConnection(Connection):
             self._opt_reconnect()
 
     def _send_request(self, request):
-        '''
-        Update the instances list if `cluster_discovery_function`
-        is provided and the last update was more than
-        `cluster_discovery_delay` seconds ago.
+        """
+        Send a request to a Tarantool server. If required, refresh
+        addresses list before sending a request.
 
-        After that, perform a request as usual and return an instance of
-        the `Response` class.
+        :param request: Request to send.
+        :type request: :class:`~tarantool.request.Request`
 
-        :param request: object representing a request
-        :type request: `Request` instance
+        :rtype: :class:`~tarantool.response.Response`
 
-        :rtype: `Response` instance
-        '''
+        :raise: :class:`~tarantool.MeshConnection._opt_reconnect` exceptions,
+             :class:`~tarantool.Connection._send_request` exceptions
+        """
+
         self._opt_refresh_instances()
         return super(MeshConnection, self)._send_request(request)

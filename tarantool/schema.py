@@ -1,8 +1,8 @@
 # pylint: disable=R0903
-'''
-This module provides the :class:`~tarantool.schema.Schema` class.
-It is a Tarantool schema description.
-'''
+"""
+Schema types definitions. For internal use only, there is no API to use
+pre-build schema objects.
+"""
 
 from tarantool.error import (
     Error,
@@ -13,28 +13,50 @@ import tarantool.const as const
 
 
 class RecursionError(Error):
-    """Report the situation when max recursion depth is reached.
+    """
+    Report the situation when max recursion depth is reached.
 
-       This is an internal error of <to_unicode_recursive> caller,
-       and it should be re-raised properly be the caller.
+    This is an internal error of
+    :func:`~tarantool.schema.to_unicode_recursive` caller and it should
+    be re-raised properly by the caller.
     """
 
 
 def to_unicode(s):
+    """
+    Decode :obj:`bytes` to unicode :obj:`str`.
+
+    :param s: Value to convert.
+
+    :return: Decoded unicode :obj:`str`, if value is :obj:`bytes`.
+        Otherwise, it returns the original value.
+
+    :meta private:
+    """
+
     if isinstance(s, bytes):
         return s.decode(encoding='utf-8')
     return s
 
 
 def to_unicode_recursive(x, max_depth):
-    """Same as to_unicode(), but traverses recursively over dictionaries,
-       lists and tuples.
-
-       x: value to convert
-
-       max_depth: 1 accepts a scalar, 2 accepts a list of scalars,
-       etc.
     """
+    Recursively decode :obj:`bytes` to unicode :obj:`str` over
+    :obj:`dict`, :obj:`list` and :obj:`tuple`.
+
+    :param x: Value to convert.
+
+    :param max_depth: Maximum depth recursion.
+    :type max_depth: :obj:`int`
+
+    :return: The same structure where all :obj:`bytes` are replaced
+        with unicode :obj:`str`.
+
+    :raise: :exc:`~tarantool.schema.RecursionError`
+
+    :meta private:
+    """
+
     if max_depth <= 0:
         raise RecursionError('Max recursion depth is reached')
 
@@ -59,7 +81,21 @@ def to_unicode_recursive(x, max_depth):
 
 
 class SchemaIndex(object):
+    """
+    Contains schema for a space index.
+    """
+
     def __init__(self, index_row, space):
+        """
+        :param index_row: Index format data received from Tarantool.
+        :type index_row: :obj:`list` or :obj:`tuple`
+
+        :param space: Related space schema.
+        :type space: :class:`~tarantool.schema.SchemaSpace`
+
+        :raise: :exc:`~tarantool.error.SchemaError`
+        """
+
         self.iid = index_row[1]
         self.name = index_row[2]
         self.name = to_unicode(index_row[2])
@@ -89,13 +125,31 @@ class SchemaIndex(object):
             self.space.indexes[self.name] = self
 
     def flush(self):
+        """
+        Clean existing index data.
+        """
+
         del self.space.indexes[self.iid]
         if self.name:
             del self.space.indexes[self.name]
 
 
 class SchemaSpace(object):
+    """
+    Contains schema for a space.
+    """
+
     def __init__(self, space_row, schema):
+        """
+        :param space_row: Space format data received from Tarantool.
+        :type space_row: :obj:`list` or :obj:`tuple`
+
+        :param schema: Related server schema.
+        :type schema: :class:`~tarantool.schema.Schema`
+
+        :raise: :exc:`~tarantool.error.SchemaError`
+        """
+
         self.sid = space_row[0]
         self.arity = space_row[1]
         self.name = to_unicode(space_row[2])
@@ -116,17 +170,42 @@ class SchemaSpace(object):
             self.format[part_id     ] = part
 
     def flush(self):
+        """
+        Clean existing space data.
+        """
+
         del self.schema[self.sid]
         if self.name:
             del self.schema[self.name]
 
 
 class Schema(object):
+    """
+    Contains Tarantool server spaces schema.
+    """
+
     def __init__(self, con):
+        """
+        :param con: Related Tarantool server connection.
+        :type con: :class:`~tarantool.Connection`
+        """
+
         self.schema = {}
         self.con = con
 
     def get_space(self, space):
+        """
+        Get space schema. If it exists in the local schema, return local
+        data, otherwise fetch data from the Tarantool server.
+
+        :param space: Space name or space id.
+        :type space: :obj:`str` or :obj:`int`
+
+        :rtype: :class:`~tarantool.schema.SchemaSpace`
+
+        :raises: :meth:`~tarantool.schema.Schema.fetch_space` exceptions
+        """
+
         space = to_unicode(space)
 
         try:
@@ -137,6 +216,19 @@ class Schema(object):
         return self.fetch_space(space)
 
     def fetch_space(self, space):
+        """
+        Fetch a single space schema from the Tarantool server and build
+        a schema object.
+
+        :param space: Space name or space id to fetch.
+        :type space: :obj:`str` or :obj:`int`
+
+        :rtype: :class:`~tarantool.schema.SchemaSpace`
+
+        :raises: :exc:`~tarantool.error.SchemaError`,
+            :meth:`~tarantool.schema.Schema.fetch_space_from` exceptions
+        """
+
         space_row = self.fetch_space_from(space)
 
         if len(space_row) > 1:
@@ -155,6 +247,19 @@ class Schema(object):
         return SchemaSpace(space_row, self.schema)
 
     def fetch_space_from(self, space):
+        """
+        Fetch space schema from the Tarantool server.
+
+        :param space: Space name or space id to fetch. If ``None``,
+            fetch all spaces.
+        :type space: :obj:`str` or :obj:`int` or :obj:`None`
+
+        :return: Space format data received from Tarantool.
+        :rtype: :obj:`list` or :obj:`tuple`
+
+        :raises: :meth:`~tarantool.Connection.select` exceptions
+        """
+
         _index = None
         if isinstance(space, str):
             _index = const.INDEX_SPACE_NAME
@@ -181,11 +286,33 @@ class Schema(object):
         return space_row
 
     def fetch_space_all(self):
+        """
+        Fetch all spaces schema from the Tarantool server and build
+        corresponding schema objects.
+
+        :raises: :meth:`~tarantool.schema.Schema.fetch_space_from`
+            exceptions
+        """
+
         space_rows = self.fetch_space_from(None)
         for row in space_rows:
             SchemaSpace(row, self.schema)
 
     def get_index(self, space, index):
+        """
+        Get space index schema. If it exists in the local schema, return
+        local data, otherwise fetch data from the Tarantool server.
+
+        :param space: Space id or space name.
+        :type space: :obj:`str` or :obj:`int`
+
+        :param index: Index id or index name.
+        :type index: :obj:`str` or :obj:`int`
+
+        :rtype: :class:`~tarantool.schema.SchemaIndex`
+
+        :raises: :meth:`~tarantool.schema.Schema.fetch_index` exceptions
+        """
         space = to_unicode(space)
         index = to_unicode(index)
 
@@ -198,6 +325,22 @@ class Schema(object):
         return self.fetch_index(_space, index)
 
     def fetch_index(self, space_object, index):
+        """
+        Fetch a single index space schema from the Tarantool server and
+        build a schema object.
+
+        :param space: Space schema.
+        :type space: :class:`~tarantool.schema.SchemaSpace`
+
+        :param index: Index name or id.
+        :type index: :obj:`str` or :obj:`int`
+
+        :rtype: :class:`~tarantool.schema.SchemaIndex`
+
+        :raises: :exc:`~tarantool.error.SchemaError`,
+            :meth:`~tarantool.schema.Schema.fetch_index_from` exceptions
+        """
+
         index_row = self.fetch_index_from(space_object.sid, index)
 
         if len(index_row) > 1:
@@ -218,11 +361,35 @@ class Schema(object):
         return SchemaIndex(index_row, space_object)
 
     def fetch_index_all(self):
+        """
+        Fetch all spaces indexes schema from the Tarantool server and
+        build corresponding schema objects.
+
+        :raises: :meth:`~tarantool.schema.Schema.fetch_index_from`
+            exceptions
+        """
         index_rows = self.fetch_index_from(None, None)
         for row in index_rows:
             SchemaIndex(row, self.schema[row[0]])
 
     def fetch_index_from(self, space, index):
+        """
+        Fetch space index schema from the Tarantool server.
+
+        :param space: Space id. If ``None``, fetch all spaces
+            index schema.
+        :type space: :obj:`int` or :obj:`None`
+
+        :param index: Index name or id. If ``None``, fetch all space
+            indexes schema.
+        :type index: :obj:`str` or :obj:`int` or :obj:`None`
+
+        :return: Space index format data received from Tarantool.
+        :rtype: :obj:`list` or :obj:`tuple`
+
+        :raises: :meth:`~tarantool.Connection.select` exceptions
+        """
+
         _index = None
         if isinstance(index, str):
             _index = const.INDEX_INDEX_NAME
@@ -257,6 +424,21 @@ class Schema(object):
         return index_row
 
     def get_field(self, space, field):
+        """
+        Get space field format info.
+
+        :param space: Space name or space id.
+        :type space: :obj:`str` or :obj:`int`
+
+        :param field: Field name or field id.
+        :type field: :obj:`str` or :obj:`int`
+
+        :return: Field format info.
+        :rtype: :obj:`dict`
+
+        :raises: :exc:`~tarantool.error.SchemaError`,
+            :meth:`~tarantool.schema.Schema.fetch_space` exceptions
+        """
         space = to_unicode(space)
         field = to_unicode(field)
 
@@ -273,4 +455,8 @@ class Schema(object):
         return field
 
     def flush(self):
+        """
+        Clean existing schema data.
+        """
+
         self.schema.clear()
