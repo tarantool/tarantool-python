@@ -22,18 +22,16 @@ With pip (recommended)
 
 The recommended way to install the ``tarantool`` package is using ``pip``.
 
-For Tarantool version < 1.6.0, get the ``0.3.*`` connector version::
+.. code-block:: bash
 
-    $ pip install tarantool\<0.4
-
-For a later Tarantool version, get the ``0.5.*`` connector version::
-
-    $ pip install tarantool\>0.4
+     $ pip install tarantool
 
 ZIP archive
 ^^^^^^^^^^^
 
-You can also download zip archive, unpack it and run::
+You can also download zip archive, unpack it and run:
+
+.. code-block:: bash
 
     $ python setup.py install
 
@@ -42,11 +40,7 @@ Development version
 
 You can also install the development version of the package using ``pip``.
 
-For Tarantool version < 1.6.0, get the ``stable`` branch::
-
-    $ pip install git+https://github.com/tarantool/tarantool-python.git@stable
-
-For a later Tarantool version, use the ``master`` branch::
+.. code-block:: bash
 
     $ pip install git+https://github.com/tarantool/tarantool-python.git@master
 
@@ -55,17 +49,15 @@ For a later Tarantool version, use the ``master`` branch::
 What is Tarantool?
 ------------------
 
-`Tarantool`_ is an in-memory NoSQL database with a Lua application server on board.
-It combines the network programming power of Node.JS
-with data persistency capabilities of Redis.
-It's open-source, licensed under `BSD-2-Clause`_.
+`Tarantool`_ is an in-memory computing platform originally designed by 
+`VK`_ and released under the terms of `BSD license`_.
 
 Features
 --------
 
 * ANSI SQL, including views, joins, referential and check constraints
 * Lua packages for non-blocking I/O, fibers, and HTTP
-* MsgPack data format and MsgPack-based client-server protocol
+* MessagePack data format and MessagePack-based client-server protocol
 * Two data engines:
 
   * memtx – in-memory storage engine with optional persistence
@@ -97,7 +89,7 @@ Run tests
 
 On Linux:
 
-.. code-block:: console
+.. code-block:: bash
 
    $ python setup.py test
 
@@ -141,7 +133,10 @@ Open ``localhost:8000`` in your browser to read the docs.
 .. _`Tarantool homepage`: https://tarantool.io
 .. _`Tarantool on GitHub`: https://github.com/tarantool/tarantool
 .. _`Tarantool documentation`: https://www.tarantool.io/en/doc/latest/
+.. _`VK`: https://vk.company
 .. _`Client-server protocol specification`: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/
+.. _`BSD`:
+.. _`BSD license`:
 .. _`BSD-2-Clause`: https://opensource.org/licenses/BSD-2-Clause
 .. _`asynctnt`: https://github.com/igorcoding/asynctnt
 .. _`feature comparison table`: https://www.tarantool.io/en/doc/latest/book/connectors/#python-feature-comparison
