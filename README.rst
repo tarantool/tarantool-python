@@ -113,6 +113,29 @@ On Windows:
   * ``REMOTE_TARANTOOL_CONSOLE_PORT=3302``.
 * Run ``python setup.py test``.
 
+Build docs
+^^^^^^^^^^
+
+To build documentation, first you must install its build requirements:
+
+.. code-block:: bash
+
+    $ pip install -r requirements-doc.txt
+
+Then run
+
+.. code-block:: bash
+
+    $ make docs
+
+You may host local documentation server with
+
+.. code-block:: bash
+
+    $ python -m http.server --directory build/sphinx/html
+
+Open ``localhost:8000`` in your browser to read the docs.
+
 .. _`Tarantool`:
 .. _`Tarantool Database`:
 .. _`Tarantool homepage`: https://tarantool.io
