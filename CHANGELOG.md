@@ -15,8 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   type. `tarantool.Datetime` may be encoded to Tarantool datetime
   objects.
 
-  You can create `tarantool.Datetime` objects either from msgpack
-  data or by using the same API as in Tarantool:
+  You can create `tarantool.Datetime` objects either from
+  MessagePack data or by using the same API as in Tarantool:
 
   ```python
   dt1 = tarantool.Datetime(year=2022, month=8, day=31,
@@ -73,8 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   type. `tarantool.Interval` may be encoded to Tarantool interval
   objects.
 
-  You can create `tarantool.Interval` objects either from msgpack
-  data or by using the same API as in Tarantool:
+  You can create `tarantool.Interval` objects either from
+  MessagePack data or by using the same API as in Tarantool:
 
   ```python
   di = tarantool.Interval(year=-1, month=2, day=3,
