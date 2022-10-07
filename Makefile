@@ -19,5 +19,3 @@ dist-upload-2:
 	python setup.py sdist --format=ztar upload
 docs:
 	python setup.py build_sphinx
-docs-upload: docs
-	python setup.py upload_sphinx

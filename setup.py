@@ -44,19 +44,6 @@ except ImportError:
     pass
 
 
-# Upload Sphinx documentation to PyPI (using Sphinx-PyPI-upload)
-# python setup.py build_sphinx
-# updates documentation at http://packages.python.org/tarantool/
-try:
-    from sphinx_pypi_upload import UploadDoc
-    cmdclass["upload_sphinx"] = UploadDoc
-    command_options["upload_sphinx"] = {
-        'upload_dir': ('setup.py', os.path.join("build", "sphinx", "html"))
-    }
-except ImportError:
-    pass
-
-
 # Test runner
 # python setup.py test
 try:
