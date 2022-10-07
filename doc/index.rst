@@ -27,8 +27,8 @@ Documentation
 .. toctree::
    :maxdepth: 1
 
-   quick-start.en
-   guide.en
+   quick-start
+   guide
 
 .. seealso:: `Tarantool documentation`_
 
