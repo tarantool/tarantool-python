@@ -30,7 +30,8 @@ for line in open(os.path.join(os.path.dirname(os.path.abspath('.')), "tarantool"
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo',
-              'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx_paramlinks',]
+              'sphinx.ext.coverage', 'sphinx.ext.ifconfig', 'sphinx_paramlinks',
+              'sphinx-favicon',]
 
 autodoc_default_options = {
     'members': True,
@@ -129,10 +130,97 @@ html_theme_options = {'sidebarwidth': '30%'}
 # pixels large.
 #html_favicon = None
 
+# Set up favicons with sphinx-favicon. 
+favicons = [
+    {
+        "rel": "icon",
+        "static-file": "favicon/icon.svg",
+        "type": "image/svg",
+    },
+    {
+        "rel": "icon",
+        "sizes": "16x16",
+        "static-file": "favicon/icon-16x16.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "icon",
+        "sizes": "32x32",
+        "static-file": "favicon/icon-32x32.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "icon",
+        "sizes": "96x96",
+        "static-file": "favicon/icon-96x96.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "icon",
+        "sizes": "128x128",
+        "static-file": "favicon/icon-128x128.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "icon",
+        "sizes": "196x196",
+        "static-file": "favicon/icon-196x196.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "57x57",
+        "static-file": "favicon/apple-touch-icon-57x57.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "60x60",
+        "static-file": "favicon/apple-touch-icon-60x60.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "72x72",
+        "static-file": "favicon/apple-touch-icon-72x72.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "76x76",
+        "static-file": "favicon/apple-touch-icon-76x76.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "114x114",
+        "static-file": "favicon/apple-touch-icon-114x114.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "120x120",
+        "static-file": "favicon/apple-touch-icon-120x120.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "144x144",
+        "static-file": "favicon/apple-touch-icon-144x144.png",
+        "type": "image/png",
+    },
+    {
+        "rel": "apple-touch-icon",
+        "sizes": "152x152",
+        "static-file": "favicon/apple-touch-icon-152x152.png",
+        "type": "image/png",
+    },
+]
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

@@ -1,2 +1,3 @@
 sphinx==5.2.1
 sphinx-paramlinks==0.5.4
+sphinx-favicon==0.2
