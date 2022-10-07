@@ -140,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   msgpack>=0.4.0 and msgpack-python==0.4.0 are still supported.
 - Change documentation HTML theme (#67).
 - Update API documentation strings (#67).
+- Update documentation index, quick start and guide pages (#67).
 
 ### Fixed
 
