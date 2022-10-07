@@ -1,4 +1,7 @@
 # pylint: disable=C0301,W0105,W0401,W0614
+"""
+Request response types definitions.
+"""
 
 from collections.abc import Sequence
 
@@ -26,24 +29,24 @@ from tarantool.error import (
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 class Response(Sequence):
-    '''
+    """
     Represents a single response from the server in compliance with the
-    Tarantool protocol.
-    Responsible for data encapsulation (i.e. received list of tuples)
-    and parsing of binary packets received from the server.
-    '''
+    Tarantool protocol. Responsible for data encapsulation (i.e.
+    received list of tuples) and parsing of binary packets received from
+    the server.
+    """
 
     def __init__(self, conn, response):
-        '''
-        Create an instance of `Response`
-        using the data received from the server.
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
 
-        __init__() reads data from the socket, parses the response body, and
-        sets the appropriate instance attributes.
+        :param response: Response binary data.
+        :type response: :obj:`bytes`
 
-        :param body: body of the response
-        :type body: array of bytes
-        '''
+        :raise: :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaReloadException`
+        """
 
         # This is not necessary, because underlying list data structures are
         # created in the __new__().
@@ -51,7 +54,7 @@ class Response(Sequence):
 
         unpacker_kwargs = dict()
 
-        # Decode msgpack arrays into Python lists by default (not tuples).
+        # Decode MsgPack arrays into Python lists by default (not tuples).
         # Can be configured in the Connection init
         unpacker_kwargs['use_list'] = conn.use_list
 
@@ -147,115 +150,120 @@ class Response(Sequence):
         return reversed(self._data)
 
     def index(self, *args):
+        """
+        Refer to :class:`collections.abc.Sequence`.
+
+        :raises: :exc:`~tarantool.error.InterfaceError.`
+        """
+
         if self._data is None:
             raise InterfaceError("Trying to access data when there's no data")
         return self._data.index(*args)
 
     def count(self, item):
+        """
+        Refer to :class:`collections.abc.Sequence`.
+
+        :raises: :exc:`~tarantool.error.InterfaceError`
+        """
+
         if self._data is None:
             raise InterfaceError("Trying to access data when there's no data")
         return self._data.count(item)
 
     @property
     def rowcount(self):
-        '''
-        :type: int
+        """
+        :type: :obj:`int`
 
         Number of rows affected or returned by a query.
-        '''
+        """
+
         return len(self)
 
     @property
     def body(self):
-        '''
-        :type: dict
+        """
+        :type: :obj:`dict`
 
-        Required field in the server response.
-        Contains the raw response body.
-        '''
+        Raw response body.
+        """
+
         return self._body
 
     @property
     def code(self):
-        '''
-        :type: int
+        """
+        :type: :obj:`int`
 
-        Required field in the server response.
-        Contains the response type id.
-        '''
+        Response type id.
+        """
+
         return self._code
 
     @property
     def sync(self):
-        '''
-        :type: int
+        """
+        :type: :obj:`int`
 
-        Required field in the server response.
-        Contains the response header IPROTO_SYNC.
-        '''
+        Response header IPROTO_SYNC.
+        """
+
         return self._sync
 
     @property
     def return_code(self):
-        '''
-        :type: int
+        """
+        :type: :obj:`int`
 
-        Required field in the server response.
-        If the request was successful,
-        the value of :attr:`return_code` is ``0``.
-        Otherwise, :attr:`return_code` contains an error code.
-        If :attr:`return_code` is non-zero, :attr:`return_message`
-        contains an error message.
-        '''
+        If the request was successful, the value of is ``0``.
+        Otherwise, it contains an error code. If the value is non-zero,
+        :attr:`return_message` contains an error message.
+        """
+
         return self._return_code
 
     @property
     def data(self):
-        '''
-        :type: object
+        """
+        :type: :obj:`object`
 
-        Required field in the server response.
-        Contains the list of tuples for SELECT, REPLACE and DELETE requests
-        and arbitrary data for CALL.
-        '''
+        Contains the list of tuples for SELECT, REPLACE and DELETE
+        requests and arbitrary data for CALL.
+        """
+
         return self._data
 
     @property
     def strerror(self):
-        '''
-        :type: str
+        """
+        Refer to :func:`~tarantool.error.tnt_strerror`.
+        """
 
-        Contains ER_OK if the request was successful,
-        or contains an error code string.
-        '''
         return tnt_strerror(self._return_code)
 
     @property
     def return_message(self):
-        '''
-        :type: str
+        """
+        :type: :obj:`str`
 
-        The error message returned by the server in case
-        :attr:`return_code` is non-zero.
-        '''
+        The error message returned by the server in case of non-zero
+        :attr:`return_code` (empty string otherwise).
+        """
+
         return self._return_message
 
     @property
     def schema_version(self):
-        '''
-        :type: int
+        """
+        :type: :obj:`int`
 
-        Current schema version of request.
-        '''
+        Request current schema version.
+        """
+
         return self._schema_version
 
     def __str__(self):
-        '''
-        Return a user-friendy string representation of the object.
-        Useful for interactive sessions and debuging.
-
-        :rtype: str or None
-        '''
         if self.return_code:
             return json.dumps({
                 'error': {
@@ -274,16 +282,20 @@ class Response(Sequence):
 
 
 class ResponseExecute(Response):
+    """
+    Represents an SQL EXECUTE request response.
+    """
+
     @property
     def autoincrement_ids(self):
         """
-        Returns a list with the new primary-key value
-        (or values) for an INSERT in a table defined with
-        PRIMARY KEY AUTOINCREMENT
-        (NOT result set size).
+        A list with the new primary-key value (or values) for an
+        INSERT in a table defined with PRIMARY KEY AUTOINCREMENT (NOT
+        result set size).
 
-        :rtype: list or None
+        :rtype: :obj:`list` or :obj:`None`
         """
+
         if self._return_code != 0:
             return None
         info = self._body.get(IPROTO_SQL_INFO)
@@ -298,11 +310,12 @@ class ResponseExecute(Response):
     @property
     def affected_row_count(self):
         """
-        Returns the number of changed rows for responses
-        to DML requests and None for DQL requests.
+        The number of changed rows for responses to DML requests and
+        ``None`` for DQL requests.
 
-        :rtype: int
+        :rtype: :obj:`int` or :obj:`None`
         """
+
         if self._return_code != 0:
             return None
         info = self._body.get(IPROTO_SQL_INFO)

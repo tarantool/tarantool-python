@@ -1,3 +1,8 @@
+"""
+Script to validate that each Tarantool timezone is either a valid pytz
+timezone or an addreviated timezone with explicit offset provided.
+"""
+
 import pytz
 from timezones import timezoneToIndex, timezoneAbbrevInfo
 

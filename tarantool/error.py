@@ -1,22 +1,9 @@
 # pylint: disable=C0301,W0105,W0401,W0614
-'''
-Python DB API compatible exceptions
-http://www.python.org/dev/peps/pep-0249/
+"""
+Python DB API compatible exceptions, see `PEP-249`_.
 
-The PEP-249 says that database related exceptions must be inherited as follows:
-
-    Exception
-    |__Warning
-    |__Error
-       |__InterfaceError
-       |__DatabaseError
-          |__DataError
-          |__OperationalError
-          |__IntegrityError
-          |__InternalError
-          |__ProgrammingError
-          |__NotSupportedError
-'''
+.. _PEP-249: http://www.python.org/dev/peps/pep-0249/
+"""
 
 import os
 import socket
@@ -31,89 +18,96 @@ import warnings
 
 
 class Warning(Exception):
-    '''Exception raised for important warnings
-    like data truncations while inserting, etc. '''
+    """
+    Exception raised for important warnings
+    like data truncations while inserting, etc.
+    """
 
 class Error(Exception):
-    '''Base class for error exceptions'''
+    """
+    Base class for error exceptions.
+    """
 
 
 class InterfaceError(Error):
-    '''
-    Exception raised for errors that are related to the database interface
-    rather than the database itself.
-    '''
+    """
+    Exception raised for errors that are related to the database
+    interface rather than the database itself.
+    """
 
 
 class DatabaseError(Error):
-    '''Exception raised for errors that are related to the database.'''
+    """
+    Exception raised for errors that are related to the database.
+    """
 
 
 class DataError(DatabaseError):
-    '''
-    Exception raised for errors that are due to problems with the processed
-    data like division by zero, numeric value out of range, etc.
-    '''
+    """
+    Exception raised for errors that are due to problems with the
+    processed data like division by zero, numeric value out of range,
+    etc.
+    """
 
 
 class OperationalError(DatabaseError):
-    '''
-    Exception raised for errors that are related to the database's operation
-    and not necessarily under the control of the programmer, e.g. an
-    unexpected disconnect occurs, the data source name is not found,
-    a transaction could not be processed, a memory allocation error occurred
-    during processing, etc.
-    '''
+    """
+    Exception raised for errors that are related to the database's
+    operation and not necessarily under the control of the programmer,
+    e.g. an unexpected disconnect occurs, the data source name is not
+    found, a transaction could not be processed, a memory allocation
+    error occurred during processing, etc.
+    """
 
 
 class IntegrityError(DatabaseError):
-    '''
-    Exception raised when the relational integrity of the database is affected,
-    e.g. a foreign key check fails.
-    '''
+    """
+    Exception raised when the relational integrity of the database is
+    affected, e.g. a foreign key check fails.
+    """
 
 
 class InternalError(DatabaseError):
-    '''
-    Exception raised when the database encounters an internal error, e.g. the
-    cursor is not valid anymore, the transaction is out of sync, etc.
-    '''
+    """
+    Exception raised when the database encounters an internal error,
+    e.g. the cursor is not valid anymore, the transaction is out of
+    sync, etc.
+    """
 
 
 class ProgrammingError(DatabaseError):
-    '''
-    Exception raised when the database encounters an internal error, e.g. the
-    cursor is not valid anymore, the transaction is out of sync, etc.
-    '''
+    """
+    Exception raised when the database encounters an internal error,
+    e.g. the cursor is not valid anymore, the transaction is out of
+    sync, etc.
+    """
 
 
 class NotSupportedError(DatabaseError):
-    '''
-    Exception raised in case a method or database API was used which is not
-    supported by the database, e.g. requesting a .rollback() on a connection
-    that does not support transaction or has transactions turned off.
-    '''
+    """
+    Exception raised in case a method or database API was used which is
+    not supported by the database, e.g. requesting a .rollback() on a
+    connection that does not support transactions or has transactions
+    turned off.
+    """
 
 
 class ConfigurationError(Error):
-    '''
+    """
     Error of initialization with a user-provided configuration.
-    '''
+    """
 
 class MsgpackError(Error):
-    '''
-    Error with encoding or decoding of MP_EXT types
-    '''
+    """
+    Error with encoding or decoding of `MP_EXT`_ types.
+
+    .. _MP_EXT: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/
+    """
 
 class MsgpackWarning(UserWarning):
-    '''
-    Warning with encoding or decoding of MP_EXT types
-    '''
-
-__all__ = ("Warning", "Error", "InterfaceError", "DatabaseError", "DataError",
-           "OperationalError", "IntegrityError", "InternalError",
-           "ProgrammingError", "NotSupportedError", "MsgpackError",
-           "MsgpackWarning")
+    """
+    Warning with encoding or decoding of `MP_EXT`_ types.
+    """
 
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":
@@ -163,13 +157,13 @@ if sys.platform == "win32":
     os_strerror_orig = os.strerror
 
     def os_strerror_patched(code):
-        '''
+        """
         Return cross-platform message about socket-related errors
 
         This function exists because under Windows os.strerror returns
         'Unknown error' on all socket-related errors.
         And socket-related exception contain broken non-ascii encoded messages.
-        '''
+        """
         message = os_strerror_orig(code)
         if not message.startswith("Unknown"):
             return message
@@ -181,7 +175,15 @@ if sys.platform == "win32":
 
 
 class SchemaError(DatabaseError):
+    """
+    Error related to extracting space and index schema.
+    """
+
     def __init__(self, value):
+        """
+        :param value: Error value.
+        """
+
         super(SchemaError, self).__init__(0, value)
         self.value = value
 
@@ -190,7 +192,19 @@ class SchemaError(DatabaseError):
 
 
 class SchemaReloadException(DatabaseError):
+    """
+    Error related to outdated space and index schema.
+    """
+
     def __init__(self, message, schema_version):
+        """
+        :param message: Error message.
+        :type message: :obj:`str`
+
+        :param schema_version: Response schema version.
+        :type schema_version: :obj:`int`
+        """
+
         super(SchemaReloadException, self).__init__(109, message)
         self.code = 109
         self.message = message
@@ -201,9 +215,19 @@ class SchemaReloadException(DatabaseError):
 
 
 class NetworkError(DatabaseError):
-    '''Error related to network'''
+    """
+    Error related to network.
+    """
 
     def __init__(self, orig_exception=None, *args):
+        """
+        :param orig_exception: Exception to wrap.
+        :type orig_exception: optional
+
+        :param args: Wrapped exception arguments.
+        :type args: :obj:`tuple`
+        """
+
         self.errno = 0
         if hasattr(orig_exception, 'errno'):
             self.errno = orig_exception.errno
@@ -220,13 +244,25 @@ class NetworkError(DatabaseError):
 
 
 class NetworkWarning(UserWarning):
-    '''Warning related to network'''
+    """
+    Warning related to network.
+    """
     pass
 
 class SslError(DatabaseError):
-    '''Error related to SSL'''
+    """
+    Error related to SSL.
+    """
 
     def __init__(self, orig_exception=None, *args):
+        """
+        :param orig_exception: Exception to wrap.
+        :type orig_exception: optional
+
+        :param args: Wrapped exception arguments.
+        :type args: :obj:`tuple`
+        """
+
         self.errno = 0
         if hasattr(orig_exception, 'errno'):
             self.errno = orig_exception.errno
@@ -238,22 +274,34 @@ class SslError(DatabaseError):
 
 
 class ClusterDiscoveryWarning(UserWarning):
-    '''Warning related to cluster discovery'''
+    """
+    Warning related to cluster discovery.
+    """
     pass
 
 
 class ClusterConnectWarning(UserWarning):
-    '''Warning related to cluster pool connection'''
+    """
+    Warning related to cluster pool connection.
+    """
     pass
 
 
 class PoolTolopogyWarning(UserWarning):
-    '''Warning related to ro/rw cluster pool topology'''
+    """
+    Warning related to unsatisfying `box.info.ro`_ state of
+    pool instances.
+    """
     pass
 
 
 class PoolTolopogyError(DatabaseError):
-    '''Exception raised due to unsatisfying ro/rw cluster pool topology'''
+    """
+    Exception raised due to unsatisfying `box.info.ro`_ state of
+    pool instances.
+
+    .. _box.info.ro: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
+    """
     pass
 
 
@@ -262,10 +310,17 @@ warnings.filterwarnings("always", category=NetworkWarning)
 
 
 def warn(message, warning_class):
-    '''
-    Emit warinig message.
+    """
+    Emit a warning message.
     Just like standard warnings.warn() but don't output full filename.
-    '''
+
+    :param message: Warning message.
+    :type message: :obj:`str`
+
+    :param warning_class: Warning class.
+    :type warning_class: :class:`~tarantool.error.Warning`
+    """
+
     frame = sys._getframe(2)  # pylint: disable=W0212
     module_name = frame.f_globals.get("__name__")
     line_no = frame.f_lineno
@@ -449,6 +504,16 @@ _strerror = {
 
 
 def tnt_strerror(num):
+    """
+    Parse Tarantool error to string data.
+
+    :param num: Tarantool error code.
+    :type num: :obj:`int`
+
+    :return: Tuple ``(ER_NAME, message)`` or ``"UNDEFINED"``.
+    :rtype: :obj:`tuple` or :obj:`str`
+    """
+
     if num in _strerror:
         return _strerror[num]
     return "UNDEFINED"

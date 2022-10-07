@@ -1,7 +1,8 @@
 # pylint: disable=C0301,W0105,W0401,W0614
-'''
-Request types definitions
-'''
+"""
+Request types definitions. For internal use only, there is no API to
+send pre-build request objects.
+"""
 
 import sys
 import msgpack
@@ -56,18 +57,23 @@ from tarantool.utils import (
 from tarantool.msgpack_ext.packer import default as packer_default
 
 class Request(object):
-    '''
+    """
     Represents a single request to the server in compliance with the
-    Tarantool protocol.
-    Responsible for data encapsulation and builds binary packet
-    to be sent to the server.
+    Tarantool protocol. Responsible for data encapsulation and building
+    the binary packet to be sent to the server.
 
-    This is the abstract base class. Specific request types
-    are implemented by the inherited classes.
-    '''
+    This is the abstract base class. Specific request types are
+    implemented in the inherited classes.
+    """
+
     request_type = None
 
     def __init__(self, conn):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+        """
+
         self._bytes = None
         self.conn = conn
         self._sync = None
@@ -120,6 +126,10 @@ class Request(object):
         self.packer = msgpack.Packer(**packer_kwargs)
 
     def _dumps(self, src):
+        """
+        Encode MsgPack data.
+        """
+
         return self.packer.pack(src)
 
     def __bytes__(self):
@@ -129,15 +139,27 @@ class Request(object):
 
     @property
     def sync(self):
-        '''
-        :type: int
+        """
+        :type: :obj:`int`
 
-        Required field in the server request.
         Contains request header IPROTO_SYNC.
-        '''
+        """
+
         return self._sync
 
     def header(self, length):
+        """
+        Pack total (header + payload) length info together with header
+        itself.
+
+        :param length: Payload length.
+        :type: :obj:`int`
+
+        :return: MsgPack data with encoded total (header + payload)
+            length info and header.
+        :rtype: :obj:`bytes`
+        """
+
         self._sync = self.conn.generate_sync()
         header = self._dumps({IPROTO_CODE: self.request_type,
                               IPROTO_SYNC: self._sync,
@@ -147,15 +169,27 @@ class Request(object):
 
 
 class RequestInsert(Request):
-    '''
-    Represents INSERT request
-    '''
+    """
+    Represents INSERT request.
+    """
+
     request_type = REQUEST_TYPE_INSERT
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, values):
-        '''
-        '''
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param space_no: Space id.
+        :type space_no: :obj:`int`
+
+        :param values: Record to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestInsert, self).__init__(conn)
         assert isinstance(values, (tuple, list))
 
@@ -166,12 +200,29 @@ class RequestInsert(Request):
 
 
 class RequestAuthenticate(Request):
-    '''
-    Represents AUTHENTICATE request
-    '''
+    """
+    Represents AUTHENTICATE request.
+    """
+
     request_type = REQUEST_TYPE_AUTHENTICATE
 
     def __init__(self, conn, salt, user, password):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param salt: base64-encoded session salt.
+        :type salt: :obj:`str`
+
+        :param user: User name for authentication on the Tarantool
+            server.
+        :type user: :obj:`str`
+
+        :param password: User password for authentication on the
+            Tarantool server.
+        :type password: :obj:`str`
+        """
+
         super(RequestAuthenticate, self).__init__(conn)
 
         def sha1(values):
@@ -193,6 +244,18 @@ class RequestAuthenticate(Request):
         self._body = request_body
 
     def header(self, length):
+        """
+        Pack total (header + payload) length info together with header
+        itself.
+
+        :param length: Payload length.
+        :type: :obj:`int`
+
+        :return: MsgPack data with encoded total (header + payload)
+            length info and header.
+        :rtype: :obj:`bytes`
+        """
+
         self._sync = self.conn.generate_sync()
         # Set IPROTO_SCHEMA_ID: 0 to avoid SchemaReloadException
         # It is ok to use 0 in auth every time.
@@ -204,15 +267,27 @@ class RequestAuthenticate(Request):
 
 
 class RequestReplace(Request):
-    '''
-    Represents REPLACE request
-    '''
+    """
+    Represents REPLACE request.
+    """
+
     request_type = REQUEST_TYPE_REPLACE
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, values):
-        '''
-        '''
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param space_no: Space id.
+        :type space_no: :obj:`int`
+
+        :param values: Record to be replaced.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestReplace, self).__init__(conn)
         assert isinstance(values, (tuple, list))
 
@@ -223,15 +298,30 @@ class RequestReplace(Request):
 
 
 class RequestDelete(Request):
-    '''
-    Represents DELETE request
-    '''
+    """
+    Represents DELETE request.
+    """
+
     request_type = REQUEST_TYPE_DELETE
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, key):
-        '''
-        '''
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param space_no: Space id.
+        :type space_no: :obj:`int`
+
+        :param index_no: Index id.
+        :type index_no: :obj:`int`
+
+        :param key: Key of a tuple to be deleted.
+        :type key: :obj:`list`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestDelete, self).__init__(conn)
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
@@ -242,13 +332,40 @@ class RequestDelete(Request):
 
 
 class RequestSelect(Request):
-    '''
-    Represents SELECT request
-    '''
+    """
+    Represents SELECT request.
+    """
+
     request_type = REQUEST_TYPE_SELECT
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, key, offset, limit, iterator):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param space_no: Space id.
+        :type space_no: :obj:`int`
+
+        :param index_no: Index id.
+        :type index_no: :obj:`int`
+
+        :param key: Key of a tuple to be selected.
+        :type key: :obj:`list`
+
+        :param offset: Number of tuples to skip.
+        :type offset: :obj:`int`
+
+        :param limit: Maximum number of tuples to select.
+        :type limit: :obj:`int`
+
+        :param iterator: Index iterator type, see
+            :paramref:`~tarantool.Connection.select.params.iterator`.
+        :type iterator: :obj:`str`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestSelect, self).__init__(conn)
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
                                     IPROTO_INDEX_ID: index_no,
@@ -261,14 +378,35 @@ class RequestSelect(Request):
 
 
 class RequestUpdate(Request):
-    '''
-    Represents UPDATE request
-    '''
+    """
+    Represents UPDATE request.
+    """
 
     request_type = REQUEST_TYPE_UPDATE
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, key, op_list):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param space_no: Space id.
+        :type space_no: :obj:`int`
+
+        :param index_no: Index id.
+        :type index_no: :obj:`int`
+
+        :param key: Key of a tuple to be updated.
+        :type key: :obj:`list`
+
+        :param op_list: The list of operations to update individual
+            fields, refer to
+            :paramref:`~tarantool.Connection.update.params.op_list`.
+        :type op_list: :obj:`tuple` or :obj:`list`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestUpdate, self).__init__(conn)
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
@@ -280,13 +418,31 @@ class RequestUpdate(Request):
 
 
 class RequestCall(Request):
-    '''
-    Represents CALL request
-    '''
+    """
+    Represents CALL request.
+    """
+
     request_type = REQUEST_TYPE_CALL
 
     # pylint: disable=W0231
     def __init__(self, conn, name, args, call_16):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param name: Stored Lua function name.
+        :type func_name: :obj:`str`
+
+        :param args: Stored Lua function arguments.
+        :type args: :obj:`tuple`
+
+        :param call_16: If ``True``, use compatibility mode with
+            Tarantool 1.6 or older.
+        :type call_16: :obj:`bool`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         if call_16:
             self.request_type = REQUEST_TYPE_CALL16
         super(RequestCall, self).__init__(conn)
@@ -299,13 +455,27 @@ class RequestCall(Request):
 
 
 class RequestEval(Request):
-    '''
-    Represents EVAL request
-    '''
+    """
+    Represents EVAL request.
+    """
+
     request_type = REQUEST_TYPE_EVAL
 
     # pylint: disable=W0231
     def __init__(self, conn, name, args):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param name: Lua expression.
+        :type func_name: :obj:`str`
+
+        :param args: Lua expression arguments.
+        :type args: :obj:`tuple`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestEval, self).__init__(conn)
         assert isinstance(args, (list, tuple))
 
@@ -316,25 +486,52 @@ class RequestEval(Request):
 
 
 class RequestPing(Request):
-    '''
-    Ping body is empty, so body_length == 0 and there's no body
-    '''
+    """
+    Represents a ping request with the empty body.
+    """
+
     request_type = REQUEST_TYPE_PING
 
     def __init__(self, conn):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+        """
+
         super(RequestPing, self).__init__(conn)
         self._body = b''
 
 
 class RequestUpsert(Request):
-    '''
-    Represents UPSERT request
-    '''
+    """
+    Represents UPSERT request.
+    """
 
     request_type = REQUEST_TYPE_UPSERT
 
     # pylint: disable=W0231
     def __init__(self, conn, space_no, index_no, tuple_value, op_list):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param space_no: Space id.
+        :type space_no: :obj:`int`
+
+        :param index_no: Index id.
+        :type index_no: :obj:`int`
+
+        :param tuple_value: Tuple to be upserted.
+        :type tuple_value: :obj:`tuple` or :obj:`list`
+
+        :param op_list: The list of operations to update individual
+            fields, refer to
+            :paramref:`~tarantool.Connection.update.params.op_list`.
+        :type op_list: :obj:`tuple` or :obj:`list`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestUpsert, self).__init__(conn)
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
@@ -346,26 +543,52 @@ class RequestUpsert(Request):
 
 
 class RequestJoin(Request):
-    '''
-    Represents JOIN request
-    '''
+    """
+    Represents JOIN request.
+    """
+
     request_type = REQUEST_TYPE_JOIN
 
     # pylint: disable=W0231
     def __init__(self, conn, server_uuid):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param server_uuid: UUID of connector "server".
+        :type server_uuid: :obj:`str`
+        """
+
         super(RequestJoin, self).__init__(conn)
         request_body = self._dumps({IPROTO_SERVER_UUID: server_uuid})
         self._body = request_body
 
 
 class RequestSubscribe(Request):
-    '''
-    Represents SUBSCRIBE request
-    '''
+    """
+    Represents SUBSCRIBE request.
+    """
+
     request_type = REQUEST_TYPE_SUBSCRIBE
 
     # pylint: disable=W0231
     def __init__(self, conn, cluster_uuid, server_uuid, vclock):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param server_uuid: UUID of connector "server".
+        :type server_uuid: :obj:`str`
+
+        :param server_uuid: UUID of connector "server".
+        :type server_uuid: :obj:`str`
+
+        :param vclock: Connector "server" vclock.
+        :type vclock: :obj:`dict`
+
+        :raise: :exc:`~AssertionError`
+        """
+
         super(RequestSubscribe, self).__init__(conn)
         assert isinstance(vclock, dict)
 
@@ -378,13 +601,22 @@ class RequestSubscribe(Request):
 
 
 class RequestOK(Request):
-    '''
-    Represents OK acknowledgement
-    '''
+    """
+    Represents OK acknowledgement.
+    """
+
     request_type = REQUEST_TYPE_OK
 
     # pylint: disable=W0231
     def __init__(self, conn, sync):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param sync: Previous request sync id.
+        :type sync: :obj:`int`
+        """
+
         super(RequestOK, self).__init__(conn)
         request_body = self._dumps({IPROTO_CODE: self.request_type,
                                     IPROTO_SYNC: sync})
@@ -392,12 +624,26 @@ class RequestOK(Request):
 
 
 class RequestExecute(Request):
-    '''
-    Represents EXECUTE SQL request
-    '''
+    """
+    Represents EXECUTE SQL request.
+    """
+
     request_type = REQUEST_TYPE_EXECUTE
 
     def __init__(self, conn, sql, args):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param sql: SQL query.
+        :type sql: :obj:`str`
+
+        :param args: SQL query bind values.
+        :type args: :obj:`dict` or :obj:`list`
+
+        :raise: :exc:`~TypeError`
+        """
+
         super(RequestExecute, self).__init__(conn)
         if isinstance(args, Mapping):
             args = [{":%s" % name: value} for name, value in args.items()]
