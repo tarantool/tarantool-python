@@ -50,6 +50,14 @@ def read(*parts):
     with codecs.open(filename, encoding='utf-8') as fp:
         return fp.read()
 
+def get_dependencies(file):
+    root = os.path.dirname(os.path.realpath(__file__))
+    requirements = os.path.join(root, file)
+    result = []
+    if os.path.isfile(requirements):
+        with open(requirements) as f:
+            return f.read().splitlines()
+    raise RuntimeError("Unable to get dependencies from file " + file)
 
 def find_version(*file_paths):
     version_file = read(*file_paths)
@@ -82,8 +90,6 @@ setup(
     ],
     cmdclass=cmdclass,
     command_options=command_options,
-    install_requires=[
-        'msgpack>=1.0.4',
-    ],
+    install_requires=get_dependencies('requirements.txt'),
     python_requires='>=3',
 )
