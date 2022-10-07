@@ -112,7 +112,7 @@ To build documentation, first you must install its build requirements:
 
 .. code-block:: bash
 
-    $ pip install -r requirements-doc.txt
+    $ pip install -r docs/requirements.txt
 
 Then run
 

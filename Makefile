@@ -1,4 +1,4 @@
-.PHONY: install test
+.PHONY: install test docs
 install:
 	pip install --editable .
 test:
