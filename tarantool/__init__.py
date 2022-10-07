@@ -49,16 +49,40 @@ def connect(host="localhost", port=33013, user=None, password=None,
             ssl_cert_file=DEFAULT_SSL_CERT_FILE,
             ssl_ca_file=DEFAULT_SSL_CA_FILE,
             ssl_ciphers=DEFAULT_SSL_CIPHERS):
-    '''
+    """
     Create a connection to the Tarantool server.
 
-    :param str host: Server hostname or IP-address
-    :param int port: Server port
+    :param host: Refer to :paramref:`~tarantool.Connection.params.host`.
 
-    :rtype: :class:`~tarantool.connection.Connection`
+    :param port: Refer to :paramref:`~tarantool.Connection.params.port`.
 
-    :raise: `NetworkError`
-    '''
+    :param user: Refer to :paramref:`~tarantool.Connection.params.user`.
+
+    :param password: Refer to
+        :paramref:`~tarantool.Connection.params.password`.
+
+    :param encoding: Refer to
+        :paramref:`~tarantool.Connection.params.encoding`.
+
+    :param transport: Refer to
+        :paramref:`~tarantool.Connection.params.transport`.
+
+    :param ssl_key_file: Refer to
+        :paramref:`~tarantool.Connection.params.ssl_key_file`.
+
+    :param ssl_cert_file: Refer to
+        :paramref:`~tarantool.Connection.params.ssl_cert_file`.
+
+    :param ssl_ca_file: Refer to
+        :paramref:`~tarantool.Connection.params.ssl_ca_file`.
+
+    :param ssl_ciphers: Refer to
+        :paramref:`~tarantool.Connection.params.ssl_ciphers`.
+
+    :rtype: :class:`~tarantool.Connection`
+
+    :raise: :class:`~tarantool.Connection` exceptions
+    """
 
     return Connection(host, port,
                       user=user,
@@ -77,15 +101,25 @@ def connect(host="localhost", port=33013, user=None, password=None,
 
 def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
                 password=None, encoding=ENCODING_DEFAULT):
-    '''
-    Create a connection to a mesh of Tarantool servers.
+    """
+    Create a connection to a cluster of Tarantool servers.
 
-    :param list addrs: List of maps: {'host':(HOSTNAME|IP_ADDR), 'port':PORT}.
+    :param addrs: Refer to
+        :paramref:`~tarantool.MeshConnection.params.addrs`.
 
-    :rtype: :class:`~tarantool.mesh_connection.MeshConnection`
+    :param user: Refer to
+        :paramref:`~tarantool.MeshConnection.params.user`.
 
-    :raise: `NetworkError`
-    '''
+    :param password: Refer to
+        :paramref:`~tarantool.MeshConnection.params.password`.
+
+    :param encoding: Refer to
+        :paramref:`~tarantool.MeshConnection.params.encoding`.
+
+    :rtype: :class:`~tarantool.MeshConnection`
+
+    :raise: :class:`~tarantool.MeshConnection` exceptions
+    """
 
     return MeshConnection(addrs=addrs,
                           user=user,
