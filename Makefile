@@ -1,6 +1,6 @@
 .PHONY: install test
 install:
-	python setup.py install
+	pip install --editable .
 test:
 	python setup.py test
 testdata:
