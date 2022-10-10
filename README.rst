@@ -33,7 +33,7 @@ You can also download zip archive, unpack it and run:
 
 .. code-block:: bash
 
-    $ python setup.py install
+    $ make install
 
 Development version
 ^^^^^^^^^^^^^^^^^^^
@@ -91,7 +91,7 @@ On Linux:
 
 .. code-block:: bash
 
-   $ python setup.py test
+   $ make test
 
 On Windows:
 
@@ -103,7 +103,7 @@ On Windows:
 * Set the following environment variables:
   * ``REMOTE_TARANTOOL_HOST=...``,
   * ``REMOTE_TARANTOOL_CONSOLE_PORT=3302``.
-* Run ``python setup.py test``.
+* Run ``make test``.
 
 Build docs
 ^^^^^^^^^^
