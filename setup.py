@@ -72,6 +72,7 @@ setup(
     name="tarantool",
     packages=["tarantool"],
     package_dir={"tarantool": os.path.join("tarantool")},
+    include_package_data=True,
     version=find_version('tarantool', '__init__.py'),
     platforms=["all"],
     author="tarantool-python AUTHORS",
