@@ -148,6 +148,57 @@ jobs:
         env:
           TEST_TNT_SSL: ${{ matrix.tarantool == '2.10.0-1-gfa775b383-r486-linux-x86_64' }}
 
+  run_tests_with_install_linux:
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        tarantool:
+          - '2.10'
+        python:
+          - '3.6'
+          - '3.7'
+          - '3.8'
+          - '3.9'
+          - '3.10'
+    steps:
+      - name: Clone the connector repo
+        uses: actions/checkout@v2
+
+      - name: Remove connector source code
+        run: |
+          rm -rf tarantool
+          rm setup.py
+
+      - name: Install tarantool ${{ matrix.tarantool }}
+        uses: tarantool/setup-tarantool@v1
+        with:
+          tarantool-version: ${{ matrix.tarantool }}
+
+      - name: Setup Python for tests
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install the package with pip
+        run: pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_REF_NAME
+
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+
+      - name: Run tests
+        run: python -m unittest discover -v
+
   run_tests_ce_windows:
     # We want to run on external PRs, but not on our own internal
     # PRs as they'll be run by the push to the branch.
@@ -217,6 +268,83 @@ jobs:
           REMOTE_TARANTOOL_HOST: localhost
           REMOTE_TARANTOOL_CONSOLE_PORT: 3302
         run: make test
+
+      - name: Stop test tarantool instance
+        if: ${{ always() }}
+        shell: wsl-bash_Ubuntu-20.04 {0}
+        run: |
+          cat tarantool.log || true
+          kill $(cat tarantool.pid) || true
+
+  run_tests_with_install_windows:
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
+
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        tarantool:
+          - '2.10.0.g0a5ce0b9c-1'
+        python:
+          - '3.10'
+    steps:
+      - name: Clone the connector repo
+        uses: actions/checkout@v2
+
+      - name: Remove connector source code (main folder)
+        uses: JesseTG/rm@v1.0.3
+        with:
+          path: tarantool
+
+      - name: Remove connector source code (setup.py)
+        uses: JesseTG/rm@v1.0.3
+        with:
+          path: setup.py
+
+      - name: Setup Python for tests
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install the package with pip
+        run: pip install git+$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY@$env:GITHUB_REF_NAME
+
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+
+      - name: Setup WSL for tarantool
+        uses: Vampire/setup-wsl@v1
+        with:
+          distribution: Ubuntu-20.04
+
+      - name: Install tarantool ${{ matrix.tarantool }} for WSL
+        shell: wsl-bash_Ubuntu-20.04 {0}
+        run: |
+          curl -L https://tarantool.io/release/2/installer.sh | bash -s
+          sudo apt install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
+
+      - name: Setup test tarantool instance
+        shell: wsl-bash_Ubuntu-20.04 {0}
+        run: |
+          rm -f ./tarantool.pid ./tarantool.log
+          TNT_PID=$(tarantool ./test/suites/lib/tarantool_python_ci.lua > tarantool.log 2>&1 & echo $!)
+          touch tarantool.pid
+          echo $TNT_PID > ./tarantool.pid
+
+      - name: Run tests
+        env:
+          REMOTE_TARANTOOL_HOST: localhost
+          REMOTE_TARANTOOL_CONSOLE_PORT: 3302
+        run: python -m unittest discover -v
 
       - name: Stop test tarantool instance
         if: ${{ always() }}
