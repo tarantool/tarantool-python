@@ -71,7 +71,7 @@ def find_version(*file_paths):
 setup(
     name="tarantool",
     packages=["tarantool"],
-    package_dir={"tarantool": os.path.join("tarantool")},
+    package_dir={"tarantool": "tarantool"},
     include_package_data=True,
     version=find_version('tarantool', '__init__.py'),
     platforms=["all"],
