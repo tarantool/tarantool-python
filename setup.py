@@ -5,9 +5,9 @@ import os
 import re
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup, find_packages
 
 # Extra commands for documentation management
 cmdclass = {}
@@ -70,7 +70,7 @@ def find_version(*file_paths):
 
 setup(
     name="tarantool",
-    packages=["tarantool"],
+    packages=find_packages("."),
     package_dir={"tarantool": "tarantool"},
     include_package_data=True,
     version=find_version('tarantool', '__init__.py'),
