@@ -31,6 +31,14 @@ class TestSuite_UUID(unittest.TestCase):
                 parts = {1, 'string'},
                 unique = true})
 
+            pcall(function()
+                box.schema.space.create('test_pk')
+                box.space['test_pk']:create_index('primary', {
+                    type = 'tree',
+                    parts = {1, 'uuid'},
+                    unique = true})
+            end)
+
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
             box.schema.user.grant('test', 'read,write,execute', 'universe')
         """)
@@ -123,6 +131,14 @@ class TestSuite_UUID(unittest.TestCase):
                 """
 
                 self.assertSequenceEqual(self.con.eval(lua_eval), [True])
+
+
+    @skip_or_run_UUID_test
+    def test_primary_key(self):
+        data = [uuid.UUID('ae28d4f6-076c-49dd-8227-7f9fae9592d0'), 'content']
+
+        self.assertSequenceEqual(self.con.insert('test_pk', data), [data])
+        self.assertSequenceEqual(self.con.select('test_pk', data[0]), [data])
 
 
     @classmethod

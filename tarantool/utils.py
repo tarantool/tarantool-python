@@ -1,8 +1,6 @@
 import sys
 import uuid
 
-supported_types = (int, str, bytes, float,)
-
 ENCODING_DEFAULT = "utf-8"
 
 from base64 import decodebytes as base64_decode
@@ -22,33 +20,30 @@ def strxor(rhs, lhs):
 
     return bytes([x ^ y for x, y in zip(rhs, lhs)])
 
-def check_key(*args, **kwargs):
+def wrap_key(*args, first=True, select=False):
     """
-    Validate request key types and map.
+    Wrap request key in list, if needed.
 
     :param args: Method args.
     :type args: :obj:`tuple`
 
-    :param kwargs: Method kwargs.
-    :type kwargs: :obj:`dict`
+    :param first: ``True`` if this is the first recursion iteration.
+    :type first: :obj:`bool`
+
+    :param select: ``True`` if wrapping SELECT request key.
+    :type select: :obj:`bool`
 
     :rtype: :obj:`list`
     """
 
-    if 'first' not in kwargs:
-        kwargs['first'] = True
-    if 'select' not in kwargs:
-        kwargs['select'] = False
-    if len(args) == 0 and kwargs['select']:
+    if len(args) == 0 and select:
         return []
     if len(args) == 1:
-        if isinstance(args[0], (list, tuple)) and kwargs['first']:
-            kwargs['first'] = False
-            return check_key(*args[0], **kwargs)
-        elif args[0] is None and kwargs['select']:
+        if isinstance(args[0], (list, tuple)) and first:
+            return wrap_key(*args[0], first=False, select=select)
+        elif args[0] is None and select:
             return []
-    for key in args:
-        assert isinstance(key, supported_types)
+
     return list(args)
 
 
