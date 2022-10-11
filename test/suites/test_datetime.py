@@ -32,6 +32,14 @@ class TestSuite_Datetime(unittest.TestCase):
                 parts = {1, 'string'},
                 unique = true})
 
+            pcall(function()
+                box.schema.space.create('test_pk')
+                box.space['test_pk']:create_index('primary', {
+                    type = 'tree',
+                    parts = {1, 'datetime'},
+                    unique = true})
+            end)
+
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
             box.schema.user.grant('test', 'read,write,execute', 'universe')
 
@@ -527,6 +535,13 @@ class TestSuite_Datetime(unittest.TestCase):
         self.assertSequenceEqual(self.con.call('add', case['arg_1'], case['arg_2']),
                                  [case['res']])
 
+
+    @skip_or_run_datetime_test
+    def test_primary_key(self):
+        data = [tarantool.Datetime(year=1970, month=1, day=1), 'content']
+
+        self.assertSequenceEqual(self.con.insert('test_pk', data), [data])
+        self.assertSequenceEqual(self.con.select('test_pk', data[0]), [data])
 
     @classmethod
     def tearDownClass(self):

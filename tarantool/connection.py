@@ -86,9 +86,9 @@ from tarantool.error import (
 )
 from tarantool.schema import Schema
 from tarantool.utils import (
-    check_key,
     greeting_decode,
     version_id,
+    wrap_key,
     ENCODING_DEFAULT,
 )
 
@@ -1220,7 +1220,7 @@ class Connection(ConnectionInterface):
         .. _delete: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/delete/
         """
 
-        key = check_key(key)
+        key = wrap_key(key)
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index, str):
@@ -1349,7 +1349,7 @@ class Connection(ConnectionInterface):
         .. _update: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/update/
         """
 
-        key = check_key(key)
+        key = wrap_key(key)
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index, str):
@@ -1534,7 +1534,7 @@ class Connection(ConnectionInterface):
 
         # Perform smart type checking (scalar / list of scalars / list of
         # tuples)
-        key = check_key(key, select=True)
+        key = wrap_key(key, select=True)
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
