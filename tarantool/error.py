@@ -41,6 +41,24 @@ class DatabaseError(Error):
     Exception raised for errors that are related to the database.
     """
 
+    def __init__(self, *args):
+        """
+        :param args: ``(code, message)`` or ``(message,)``.
+        :type args: :obj:`tuple`
+        """
+
+        super().__init__(*args)
+
+        if (len(args) == 2) and isinstance(args[0], int) and isinstance(args[1], (str, bytes)):
+            self.code = args[0]
+            self.message = args[1]
+        elif (len(args) == 1) and isinstance(args[0], (str, bytes)):
+            self.code = 0
+            self.message = args[0]
+        else:
+            self.code = 0
+            self.message = ''
+
 
 class DataError(DatabaseError):
     """
@@ -206,8 +224,6 @@ class SchemaReloadException(DatabaseError):
         """
 
         super(SchemaReloadException, self).__init__(109, message)
-        self.code = 109
-        self.message = message
         self.schema_version = schema_version
 
     def __str__(self):
