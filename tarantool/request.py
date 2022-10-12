@@ -13,7 +13,7 @@ from collections.abc import Sequence, Mapping
 
 from tarantool.error import DatabaseError
 from tarantool.const import (
-    IPROTO_CODE,
+    IPROTO_REQUEST_TYPE,
     IPROTO_SYNC,
     IPROTO_SPACE_ID,
     IPROTO_INDEX_ID,
@@ -161,7 +161,7 @@ class Request(object):
         """
 
         self._sync = self.conn.generate_sync()
-        header = self._dumps({IPROTO_CODE: self.request_type,
+        header = self._dumps({IPROTO_REQUEST_TYPE: self.request_type,
                               IPROTO_SYNC: self._sync,
                               IPROTO_SCHEMA_ID: self.conn.schema_version})
 
@@ -259,7 +259,7 @@ class RequestAuthenticate(Request):
         self._sync = self.conn.generate_sync()
         # Set IPROTO_SCHEMA_ID: 0 to avoid SchemaReloadException
         # It is ok to use 0 in auth every time.
-        header = self._dumps({IPROTO_CODE: self.request_type,
+        header = self._dumps({IPROTO_REQUEST_TYPE: self.request_type,
                               IPROTO_SYNC: self._sync,
                               IPROTO_SCHEMA_ID: 0})
 
@@ -618,7 +618,7 @@ class RequestOK(Request):
         """
 
         super(RequestOK, self).__init__(conn)
-        request_body = self._dumps({IPROTO_CODE: self.request_type,
+        request_body = self._dumps({IPROTO_REQUEST_TYPE: self.request_type,
                                     IPROTO_SYNC: sync})
         self._body = request_body
 

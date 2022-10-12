@@ -9,7 +9,7 @@ import json
 import msgpack
 
 from tarantool.const import (
-    IPROTO_CODE,
+    IPROTO_REQUEST_TYPE,
     IPROTO_DATA,
     IPROTO_ERROR,
     IPROTO_SYNC,
@@ -93,7 +93,7 @@ class Response(Sequence):
 
         self.conn = conn
         self._sync = header.get(IPROTO_SYNC, 0)
-        self._code = header[IPROTO_CODE]
+        self._code = header[IPROTO_REQUEST_TYPE]
         self._body = {}
         self._schema_version = header.get(IPROTO_SCHEMA_ID, None)
         try:
