@@ -122,14 +122,6 @@ def skip_or_run_varbinary_test(func):
                                       'does not support VARBINARY type')
 
 
-def skip_or_run_conn_pool_test(func):
-    """Decorator to skip or run ConnectionPool tests depending on
-    the Python version.
-    """
-
-    return skip_or_run_test_python(func, '3.7',
-                                   'does not support ConnectionPool')
-
 def skip_or_run_decimal_test(func):
     """Decorator to skip or run decimal-related tests depending on
     the tarantool version.
