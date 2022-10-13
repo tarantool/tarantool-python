@@ -33,6 +33,8 @@ from tarantool.const import (
     IPROTO_SCHEMA_ID,
     IPROTO_SQL_TEXT,
     IPROTO_SQL_BIND,
+    IPROTO_VERSION,
+    IPROTO_FEATURES,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_PING,
     REQUEST_TYPE_SELECT,
@@ -47,9 +49,14 @@ from tarantool.const import (
     REQUEST_TYPE_EVAL,
     REQUEST_TYPE_AUTHENTICATE,
     REQUEST_TYPE_JOIN,
-    REQUEST_TYPE_SUBSCRIBE
+    REQUEST_TYPE_SUBSCRIBE,
+    REQUEST_TYPE_ID,
 )
-from tarantool.response import Response, ResponseExecute
+from tarantool.response import (
+    Response,
+    ResponseExecute,
+    ResponseProtocolVersion,
+)
 from tarantool.utils import (
     strxor,
 )
@@ -656,3 +663,31 @@ class RequestExecute(Request):
 
         self._body = request_body
         self.response_class = ResponseExecute
+
+class RequestProtocolVersion(Request):
+    """
+    Represents ID request: inform the server about the protocol
+    version and features connector support.
+    """
+
+    request_type = REQUEST_TYPE_ID
+
+    def __init__(self, conn, protocol_version, features):
+        """
+        :param conn: Request sender.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param protocol_version: Connector protocol version.
+        :type protocol_version: :obj:`int`
+
+        :param features: List of supported features.
+        :type features: :obj:`list`
+        """
+
+        super(RequestProtocolVersion, self).__init__(conn)
+
+        request_body = self._dumps({IPROTO_VERSION: protocol_version,
+                                    IPROTO_FEATURES: features})
+
+        self._body = request_body
+        self.response_class = ResponseProtocolVersion

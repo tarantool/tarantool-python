@@ -134,6 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     datetime: Timestamp('2022-03-31 00:00:00'), tz: ""
     ```
 
+- Support iproto feature discovery (#206).
+
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
   The only reason of this bump is various vulnerability fixes,
