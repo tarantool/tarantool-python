@@ -40,6 +40,8 @@ from tarantool.msgpack_ext.types.interval import (
     Interval,
 )
 
+from tarantool.connection_pool import ConnectionPool, Mode
+
 try:
     from tarantool.version import __version__
 except ImportError:
@@ -136,9 +138,5 @@ def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
 
 __all__ = ['connect', 'Connection', 'connectmesh', 'MeshConnection', 'Schema',
            'Error', 'DatabaseError', 'NetworkError', 'NetworkWarning',
-           'SchemaError', 'dbapi', 'Datetime', 'Interval', 'IntervalAdjust']
-
-# ConnectionPool is supported only for Python 3.7 or newer.
-if sys.version_info.major >= 3 and sys.version_info.minor >= 7:
-    from tarantool.connection_pool import ConnectionPool, Mode
-    __all__.extend(['ConnectionPool', 'Mode'])
+           'SchemaError', 'dbapi', 'Datetime', 'Interval', 'IntervalAdjust',
+           'ConnectionPool', 'Mode']

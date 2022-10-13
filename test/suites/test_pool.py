@@ -13,7 +13,7 @@ from tarantool.error import (
     PoolTolopogyWarning,
 )
 
-from .lib.skip import skip_or_run_sql_test, skip_or_run_conn_pool_test
+from .lib.skip import skip_or_run_sql_test
 from .lib.tarantool_server import TarantoolServer
 
 
@@ -75,7 +75,6 @@ class TestSuite_Pool(unittest.TestCase):
         print(' POOL '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
 
-    @skip_or_run_conn_pool_test
     def setUp(self):
         # Create five servers and extract helpful fields for tests.
         self.servers = []

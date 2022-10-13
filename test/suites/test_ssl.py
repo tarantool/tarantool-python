@@ -10,7 +10,6 @@ from tarantool.const import (
     SSL_TRANSPORT
 )
 import tarantool
-from .lib.skip import skip_or_run_conn_pool_test
 from .lib.tarantool_server import TarantoolServer
 
 
@@ -291,7 +290,6 @@ class TestSuite_Ssl(unittest.TestCase):
 
     @unittest.skipIf(sys.platform.startswith("win"),
                      'Pool tests on windows platform are not supported')
-    @skip_or_run_conn_pool_test
     def test_pool(self):
         servers = []
         cnt = 5
