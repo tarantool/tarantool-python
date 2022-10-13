@@ -28,14 +28,11 @@ def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
 
             assert srv is not None
 
-            self.__class__.tnt_version = re.match(
-                r'[\d.]+', srv.admin('box.info.version')[0]
-            ).group()
+            self.__class__.tnt_version = srv.admin.tnt_version
 
-        tnt_version = pkg_resources.parse_version(self.tnt_version)
         support_version = pkg_resources.parse_version(REQUIRED_TNT_VERSION)
 
-        if tnt_version < support_version:
+        if self.tnt_version < support_version:
             self.skipTest('Tarantool %s %s' % (self.tnt_version, msg))
 
         if func.__name__ != 'setUp':

@@ -37,7 +37,8 @@ from tarantool.request import (
     RequestUpdate,
     RequestUpsert,
     RequestAuthenticate,
-    RequestExecute
+    RequestExecute,
+    RequestProtocolVersion,
 )
 from tarantool.space import Space
 from tarantool.const import (
@@ -55,7 +56,14 @@ from tarantool.const import (
     REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE,
     ITERATOR_EQ,
-    ITERATOR_ALL
+    ITERATOR_ALL,
+    CONNECTOR_IPROTO_VERSION,
+    CONNECTOR_FEATURES,
+    IPROTO_FEATURE_STREAMS,
+    IPROTO_FEATURE_TRANSACTIONS,
+    IPROTO_FEATURE_ERROR_EXTENSION,
+    IPROTO_FEATURE_WATCHERS,
+    IPROTO_FEATURE_GRACEFUL_SHUTDOWN,
 )
 from tarantool.error import (
     Error,
@@ -498,6 +506,15 @@ class Connection(ConnectionInterface):
         self.ssl_cert_file = ssl_cert_file
         self.ssl_ca_file = ssl_ca_file
         self.ssl_ciphers = ssl_ciphers
+        self._protocol_version = None
+        self._features = {
+            IPROTO_FEATURE_STREAMS: False,
+            IPROTO_FEATURE_TRANSACTIONS: False,
+            IPROTO_FEATURE_ERROR_EXTENSION: False,
+            IPROTO_FEATURE_WATCHERS: False,
+            IPROTO_FEATURE_GRACEFUL_SHUTDOWN: False,
+        }
+
         if connect_now:
             self.connect()
 
@@ -686,6 +703,7 @@ class Connection(ConnectionInterface):
                 self.wrap_socket_ssl()
             self.handshake()
             self.load_schema()
+            self._check_features()
         except SslError as e:
             raise e
         except Exception as e:
@@ -1602,3 +1620,44 @@ class Connection(ConnectionInterface):
         request = RequestExecute(self, query, params)
         response = self._send_request(request)
         return response
+
+    def _check_features(self):
+        """
+        Execute an ID request: inform the server about the protocol
+        version and features connector support and get server-side
+        information about it.
+
+        After executing this request, the connector will choose a
+        protocol version and features supported both by connector and
+        server.
+
+        :raise: :exc:`~AssertionError`,
+            :exc:`~tarantool.error.DatabaseError`,
+            :exc:`~tarantool.error.SchemaError`,
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.SslError`
+        """
+
+        try:
+            request = RequestProtocolVersion(self,
+                                             CONNECTOR_IPROTO_VERSION,
+                                             CONNECTOR_FEATURES)
+            response = self._send_request(request)
+            server_protocol_version = response.protocol_version
+            server_features = response.features
+        except DatabaseError as exc:
+            ER_UNKNOWN_REQUEST_TYPE = 48
+            if exc.code == ER_UNKNOWN_REQUEST_TYPE:
+                server_protocol_version = None
+                server_features = []
+            else:
+                raise exc
+
+        if server_protocol_version is not None:
+            self._protocol_version = min(server_protocol_version,
+                                         CONNECTOR_IPROTO_VERSION)
+
+        # Intercept lists of features
+        features_list = [val for val in CONNECTOR_FEATURES if val in server_features]
+        for val in features_list:
+            self._features[val] = True

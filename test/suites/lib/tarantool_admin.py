@@ -1,5 +1,7 @@
 import socket
 import yaml
+import re
+import pkg_resources
 
 
 class TarantoolAdmin(object):
@@ -8,6 +10,7 @@ class TarantoolAdmin(object):
         self.port = port
         self.is_connected = False
         self.socket = None
+        self._tnt_version = None
 
     def connect(self):
         self.socket = socket.create_connection((self.host, self.port))
@@ -62,3 +65,16 @@ class TarantoolAdmin(object):
                 break
 
         return yaml.safe_load(res)
+
+    @property
+    def tnt_version(self):
+        if self._tnt_version is not None:
+            return self._tnt_version
+
+        raw_version = re.match(
+            r'[\d.]+', self.execute('box.info.version')[0]
+        ).group()
+
+        self._tnt_version = pkg_resources.parse_version(raw_version)
+
+        return self._tnt_version

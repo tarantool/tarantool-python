@@ -17,7 +17,9 @@ from tarantool.const import (
     REQUEST_TYPE_ERROR,
     IPROTO_SQL_INFO,
     IPROTO_SQL_INFO_ROW_COUNT,
-    IPROTO_SQL_INFO_AUTOINCREMENT_IDS
+    IPROTO_SQL_INFO_AUTOINCREMENT_IDS,
+    IPROTO_VERSION,
+    IPROTO_FEATURES,
 )
 from tarantool.error import (
     DatabaseError,
@@ -324,3 +326,35 @@ class ResponseExecute(Response):
             return None
 
         return info.get(IPROTO_SQL_INFO_ROW_COUNT)
+
+
+class ResponseProtocolVersion(Response):
+    """
+    Represents an ID request response: information about server protocol
+    version and features it supports.
+    """
+
+    @property
+    def protocol_version(self):
+        """
+        Server protocol version.
+
+        :rtype: :obj:`int` or :obj:`None`
+        """
+
+        if self._return_code != 0:
+            return None
+        return self._body.get(IPROTO_VERSION)
+
+    @property
+    def features(self):
+        """
+        Server supported features.
+
+        :rtype: :obj:`list`
+        """
+
+        if self._return_code != 0:
+            return []
+        return self._body.get(IPROTO_FEATURES)
+
