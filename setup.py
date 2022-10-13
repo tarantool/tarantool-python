@@ -104,5 +104,5 @@ setup(
     setup_requires=[
         'setuptools_scm==6.4.2',
     ],
-    python_requires='>=3',
+    python_requires='>=3.6',
 )
