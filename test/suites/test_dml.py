@@ -1,8 +1,10 @@
 import sys
 import unittest
 import tarantool
+from tarantool.error import DatabaseError
 
 from .lib.tarantool_server import TarantoolServer
+from .lib.skip import skip_or_run_error_extra_info_test
 
 class TestSuite_Request(unittest.TestCase):
     @classmethod
@@ -324,6 +326,77 @@ class TestSuite_Request(unittest.TestCase):
         self.assertEqual(con.is_closed(), True)
         con.close()
         self.assertEqual(con.is_closed(), True)
+
+    @skip_or_run_error_extra_info_test
+    def test_14_extra_error_info(self):
+        try:
+            self.con.eval("not a Lua code")
+        except DatabaseError as exc:
+            self.assertEqual(exc.extra_info.type, 'LuajitError')
+            self.assertRegex(exc.extra_info.file, r'/tarantool')
+            self.assertTrue(exc.extra_info.line > 0)
+            self.assertEqual(exc.extra_info.message, "eval:1: unexpected symbol near 'not'")
+            self.assertEqual(exc.extra_info.errno, 0)
+            self.assertEqual(exc.extra_info.errcode, 32)
+            self.assertEqual(exc.extra_info.fields, None)
+            self.assertEqual(exc.extra_info.prev, None)
+        else:
+            self.fail('Expected error')
+
+    @skip_or_run_error_extra_info_test
+    def test_15_extra_error_info_stacked(self):
+        try:
+            self.con.eval(r"""
+                local e1 = box.error.new(box.error.UNKNOWN)
+                local e2 = box.error.new(box.error.TIMEOUT)
+                e2:set_prev(e1)
+                error(e2)
+            """)
+        except DatabaseError as exc:
+            self.assertEqual(exc.extra_info.type, 'ClientError')
+            self.assertRegex(exc.extra_info.file, 'eval')
+            self.assertEqual(exc.extra_info.line, 3)
+            self.assertEqual(exc.extra_info.message, "Timeout exceeded")
+            self.assertEqual(exc.extra_info.errno, 0)
+            self.assertEqual(exc.extra_info.errcode, 78)
+            self.assertEqual(exc.extra_info.fields, None)
+            self.assertNotEqual(exc.extra_info.prev, None)
+            prev = exc.extra_info.prev
+            self.assertEqual(prev.type, 'ClientError')
+            self.assertEqual(prev.file, 'eval')
+            self.assertEqual(prev.line, 2)
+            self.assertEqual(prev.message, "Unknown error")
+            self.assertEqual(prev.errno, 0)
+            self.assertEqual(prev.errcode, 0)
+            self.assertEqual(prev.fields, None)
+        else:
+            self.fail('Expected error')
+
+    @skip_or_run_error_extra_info_test
+    def test_16_extra_error_info_fields(self):
+        try:
+            self.con.eval("""
+                box.schema.func.create('forbidden_function')
+            """)
+        except DatabaseError as exc:
+            self.assertEqual(exc.extra_info.type, 'AccessDeniedError')
+            self.assertRegex(exc.extra_info.file, r'/tarantool')
+            self.assertTrue(exc.extra_info.line > 0)
+            self.assertEqual(
+                    exc.extra_info.message,
+                    "Create access to function 'forbidden_function' is denied for user 'test'")
+            self.assertEqual(exc.extra_info.errno, 0)
+            self.assertEqual(exc.extra_info.errcode, 42)
+            self.assertEqual(
+                exc.extra_info.fields,
+                {
+                    'object_type': 'function',
+                    'object_name': 'forbidden_function',
+                    'access_type': 'Create'
+                })
+            self.assertEqual(exc.extra_info.prev, None)
+        else:
+            self.fail('Expected error')
 
     @classmethod
     def tearDownClass(self):

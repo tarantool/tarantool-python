@@ -154,3 +154,14 @@ def skip_or_run_datetime_test(func):
 
     return skip_or_run_test_pcall_require(func, 'datetime',
                                       'does not support datetime type')
+
+def skip_or_run_error_extra_info_test(func):
+    """Decorator to skip or run tests related to extra error info
+    provided over iproto depending on the tarantool version.
+
+    Tarantool provides extra error info only since 2.4.1 version.
+    See https://github.com/tarantool/tarantool/issues/4398
+    """
+
+    return skip_or_run_test_tarantool(func, '2.4.1',
+                                      'does not provide extra error info')

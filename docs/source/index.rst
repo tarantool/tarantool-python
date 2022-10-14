@@ -43,6 +43,7 @@ API Reference
    api/submodule-response.rst
    api/submodule-schema.rst
    api/submodule-space.rst
+   api/submodule-types.rst
    api/submodule-utils.rst
 
 .. Indices and tables

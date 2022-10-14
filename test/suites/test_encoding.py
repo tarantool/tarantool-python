@@ -1,8 +1,10 @@
 import sys
 import unittest
-import tarantool
 
-from .lib.skip import skip_or_run_varbinary_test
+import tarantool
+from tarantool.error import DatabaseError
+
+from .lib.skip import skip_or_run_varbinary_test, skip_or_run_error_extra_info_test
 from .lib.tarantool_server import TarantoolServer
 
 class TestSuite_Encoding(unittest.TestCase):
@@ -171,6 +173,26 @@ class TestSuite_Encoding(unittest.TestCase):
             SELECT * FROM "%s" WHERE "varbin" == x'%s';
         """ % (space, data_hex))
         self.assertSequenceEqual(resp, [[data_id, data]])
+
+    @skip_or_run_error_extra_info_test
+    def test_01_05_error_extra_info_decode_for_encoding_utf8_behavior(self):
+        try:
+            self.con_encoding_utf8.eval("not a Lua code")
+        except DatabaseError as exc:
+            self.assertEqual(exc.extra_info.type, 'LuajitError')
+            self.assertEqual(exc.extra_info.message, "eval:1: unexpected symbol near 'not'")
+        else:
+            self.fail('Expected error')
+
+    @skip_or_run_error_extra_info_test
+    def test_02_05_error_extra_info_decode_for_encoding_none_behavior(self):
+        try:
+            self.con_encoding_none.eval("not a Lua code")
+        except DatabaseError as exc:
+            self.assertEqual(exc.extra_info.type, b'LuajitError')
+            self.assertEqual(exc.extra_info.message, b"eval:1: unexpected symbol near 'not'")
+        else:
+            self.fail('Expected error')
 
     @classmethod
     def tearDownClass(self):
