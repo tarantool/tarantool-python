@@ -214,11 +214,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
           - '1.10'
           - '2.8'
           - '2.10.0.g0a5ce0b9c-1'
         python:
+          - '3.6'
           - '3.10'
 
     steps:
@@ -292,9 +294,11 @@ jobs:
       fail-fast: false
 
       matrix:
+        # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
           - '2.10.0.g0a5ce0b9c-1'
         python:
+          - '3.6'
           - '3.10'
     steps:
       - name: Clone the connector repo
