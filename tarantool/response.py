@@ -11,6 +11,7 @@ import msgpack
 from tarantool.const import (
     IPROTO_REQUEST_TYPE,
     IPROTO_DATA,
+    IPROTO_ERROR_24,
     IPROTO_ERROR,
     IPROTO_SYNC,
     IPROTO_SCHEMA_ID,
@@ -21,6 +22,7 @@ from tarantool.const import (
     IPROTO_VERSION,
     IPROTO_FEATURES,
 )
+from tarantool.types import decode_box_error
 from tarantool.error import (
     DatabaseError,
     InterfaceError,
@@ -117,14 +119,22 @@ class Response(Sequence):
             #     self.append(self._data)
         else:
             # Separate return_code and completion_code
-            self._return_message = self._body.get(IPROTO_ERROR, "")
+            self._return_message = self._body.get(IPROTO_ERROR_24, "")
             self._return_code = self._code & (REQUEST_TYPE_ERROR - 1)
+
+            self._return_error = None
+            return_error_map = self._body.get(IPROTO_ERROR)
+            if return_error_map is not None:
+                self._return_error = decode_box_error(return_error_map)
+
             self._data = []
             if self._return_code == 109:
                 raise SchemaReloadException(self._return_message,
                                             self._schema_version)
             if self.conn.error:
-                raise DatabaseError(self._return_code, self._return_message)
+                raise DatabaseError(self._return_code,
+                                    self._return_message,
+                                    extra_info=self._return_error)
 
     def __getitem__(self, idx):
         if self._data is None:

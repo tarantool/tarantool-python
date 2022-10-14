@@ -38,4 +38,5 @@ def load_tests(loader, tests, pattern):
 
 os.chdir(__tmp)
 
-
+# Workaround to disable unittest output truncating
+__import__('sys').modules['unittest.util']._MAX_LENGTH = 99999

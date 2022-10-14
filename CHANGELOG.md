@@ -136,6 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support iproto feature discovery (#206).
 - Backport ConnectionPool support for Python 3.6.
+- Support extra information for iproto errors (#232).
 
 - Support pandas way to build datetime from timestamp (PR #252).
 

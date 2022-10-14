@@ -41,10 +41,17 @@ class DatabaseError(Error):
     Exception raised for errors that are related to the database.
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args, extra_info=None):
         """
         :param args: ``(code, message)`` or ``(message,)``.
         :type args: :obj:`tuple`
+
+        :param extra_info: Additional `box.error`_ information
+            with backtrace.
+        :type extra_info: :class:`~tarantool.types.BoxError` or
+            :obj:`None`, optional
+
+        .. _box.error: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_error/error/
         """
 
         super().__init__(*args)
@@ -58,6 +65,8 @@ class DatabaseError(Error):
         else:
             self.code = 0
             self.message = ''
+
+        self.extra_info = extra_info
 
 
 class DataError(DatabaseError):
@@ -235,7 +244,7 @@ class NetworkError(DatabaseError):
     Error related to network.
     """
 
-    def __init__(self, orig_exception=None, *args):
+    def __init__(self, orig_exception=None, *args, **kwargs):
         """
         :param orig_exception: Exception to wrap.
         :type orig_exception: optional
@@ -256,7 +265,7 @@ class NetworkError(DatabaseError):
                 super(NetworkError, self).__init__(
                     orig_exception.errno, self.message)
             else:
-                super(NetworkError, self).__init__(orig_exception, *args)
+                super(NetworkError, self).__init__(orig_exception, *args, **kwargs)
 
 
 class NetworkWarning(UserWarning):
