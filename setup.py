@@ -67,10 +67,11 @@ def find_version(*file_paths):
         return version_match.group(2)
     raise RuntimeError("Unable to find version string.")
 
+packages = [item for item in find_packages('.') if item.startswith('tarantool')]
 
 setup(
     name="tarantool",
-    packages=find_packages("."),
+    packages=packages,
     package_dir={"tarantool": "tarantool"},
     include_package_data=True,
     version=find_version('tarantool', '__init__.py'),
