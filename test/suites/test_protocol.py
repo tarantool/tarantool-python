@@ -78,12 +78,13 @@ class TestSuite_Protocol(unittest.TestCase):
         # Tarantool 2.10.3 still has version 3.
         if self.adm.tnt_version >= pkg_resources.parse_version('2.10.0'):
             self.assertTrue(self.con._protocol_version >= 3)
+            self.assertEqual(self.con._features[IPROTO_FEATURE_ERROR_EXTENSION], True)
         else:
             self.assertIsNone(self.con._protocol_version)
+            self.assertEqual(self.con._features[IPROTO_FEATURE_ERROR_EXTENSION], False)
 
         self.assertEqual(self.con._features[IPROTO_FEATURE_STREAMS], False)
         self.assertEqual(self.con._features[IPROTO_FEATURE_TRANSACTIONS], False)
-        self.assertEqual(self.con._features[IPROTO_FEATURE_ERROR_EXTENSION], False)
         self.assertEqual(self.con._features[IPROTO_FEATURE_WATCHERS], False)
         self.assertEqual(self.con._features[IPROTO_FEATURE_GRACEFUL_SHUTDOWN], False)
 

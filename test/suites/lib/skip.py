@@ -165,3 +165,16 @@ def skip_or_run_error_extra_info_test(func):
 
     return skip_or_run_test_tarantool(func, '2.4.1',
                                       'does not provide extra error info')
+
+def skip_or_run_error_ext_type_test(func):
+    """Decorator to skip or run tests related to error extension
+    type depending on the tarantool version.
+
+    Tarantool supports error extension type only since 2.4.1 version,
+    yet encoding was introduced only in 2.10.0.
+    See https://github.com/tarantool/tarantool/issues/4398,
+    https://github.com/tarantool/tarantool/issues/6433
+    """
+
+    return skip_or_run_test_tarantool(func, '2.10.0',
+                                      'does not support error extension type')

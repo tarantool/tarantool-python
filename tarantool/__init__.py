@@ -42,6 +42,8 @@ from tarantool.msgpack_ext.types.interval import (
 
 from tarantool.connection_pool import ConnectionPool, Mode
 
+from tarantool.types import BoxError
+
 try:
     from tarantool.version import __version__
 except ImportError:
@@ -139,4 +141,4 @@ def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
 __all__ = ['connect', 'Connection', 'connectmesh', 'MeshConnection', 'Schema',
            'Error', 'DatabaseError', 'NetworkError', 'NetworkWarning',
            'SchemaError', 'dbapi', 'Datetime', 'Interval', 'IntervalAdjust',
-           'ConnectionPool', 'Mode']
+           'ConnectionPool', 'Mode', 'BoxError',]

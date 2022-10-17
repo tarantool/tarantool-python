@@ -83,6 +83,8 @@ they are represented with in-built and custom types:
     +-----------------------------+----+-------------+----+-----------------------------+
     | :obj:`uuid.UUID`            | -> | `UUID`_     | -> | :obj:`uuid.UUID`            |
     +-----------------------------+----+-------------+----+-----------------------------+
+    | :class:`tarantool.BoxError` | -> | `ERROR`_    | -> | :class:`tarantool.BoxError` |
+    +-----------------------------+----+-------------+----+-----------------------------+
     | :class:`tarantool.Datetime` | -> | `DATETIME`_ | -> | :class:`tarantool.Datetime` |
     +-----------------------------+----+-------------+----+-----------------------------+
     | :class:`tarantool.Interval` | -> | `INTERVAL`_ | -> | :class:`tarantool.Interval` |
@@ -109,5 +111,6 @@ and iterate through it as with any other serializable object.
 .. _extension types: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/
 .. _DECIMAL: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-decimal-type
 .. _UUID: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-uuid-type
+.. _ERROR: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-error-type
 .. _DATETIME: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-datetime-type
 .. _INTERVAL: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-interval-type

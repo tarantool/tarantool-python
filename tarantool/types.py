@@ -56,7 +56,7 @@ class BoxError():
     fields: typing.Optional[dict] = None
     """
     Additional fields depending on error type. For example, if
-    :attr:`~tarantool.types.BoxError.type` is ``"AccessDeniedError"``,
+    :attr:`~tarantool.BoxError.type` is ``"AccessDeniedError"``,
     then it will include ``"object_type"``, ``"object_name"``,
     ``"access_type"``.
     """
@@ -106,3 +106,36 @@ def decode_box_error(err_map):
         prev = err
 
     return prev
+
+def encode_box_error(err):
+    """
+    Encode Python `box.error`_ representation to MessagePack map.
+
+    :param err: Error to encode
+    :type err: :obj:`tarantool.BoxError`
+
+    :rtype: :obj:`dict`
+
+    :raises: :exc:`KeyError`
+    """
+
+    stack = []
+
+    while err is not None:
+        dict_item = {
+            MP_ERROR_TYPE: err.type,
+            MP_ERROR_FILE: err.file,
+            MP_ERROR_LINE: err.line,
+            MP_ERROR_MESSAGE: err.message,
+            MP_ERROR_ERRNO: err.errno,
+            MP_ERROR_ERRCODE: err.errcode,
+        }
+
+        if err.fields is not None: # omitted if empty
+            dict_item[MP_ERROR_FIELDS] = err.fields
+
+        stack.append(dict_item)
+
+        err = err.prev
+
+    return {MP_ERROR_STACK: stack}

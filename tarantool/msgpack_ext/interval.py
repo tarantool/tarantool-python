@@ -51,7 +51,7 @@ EXT_ID = 6
 `datetime.interval`_ type id.
 """
 
-def encode(obj):
+def encode(obj, _):
     """
     Encode an interval object.
 
@@ -80,12 +80,15 @@ def encode(obj):
 
     return buf
 
-def decode(data):
+def decode(data, unpacker):
     """
     Decode an interval object.
 
     :param obj: Interval to decode.
     :type obj: :obj:`bytes`
+
+    :param unpacker: msgpack unpacker to decode fields.
+    :type unpacker: :class:`msgpack.Unpacker`
 
     :return: Decoded interval.
     :rtype: :class:`tarantool.Interval`
@@ -108,9 +111,8 @@ def decode(data):
     }
 
     if len(data) != 0:
-        # To create an unpacker is the only way to parse
+        # Unpacker object is the only way to parse
         # a sequence of values in Python msgpack module.
-        unpacker = msgpack.Unpacker()
         unpacker.feed(data)
         field_count = unpacker.unpack()
         for _ in range(field_count):
