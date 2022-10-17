@@ -40,7 +40,10 @@ from tarantool.msgpack_ext.types.interval import (
     Interval,
 )
 
-__version__ = "0.9.0"
+try:
+    from tarantool.version import __version__
+except ImportError:
+    __version__ = '0.0.0-dev'
 
 
 def connect(host="localhost", port=33013, user=None, password=None,

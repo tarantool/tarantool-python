@@ -19,6 +19,7 @@ from .test_decimal import TestSuite_Decimal
 from .test_uuid import TestSuite_UUID
 from .test_datetime import TestSuite_Datetime
 from .test_interval import TestSuite_Interval
+from .test_package import TestSuite_Package
 
 test_cases = (TestSuite_Schema_UnicodeConnection,
               TestSuite_Schema_BinaryConnection,
@@ -26,7 +27,7 @@ test_cases = (TestSuite_Schema_UnicodeConnection,
               TestSuite_Mesh, TestSuite_Execute, TestSuite_DBAPI,
               TestSuite_Encoding, TestSuite_Pool, TestSuite_Ssl,
               TestSuite_Decimal, TestSuite_UUID, TestSuite_Datetime,
-              TestSuite_Interval)
+              TestSuite_Interval, TestSuite_Package,)
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestSuite()

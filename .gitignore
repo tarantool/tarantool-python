@@ -19,3 +19,5 @@ sophia
 .idea
 
 venv/*
+
+tarantool/version.py
