@@ -78,7 +78,7 @@ def get_int_as_bytes(data, size):
 
     return data.to_bytes(size, byteorder=BYTEORDER, signed=True)
 
-def encode(obj):
+def encode(obj, _):
     """
     Encode a datetime object.
 
@@ -134,7 +134,7 @@ def get_bytes_as_int(data, cursor, size):
     part = data[cursor:cursor + size]
     return int.from_bytes(part, BYTEORDER, signed=True), cursor + size
 
-def decode(data):
+def decode(data, _):
     """
     Decode a datetime object.
 

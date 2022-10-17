@@ -225,7 +225,7 @@ def strip_decimal_str(str_repr, scale, first_digit_ind):
     # Do not strips zeroes before the decimal point
     return str_repr
 
-def encode(obj):
+def encode(obj, _):
     """
     Encode a decimal object.
 
@@ -335,7 +335,7 @@ def add_str_digit(digit, digits_reverted, scale):
 
     digits_reverted.append(str(digit))
 
-def decode(data):
+def decode(data, _):
     """
     Decode a decimal object.
 

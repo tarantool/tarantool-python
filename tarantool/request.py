@@ -63,6 +63,67 @@ from tarantool.utils import (
 
 from tarantool.msgpack_ext.packer import default as packer_default
 
+def build_packer(conn):
+    """
+    Build packer to pack request.
+
+    :param conn: Request sender.
+    :type conn: :class:`~tarantool.Connection`
+
+    :rtype: :class:`msgpack.Packer`
+    """
+
+    packer_kwargs = dict()
+
+    # use_bin_type=True is default since msgpack-1.0.0.
+    #
+    # The option controls whether to pack binary (non-unicode)
+    # string values as mp_bin or as mp_str.
+    #
+    # The default behaviour of the Python 3 connector (since
+    # default encoding is "utf-8") is to pack bytes as mp_bin
+    # and Unicode strings as mp_str. encoding=None mode must
+    # be used to work with non-utf strings.
+    #
+    # encoding = 'utf-8'
+    #
+    # Python 3 -> Tarantool          -> Python 3
+    # str      -> mp_str (string)    -> str
+    # bytes    -> mp_bin (varbinary) -> bytes
+    #
+    # encoding = None
+    #
+    # Python 3 -> Tarantool          -> Python 3
+    # bytes    -> mp_str (string)    -> bytes
+    # str      -> mp_str (string)    -> bytes
+    #             mp_bin (varbinary) -> bytes
+    #
+    # msgpack-0.5.0 (and only this version) warns when the
+    # option is unset:
+    #
+    #  | FutureWarning: use_bin_type option is not specified.
+    #  | Default value of the option will be changed in future
+    #  | version.
+    #
+    # The option is supported since msgpack-0.4.0, so we can
+    # just always set it for all msgpack versions to get rid
+    # of the warning on msgpack-0.5.0 and to keep our
+    # behaviour on msgpack-1.0.0.
+    if conn.encoding is None:
+        packer_kwargs['use_bin_type'] = False
+    else:
+        packer_kwargs['use_bin_type'] = True
+
+    # We need configured packer to work with error extention
+    # type payload, but module do not provide access to self
+    # inside extension type packers.
+    packer_no_ext = msgpack.Packer(**packer_kwargs)
+    default = lambda obj: packer_default(obj, packer_no_ext)
+    packer_kwargs['default'] = default
+
+    return msgpack.Packer(**packer_kwargs)
+
+
 class Request(object):
     """
     Represents a single request to the server in compliance with the
@@ -87,50 +148,7 @@ class Request(object):
         self._body = ''
         self.response_class = Response
 
-        packer_kwargs = dict()
-
-        # use_bin_type=True is default since msgpack-1.0.0.
-        #
-        # The option controls whether to pack binary (non-unicode)
-        # string values as mp_bin or as mp_str.
-        #
-        # The default behaviour of the Python 3 connector (since
-        # default encoding is "utf-8") is to pack bytes as mp_bin
-        # and Unicode strings as mp_str. encoding=None mode must
-        # be used to work with non-utf strings.
-        #
-        # encoding = 'utf-8'
-        #
-        # Python 3 -> Tarantool          -> Python 3
-        # str      -> mp_str (string)    -> str
-        # bytes    -> mp_bin (varbinary) -> bytes
-        #
-        # encoding = None
-        #
-        # Python 3 -> Tarantool          -> Python 3
-        # bytes    -> mp_str (string)    -> bytes
-        # str      -> mp_str (string)    -> bytes
-        #             mp_bin (varbinary) -> bytes
-        #
-        # msgpack-0.5.0 (and only this version) warns when the
-        # option is unset:
-        #
-        #  | FutureWarning: use_bin_type option is not specified.
-        #  | Default value of the option will be changed in future
-        #  | version.
-        #
-        # The option is supported since msgpack-0.4.0, so we can
-        # just always set it for all msgpack versions to get rid
-        # of the warning on msgpack-0.5.0 and to keep our
-        # behaviour on msgpack-1.0.0.
-        if conn.encoding is None:
-            packer_kwargs['use_bin_type'] = False
-        else:
-            packer_kwargs['use_bin_type'] = True
-
-        packer_kwargs['default'] = packer_default
-
-        self.packer = msgpack.Packer(**packer_kwargs)
+        self.packer = build_packer(conn)
 
     def _dumps(self, src):
         """

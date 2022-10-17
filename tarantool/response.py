@@ -32,6 +32,58 @@ from tarantool.error import (
 
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
+def build_unpacker(conn):
+    """
+    Build unpacker to unpack request response.
+
+    :param conn: Request sender.
+    :type conn: :class:`~tarantool.Connection`
+
+    :rtype: :class:`msgpack.Unpacker`
+    """
+
+    unpacker_kwargs = dict()
+
+    # Decode MsgPack arrays into Python lists by default (not tuples).
+    # Can be configured in the Connection init
+    unpacker_kwargs['use_list'] = conn.use_list
+
+    # Use raw=False instead of encoding='utf-8'.
+    if msgpack.version >= (0, 5, 2) and conn.encoding == 'utf-8':
+        # Get rid of the following warning.
+        # > PendingDeprecationWarning: encoding is deprecated,
+        # > Use raw=False instead.
+        unpacker_kwargs['raw'] = False
+    elif conn.encoding is not None:
+        unpacker_kwargs['encoding'] = conn.encoding
+
+    # raw=False is default since msgpack-1.0.0.
+    #
+    # The option decodes mp_str to bytes, not a Unicode
+    # string (when True).
+    if msgpack.version >= (1, 0, 0) and conn.encoding is None:
+        unpacker_kwargs['raw'] = True
+
+    # encoding option is not supported since msgpack-1.0.0,
+    # but it is handled in the Connection constructor.
+    assert(msgpack.version < (1, 0, 0) or conn.encoding in (None, 'utf-8'))
+
+    # strict_map_key=True is default since msgpack-1.0.0.
+    #
+    # The option forbids non-string keys in a map (when True).
+    if msgpack.version >= (1, 0, 0):
+        unpacker_kwargs['strict_map_key'] = False
+
+    # We need configured unpacker to work with error extention
+    # type payload, but module do not provide access to self
+    # inside extension type unpackers.
+    unpacker_no_ext = msgpack.Unpacker(**unpacker_kwargs)
+    ext_hook = lambda code, data: unpacker_ext_hook(code, data, unpacker_no_ext)
+    unpacker_kwargs['ext_hook'] = ext_hook
+
+    return msgpack.Unpacker(**unpacker_kwargs)
+
+
 class Response(Sequence):
     """
     Represents a single response from the server in compliance with the
@@ -56,41 +108,7 @@ class Response(Sequence):
         # created in the __new__().
         # super(Response, self).__init__()
 
-        unpacker_kwargs = dict()
-
-        # Decode MsgPack arrays into Python lists by default (not tuples).
-        # Can be configured in the Connection init
-        unpacker_kwargs['use_list'] = conn.use_list
-
-        # Use raw=False instead of encoding='utf-8'.
-        if msgpack.version >= (0, 5, 2) and conn.encoding == 'utf-8':
-            # Get rid of the following warning.
-            # > PendingDeprecationWarning: encoding is deprecated,
-            # > Use raw=False instead.
-            unpacker_kwargs['raw'] = False
-        elif conn.encoding is not None:
-            unpacker_kwargs['encoding'] = conn.encoding
-
-        # raw=False is default since msgpack-1.0.0.
-        #
-        # The option decodes mp_str to bytes, not a Unicode
-        # string (when True).
-        if msgpack.version >= (1, 0, 0) and conn.encoding is None:
-            unpacker_kwargs['raw'] = True
-
-        # encoding option is not supported since msgpack-1.0.0,
-        # but it is handled in the Connection constructor.
-        assert(msgpack.version < (1, 0, 0) or conn.encoding in (None, 'utf-8'))
-
-        # strict_map_key=True is default since msgpack-1.0.0.
-        #
-        # The option forbids non-string keys in a map (when True).
-        if msgpack.version >= (1, 0, 0):
-            unpacker_kwargs['strict_map_key'] = False
-
-        unpacker_kwargs['ext_hook'] = unpacker_ext_hook
-
-        unpacker = msgpack.Unpacker(**unpacker_kwargs)
+        unpacker = build_unpacker(conn)
 
         unpacker.feed(response)
         header = unpacker.unpack()
