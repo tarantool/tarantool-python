@@ -6,12 +6,33 @@ import re
 
 try:
     from setuptools import setup, find_packages
+    from setuptools.command.build_py import build_py
 except ImportError:
     from distutils.core import setup, find_packages
+    from distutils.command.build_py import build_py
 
 # Extra commands for documentation management
 cmdclass = {}
 command_options = {}
+
+# Build the package
+# python setup.py build_py
+# builds the package with generating correspondent VERSION file
+class BuildPyCommand(build_py):
+    def run(self):
+        # Import here to allow to run commands
+        # like `python setup.py test` without setuptools_scm.
+        from setuptools_scm import get_version
+        version = get_version()
+
+        package_dir = self.get_package_dir('tarantool')
+        version_file = os.path.join(package_dir, 'version.py')
+        with open(version_file, 'w') as file:
+            file.write(f"__version__ = '{version}'")
+
+        return super().run()
+
+cmdclass["build_py"] = BuildPyCommand
 
 # Build Sphinx documentation (html)
 # python setup.py build_sphinx
@@ -74,7 +95,7 @@ setup(
     packages=packages,
     package_dir={"tarantool": "tarantool"},
     include_package_data=True,
-    version=find_version('tarantool', '__init__.py'),
+    use_scm_version=True,
     platforms=["all"],
     author="tarantool-python AUTHORS",
     author_email="admin@tarantool.org",
@@ -93,5 +114,8 @@ setup(
     cmdclass=cmdclass,
     command_options=command_options,
     install_requires=get_dependencies('requirements.txt'),
+    setup_requires=[
+        'setuptools_scm==6.4.2',
+    ],
     python_requires='>=3',
 )
