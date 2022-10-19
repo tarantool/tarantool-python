@@ -64,6 +64,7 @@ from tarantool.const import (
     IPROTO_FEATURE_ERROR_EXTENSION,
     IPROTO_FEATURE_WATCHERS,
     IPROTO_FEATURE_GRACEFUL_SHUTDOWN,
+    IPROTO_CHUNK,
 )
 from tarantool.error import (
     Error,
@@ -159,7 +160,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def call(self, func_name, *args):
+    def call(self, func_name, *args, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.call`.
         """
@@ -167,7 +168,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def eval(self, expr, *args):
+    def eval(self, expr, *args, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.eval`.
         """
@@ -175,7 +176,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def replace(self, space_name, values):
+    def replace(self, space_name, values, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.replace`.
         """
@@ -183,7 +184,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def insert(self, space_name, values):
+    def insert(self, space_name, values, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.insert`.
         """
@@ -191,7 +192,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def delete(self, space_name, key, *, index=None):
+    def delete(self, space_name, key, *, index=None, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.delete`.
         """
@@ -199,7 +200,8 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upsert(self, space_name, tuple_value, op_list, *, index=None):
+    def upsert(self, space_name, tuple_value, op_list, *, index=None, 
+               on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.upsert`.
         """
@@ -207,7 +209,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self, space_name, key, op_list, *, index=None):
+    def update(self, space_name, key, op_list, *, index=None, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.update`.
         """
@@ -224,7 +226,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def select(self, space_name, key, *, offset=None, limit=None,
-               index=None, iterator=None):
+               index=None, iterator=None, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.select`.
         """
@@ -767,13 +769,19 @@ class Connection(ConnectionInterface):
         # Read the packet
         return self._recv(length)
 
-    def _send_request_wo_reconnect(self, request):
+    def _send_request_wo_reconnect(self, request, on_push=None, on_push_ctx=None):
         """
         Send request without trying to reconnect.
         Reload schema, if required.
 
         :param request: Request to send.
         :type request: :class:`~tarantool.request.Request`
+
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
 
         :rtype: :class:`~tarantool.response.Response`
 
@@ -795,6 +803,11 @@ class Connection(ConnectionInterface):
             except SchemaReloadException as e:
                 self.update_schema(e.schema_version)
                 continue
+
+        while response._code == IPROTO_CHUNK:
+            if on_push is not None: 
+                on_push(response._data, on_push_ctx)
+            response = request.response_class(self, self._read_response())
 
         return response
 
@@ -870,12 +883,18 @@ class Connection(ConnectionInterface):
             self.wrap_socket_ssl()
         self.handshake()
 
-    def _send_request(self, request):
+    def _send_request(self, request, on_push=None, on_push_ctx=None):
         """
         Send a request to the server through the socket.
 
         :param request: Request to send.
         :type request: :class:`~tarantool.request.Request`
+
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
 
         :rtype: :class:`~tarantool.response.Response`
 
@@ -891,7 +910,7 @@ class Connection(ConnectionInterface):
 
         self._opt_reconnect()
 
-        return self._send_request_wo_reconnect(request)
+        return self._send_request_wo_reconnect(request, on_push, on_push_ctx)
 
     def load_schema(self):
         """
@@ -933,7 +952,7 @@ class Connection(ConnectionInterface):
         self.schema.flush()
         self.load_schema()
 
-    def call(self, func_name, *args):
+    def call(self, func_name, *args, on_push=None, on_push_ctx=None):
         """
         Execute a CALL request: call a stored Lua function.
 
@@ -942,6 +961,12 @@ class Connection(ConnectionInterface):
 
         :param args: Stored Lua function arguments.
         :type args: :obj:`tuple`
+
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
 
         :rtype: :class:`~tarantool.response.Response`
 
@@ -952,16 +977,18 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(func_name, str)
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
 
         # This allows to use a tuple or list as an argument
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
 
         request = RequestCall(self, func_name, args, self.call_16)
-        response = self._send_request(request)
+        response = self._send_request(request, on_push, on_push_ctx)
         return response
 
-    def eval(self, expr, *args):
+    def eval(self, expr, *args, on_push=None, on_push_ctx=None):
         """
         Execute an EVAL request: evaluate a Lua expression.
 
@@ -970,6 +997,12 @@ class Connection(ConnectionInterface):
 
         :param args: Lua expression arguments.
         :type args: :obj:`tuple`
+
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
 
         :rtype: :class:`~tarantool.response.Response`
 
@@ -981,16 +1014,18 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(expr, str)
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
 
         # This allows to use a tuple or list as an argument
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             args = args[0]
 
         request = RequestEval(self, expr, args)
-        response = self._send_request(request)
+        response = self._send_request(request, on_push, on_push_ctx)
         return response
 
-    def replace(self, space_name, values):
+    def replace(self, space_name, values, on_push=None, on_push_ctx=None):
         """
         Execute a REPLACE request: `replace`_ a tuple in the space.
         Doesn't throw an error if there is no tuple with the specified
@@ -1001,6 +1036,12 @@ class Connection(ConnectionInterface):
 
         :param values: Tuple to be replaced.
         :type values: :obj:`tuple` or :obj:`list`
+
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
 
         :rtype: :class:`~tarantool.response.Response`
 
@@ -1015,8 +1056,11 @@ class Connection(ConnectionInterface):
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
+
         request = RequestReplace(self, space_name, values)
-        return self._send_request(request)
+        return self._send_request(request, on_push, on_push_ctx)
 
     def authenticate(self, user, password):
         """
@@ -1168,7 +1212,7 @@ class Connection(ConnectionInterface):
                 return
         self.close()  # close connection after SUBSCRIBE
 
-    def insert(self, space_name, values):
+    def insert(self, space_name, values, on_push=None, on_push_ctx=None):
         """
         Execute an INSERT request: `insert`_ a tuple to the space.
         Throws an error if there is already a tuple with the same
@@ -1179,6 +1223,12 @@ class Connection(ConnectionInterface):
 
         :param values: Record to be inserted.
         :type values: :obj:`tuple` or :obj:`list`
+
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
 
         :rtype: :class:`~tarantool.response.Response`
 
@@ -1193,10 +1243,13 @@ class Connection(ConnectionInterface):
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
-        request = RequestInsert(self, space_name, values)
-        return self._send_request(request)
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
 
-    def delete(self, space_name, key, *, index=0):
+        request = RequestInsert(self, space_name, values)
+        return self._send_request(request, on_push, on_push_ctx)
+
+    def delete(self, space_name, key, *, index=0, on_push=None, on_push_ctx=None):
         """
         Execute a DELETE request: `delete`_ a tuple in the space.
 
@@ -1209,6 +1262,12 @@ class Connection(ConnectionInterface):
             secondary index, it must be unique. Defaults to primary
             index.
         :type index: :obj:`str` or :obj:`int`, optional
+
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
 
         :rtype: :class:`~tarantool.response.Response`
 
@@ -1226,10 +1285,13 @@ class Connection(ConnectionInterface):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index, str):
             index = self.schema.get_index(space_name, index).iid
-        request = RequestDelete(self, space_name, index, key)
-        return self._send_request(request)
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
 
-    def upsert(self, space_name, tuple_value, op_list, *, index=0):
+        request = RequestDelete(self, space_name, index, key)
+        return self._send_request(request, on_push, on_push_ctx)
+
+    def upsert(self, space_name, tuple_value, op_list, *, index=0, on_push=None, on_push_ctx=None):
         """
         Execute an UPSERT request: `upsert`_ a tuple to the space.
 
@@ -1260,6 +1322,12 @@ class Connection(ConnectionInterface):
             index.
         :type index: :obj:`str` or :obj:`int`, optional
 
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :exc:`~AssertionError`,
@@ -1275,12 +1343,15 @@ class Connection(ConnectionInterface):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index, str):
             index = self.schema.get_index(space_name, index).iid
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
+
         op_list = self._ops_process(space_name, op_list)
         request = RequestUpsert(self, space_name, index, tuple_value,
                                 op_list)
-        return self._send_request(request)
+        return self._send_request(request, on_push, on_push_ctx)
 
-    def update(self, space_name, key, op_list, *, index=0):
+    def update(self, space_name, key, op_list, *, index=0, on_push=None, on_push_ctx=None):
         """
         Execute an UPDATE request: `update`_ a tuple in the space.
 
@@ -1339,6 +1410,12 @@ class Connection(ConnectionInterface):
             index.
         :type index: :obj:`str` or :obj:`int`, optional
 
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :exc:`~AssertionError`,
@@ -1355,9 +1432,12 @@ class Connection(ConnectionInterface):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index, str):
             index = self.schema.get_index(space_name, index).iid
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
+
         op_list = self._ops_process(space_name, op_list)
         request = RequestUpdate(self, space_name, index, key, op_list)
-        return self._send_request(request)
+        return self._send_request(request, on_push, on_push_ctx)
 
     def ping(self, notime=False):
         """
@@ -1387,7 +1467,7 @@ class Connection(ConnectionInterface):
             return "Success"
         return t1 - t0
 
-    def select(self, space_name, key=None, *, offset=0, limit=0xffffffff, index=0, iterator=None):
+    def select(self, space_name, key=None, *, offset=0, limit=0xffffffff, index=0, iterator=None, on_push=None, on_push_ctx=None):
         """
         Execute a SELECT request: `select`_ a tuple from the space.
 
@@ -1516,6 +1596,12 @@ class Connection(ConnectionInterface):
                 |                            |           | the space.                                   |
                 +----------------------------+-----------+----------------------------------------------+
 
+        :param on_push: Сallback for processing out-of-band messages.
+        :type on_push: :obj:`function`, optional
+
+        :param on_push_ctx: Сontext for working with on_push callback.
+        :type on_push_ctx: optional
+        
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :exc:`~AssertionError`,
@@ -1541,9 +1627,12 @@ class Connection(ConnectionInterface):
             space_name = self.schema.get_space(space_name).sid
         if isinstance(index, str):
             index = self.schema.get_index(space_name, index).iid
+        if on_push is not None and not callable(on_push):
+            raise TypeError('The on_push callback must be callable')
+
         request = RequestSelect(self, space_name, index, key, offset,
                                 limit, iterator)
-        response = self._send_request(request)
+        response = self._send_request(request, on_push, on_push_ctx)
         return response
 
     def space(self, space_name):

@@ -184,6 +184,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Thus, if ``True``, datetime is computed in a way that `dt.timestamp` will
   always be equal to initialization `timestamp`.
 
+- Support iproto feature push (#201).
+
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
   The only reason of this bump is various vulnerability fixes,

@@ -581,7 +581,7 @@ class MeshConnection(Connection):
             update_connection(self, addr)
             self._opt_reconnect()
 
-    def _send_request(self, request):
+    def _send_request(self, request, on_push=None, on_push_ctx=None):
         """
         Send a request to a Tarantool server. If required, refresh
         addresses list before sending a request.
@@ -596,4 +596,4 @@ class MeshConnection(Connection):
         """
 
         self._opt_refresh_instances()
-        return super(MeshConnection, self)._send_request(request)
+        return super(MeshConnection, self)._send_request(request, on_push, on_push_ctx)
