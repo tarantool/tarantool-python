@@ -711,7 +711,7 @@ class ConnectionPool(ConnectionInterface):
 
         return resp
 
-    def call(self, func_name, *args, mode=None):
+    def call(self, func_name, *args, mode=None, on_push=None, on_push_ctx=None):
         """
         Execute a CALL request on the pool server: call a stored Lua
         function. Refer to :meth:`~tarantool.Connection.call`.
@@ -725,6 +725,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.call.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.call.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :exc:`~ValueError`,
@@ -734,9 +740,9 @@ class ConnectionPool(ConnectionInterface):
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")
 
-        return self._send(mode, 'call', func_name, *args)
+        return self._send(mode, 'call', func_name, *args, on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def eval(self, expr, *args, mode=None):
+    def eval(self, expr, *args, mode=None, on_push=None, on_push_ctx=None):
         """
         Execute an EVAL request on the pool server: evaluate a Lua
         expression. Refer to :meth:`~tarantool.Connection.eval`.
@@ -750,6 +756,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.eval.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.eval.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :exc:`~ValueError`,
@@ -759,9 +771,9 @@ class ConnectionPool(ConnectionInterface):
         if mode is None:
             raise ValueError("Please, specify 'mode' keyword argument")
 
-        return self._send(mode, 'eval', expr, *args)
+        return self._send(mode, 'eval', expr, *args, on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def replace(self, space_name, values, *, mode=Mode.RW):
+    def replace(self, space_name, values, *, mode=Mode.RW, on_push=None, on_push_ctx=None):
         """
         Execute a REPLACE request on the pool server: `replace`_ a tuple
         in the space. Refer to :meth:`~tarantool.Connection.replace`.
@@ -775,6 +787,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`, optional
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.replace.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.replace.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :meth:`~tarantool.Connection.replace` exceptions
@@ -782,9 +800,9 @@ class ConnectionPool(ConnectionInterface):
         .. _replace: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/replace/
         """
 
-        return self._send(mode, 'replace', space_name, values)
+        return self._send(mode, 'replace', space_name, values, on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def insert(self, space_name, values, *, mode=Mode.RW):
+    def insert(self, space_name, values, *, mode=Mode.RW, on_push=None, on_push_ctx=None):
         """
         Execute an INSERT request on the pool server: `insert`_ a tuple
         to the space. Refer to :meth:`~tarantool.Connection.insert`.
@@ -798,6 +816,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`, optional
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.insert.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.insert.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :meth:`~tarantool.Connection.insert` exceptions
@@ -805,9 +829,9 @@ class ConnectionPool(ConnectionInterface):
         .. _insert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/insert/
         """
 
-        return self._send(mode, 'insert', space_name, values)
+        return self._send(mode, 'insert', space_name, values, on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def delete(self, space_name, key, *, index=0, mode=Mode.RW):
+    def delete(self, space_name, key, *, index=0, mode=Mode.RW, on_push=None, on_push_ctx=None):
         """
         Execute an DELETE request on the pool server: `delete`_ a tuple
         in the space. Refer to :meth:`~tarantool.Connection.delete`.
@@ -824,6 +848,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`, optional
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.delete.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.delete.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :meth:`~tarantool.Connection.delete` exceptions
@@ -831,9 +861,9 @@ class ConnectionPool(ConnectionInterface):
         .. _delete: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/delete/
         """
 
-        return self._send(mode, 'delete', space_name, key, index=index)
+        return self._send(mode, 'delete', space_name, key, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def upsert(self, space_name, tuple_value, op_list, *, index=0, mode=Mode.RW):
+    def upsert(self, space_name, tuple_value, op_list, *, index=0, mode=Mode.RW, on_push=None, on_push_ctx=None):
         """
         Execute an UPSERT request on the pool server: `upsert`_ a tuple to
         the space. Refer to :meth:`~tarantool.Connection.upsert`.
@@ -853,6 +883,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`, optional
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.upsert.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.upsert.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :meth:`~tarantool.Connection.upsert` exceptions
@@ -861,9 +897,9 @@ class ConnectionPool(ConnectionInterface):
         """
 
         return self._send(mode, 'upsert', space_name, tuple_value,
-            op_list, index=index)
+            op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def update(self, space_name, key, op_list, *, index=0, mode=Mode.RW):
+    def update(self, space_name, key, op_list, *, index=0, mode=Mode.RW, on_push=None, on_push_ctx=None):
         """
         Execute an UPDATE request on the pool server: `update`_ a tuple
         in the space. Refer to :meth:`~tarantool.Connection.update`.
@@ -883,6 +919,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`, optional
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.update.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.update.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :meth:`~tarantool.Connection.upsert` exceptions
@@ -891,7 +933,7 @@ class ConnectionPool(ConnectionInterface):
         """
 
         return self._send(mode, 'update', space_name, key, 
-            op_list, index=index)
+            op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
 
     def ping(self, notime=False, *, mode=None):
         """
@@ -917,7 +959,7 @@ class ConnectionPool(ConnectionInterface):
         return self._send(mode, 'ping', notime)
 
     def select(self, space_name, key, *, offset=0, limit=0xffffffff,
-               index=0, iterator=None, mode=Mode.ANY):
+               index=0, iterator=None, mode=Mode.ANY, on_push=None, on_push_ctx=None):
         """
         Execute a SELECT request on the pool server: `update`_ a tuple
         from the space. Refer to :meth:`~tarantool.Connection.select`.
@@ -943,6 +985,12 @@ class ConnectionPool(ConnectionInterface):
         :param mode: Request mode.
         :type mode: :class:`~tarantool.Mode`, optional
 
+        :param on_push: Refer to
+            :paramref:`~tarantool.Connection.select.params.on_push`.
+
+        :param on_push_ctx: Refer to
+            :paramref:`~tarantool.Connection.select.params.on_push_ctx`.
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :meth:`~tarantool.Connection.select` exceptions
@@ -951,7 +999,7 @@ class ConnectionPool(ConnectionInterface):
         """
 
         return self._send(mode, 'select', space_name, key, offset=offset, limit=limit,
-                          index=index, iterator=iterator)
+                          index=index, iterator=iterator, on_push=on_push, on_push_ctx=on_push_ctx)
 
     def execute(self, query, params=None, *, mode=None):
         """
