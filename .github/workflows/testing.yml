@@ -176,9 +176,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Remove connector source code
-        run: |
-          rm -rf tarantool
-          rm setup.py
+        run: python .github/scripts/remove_source_code.py
 
       - name: Install tarantool ${{ matrix.tarantool }}
         uses: tarantool/setup-tarantool@v1
@@ -306,15 +304,8 @@ jobs:
       - name: Clone the connector repo
         uses: actions/checkout@v2
 
-      - name: Remove connector source code (main folder)
-        uses: JesseTG/rm@v1.0.3
-        with:
-          path: tarantool
-
-      - name: Remove connector source code (setup.py)
-        uses: JesseTG/rm@v1.0.3
-        with:
-          path: setup.py
+      - name: Remove connector source code
+        run: python .github/scripts/remove_source_code.py
 
       - name: Setup Python for tests
         uses: actions/setup-python@v2
