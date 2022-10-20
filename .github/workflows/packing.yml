@@ -48,7 +48,7 @@ jobs:
       - name: Verify the package
         run: twine check dist/*
 
-      - name: Archive pip artifacts
+      - name: Archive rpm artifacts
         uses: actions/upload-artifact@v3
         with:
           name: pip_dist
