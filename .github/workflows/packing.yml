@@ -310,25 +310,22 @@ jobs:
     runs-on: ubuntu-20.04
 
     container:
-      image: ${{ matrix.os }}
+      image: fedora:${{ matrix.os_version }}
 
     strategy:
       fail-fast: false
 
       matrix:
-        os: []
-        tarantool: []
+        os_version:
+          - '35'
+          - '36'
+          - '37'
+        tarantool:
+          - 'tarantool-2.10.3-1'
         python:
           - '3.6'
           - '3.10'
 
-        include:
-          - os: 'fedora:35'
-            tarantool: 'tarantool-2.10.3-1.fc35'
-          - os: 'fedora:36'
-            tarantool: 'tarantool-2.10.3-1.fc36'
-          - os: 'fedora:37'
-            tarantool: 'tarantool-2.10.3-1.fc37'
 
     steps:
       - name: Clone the connector repo
@@ -345,7 +342,8 @@ jobs:
       - name: Install tarantool ${{ matrix.tarantool }}
         run: |
           curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
-          dnf install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
+          dnf install -y tarantool=${{ matrix.tarantool }}.fc${{ matrix.os_version }}
+          dnf install -y tarantool-devel={{ matrix.tarantool }}.fc${{ matrix.os_version }}
 
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
