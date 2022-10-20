@@ -317,14 +317,19 @@ jobs:
 
       matrix:
         os:
-          - 'fedora:35'
-          - 'fedora:36'
-          - 'fedora:37'
         tarantool:
-          - '2.10'
         python:
           - '3.6'
           - '3.10'
+
+        include:
+          - os: 'fedora:35'
+            tarantool: 'tarantool-2.10.3-1.fc35'
+          - os: 'fedora:36'
+            tarantool: 'tarantool-2.10.3-1.fc36'
+          - os: 'fedora:37'
+            tarantool: 'tarantool-2.10.3-1.fc37'
+
     steps:
       - name: Clone the connector repo
         uses: actions/checkout@v2
