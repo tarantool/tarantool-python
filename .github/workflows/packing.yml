@@ -23,7 +23,10 @@ jobs:
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        # Checkout all tags for correct version computation
+        with:
+          fetch-depth: 0
 
       - name: Setup Python and basic packing tools
         uses: actions/setup-python@v2
