@@ -272,7 +272,7 @@ jobs:
       # See https://github.com/actions/setup-python/issues/527
       - name: Fix Python setup
         if: ${{ matrix.os }} == 'centos:7'
-        run: yum install glibc
+        run: yum install -y glibc
 
       - name: Remove connector source code
         run: python .github/scripts/remove_source_code.py
