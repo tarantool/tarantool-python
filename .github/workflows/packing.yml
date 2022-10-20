@@ -230,7 +230,69 @@ jobs:
           cat tarantool.log || true
           kill $(cat tarantool.pid) || true
 
-  run_tests_rpm_package_install:
+  run_tests_rpm_package_install_centos:
+    needs: pack_rpm
+
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-20.04
+
+    container:
+      image: centos:7
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        tarantool:
+          - '2.10'
+        python:
+          - '3.6'
+          - '3.10'
+    steps:
+      - name: Clone the connector repo
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      # See https://github.com/actions/setup-python/issues/527
+      - name: Fix Python setup
+        run: yum install -y glibc
+
+      - name: Remove connector source code
+        run: python .github/scripts/remove_source_code.py
+
+      - name: Install tarantool ${{ matrix.tarantool }}
+        run: |
+          curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
+          yum install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
+
+      - name: Download rpm package artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: rpm_dist
+
+      - name: Install the package with rpm from artifacts
+        run: rpm -i *.rpm
+
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+
+      - name: Run tests
+        run: python -m unittest discover -v
+        env:
+          TEST_PURE_INSTALL: true
+
+  run_tests_rpm_package_install_fedora:
     needs: pack_rpm
 
     # We want to run on external PRs, but not on our own internal
@@ -251,14 +313,13 @@ jobs:
 
       matrix:
         os:
-          - 'centos:7'
           - 'fedora:35'
           - 'fedora:36'
           - 'fedora:37'
         tarantool:
           - '2.10'
         python:
-          - '3.7'
+          - '3.6'
           - '3.10'
     steps:
       - name: Clone the connector repo
@@ -269,18 +330,13 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
-      # See https://github.com/actions/setup-python/issues/527
-      - name: Fix Python setup
-        if: matrix.os == 'centos:7'
-        run: yum install -y glibc
-
       - name: Remove connector source code
         run: python .github/scripts/remove_source_code.py
 
       - name: Install tarantool ${{ matrix.tarantool }}
-        uses: tarantool/setup-tarantool@v1
-        with:
-          tarantool-version: ${{ matrix.tarantool }}
+        run: |
+          curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
+          dnf install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
 
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
