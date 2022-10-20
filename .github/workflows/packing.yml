@@ -120,6 +120,11 @@ jobs:
       - name: Clone the connector repo
         uses: actions/checkout@v2
 
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
       - name: Remove connector source code
         run: python .github/scripts/remove_source_code.py
 
@@ -127,11 +132,6 @@ jobs:
         uses: tarantool/setup-tarantool@v1
         with:
           tarantool-version: ${{ matrix.tarantool }}
-
-      - name: Setup Python for tests
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
 
       - name: Download pip package artifact
         uses: actions/download-artifact@v3
@@ -177,13 +177,13 @@ jobs:
       - name: Clone the connector repo
         uses: actions/checkout@v2
 
-      - name: Remove connector source code
-        run: python .github/scripts/remove_source_code.py
-
-      - name: Setup Python for tests
+      - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
+
+      - name: Remove connector source code
+        run: python .github/scripts/remove_source_code.py
 
       - name: Download pip package artifact
         uses: actions/download-artifact@v3
@@ -267,6 +267,11 @@ jobs:
       - name: Clone the connector repo
         uses: actions/checkout@v2
 
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
       - name: Remove connector source code
         run: python .github/scripts/remove_source_code.py
 
@@ -274,11 +279,6 @@ jobs:
         uses: tarantool/setup-tarantool@v1
         with:
           tarantool-version: ${{ matrix.tarantool }}
-
-      - name: Setup Python for tests
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
 
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
