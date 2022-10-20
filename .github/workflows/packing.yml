@@ -316,8 +316,8 @@ jobs:
       fail-fast: false
 
       matrix:
-        os:
-        tarantool:
+        os: []
+        tarantool: []
         python:
           - '3.6'
           - '3.10'
