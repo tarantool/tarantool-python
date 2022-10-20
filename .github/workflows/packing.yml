@@ -192,15 +192,11 @@ jobs:
 
       - name: debug
         run: |
-          where *.whl
-
-      - name: debug
-        run: |
-          ls
+          (gci . *.whl).fullname
 
       - name: Install the package with pip from artifacts
         run: |
-          pip install $(where *.whl)
+          pip install (gci . *.whl).fullname
 
       - name: Install test requirements
         run: pip install -r requirements-test.txt
