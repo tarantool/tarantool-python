@@ -21,3 +21,4 @@ sophia
 venv/*
 
 tarantool/version.py
+pip_dist

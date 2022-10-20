@@ -31,3 +31,19 @@ cov-report:
 .PHONY: docs
 docs:
 	python3 setup.py build_sphinx
+
+
+.PHONY: pip-sdist
+pip-sdist:
+	python3 setup.py sdist --dist-dir=pip_dist
+
+.PHONY: pip-bdist
+pip-bdist:
+	python3 setup.py bdist_wheel --dist-dir=pip_dist
+
+.PHONY: pip-dist
+pip-dist: pip-sdist pip-bdist
+
+.PHONY: pip-dist-check
+pip-dist-check:
+	twine check pip_dist/*

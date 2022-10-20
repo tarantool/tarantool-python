@@ -1,0 +1,55 @@
+name: packing
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+  pull_request_target:
+    types: [labeled]
+
+jobs:
+  pack_pip:
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Clone the connector repo
+        uses: actions/checkout@v3
+        # Checkout all tags for correct version computation.
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python and basic packing tools
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install tools for packing and verification
+        run: pip3 install wheel twine
+
+      - name: Pack source and binary files
+        run: make pip-dist
+
+      - name: Verify the package
+        run: make pip-dist-check
+
+      - name: Archive pip artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: pip_dist
+          path: pip_dist
+          retention-days: 1
+          if-no-files-found: error
