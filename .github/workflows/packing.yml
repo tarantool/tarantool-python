@@ -293,3 +293,34 @@ jobs:
         run: python -m unittest discover -v
         env:
           TEST_PURE_INSTALL: true
+
+
+  issue_candidate:
+    runs-on: ubuntu-20.04
+
+    container:
+      image: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os:
+          - 'centos:7'
+          - 'fedora:35'
+          - 'fedora:36'
+          - 'fedora:37'
+        python:
+          - '3.6'
+          - '3.7'
+          - '3.8'
+          - '3.9'
+          - '3.10'
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Check that Python is ok
+        run: python --version
