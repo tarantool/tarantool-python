@@ -154,6 +154,7 @@ jobs:
       - name: Install the package with pip from artifacts
         run: |
           $env:WHEEL_FILE=$(where *.whl)
+          echo $env:WHEEL_FILE
           pip install $env:WHEEL_FILE
 
       - name: Install test requirements
