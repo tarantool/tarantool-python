@@ -190,6 +190,14 @@ jobs:
         with:
           name: pip_dist
 
+      - name: debug
+        run: |
+          where *.whl
+
+      - name: debug
+        run: |
+          ls
+
       - name: Install the package with pip from artifacts
         run: |
           pip install $(where *.whl)
