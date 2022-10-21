@@ -22,4 +22,4 @@ docs:
 rpm:
 	cp setup.py setup_rpm.py
 	sed -i setup_rpm.py -e 's/name="tarantool"/name="tarantool-python"/'
-	python setup_rpm.py bdist_rpm --requires="msgpack-python>=1.0.4,python-pandas,pytz" --build-requires='python-setuptools,python-wheel,python-setuptools_scm==6.4.2'
+	python setup_rpm.py bdist_rpm --requires="msgpack-python>=1.0.4,python-pandas,pytz" 
