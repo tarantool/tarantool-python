@@ -85,7 +85,7 @@ jobs:
         run: pip install wheel
 
       - name: Pack rpm
-        run: python setup.py bdist --formats=rpm
+        run: make rpm
 
       - name: Archive pip artifacts
         uses: actions/upload-artifact@v3

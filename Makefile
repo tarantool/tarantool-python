@@ -1,4 +1,4 @@
-.PHONY: install test docs
+.PHONY: install test docs rpm
 install:
 	pip install --editable .
 test:
@@ -19,3 +19,7 @@ dist-upload-2:
 	python setup.py sdist --format=ztar upload
 docs:
 	python setup.py build_sphinx
+rpm:
+	cp setup.py setup_rpm.py
+	sed -i setup_rpm.py -e 's/name="tarantool"/name="tarantool-python"/'
+	python setup_rpm.py bdist --formats=rpm
