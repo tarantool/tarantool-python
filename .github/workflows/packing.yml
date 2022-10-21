@@ -319,13 +319,12 @@ jobs:
         os_version:
           - '35'
           - '36'
-          - '37'
+          # - '37' -- There is no Tarantool for Fedora 37 yet.
         tarantool:
           - '2.10.3-1'
         python:
           - '3.6'
           - '3.10'
-
 
     steps:
       - name: Clone the connector repo
