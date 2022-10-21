@@ -332,7 +332,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Python
-        run: dnf install -y python3 python3-libs
+        run: dnf install -y python3 python3-libs python-unversioned-command
 
       - name: Remove connector source code
         run: python .github/scripts/remove_source_code.py
