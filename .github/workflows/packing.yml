@@ -332,9 +332,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
+        run: dnf install -y python3 python3-libs
 
       - name: Remove connector source code
         run: python .github/scripts/remove_source_code.py
