@@ -84,14 +84,30 @@ jobs:
       - name: Install tools for packing
         run: pip install wheel
 
-      - name: Pack rpm
-        run: make rpm
+      - name: Clone the packpack tool
+        uses: actions/checkout@v2
+        with:
+          repository: packpack/packpack
+          path: packpack
+
+      - name: Make spec
+        run: |
+          make rpm-spec
+
+      - name: extract version
+        run: echo "VERSION=$(grep "%define version" ./rpm/tarantool-python.spec | awk '{print $3}')" >> $GITHUB_ENV
+
+      - name: Packpack
+        run: |
+          ./packpack/packpack
+        env:
+          VERSION: ${{ env.VERSION }}
 
       - name: Archive pip artifacts
         uses: actions/upload-artifact@v3
         with:
           name: rpm_dist
-          path: dist
+          path: build
           retention-days: 1
 
   run_tests_pip_package_install_linux:
