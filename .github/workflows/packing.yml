@@ -348,7 +348,7 @@ jobs:
           name: rpm_dist
 
       - name: Install the package with rpm from artifacts
-        run: rpm -i *.rpm
+        run: dnf install *.rpm
 
       - name: Install test requirements
         run: pip install -r requirements-test.txt
