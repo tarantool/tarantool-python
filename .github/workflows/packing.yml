@@ -321,7 +321,7 @@ jobs:
           - '36'
           - '37'
         tarantool:
-          - 'tarantool-2.10.3-1'
+          - '2.10.3-1'
         python:
           - '3.6'
           - '3.10'
@@ -340,8 +340,8 @@ jobs:
       - name: Install tarantool ${{ matrix.tarantool }}
         run: |
           curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
-          dnf install -y tarantool=${{ matrix.tarantool }}.fc${{ matrix.os_version }}
-          dnf install -y tarantool-devel={{ matrix.tarantool }}.fc${{ matrix.os_version }}
+          dnf install -y tarantool-${{ matrix.tarantool }}.fc${{ matrix.os_version }}
+          dnf install -y tarantool-devel-{{ matrix.tarantool }}.fc${{ matrix.os_version }}
 
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
