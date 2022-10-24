@@ -80,27 +80,30 @@ class TestSuite_Mesh(unittest.TestCase):
             {'host': self.host_2, 'port': self.port_2},
         ], user='test', password='test')
 
-        # Response from instance#1.
-        assert_srv_id(con, 1)
+        try:
+            # Response from instance#1.
+            assert_srv_id(con, 1)
 
-        # Stop instance#1 -- response from instance#2.
-        self.srv.stop()
-        assert_srv_id(con, 2)
+            # Stop instance#1 -- response from instance#2.
+            self.srv.stop()
+            assert_srv_id(con, 2)
 
-        # Start instance#1, stop instance#2 -- response from
-        # instance#1 again.
-        self.srv.start()
-        self.srv.admin('function srv_id() return 1 end')
-        self.srv2.stop()
-        assert_srv_id(con, 1)
+            # Start instance#1, stop instance#2 -- response from
+            # instance#1 again.
+            self.srv.start()
+            self.srv.admin('function srv_id() return 1 end')
+            self.srv2.stop()
+            assert_srv_id(con, 1)
 
-        # Stop instance #2 -- NetworkError (because we have no
-        # alive servers anymore).
-        self.srv.stop()
-        with self.assertRaises(NetworkError):
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore', category=NetworkWarning)
-                con.ping()
+            # Stop instance #2 -- NetworkError (because we have no
+            # alive servers anymore).
+            self.srv.stop()
+            with self.assertRaises(NetworkError):
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore', category=NetworkWarning)
+                    con.ping()
+        finally:
+            con.close()
 
     def test_01_contructor(self):
         # Verify that an error is risen when no addresses are
@@ -126,7 +129,10 @@ class TestSuite_Mesh(unittest.TestCase):
         addrs = [{"host": "localhost", "port": 1234}]
         con = tarantool.MeshConnection("localhost", 1234, addrs=addrs,
                                        connect_now=False)
-        self.assertEqual(len(con.strategy.addrs), 1)
+        try:
+            self.assertEqual(len(con.strategy.addrs), 1)
+        finally:
+            con.close()
 
     def test_02_discovery_bad_address(self):
         retvals = [
@@ -147,22 +153,23 @@ class TestSuite_Mesh(unittest.TestCase):
             self.define_custom_cluster_function(func_name, retval)
             con = tarantool.MeshConnection(self.host_1, self.port_1,
                                            user='test', password='test')
-            con.cluster_discovery_function = func_name
+            try:
+                con.cluster_discovery_function = func_name
 
-            # Verify that a cluster discovery (that is triggered
-            # by ping) give one or two warnings.
-            with warnings.catch_warnings(record=True) as ws:
-                con.ping()
-                self.assertTrue(len(ws) in (1, 2))
-                for w in ws:
-                    self.assertIs(w.category, ClusterDiscoveryWarning)
+                # Verify that a cluster discovery (that is triggered
+                # by ping) give one or two warnings.
+                with warnings.catch_warnings(record=True) as ws:
+                    con.ping()
+                    self.assertTrue(len(ws) in (1, 2))
+                    for w in ws:
+                        self.assertIs(w.category, ClusterDiscoveryWarning)
 
-            # Verify that incorrect or empty result was discarded.
-            self.assertEqual(len(con.strategy.addrs), 1)
-            self.assertEqual(con.strategy.addrs[0]['host'], self.host_1)
-            self.assertEqual(con.strategy.addrs[0]['port'], self.port_1)
-
-            con.close()
+                # Verify that incorrect or empty result was discarded.
+                self.assertEqual(len(con.strategy.addrs), 1)
+                self.assertEqual(con.strategy.addrs[0]['host'], self.host_1)
+                self.assertEqual(con.strategy.addrs[0]['port'], self.port_1)
+            finally:
+                con.close()
 
     def test_03_discovery_bad_good_addresses(self):
         func_name = 'bad_and_good_addresses'
@@ -170,21 +177,22 @@ class TestSuite_Mesh(unittest.TestCase):
         self.define_custom_cluster_function(func_name, retval)
         con = tarantool.MeshConnection(self.host_1, self.port_1,
                                        user='test', password='test')
-        con.cluster_discovery_function = func_name
+        try:
+            con.cluster_discovery_function = func_name
 
-        # Verify that a cluster discovery (that is triggered
-        # by ping) give one warning.
-        with warnings.catch_warnings(record=True) as ws:
-            con.ping()
-            self.assertEqual(len(ws), 1)
-            self.assertIs(ws[0].category, ClusterDiscoveryWarning)
+            # Verify that a cluster discovery (that is triggered
+            # by ping) give one warning.
+            with warnings.catch_warnings(record=True) as ws:
+                con.ping()
+                self.assertEqual(len(ws), 1)
+                self.assertIs(ws[0].category, ClusterDiscoveryWarning)
 
-        # Verify that only second address was accepted.
-        self.assertEqual(len(con.strategy.addrs), 1)
-        self.assertEqual(con.strategy.addrs[0]['host'], self.host_2)
-        self.assertEqual(con.strategy.addrs[0]['port'], self.port_2)
-
-        con.close()
+            # Verify that only second address was accepted.
+            self.assertEqual(len(con.strategy.addrs), 1)
+            self.assertEqual(con.strategy.addrs[0]['host'], self.host_2)
+            self.assertEqual(con.strategy.addrs[0]['port'], self.port_2)
+        finally:
+            con.close()
 
     def test_04_discovery_add_address(self):
         # Create a mesh connection; pass only the first server
@@ -194,20 +202,21 @@ class TestSuite_Mesh(unittest.TestCase):
             cluster_discovery_function=self.get_all_nodes_func_name,
             connect_now=False)
 
-        # Verify that the strategy has one address that comes from
-        # the constructor arguments.
-        self.assertEqual(len(con.strategy.addrs), 1)
-        con.connect()
+        try:
+            # Verify that the strategy has one address that comes from
+            # the constructor arguments.
+            self.assertEqual(len(con.strategy.addrs), 1)
+            con.connect()
 
-        # Verify that we work with the first server.
-        resp = con.call('srv_id')
-        self.assertEqual(resp.data and resp.data[0], 1)
+            # Verify that we work with the first server.
+            resp = con.call('srv_id')
+            self.assertEqual(resp.data and resp.data[0], 1)
 
-        # Verify that the refresh was successful and the strategy
-        # has 2 addresses.
-        self.assertEqual(len(con.strategy.addrs), 2)
-
-        con.close()
+            # Verify that the refresh was successful and the strategy
+            # has 2 addresses.
+            self.assertEqual(len(con.strategy.addrs), 2)
+        finally:
+            con.close()
 
     def test_05_discovery_delay(self):
         # Create a mesh connection, pass only the first server address.
@@ -216,25 +225,26 @@ class TestSuite_Mesh(unittest.TestCase):
             cluster_discovery_function=self.get_all_nodes_func_name,
             cluster_discovery_delay=1)
 
-        # Verify that the strategy has two addresses come from
-        # the function right after connecting.
-        self.assertEqual(len(con.strategy.addrs), 2)
+        try:
+            # Verify that the strategy has two addresses come from
+            # the function right after connecting.
+            self.assertEqual(len(con.strategy.addrs), 2)
 
-        # Drop addresses list to the initial state.
-        con.strategy.update([con.strategy.addrs[0], ])
+            # Drop addresses list to the initial state.
+            con.strategy.update([con.strategy.addrs[0], ])
 
-        # Verify that the discovery will not be performed until
-        # 'cluster_discovery_delay' seconds will be passed.
-        con.ping()
-        self.assertEqual(len(con.strategy.addrs), 1)
+            # Verify that the discovery will not be performed until
+            # 'cluster_discovery_delay' seconds will be passed.
+            con.ping()
+            self.assertEqual(len(con.strategy.addrs), 1)
 
-        sleep(1.1)
+            sleep(1.1)
 
-        # Refresh after cluster_discovery_delay.
-        con.ping()
-        self.assertEqual(len(con.strategy.addrs), 2)
-
-        con.close()
+            # Refresh after cluster_discovery_delay.
+            con.ping()
+            self.assertEqual(len(con.strategy.addrs), 2)
+        finally:
+            con.close()
 
     def test_06_reconnection(self):
         # Create a mesh connection; pass only the first server
@@ -243,24 +253,25 @@ class TestSuite_Mesh(unittest.TestCase):
             self.host_1, self.port_1, user='test', password='test',
             cluster_discovery_function=self.get_all_nodes_func_name)
 
-        con.last_nodes_refresh = 0
-        resp = con.call('srv_id')
-        self.assertEqual(resp.data and resp.data[0], 1)
-
-        # Verify that the last discovery was successful and the
-        # strategy has 2 addresses.
-        self.assertEqual(len(con.strategy.addrs), 2)
-
-        self.srv.stop()
-
-        # Verify that we switched to the second server.
-        with warnings.catch_warnings():
-            # Suppress reconnection warnings.
-            warnings.simplefilter("ignore")
+        try:
+            con.last_nodes_refresh = 0
             resp = con.call('srv_id')
-        self.assertEqual(resp.data and resp.data[0], 2)
+            self.assertEqual(resp.data and resp.data[0], 1)
 
-        con.close()
+            # Verify that the last discovery was successful and the
+            # strategy has 2 addresses.
+            self.assertEqual(len(con.strategy.addrs), 2)
+
+            self.srv.stop()
+
+            # Verify that we switched to the second server.
+            with warnings.catch_warnings():
+                # Suppress reconnection warnings.
+                warnings.simplefilter("ignore")
+                resp = con.call('srv_id')
+            self.assertEqual(resp.data and resp.data[0], 2)
+        finally:
+            con.close()
 
     def test_07_discovery_exclude_address(self):
         # Define function to get back only second server.
@@ -272,15 +283,16 @@ class TestSuite_Mesh(unittest.TestCase):
             self.host_1, self.port_1, user='test', password='test',
             cluster_discovery_function=func_name)
 
-        # Verify that discovery was successful and the strategy
-        # has 1 address.
-        self.assertEqual(len(con.strategy.addrs), 1)
+        try:
+            # Verify that discovery was successful and the strategy
+            # has 1 address.
+            self.assertEqual(len(con.strategy.addrs), 1)
 
-        # Verify that the current server is second one.
-        resp = con.call('srv_id')
-        self.assertEqual(resp.data and resp.data[0], 2)
-
-        con.close()
+            # Verify that the current server is second one.
+            resp = con.call('srv_id')
+            self.assertEqual(resp.data and resp.data[0], 2)
+        finally:
+            con.close()
 
     def tearDown(self):
         self.srv.stop()

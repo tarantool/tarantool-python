@@ -226,9 +226,12 @@ class TestSuite_Pool(unittest.TestCase):
             user='test',
             password='test')
 
-        self.assertSequenceEqual(
-            conn_2.select('test', 'test_03_insert_1'),
-            [['test_03_insert_1', 1]])
+        try:
+            self.assertSequenceEqual(
+                conn_2.select('test', 'test_03_insert_1'),
+                [['test_03_insert_1', 1]])
+        finally:
+            conn_2.close()
 
     def test_04_delete(self):
         self.set_cluster_ro([True, True, True, False, True])
@@ -243,22 +246,25 @@ class TestSuite_Pool(unittest.TestCase):
             user='test',
             password='test')
 
-        conn_3.insert('test', ['test_04_delete_1', 1])
-        conn_3.insert('test', ['test_04_delete_2', 2])
+        try:
+            conn_3.insert('test', ['test_04_delete_1', 1])
+            conn_3.insert('test', ['test_04_delete_2', 2])
 
-        self.assertSequenceEqual(
-            self.pool.delete('test', 'test_04_delete_1'),
-            [['test_04_delete_1', 1]])
-        self.assertSequenceEqual(
-            conn_3.select('test', 'test_04_delete_1'),
-            [])
+            self.assertSequenceEqual(
+                self.pool.delete('test', 'test_04_delete_1'),
+                [['test_04_delete_1', 1]])
+            self.assertSequenceEqual(
+                conn_3.select('test', 'test_04_delete_1'),
+                [])
 
-        self.assertSequenceEqual(
-            self.pool.delete('test', 2, index='id', mode=tarantool.Mode.RW),
-            [['test_04_delete_2', 2]])
-        self.assertSequenceEqual(
-            conn_3.select('test', 'test_04_delete_2'),
-            [])
+            self.assertSequenceEqual(
+                self.pool.delete('test', 2, index='id', mode=tarantool.Mode.RW),
+                [['test_04_delete_2', 2]])
+            self.assertSequenceEqual(
+                conn_3.select('test', 'test_04_delete_2'),
+                [])
+        finally:
+            conn_3.close()
 
     def test_05_upsert(self):
         self.set_cluster_ro([True, False, True, True, True])
@@ -273,19 +279,22 @@ class TestSuite_Pool(unittest.TestCase):
             user='test',
             password='test')
 
-        self.assertSequenceEqual(
-            self.pool.upsert('test', ['test_05_upsert', 3], [('+', 1, 1)]),
-            [])
-        self.assertSequenceEqual(
-            conn_1.select('test', 'test_05_upsert'),
-            [['test_05_upsert', 3]])
+        try:
+            self.assertSequenceEqual(
+                self.pool.upsert('test', ['test_05_upsert', 3], [('+', 1, 1)]),
+                [])
+            self.assertSequenceEqual(
+                conn_1.select('test', 'test_05_upsert'),
+                [['test_05_upsert', 3]])
 
-        self.assertSequenceEqual(
-            self.pool.upsert('test', ['test_05_upsert', 3],
-                [('+', 1, 1)], mode=tarantool.Mode.RW), [])
-        self.assertSequenceEqual(
-            conn_1.select('test', 'test_05_upsert'),
-            [['test_05_upsert', 4]])
+            self.assertSequenceEqual(
+                self.pool.upsert('test', ['test_05_upsert', 3],
+                    [('+', 1, 1)], mode=tarantool.Mode.RW), [])
+            self.assertSequenceEqual(
+                conn_1.select('test', 'test_05_upsert'),
+                [['test_05_upsert', 4]])
+        finally:
+            conn_1.close()
 
     def test_06_update(self):
         self.set_cluster_ro([True, True, True, True, False])
@@ -299,23 +308,27 @@ class TestSuite_Pool(unittest.TestCase):
             port=self.addrs[4]['port'],
             user='test',
             password='test')
-        conn_4.insert('test', ['test_06_update_1', 3])
-        conn_4.insert('test', ['test_06_update_2', 14])
 
-        self.assertSequenceEqual(
-            self.pool.update('test', ('test_06_update_1',), [('+', 1, 1)]),
-            [['test_06_update_1', 4]])
-        self.assertSequenceEqual(
-            conn_4.select('test', 'test_06_update_1'),
-            [['test_06_update_1', 4]])
+        try:
+            conn_4.insert('test', ['test_06_update_1', 3])
+            conn_4.insert('test', ['test_06_update_2', 14])
 
-        self.assertSequenceEqual(
-            self.pool.update('test', ('test_06_update_2',),
-                [('=', 1, 10)], mode=tarantool.Mode.RW),
-            [['test_06_update_2', 10]])
-        self.assertSequenceEqual(
-            conn_4.select('test', 'test_06_update_2'),
-            [['test_06_update_2', 10]])
+            self.assertSequenceEqual(
+                self.pool.update('test', ('test_06_update_1',), [('+', 1, 1)]),
+                [['test_06_update_1', 4]])
+            self.assertSequenceEqual(
+                conn_4.select('test', 'test_06_update_1'),
+                [['test_06_update_1', 4]])
+
+            self.assertSequenceEqual(
+                self.pool.update('test', ('test_06_update_2',),
+                    [('=', 1, 10)], mode=tarantool.Mode.RW),
+                [['test_06_update_2', 10]])
+            self.assertSequenceEqual(
+                conn_4.select('test', 'test_06_update_2'),
+                [['test_06_update_2', 10]])
+        finally:
+            conn_4.close()
 
     def test_07_replace(self):
         self.set_cluster_ro([True, True, True, True, False])
@@ -329,22 +342,26 @@ class TestSuite_Pool(unittest.TestCase):
             port=self.addrs[4]['port'],
             user='test',
             password='test')
-        conn_4.insert('test', ['test_07_replace', 3])
 
-        self.assertSequenceEqual(
-            self.pool.replace('test', ['test_07_replace', 4],
-                mode=tarantool.Mode.RW),
-            [['test_07_replace', 4]])
-        self.assertSequenceEqual(
-            conn_4.select('test', 'test_07_replace'),
-            [['test_07_replace', 4]])
+        try:
+            conn_4.insert('test', ['test_07_replace', 3])
 
-        self.assertSequenceEqual(
-            self.pool.replace('test', ['test_07_replace', 5]),
-            [['test_07_replace', 5]])
-        self.assertSequenceEqual(
-            conn_4.select('test', 'test_07_replace'),
-            [['test_07_replace', 5]])
+            self.assertSequenceEqual(
+                self.pool.replace('test', ['test_07_replace', 4],
+                    mode=tarantool.Mode.RW),
+                [['test_07_replace', 4]])
+            self.assertSequenceEqual(
+                conn_4.select('test', 'test_07_replace'),
+                [['test_07_replace', 4]])
+
+            self.assertSequenceEqual(
+                self.pool.replace('test', ['test_07_replace', 5]),
+                [['test_07_replace', 5]])
+            self.assertSequenceEqual(
+                conn_4.select('test', 'test_07_replace'),
+                [['test_07_replace', 5]])
+        finally:
+            conn_4.close()
 
     def test_08_select(self):
         self.set_cluster_ro([False, False, False, False, False])
@@ -355,7 +372,11 @@ class TestSuite_Pool(unittest.TestCase):
                 port=addr['port'],
                 user='test',
                 password='test')
-            conn.insert('test', ['test_08_select', 3])
+
+            try:
+                conn.insert('test', ['test_08_select', 3])
+            finally:
+                conn.close()
 
         self.set_cluster_ro([False, True, False, True, True])
         self.pool = tarantool.ConnectionPool(
@@ -457,12 +478,15 @@ class TestSuite_Pool(unittest.TestCase):
             user='test',
             password='test')
 
-        self.assertSequenceEqual(
-            conn_0.select('test', 'test_12_execute_1'),
-            [['test_12_execute_1', 1]])
-        self.assertSequenceEqual(
-            conn_0.select('test', 'test_12_execute_2'),
-            [['test_12_execute_2', 2]])
+        try:
+            self.assertSequenceEqual(
+                conn_0.select('test', 'test_12_execute_1'),
+                [['test_12_execute_1', 1]])
+            self.assertSequenceEqual(
+                conn_0.select('test', 'test_12_execute_2'),
+                [['test_12_execute_2', 2]])
+        finally:
+            conn_0.close()
 
     def test_13_failover(self):
         self.set_cluster_ro([False, True, True, True, True])
