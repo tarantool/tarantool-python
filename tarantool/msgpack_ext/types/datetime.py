@@ -1,41 +1,5 @@
 """
-Tarantool `datetime`_ extension type support module.
-
-The datetime MessagePack representation looks like this:
-
-.. code-block:: text
-
-    +---------+----------------+==========+-----------------+
-    | MP_EXT  | MP_DATETIME    | seconds  | nsec; tzoffset; |
-    | = d7/d8 | = 4            |          | tzindex;        |
-    +---------+----------------+==========+-----------------+
-
-MessagePack data contains:
-
-* Seconds (8 bytes) as an unencoded 64-bit signed integer stored in the
-  little-endian order.
-* The optional fields (8 bytes), if any of them have a non-zero value.
-  The fields include nsec (4 bytes), tzoffset (2 bytes), and
-  tzindex (2 bytes) packed in the little-endian order.
-
-``seconds`` is seconds since Epoch, where the epoch is the point where
-the time starts, and is platform dependent. For Unix, the epoch is
-January 1, 1970, 00:00:00 (UTC). Tarantool uses a ``double`` type, see a
-structure definition in src/lib/core/datetime.h and reasons in
-`datetime RFC`_.
-
-``nsec`` is nanoseconds, fractional part of seconds. Tarantool uses
-``int32_t``, see a definition in src/lib/core/datetime.h.
-
-``tzoffset`` is timezone offset in minutes from UTC. Tarantool uses
-``int16_t`` type, see a structure definition in src/lib/core/datetime.h.
-
-``tzindex`` is Olson timezone id. Tarantool uses ``int16_t`` type, see
-a structure definition in src/lib/core/datetime.h. If both
-``tzoffset`` and ``tzindex`` are specified, ``tzindex`` has the
-preference and the ``tzoffset`` value is ignored.
-
-.. _datetime RFC: https://github.com/tarantool/tarantool/wiki/Datetime-internals#intervals-in-c
+Tarantool `datetime`_ extension type implementation module.
 """
 
 from copy import deepcopy
@@ -44,62 +8,13 @@ import pandas
 import pytz
 
 import tarantool.msgpack_ext.types.timezones as tt_timezones
-from tarantool.error import MsgpackError
 
 from tarantool.msgpack_ext.types.interval import Interval, Adjust
-
-SECONDS_SIZE_BYTES  = 8
-NSEC_SIZE_BYTES     = 4
-TZOFFSET_SIZE_BYTES = 2
-TZINDEX_SIZE_BYTES  = 2
-
-BYTEORDER = 'little'
 
 NSEC_IN_SEC = 1000000000
 NSEC_IN_MKSEC = 1000
 SEC_IN_MIN = 60
 MONTH_IN_YEAR = 12
-
-def get_bytes_as_int(data, cursor, size):
-    """
-    Get integer value from binary data.
-
-    :param data: MessagePack binary data.
-    :type data: :obj:`bytes`
-
-    :param cursor: Index after last parsed byte.
-    :type cursor: :obj:`int`
-
-    :param size: Integer size, in bytes.
-    :type size: :obj:`int`
-
-    :return: First value: parsed integer, second value: new cursor
-        position.
-    :rtype: first value: :obj:`int`, second value: :obj:`int`
-
-    :meta private:
-    """
-
-    part = data[cursor:cursor + size]
-    return int.from_bytes(part, BYTEORDER, signed=True), cursor + size
-
-def get_int_as_bytes(data, size):
-    """
-    Get binary representation of integer value.
-
-    :param data: Integer value.
-    :type data: :obj:`int`
-
-    :param size: Integer size, in bytes.
-    :type size: :obj:`int`
-
-    :return: Encoded integer.
-    :rtype: :obj:`bytes`
-
-    :meta private:
-    """
-
-    return data.to_bytes(size, byteorder=BYTEORDER, signed=True)
 
 def compute_offset(timestamp):
     """
@@ -126,7 +41,7 @@ def compute_offset(timestamp):
     # There is no precision loss since offset is in minutes
     return int(utc_offset.total_seconds()) // SEC_IN_MIN
 
-def get_python_tzinfo(tz, error_class):
+def get_python_tzinfo(tz):
     """
     All non-abbreviated Tarantool timezones are represented as pytz
     timezones (from :func:`pytz.timezone`). All non-ambiguous
@@ -137,9 +52,6 @@ def get_python_tzinfo(tz, error_class):
 
     :param tz: Tarantool timezone name.
     :type tz: :obj:`str`
-
-    :param error_class: Error class to raise in case of fail.
-    :type error_class: :obj:`Exception`
 
     :return: Timezone object.
     :rtype: :func:`pytz.timezone` result or :class:`pytz.FixedOffset`
@@ -155,66 +67,17 @@ def get_python_tzinfo(tz, error_class):
     # Checked with timezones/validate_timezones.py
     tt_tzinfo = tt_timezones.timezoneAbbrevInfo[tz]
     if (tt_tzinfo['category'] & tt_timezones.TZ_AMBIGUOUS) != 0:
-        raise error_class(f'Failed to create datetime with ambiguous timezone "{tz}"')
+        raise ValueError(f'Failed to create datetime with ambiguous timezone "{tz}"')
 
     return pytz.FixedOffset(tt_tzinfo['offset'])
-
-def msgpack_decode(data):
-    """
-    Decode MsgPack binary data to useful timestamp and timezone data.
-    For internal use of :class:`~tarantool.Datetime`.
-
-    :param data: MessagePack binary data to decode.
-    :type data: :obj:`bytes`
-
-    :return: First value: timestamp data with timezone info, second
-        value: Tarantool timezone name.
-    :rtype: first value: :class:`pandas.Timestamp`, second value:
-        :obj:`str`
-
-    :raises: :exc:`~tarantool.error.MsgpackError`
-
-    :meta private:
-    """
-
-    cursor = 0
-    seconds, cursor = get_bytes_as_int(data, cursor, SECONDS_SIZE_BYTES)
-
-    data_len = len(data)
-    if data_len == (SECONDS_SIZE_BYTES + NSEC_SIZE_BYTES + \
-                    TZOFFSET_SIZE_BYTES + TZINDEX_SIZE_BYTES):
-        nsec, cursor     = get_bytes_as_int(data, cursor, NSEC_SIZE_BYTES)
-        tzoffset, cursor = get_bytes_as_int(data, cursor, TZOFFSET_SIZE_BYTES)
-        tzindex, cursor  = get_bytes_as_int(data, cursor, TZINDEX_SIZE_BYTES)
-    elif data_len == SECONDS_SIZE_BYTES:
-        nsec = 0
-        tzoffset = 0
-        tzindex = 0
-    else:
-        raise MsgpackError(f'Unexpected datetime payload length {data_len}')
-
-    total_nsec = seconds * NSEC_IN_SEC + nsec
-    datetime = pandas.to_datetime(total_nsec, unit='ns')
-
-    if tzindex != 0:
-        if tzindex not in tt_timezones.indexToTimezone:
-            raise MsgpackError(f'Failed to decode datetime with unknown tzindex "{tzindex}"')
-        tz = tt_timezones.indexToTimezone[tzindex]
-        tzinfo = get_python_tzinfo(tz, MsgpackError)
-        return datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo), tz
-    elif tzoffset != 0:
-        tzinfo = pytz.FixedOffset(tzoffset)
-        return datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo), ''
-    else:
-        return datetime, ''
 
 class Datetime():
     """
     Class representing Tarantool `datetime`_ info. Internals are based
     on :class:`pandas.Timestamp`.
 
-    You can create :class:`~tarantool.Datetime` objects either from
-    MessagePack data or by using the same API as in Tarantool:
+    You can create :class:`~tarantool.Datetime` objects by using the
+    same API as in Tarantool:
 
     .. code-block:: python
 
@@ -277,14 +140,10 @@ class Datetime():
     .. _datetime: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-datetime-type
     """
 
-    def __init__(self, data=None, *, timestamp=None, year=None, month=None,
+    def __init__(self, *, timestamp=None, year=None, month=None,
                  day=None, hour=None, minute=None, sec=None, nsec=None,
                  tzoffset=0, tz='', timestamp_since_utc_epoch=False):
         """
-        :param data: MessagePack binary data to decode. If provided,
-            all other parameters are ignored.
-        :type data: :obj:`bytes`, optional
-
         :param timestamp: Timestamp since epoch. Cannot be provided
             together with
             :paramref:`~tarantool.Datetime.params.year`,
@@ -403,22 +262,12 @@ class Datetime():
         .. _datetime.new(): https://www.tarantool.io/en/doc/latest/reference/reference_lua/datetime/new/
         """
 
-        if data is not None:
-            if not isinstance(data, bytes):
-                raise ValueError('data argument (first positional argument) ' +
-                                 'expected to be a "bytes" instance')
-
-            datetime, tz = msgpack_decode(data)
-            self._datetime = datetime
-            self._tz = tz
-            return
-
         tzinfo = None
         if tz != '':
             if tz not in tt_timezones.timezoneToIndex:
                 raise ValueError(f'Unknown Tarantool timezone "{tz}"')
 
-            tzinfo = get_python_tzinfo(tz, ValueError)
+            tzinfo = get_python_tzinfo(tz)
         elif tzoffset != 0:
             tzinfo = pytz.FixedOffset(tzoffset)
         self._tz = tz
@@ -783,29 +632,3 @@ class Datetime():
         """
 
         return self._datetime.value
-
-    def msgpack_encode(self):
-        """
-        Encode a datetime object.
-
-        :rtype: :obj:`bytes`
-        """
-
-        seconds = self.value // NSEC_IN_SEC
-        nsec = self.nsec
-        tzoffset = self.tzoffset
-
-        tz = self.tz
-        if tz != '':
-            tzindex = tt_timezones.timezoneToIndex[tz]
-        else:
-            tzindex = 0
-
-        buf = get_int_as_bytes(seconds, SECONDS_SIZE_BYTES)
-
-        if (nsec != 0) or (tzoffset != 0) or (tzindex != 0):
-            buf = buf + get_int_as_bytes(nsec, NSEC_SIZE_BYTES)
-            buf = buf + get_int_as_bytes(tzoffset, TZOFFSET_SIZE_BYTES)
-            buf = buf + get_int_as_bytes(tzindex, TZINDEX_SIZE_BYTES)
-
-        return buf
