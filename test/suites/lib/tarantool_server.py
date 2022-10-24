@@ -22,6 +22,8 @@ def check_port(port, rais=True):
         sock = socket.create_connection(("localhost", port))
     except socket.error:
         return True
+    sock.close()
+
     if rais:
         raise RuntimeError("The server is already running on port {0}".format(port))
     return False
@@ -136,7 +138,7 @@ class TarantoolServer(object):
                  ssl_ca_file=None,
                  ssl_ciphers=None,
                  create_unix_socket=False):
-        os.popen('ulimit -c unlimited')
+        os.popen('ulimit -c unlimited').close()
 
         if create_unix_socket:
             self.host = None
@@ -210,6 +212,7 @@ class TarantoolServer(object):
                 while True:
                     ans = temp('box.info.status')[0]
                     if ans in ('running', 'hot_standby', 'orphan') or ans.startswith('replica'):
+                        temp.disconnect()
                         return True
                     elif ans in ('loading',):
                         continue
@@ -261,6 +264,8 @@ class TarantoolServer(object):
 
         if (self._socket is not None) and (not self._socket.file.closed):
             self._socket.close()
+
+        del self.log_des
 
     def __del__(self):
         self.stop()
