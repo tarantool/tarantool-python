@@ -270,6 +270,12 @@ class TestSuite_Datetime(unittest.TestCase):
             'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
                          r"nsec=308543321, tz='AZODT'})",
         },
+        'timestamp_since_utc_epoch': {
+            'python': tarantool.Datetime(timestamp=1661958474, nsec=308543321,
+                                         tz='Europe/Moscow', timestamp_since_utc_epoch=True),
+            'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\xb3\x03'),
+            'tarantool': r"datetime.new({timestamp=1661969274, nsec=308543321, tz='Europe/Moscow'})",
+        },
     }
 
     def test_msgpack_decode(self):

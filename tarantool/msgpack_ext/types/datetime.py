@@ -279,7 +279,7 @@ class Datetime():
 
     def __init__(self, data=None, *, timestamp=None, year=None, month=None,
                  day=None, hour=None, minute=None, sec=None, nsec=None,
-                 tzoffset=0, tz=''):
+                 tzoffset=0, tz='', timestamp_since_utc_epoch=False):
         """
         :param data: MessagePack binary data to decode. If provided,
             all other parameters are ignored.
@@ -294,7 +294,10 @@ class Datetime():
             :paramref:`~tarantool.Datetime.params.minute`,
             :paramref:`~tarantool.Datetime.params.sec`.
             If :paramref:`~tarantool.Datetime.params.nsec` is provided,
-            it must be :obj:`int`.
+            it must be :obj:`int`. Refer to
+            :paramref:`~tarantool.Datetime.params.timestamp_since_utc_epoch`
+            to clarify how timezone-aware datetime is computed from
+            the timestamp.
         :type timestamp: :obj:`float` or :obj:`int`, optional
 
         :param year: Datetime year value. Must be a valid
@@ -344,8 +347,60 @@ class Datetime():
         :param tz: Timezone name from Olson timezone database.
         :type tz: :obj:`str`, optional
 
+        :param timestamp_since_utc_epoch: Parameter to set timestamp
+            convertion behavior for timezone-aware datetimes.
+
+            If ``False`` (default), behaves similar to Tarantool
+            `datetime.new()`_:
+
+            .. code-block:: python
+
+                >>> dt = tarantool.Datetime(timestamp=1640995200, timestamp_since_utc_epoch=False)
+                >>> dt
+                datetime: Timestamp('2022-01-01 00:00:00'), tz: ""
+                >>> dt.timestamp
+                1640995200.0
+                >>> dt = tarantool.Datetime(timestamp=1640995200, tz='Europe/Moscow',
+                ...                         timestamp_since_utc_epoch=False)
+                >>> dt
+                datetime: Timestamp('2022-01-01 00:00:00+0300', tz='Europe/Moscow'), tz: "Europe/Moscow"
+                >>> dt.timestamp
+                1640984400.0
+
+            Thus, if ``False``, datetime is computed from timestamp
+            since epoch and then timezone is applied without any
+            convertion. In that case,
+            :attr:`~tarantool.Datetime.timestamp` won't be equal to
+            initialization
+            :paramref:`~tarantool.Datetime.params.timestamp` for all
+            timezones with non-zero offset.
+
+            If ``True``, behaves similar to :class:`pandas.Timestamp`:
+
+            .. code-block:: python
+
+                >>> dt = tarantool.Datetime(timestamp=1640995200, timestamp_since_utc_epoch=True)
+                >>> dt
+                datetime: Timestamp('2022-01-01 00:00:00'), tz: ""
+                >>> dt.timestamp
+                1640995200.0
+                >>> dt = tarantool.Datetime(timestamp=1640995200, tz='Europe/Moscow',
+                ...                         timestamp_since_utc_epoch=True)
+                >>> dt
+                datetime: Timestamp('2022-01-01 03:00:00+0300', tz='Europe/Moscow'), tz: "Europe/Moscow"
+                >>> dt.timestamp
+                1640995200.0
+
+            Thus, if ``True``, datetime is computed in a way that
+            :attr:`~tarantool.Datetime.timestamp` will always be equal
+            to initialization
+            :paramref:`~tarantool.Datetime.params.timestamp`.
+        :type timestamp_since_utc_epoch: :obj:`bool`, optional
+
         :raise: :exc:`ValueError`, :exc:`~tarantool.error.MsgpackError`,
             :class:`pandas.Timestamp` exceptions
+
+        .. _datetime.new(): https://www.tarantool.io/en/doc/latest/reference/reference_lua/datetime/new/
         """
 
         if data is not None:
@@ -357,6 +412,16 @@ class Datetime():
             self._datetime = datetime
             self._tz = tz
             return
+
+        tzinfo = None
+        if tz != '':
+            if tz not in tt_timezones.timezoneToIndex:
+                raise ValueError(f'Unknown Tarantool timezone "{tz}"')
+
+            tzinfo = get_python_tzinfo(tz, ValueError)
+        elif tzoffset != 0:
+            tzinfo = pytz.FixedOffset(tzoffset)
+        self._tz = tz
 
         # The logic is same as in Tarantool, refer to datetime API.
         # https://www.tarantool.io/en/doc/latest/reference/reference_lua/datetime/new/
@@ -375,6 +440,11 @@ class Datetime():
                 datetime = pandas.to_datetime(total_nsec, unit='ns')
             else:
                 datetime = pandas.to_datetime(timestamp, unit='s')
+
+            if not timestamp_since_utc_epoch:
+                self._datetime = datetime.replace(tzinfo=tzinfo)
+            else:
+                self._datetime = datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo)
         else:
             if nsec is not None:
                 microsecond = nsec // NSEC_IN_MKSEC
@@ -383,25 +453,11 @@ class Datetime():
                 microsecond = 0
                 nanosecond = 0
 
-            datetime = pandas.Timestamp(year=year, month=month, day=day,
-                                        hour=hour, minute=minute, second=sec,
-                                        microsecond=microsecond,
-                                        nanosecond=nanosecond)
-
-        if tz != '':
-            if tz not in tt_timezones.timezoneToIndex:
-                raise ValueError(f'Unknown Tarantool timezone "{tz}"')
-
-            tzinfo = get_python_tzinfo(tz, ValueError)
-            self._datetime = datetime.replace(tzinfo=tzinfo)
-            self._tz = tz
-        elif tzoffset != 0:
-            tzinfo = pytz.FixedOffset(tzoffset)
-            self._datetime = datetime.replace(tzinfo=tzinfo)
-            self._tz = ''
-        else:
-            self._datetime = datetime
-            self._tz = ''
+            self._datetime = pandas.Timestamp(
+                year=year, month=month, day=day,
+                hour=hour, minute=minute, second=sec,
+                microsecond=microsecond,
+                nanosecond=nanosecond, tzinfo=tzinfo)
 
     def _interval_operation(self, other, sign=1):
         """
