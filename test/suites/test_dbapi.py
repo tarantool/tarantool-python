@@ -127,3 +127,43 @@ class TestSuite_DBAPI(dbapi20.DatabaseAPI20Test):
     @unittest.skip('Not implemented')
     def test_description(self):
         pass
+
+    def test_ExceptionsAsConnectionAttributes(self):
+        # Workaround for https://github.com/baztian/dbapi-compliance/issues/5
+
+        # OPTIONAL EXTENSION 
+        # Test for the optional DB API 2.0 extension, where the exceptions 
+        # are exposed as attributes on the Connection object 
+        # I figure this optional extension will be implemented by any 
+        # driver author who is using this test suite, so it is enabled 
+        # by default. 
+        drv = self.driver
+        con = self._connect()
+        try:
+            dbapi20._failUnless(self,con.Warning is drv.Warning)
+            dbapi20._failUnless(self,con.Error is drv.Error)
+            dbapi20._failUnless(self,con.InterfaceError is drv.InterfaceError)
+            dbapi20._failUnless(self,con.DatabaseError is drv.DatabaseError)
+            dbapi20._failUnless(self,con.OperationalError is drv.OperationalError)
+            dbapi20._failUnless(self,con.IntegrityError is drv.IntegrityError)
+            dbapi20._failUnless(self,con.InternalError is drv.InternalError)
+            dbapi20._failUnless(self,con.ProgrammingError is drv.ProgrammingError)
+            dbapi20. _failUnless(self,con.NotSupportedError is drv.NotSupportedError)
+        finally:
+            con.close()
+
+
+    def test_rollback(self):
+        # Workaround for https://github.com/baztian/dbapi-compliance/issues/5
+
+        con = self._connect()
+        try:
+            # If rollback is defined, it should either work or throw
+            # the documented exception
+            if hasattr(con,'rollback'):
+                try:
+                    con.rollback()
+                except self.driver.NotSupportedError:
+                    pass
+        finally:
+            con.close()
