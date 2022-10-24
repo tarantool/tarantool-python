@@ -104,14 +104,14 @@ class TestSuite_Datetime(unittest.TestCase):
         'positional_year': {
             'args': [2022],
             'kwargs': {},
-            'type': ValueError,
-            'msg': 'data argument (first positional argument) expected to be a "bytes" instance'
+            'type': TypeError,
+            'msg': '__init__() takes 1 positional argument but 2 were given'
         },
         'positional_date': {
             'args': [2022, 8, 31],
             'kwargs': {},
             'type': TypeError,
-            'msg': '__init__() takes from 1 to 2 positional arguments but 4 were given'
+            'msg': '__init__() takes 1 positional argument but 4 were given'
         },
         'mixing_date_and_timestamp': {
             'args': [],
@@ -338,7 +338,7 @@ class TestSuite_Datetime(unittest.TestCase):
     def test_msgpack_decode_ambiguous_tzindex(self):
         case = b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\x00\x00\x82\x00'
         self.assertRaisesRegex(
-            MsgpackError, 'Failed to create datetime with ambiguous timezone "AET"',
+            ValueError, 'Failed to create datetime with ambiguous timezone "AET"',
             lambda: unpacker_ext_hook(4, case))
 
 

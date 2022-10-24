@@ -189,6 +189,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update API documentation strings (#67).
 - Update documentation index, quick start and guide pages (#67).
 - Use git version to set package version (#238).
+- Extract tarantool.Datetime encode and decode to external
+  functions (PR #252).
 
 ### Fixed
 - Package build (#238).
