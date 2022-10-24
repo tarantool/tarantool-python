@@ -520,10 +520,11 @@ class Connection(ConnectionInterface):
 
     def close(self):
         """
-        Close a connection to the server.
+        Close a connection to the server. The method is idempotent.
         """
 
-        self._socket.close()
+        if self._socket is not None:
+            self._socket.close()
         self._socket = None
 
     def is_closed(self):

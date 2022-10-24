@@ -309,6 +309,13 @@ class TestSuite_Request(unittest.TestCase):
         self.sock_con = tarantool.connect(self.sock_srv.host, self.sock_srv.args['primary'])
         self.assertEqual(self.sock_con.ping(notime=True), "Success")
 
+    def test_14_idempotent_close(self):
+        con = tarantool.connect(self.srv.host, self.srv.args['primary'])
+        con.close()
+        self.assertEqual(con.is_closed(), True)
+        con.close()
+        self.assertEqual(con.is_closed(), True)
+
     @classmethod
     def tearDownClass(self):
         self.con.close()
