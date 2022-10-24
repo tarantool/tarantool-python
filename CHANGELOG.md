@@ -136,6 +136,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support iproto feature discovery (#206).
 
+- Support pandas way to build datetime from timestamp (PR #252).
+
+  `timestamp_since_utc_epoch` is a parameter to set timestamp
+  convertion behavior for timezone-aware datetimes.
+
+  If ``False`` (default), behaves similar to Tarantool `datetime.new()`:
+
+  ```python
+  >>> dt = tarantool.Datetime(timestamp=1640995200, timestamp_since_utc_epoch=False)
+  >>> dt
+  datetime: Timestamp('2022-01-01 00:00:00'), tz: ""
+  >>> dt.timestamp
+  1640995200.0
+  >>> dt = tarantool.Datetime(timestamp=1640995200, tz='Europe/Moscow',
+  ...                         timestamp_since_utc_epoch=False)
+  >>> dt
+  datetime: Timestamp('2022-01-01 00:00:00+0300', tz='Europe/Moscow'), tz: "Europe/Moscow"
+  >>> dt.timestamp
+  1640984400.0
+  ```
+
+  Thus, if ``False``, datetime is computed from timestamp
+  since epoch and then timezone is applied without any
+  convertion. In that case, `dt.timestamp` won't be equal to
+  initialization `timestamp` for all timezones with non-zero offset.
+
+  If ``True``, behaves similar to `pandas.Timestamp`:
+
+  ```python
+  >>> dt = tarantool.Datetime(timestamp=1640995200, timestamp_since_utc_epoch=True)
+  >>> dt
+  datetime: Timestamp('2022-01-01 00:00:00'), tz: ""
+  >>> dt.timestamp
+  1640995200.0
+  >>> dt = tarantool.Datetime(timestamp=1640995200, tz='Europe/Moscow',
+  ...                         timestamp_since_utc_epoch=True)
+  >>> dt
+  datetime: Timestamp('2022-01-01 03:00:00+0300', tz='Europe/Moscow'), tz: "Europe/Moscow"
+  >>> dt.timestamp
+  1640995200.0
+  ```
+
+  Thus, if ``True``, datetime is computed in a way that `dt.timestamp` will
+  always be equal to initialization `timestamp`.
+
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
   The only reason of this bump is various vulnerability fixes,
