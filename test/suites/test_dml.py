@@ -38,6 +38,13 @@ class TestSuite_Request(unittest.TestCase):
         self.adm("fiber = require('fiber')")
         self.adm("uuid = require('uuid')")
 
+        if not sys.platform.startswith("win"):
+            self.sock_srv = TarantoolServer(create_unix_socket=True)
+            self.sock_srv.script = 'test/suites/box.lua'
+            self.sock_srv.start()
+        else:
+            self.sock_srv = None
+
     def setUp(self):
         # prevent a remote tarantool from clean our session
         if self.srv.is_started():
@@ -302,12 +309,11 @@ class TestSuite_Request(unittest.TestCase):
         if sys.platform.startswith("win"):
             self.skipTest("Skip UNIX socket tests on Windows since it uses remote server")
 
-        self.sock_srv = TarantoolServer(create_unix_socket=True)
-        self.sock_srv.script = 'test/suites/box.lua'
-        self.sock_srv.start()
-
-        self.sock_con = tarantool.connect(self.sock_srv.host, self.sock_srv.args['primary'])
-        self.assertEqual(self.sock_con.ping(notime=True), "Success")
+        sock_con = tarantool.connect(self.sock_srv.host, self.sock_srv.args['primary'])
+        try:
+            self.assertEqual(sock_con.ping(notime=True), "Success")
+        finally:
+            sock_con.close()
 
     def test_14_idempotent_close(self):
         con = tarantool.connect(self.srv.host, self.srv.args['primary'])
@@ -322,9 +328,6 @@ class TestSuite_Request(unittest.TestCase):
         self.srv.stop()
         self.srv.clean()
 
-        if hasattr(self, 'sock_srv'):
+        if self.sock_srv is not None:
             self.sock_srv.stop()
             self.sock_srv.clean()
-
-        if hasattr(self, 'sock_con'):
-            self.sock_con.close()
