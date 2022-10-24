@@ -4,7 +4,14 @@ import unittest
 import warnings
 
 import tarantool
-from tarantool.error import PoolTolopogyError, DatabaseError, NetworkError
+from tarantool.error import (
+    ClusterConnectWarning,
+    DatabaseError,
+    NetworkError,
+    NetworkWarning,
+    PoolTolopogyError,
+    PoolTolopogyWarning,
+)
 
 from .lib.skip import skip_or_run_sql_test, skip_or_run_conn_pool_test
 from .lib.tarantool_server import TarantoolServer
@@ -489,6 +496,9 @@ class TestSuite_Pool(unittest.TestCase):
             conn_0.close()
 
     def test_13_failover(self):
+        warnings.simplefilter('ignore', category=NetworkWarning)
+        warnings.simplefilter('ignore', category=PoolTolopogyWarning)
+
         self.set_cluster_ro([False, True, True, True, True])
         self.pool = tarantool.ConnectionPool(
             addrs=self.addrs,
@@ -508,6 +518,8 @@ class TestSuite_Pool(unittest.TestCase):
         self.retry(func=expect_RW_request_execute_on_new_master)
 
     def test_14_cluster_with_instances_dead_in_runtime_is_ok(self):
+        warnings.simplefilter('ignore', category=ClusterConnectWarning)
+
         self.set_cluster_ro([False, True, False, True, True])
         self.servers[0].stop()
 
@@ -520,6 +532,8 @@ class TestSuite_Pool(unittest.TestCase):
         self.pool.ping(mode=tarantool.Mode.RW)
 
     def test_15_cluster_with_dead_instances_on_start_is_ok(self):
+        warnings.simplefilter('ignore', category=ClusterConnectWarning)
+
         self.set_cluster_ro([False, True, True, True, True])
         self.servers[0].stop()
 
