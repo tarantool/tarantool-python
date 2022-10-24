@@ -520,11 +520,11 @@ class TestSuite_Pool(unittest.TestCase):
             user='test',
             password='test',)
 
-        self.assertEquals(self.pool.is_closed(), False)
+        self.assertEqual(self.pool.is_closed(), False)
 
         self.pool.close()
 
-        self.assertEquals(self.pool.is_closed(), True)
+        self.assertEqual(self.pool.is_closed(), True)
 
     def tearDown(self):
         if hasattr(self, 'pool'):

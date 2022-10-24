@@ -124,7 +124,7 @@ class TestSuite_Request(unittest.TestCase):
         self.assertSequenceEqual(self.con.delete('space_1', [20]), [])
         self.assertSequenceEqual(self.con.select('space_1', [20], index='primary'), [])
         # Check that <index_id> field has no meaning, yet.
-        with self.assertRaisesRegexp(tarantool.DatabaseError,
+        with self.assertRaisesRegex(tarantool.DatabaseError,
                 '(19, .*)'):
                 self.con.delete('space_1', [1, 'tuple_21'])
         self.assertSequenceEqual(self.con.select('space_1', [21], index='primary'), [[21, 1, 'tuple_21']])
@@ -134,7 +134,7 @@ class TestSuite_Request(unittest.TestCase):
         self.assertSequenceEqual(self.con.replace('space_1', [2, 2, 'tuple_3']), [[2, 2, 'tuple_3']])
         self.assertSequenceEqual(self.con.select('space_1', 2), [[2, 2, 'tuple_3']])
         # Check replace that isn't Ok.
-        with self.assertRaisesRegexp(tarantool.DatabaseError,
+        with self.assertRaisesRegex(tarantool.DatabaseError,
                 '(39, .*)'):
             self.assertSequenceEqual(self.con.replace('space_1', [2, 2]), [[2, 2, 'tuple_2']])
 
@@ -168,9 +168,9 @@ class TestSuite_Request(unittest.TestCase):
         self.assertSequenceEqual(con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
         self.assertSequenceEqual(con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
         self.assertSequenceEqual(con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
-        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
+        with self.assertRaisesRegex(tarantool.DatabaseError, '(32, .*)'):
             con.call('json.decode')
-        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
+        with self.assertRaisesRegex(tarantool.DatabaseError, '(32, .*)'):
             con.call('json.decode', '{[1, 2]: "world"}')
         ans = con.call('fiber.time')
         self.assertEqual(len(ans), 1)
@@ -194,9 +194,9 @@ class TestSuite_Request(unittest.TestCase):
         self.assertSequenceEqual(con.call('json.decode', '[123, 234, 345]'), [[123, 234, 345]])
         self.assertSequenceEqual(con.call('json.decode', ['[123, 234, 345]']), [[123, 234, 345]])
         self.assertSequenceEqual(con.call('json.decode', ('[123, 234, 345]',)), [[123, 234, 345]])
-        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
+        with self.assertRaisesRegex(tarantool.DatabaseError, '(32, .*)'):
             con.call('json.decode')
-        with self.assertRaisesRegexp(tarantool.DatabaseError, '(32, .*)'):
+        with self.assertRaisesRegex(tarantool.DatabaseError, '(32, .*)'):
             con.call('json.decode', '{[1, 2]: "world"}')
         ans = con.call('fiber.time')
         self.assertEqual(len(ans), 1)

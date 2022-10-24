@@ -104,30 +104,30 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self.assertEqual(self.con.authenticate('test', 'test')._data, None)
 
     def test_01_space_bad(self):
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no space.*'):
             self.sch.get_space(0)
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no space.*'):
             self.sch.get_space(0)
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no space.*'):
             self.sch.get_space('bad_name')
 
     def test_02_index_bad(self):
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no space.*'):
             self.sch.get_index(0, 'primary')
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no space.*'):
             self.sch.get_index('bad_space', 'primary')
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no index.*'):
             self.sch.get_index(280, 'bad_index')
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no index.*'):
             self.sch.get_index(280, 'bad_index')
-        with self.assertRaisesRegexp(tarantool.SchemaError,
+        with self.assertRaisesRegex(tarantool.SchemaError,
                 'There\'s no index.*'):
             self.sch.get_index(280, 3)
 
