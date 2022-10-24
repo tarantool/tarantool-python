@@ -1,47 +1,8 @@
 """
-Tarantool `datetime.interval`_ extension type support module.
-
-The interval MessagePack representation looks like this:
-
-.. code-block:: text
-
-    +--------+-------------------------+-------------+----------------+
-    | MP_EXT | Size of packed interval | MP_INTERVAL | PackedInterval |
-    +--------+-------------------------+-------------+----------------+
-
-Packed interval consists of:
-
-* Packed number of non-zero fields.
-* Packed non-null fields.
-
-Each packed field has the following structure:
-
-.. code-block:: text
-
-    +----------+=====================+
-    | field ID |     field value     |
-    +----------+=====================+
-
-The number of defined (non-null) fields can be zero. In this case,
-the packed interval will be encoded as integer 0.
-
-List of the field IDs:
-
-* 0 – year
-* 1 – month
-* 2 – week
-* 3 – day
-* 4 – hour
-* 5 – minute
-* 6 – second
-* 7 – nanosecond
-* 8 – adjust
+Tarantool `datetime.interval`_ extension type implementation module.
 """
 
-import msgpack
 from enum import Enum
-
-from tarantool.error import MsgpackError
 
 id_map = {
     0: 'year',
@@ -97,14 +58,10 @@ class Interval():
     .. _datetime.interval: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-interval-type
     """
 
-    def __init__(self, data=None, *, year=0, month=0, week=0,
+    def __init__(self, *, year=0, month=0, week=0,
                  day=0, hour=0, minute=0, sec=0,
                  nsec=0, adjust=Adjust.NONE):
         """
-        :param data: MessagePack binary data to decode. If provided,
-            all other parameters are ignored.
-        :type data: :obj:`bytes`, optional
-
         :param year: Interval year value.
         :type year: :obj:`int`, optional
 
@@ -132,61 +89,17 @@ class Interval():
         :param adjust: Interval adjustment rule. Refer to
             :meth:`~tarantool.Datetime.__add__`.
         :type adjust: :class:`~tarantool.IntervalAdjust`, optional
-
-        :raise: :exc:`ValueError`
         """
-
-        # If MessagePack data does not contain a field value, it is zero.
-        # If built not from MessagePack data, set argument values later.
-        self.year = 0
-        self.month = 0
-        self.week = 0
-        self.day = 0
-        self.hour = 0
-        self.minute = 0
-        self.sec = 0
-        self.nsec = 0
-        self.adjust = Adjust(0)
-
-        if data is not None:
-            if not isinstance(data, bytes):
-                raise ValueError('data argument (first positional argument) ' +
-                                 'expected to be a "bytes" instance')
-
-            if len(data) == 0:
-                return
-
-            # To create an unpacker is the only way to parse
-            # a sequence of values in Python msgpack module.
-            unpacker = msgpack.Unpacker()
-            unpacker.feed(data)
-            field_count = unpacker.unpack()
-            for _ in range(field_count):
-                field_id = unpacker.unpack()
-                value = unpacker.unpack()
-
-                if field_id not in id_map:
-                    raise MsgpackError(f'Unknown interval field id {field_id}')
-
-                field_name = id_map[field_id]
-
-                if field_name == 'adjust':
-                    try:
-                        value = Adjust(value)
-                    except ValueError as e:
-                        raise MsgpackError(e)
-
-                setattr(self, id_map[field_id], value)
-        else:
-            self.year = year
-            self.month = month
-            self.week = week
-            self.day = day
-            self.hour = hour
-            self.minute = minute
-            self.sec = sec
-            self.nsec = nsec
-            self.adjust = adjust
+        
+        self.year = year
+        self.month = month
+        self.week = week
+        self.day = day
+        self.hour = hour
+        self.minute = minute
+        self.sec = sec
+        self.nsec = nsec
+        self.adjust = adjust
 
     def __add__(self, other):
         """
@@ -319,28 +232,3 @@ class Interval():
                f'nsec={self.nsec}, adjust={self.adjust})'
 
     __str__ = __repr__
-
-    def msgpack_encode(self):
-        """
-        Encode an interval object.
-
-        :rtype: :obj:`bytes`
-        """
-
-        buf = bytes()
-
-        count = 0
-        for field_id in id_map.keys():
-            field_name = id_map[field_id]
-            value = getattr(self, field_name)
-
-            if field_name == 'adjust':
-                value = value.value
-
-            if value != 0:
-                buf = buf + msgpack.packb(field_id) + msgpack.packb(value)
-                count = count + 1
-
-        buf = msgpack.packb(count) + buf
-
-        return buf

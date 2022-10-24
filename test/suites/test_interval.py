@@ -57,49 +57,10 @@ class TestSuite_Interval(unittest.TestCase):
 
         self.adm("box.space['test']:truncate()")
 
-    def test_Interval_bytes_init(self):
-        dt = tarantool.Interval(b'\x02\x00\x01\x08\x01')
-
-        self.assertEqual(dt.year, 1)
-        self.assertEqual(dt.month, 0)
-        self.assertEqual(dt.day, 0)
-        self.assertEqual(dt.hour, 0)
-        self.assertEqual(dt.minute, 0)
-        self.assertEqual(dt.sec, 0)
-        self.assertEqual(dt.nsec, 0)
-        self.assertEqual(dt.adjust, tarantool.IntervalAdjust.NONE)
-
-    def test_Interval_non_bytes_positional_init(self):
+    def test_Interval_positional_init(self):
         self.assertRaisesRegex(
-            ValueError, re.escape('data argument (first positional argument) ' +
-                                  'expected to be a "bytes" instance'),
+            TypeError, re.escape('__init__() takes 1 positional argument but 2 were given'),
             lambda: tarantool.Interval(1))
-
-    def test_Interval_bytes_init_ignore_other_fields(self):
-        dt = tarantool.Interval(b'\x02\x00\x01\x08\x01',
-                                year=2, month=2, day=3, hour=1, minute=2,
-                                sec=3000, nsec=10000000,
-                                adjust=tarantool.IntervalAdjust.LAST)
-
-        self.assertEqual(dt.year, 1)
-        self.assertEqual(dt.month, 0)
-        self.assertEqual(dt.day, 0)
-        self.assertEqual(dt.hour, 0)
-        self.assertEqual(dt.minute, 0)
-        self.assertEqual(dt.sec, 0)
-        self.assertEqual(dt.nsec, 0)
-        self.assertEqual(dt.adjust, tarantool.IntervalAdjust.NONE)
-
-    def test_Interval_bytes_init_unknown_field(self):
-        self.assertRaisesRegex(
-            MsgpackError, 'Unknown interval field id 9',
-            lambda: tarantool.Interval(b'\x01\x09\xce\x00\x98\x96\x80'))
-
-    def test_Interval_bytes_init_unknown_adjust(self):
-        self.assertRaisesRegex(
-            MsgpackError, '3 is not a valid Adjust',
-            lambda: tarantool.Interval(b'\x02\x07\xce\x00\x98\x96\x80\x08\x03'))
-
 
     cases = {
         'year': {

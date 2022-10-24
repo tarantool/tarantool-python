@@ -191,6 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use git version to set package version (#238).
 - Extract tarantool.Datetime encode and decode to external
   functions (PR #252).
+- Extract tarantool.Interval encode and decode to external
+  functions (PR #252).
 
 ### Fixed
 - Package build (#238).
