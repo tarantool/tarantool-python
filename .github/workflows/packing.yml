@@ -364,6 +364,9 @@ jobs:
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
 
+      - name: Let's finish this
+        uses: mxschmitt/action-tmate@v3
+
       - name: Run tests
         run: python3 -m unittest discover -v
         env:
