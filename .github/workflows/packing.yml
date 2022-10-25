@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     container:
-      image: centos:7
+      image: fedora:36
 
     strategy:
       fail-fast: false
