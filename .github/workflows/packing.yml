@@ -73,9 +73,6 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Check git version
-        run: git --version
-
       - name: Bump git version
         run: dnf install -y git-2.37.3-1.fc36
 
