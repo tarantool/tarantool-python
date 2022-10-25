@@ -19,7 +19,7 @@ from tarantool.const import (
 
 def check_port(port, rais=True):
     try:
-        sock = socket.create_connection(("localhost", port))
+        sock = socket.create_connection(("127.0.0.1", port))
     except socket.error:
         return True
     sock.close()
