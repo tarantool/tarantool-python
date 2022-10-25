@@ -102,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: package
-          path: ~/rpmuild/RPMS/noarch
+          path: ~/rpmbuild/RPMS/noarch
           retention-days: 1
 
   run_tests_pip_package_install_linux:
