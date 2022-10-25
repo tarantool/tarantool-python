@@ -79,15 +79,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set ownership
-        run: |
-          chown -R $(id -u):$(id -g) $PWD
-
       - name: Setup Python and Python packing tools
         run: dnf install -y python3 python3-libs python3-pip python3-setuptools python3-wheel
 
       - name: Install rpm packing tools
         run: dnf install -y gcc rpm-build rpm-devel rpmlint make bash coreutils diffutils patch rpmdevtools
+
+      - name: Let's finish this
+        uses: mxschmitt/action-tmate@v3
 
       - name: Prepare rpm tree
         run: rpmdev-setuptree
