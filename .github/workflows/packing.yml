@@ -73,6 +73,15 @@ jobs:
       fail-fast: false
 
     steps:
+      - name: Check git version
+        run: git --version
+
+      - name: Bump git version
+        run: dnf install -y git-2.37.3-1.fc36
+
+      - name: Check git version
+        run: git --version
+
       - name: Clone the connector repo
         uses: actions/checkout@v3
         # Checkout all tags for correct version computation
