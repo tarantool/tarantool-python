@@ -20,7 +20,6 @@ dist-upload-2:
 docs:
 	python setup.py build_sphinx
 rpm-spec:
-rpm:
-	cp setup.py setup_rpm.py
-	sed -i setup_rpm.py -e 's/name="tarantool"/name="tarantool-python"/'
-	python setup_rpm.py bdist_rpm --requires="python3-msgpack,python3-pandas,python3-pytz" 
+	python setup.py bdist_rpm --spec-only --requires="python3-msgpack,python3-pandas,python3-pytz"
+	sed -i dist/tarantool.spec -e 's/%define name tarantool/%define name python3-tarantool/'
+	mv dist/tarantool.spec dist/python3-tarantool.spec
