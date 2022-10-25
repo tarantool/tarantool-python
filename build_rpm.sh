@@ -8,13 +8,13 @@ echo "Build spec..."
 
 rpm_deps='python3-msgpack>=1.0.3,python3-pandas,python3-pytz'
 
-python setup.py bdist_rpm --spec-only --requires="$rpm_deps"
+python3 setup.py bdist_rpm --spec-only --requires="$rpm_deps"
 mv dist/tarantool.spec $HOME/rpmbuild/SPECS/$rpm_name.spec
 sed -i $HOME/rpmbuild/SPECS/$rpm_name.spec -e 's/%define name tarantool/%define name '$rpm_name'/'
 
 echo "Build sources..."
 
-python setup.py sdist
+python3 setup.py sdist
 
 regex='s/^dist\/tarantool-\(.*\).tar.gz$/\1/'
 version=$(find dist/tarantool-*.tar.gz | sed $regex)
