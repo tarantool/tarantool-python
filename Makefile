@@ -20,8 +20,8 @@ dist-upload-2:
 docs:
 	python setup.py build_sphinx
 
-RPM_DEPS?="python3-msgpack>=1.0.3,python3-pandas,python3-pytz"
-RPM_NAME?="python3-tarantool"
+RPM_DEPS?=python3-msgpack>=1.0.3,python3-pandas,python3-pytz
+RPM_NAME?=python3-tarantool
 rpm:
 	python setup.py bdist_rpm --spec-only --requires="${RPM_DEPS}"
 	mv dist/tarantool.spec ${HOME}/rpmbuild/SPECS/${RPM_NAME}.spec
