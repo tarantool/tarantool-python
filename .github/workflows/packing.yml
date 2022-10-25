@@ -80,10 +80,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python and Python packing tools
-        run:  python3 python3-libs python3-pip python3-setuptools python3-wheel
+        run: dnf install -y python3 python3-libs python3-pip python3-setuptools python3-wheel
 
       - name: Install rpm packing tools
-        run: dnf install gcc rpm-build rpm-devel rpmlint make bash coreutils diffutils patch rpmdevtools -y
+        run: dnf install -y gcc rpm-build rpm-devel rpmlint make bash coreutils diffutils patch rpmdevtools
 
       - name: Pack rpm
         run: make rpm
