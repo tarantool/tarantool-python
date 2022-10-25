@@ -28,8 +28,8 @@ rpm:
 	sed -i ${HOME}/rpmbuild/SPECS/${RPM_NAME}.spec -e 's/%define name tarantool/%define name ${RPM_NAME}/'
 	python setup.py sdist
 	set -e ;\
-	VERSION=${find dist/tarantool-*.tar.gz | sed 's/^dist\/tarantool-\(.*).tar.gz$/\1/'} ;\
-	cp dist/tarantool-${VERSION}.tar.gz ${HOME}/rpmbuild/SOURCES/tarantool-${RPM_NAME}.tar.gz ;\
+	VERSION=${find dist/tarantool-*.tar.gz | sed 's/^dist\/tarantool-\(.*\).tar.gz$/\1/'} ;\
+	cp dist/tarantool-$${VERSION}.tar.gz ${HOME}/rpmbuild/SOURCES/tarantool-${RPM_NAME}.tar.gz ;\
 	tar -xvzf dist/tarantool-${VERSION}.tar.gz ;\
 	rm dist/tarantool-${VERSION}.tar.gz ;\
 	mv -r tarantool-${VERSION} ${RPM_NAME}-${VERSION} ;\
