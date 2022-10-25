@@ -64,7 +64,9 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+
+    container:
+      image: fedora:36
 
     strategy:
       fail-fast: false
@@ -76,13 +78,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python and basic packing tools
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
+      - name: Setup Python and Python packing tools
+        run:  python3 python3-libs python3-pip python3-setuptools python3-wheel
 
-      - name: Install tools for packing
-        run: pip install wheel
+      - name: Install rpm packing tools
+        run: dnf install gcc rpm-build rpm-devel rpmlint make bash coreutils diffutils patch rpmdevtools -y
 
       - name: Pack rpm
         run: make rpm
@@ -90,8 +90,8 @@ jobs:
       - name: Archive pip artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: rpm_dist
-          path: dist
+          name: package
+          path: ~/rpmuild/RPMS/noarch
           retention-days: 1
 
   run_tests_pip_package_install_linux:
@@ -331,10 +331,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Python
-        run: dnf install -y python3 python3-libs python3-pip python-unversioned-command
+        run: dnf install -y python3 python3-libs python3-pip
 
       - name: Remove connector source code
-        run: python .github/scripts/remove_source_code.py
+        run: python3 .github/scripts/remove_source_code.py
 
       - name: Install tarantool ${{ matrix.tarantool }}
         run: |
@@ -345,15 +345,15 @@ jobs:
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
         with:
-          name: rpm_dist
+          name: package
 
       - name: Install the package with rpm from artifacts
         run: dnf install -y *.noarch.rpm
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip3 install -r requirements-test.txt
 
       - name: Run tests
-        run: python -m unittest discover -v
+        run: python3 -m unittest discover -v
         env:
           TEST_PURE_INSTALL: true
