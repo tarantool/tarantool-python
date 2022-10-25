@@ -147,7 +147,7 @@ class TarantoolServer(object):
             self.args['primary'] = self._socket.name
             self.args['admin'] = find_port()
         else:
-            self.host = 'localhost'
+            self.host = '127.0.0.1'
             self.args = {}
             self._socket = None
             self.args['primary'] = find_port()
