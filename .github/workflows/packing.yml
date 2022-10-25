@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     container:
-      image: fedora:36
+      image: centos:7
 
     strategy:
       fail-fast: false
@@ -84,6 +84,9 @@ jobs:
 
       - name: Install rpm packing tools
         run: dnf install -y gcc rpm-build rpm-devel rpmlint make bash coreutils diffutils patch rpmdevtools
+
+      - name: Prepare rpm tree
+        run: rpmdev-setuptree
 
       - name: Pack rpm
         run: make rpm
