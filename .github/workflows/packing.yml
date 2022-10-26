@@ -274,17 +274,12 @@ jobs:
       - name: Clone the connector repo
         uses: actions/checkout@v2
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
-
       # See https://github.com/actions/setup-python/issues/527
-      - name: Fix Python setup
-        run: yum install -y glibc
+      - name: Setup Python
+        run: dnf install -y python3 python3-libs python3-pip
 
       - name: Remove connector source code
-        run: python .github/scripts/remove_source_code.py
+        run: python3 .github/scripts/remove_source_code.py
 
       - name: Install tarantool ${{ matrix.tarantool }}
         run: |
@@ -294,16 +289,16 @@ jobs:
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
         with:
-          name: rpm_dist
+          name: package
 
       - name: Install the package with rpm from artifacts
-        run: rpm -i *.rpm
+        run: yum localinstall -y *.noarch.rpm
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip3 install -r requirements-test.txt
 
       - name: Run tests
-        run: python -m unittest discover -v
+        run: python3 -m unittest discover -v
         env:
           TEST_PURE_INSTALL: true
 
