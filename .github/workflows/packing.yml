@@ -55,7 +55,7 @@ jobs:
           path: dist
           retention-days: 1
 
-  pack_rpm:
+  pack_rpm_fedora:
     # We want to run on external PRs, but not on our own internal
     # PRs as they'll be run by the push to the branch.
     #
@@ -74,7 +74,7 @@ jobs:
 
     steps:
       - name: Bump git version
-        run: dnf install -y git-2.37.3-1.fc36
+        run: dnf install -y git-2.37.3
 
       - name: Clone the connector repo
         uses: actions/checkout@v3
@@ -96,12 +96,62 @@ jobs:
         run: rpmdev-setuptree
 
       - name: Pack rpm
-        run: make rpm
+        run: rpm_deps='python3-msgpack,python3-pandas,python3-pytz' make rpm
 
       - name: Archive pip artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: package
+          name: package_fedora
+          path: ~/rpmbuild/RPMS/noarch
+          retention-days: 1
+
+  pack_rpm_centos:
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-20.04
+
+    container:
+      image: fedora:36
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Bump git version
+        run: dnf install -y git-2.37.3
+
+      - name: Clone the connector repo
+        uses: actions/checkout@v3
+        # Checkout all tags for correct version computation
+        with:
+          fetch-depth: 0
+
+      - name: Set ownership
+        run: |
+          chown -R $(id -u):$(id -g) $PWD
+
+      - name: Setup Python and Python packing tools
+        run: dnf install -y python3 python3-libs python3-pip python3-setuptools python3-wheel
+
+      - name: Install rpm packing tools
+        run: dnf install -y gcc rpm-build rpm-devel rpmlint make bash coreutils diffutils patch rpmdevtools
+
+      - name: Prepare rpm tree
+        run: rpmdev-setuptree
+
+      - name: Pack rpm
+        run: rpm_deps='python-msgpack,python-pandas,pytz' make rpm
+
+      - name: Archive pip artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: package_centos
           path: ~/rpmbuild/RPMS/noarch
           retention-days: 1
 
@@ -246,7 +296,7 @@ jobs:
           kill $(cat tarantool.pid) || true
 
   run_tests_rpm_package_install_centos:
-    needs: pack_rpm
+    needs: pack_rpm_centos
 
     # We want to run on external PRs, but not on our own internal
     # PRs as they'll be run by the push to the branch.
@@ -289,7 +339,7 @@ jobs:
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
         with:
-          name: package
+          name: package_centos
 
       - name: Install the package with rpm from artifacts
         run: yum localinstall -y *.noarch.rpm
@@ -303,7 +353,7 @@ jobs:
           TEST_PURE_INSTALL: true
 
   run_tests_rpm_package_install_fedora:
-    needs: pack_rpm
+    needs: pack_rpm_fedora
 
     # We want to run on external PRs, but not on our own internal
     # PRs as they'll be run by the push to the branch.
@@ -351,7 +401,7 @@ jobs:
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
         with:
-          name: package
+          name: package_fedora
 
       - name: Install the package with rpm from artifacts
         run: dnf install -y *.noarch.rpm

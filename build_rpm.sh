@@ -6,8 +6,6 @@ rpm_name='python3-tarantool'
 
 echo "Build spec..."
 
-rpm_deps='(python3-msgpack or python-msgpack),(python3-pandas or python-pandas),(python3-pytz or pytz)'
-
 SETUPTOOLS_SCM_DEBUG=1 python3 setup.py bdist_rpm --spec-only --requires="$rpm_deps"
 mv dist/tarantool.spec $HOME/rpmbuild/SPECS/$rpm_name.spec
 sed -i $HOME/rpmbuild/SPECS/$rpm_name.spec -e 's/%define name tarantool/%define name '$rpm_name'/'
