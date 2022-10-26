@@ -345,8 +345,8 @@ jobs:
       - name: Install tarantool ${{ matrix.tarantool }}
         run: |
           curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
-          dnf install -y tarantool-${{ matrix.tarantool }}.fc${{ matrix.os_version }}
-          dnf install -y tarantool-devel-${{ matrix.tarantool }}.fc${{ matrix.os_version }}
+          dnf install -y tarantool-${{ matrix.tarantool }}
+          dnf install -y tarantool-devel-${{ matrix.tarantool }}
 
       - name: Download rpm package artifact
         uses: actions/download-artifact@v3
