@@ -1,4 +1,4 @@
-msgpack>=1.0.4
+msgpack
 pandas
 pytz
 dataclasses; python_version <= '3.6'
