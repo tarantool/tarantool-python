@@ -333,7 +333,7 @@ class TestSuite_Request(unittest.TestCase):
             self.con.eval("not a Lua code")
         except DatabaseError as exc:
             self.assertEqual(exc.extra_info.type, 'LuajitError')
-            self.assertRegex(exc.extra_info.file, r'/tarantool')
+            self.assertTrue(isinstance(exc.extra_info.file, str))
             self.assertTrue(exc.extra_info.line > 0)
             self.assertEqual(exc.extra_info.message, "eval:1: unexpected symbol near 'not'")
             self.assertEqual(exc.extra_info.errno, 0)
@@ -354,7 +354,7 @@ class TestSuite_Request(unittest.TestCase):
             """)
         except DatabaseError as exc:
             self.assertEqual(exc.extra_info.type, 'ClientError')
-            self.assertRegex(exc.extra_info.file, 'eval')
+            self.assertTrue(isinstance(exc.extra_info.file, str))
             self.assertEqual(exc.extra_info.line, 3)
             self.assertEqual(exc.extra_info.message, "Timeout exceeded")
             self.assertEqual(exc.extra_info.errno, 0)
@@ -363,7 +363,7 @@ class TestSuite_Request(unittest.TestCase):
             self.assertNotEqual(exc.extra_info.prev, None)
             prev = exc.extra_info.prev
             self.assertEqual(prev.type, 'ClientError')
-            self.assertEqual(prev.file, 'eval')
+            self.assertTrue(isinstance(exc.extra_info.file, str))
             self.assertEqual(prev.line, 2)
             self.assertEqual(prev.message, "Unknown error")
             self.assertEqual(prev.errno, 0)
@@ -380,7 +380,7 @@ class TestSuite_Request(unittest.TestCase):
             """)
         except DatabaseError as exc:
             self.assertEqual(exc.extra_info.type, 'AccessDeniedError')
-            self.assertRegex(exc.extra_info.file, r'/tarantool')
+            self.assertTrue(isinstance(exc.extra_info.file, str))
             self.assertTrue(exc.extra_info.line > 0)
             self.assertEqual(
                     exc.extra_info.message,
