@@ -11,11 +11,5 @@ cov-html:
 	python -m coverage html -i
 cov-report:
 	python -m coverage report
-dist:
-	python setup.py sdist --format=gztar,bztar,zip
-dist-upload:
-	python setup.py sdist --format=gztar,bztar,zip upload
-dist-upload-2:
-	python setup.py sdist --format=ztar upload
 docs:
 	python setup.py build_sphinx
