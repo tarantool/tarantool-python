@@ -74,7 +74,7 @@ jobs:
 
     steps:
       - name: Bump git version
-        run: dnf install -y git-2.37.3
+        run: dnf install -y git-2.38.1
 
       - name: Clone the connector repo
         uses: actions/checkout@v3
@@ -124,7 +124,7 @@ jobs:
 
     steps:
       - name: Bump git version
-        run: dnf install -y git-2.37.3
+        run: dnf install -y git-2.38.1
 
       - name: Clone the connector repo
         uses: actions/checkout@v3
