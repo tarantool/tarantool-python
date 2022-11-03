@@ -204,6 +204,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow any MessagePack supported type as a request key (#240).
 - Puting test files in pip package (#238).
 - Make connection close idempotent (#250).
+- readthedocs version (#255).
 
 ## 0.9.0 - 2022-06-20
 
