@@ -12,7 +12,7 @@ Install Tarantool Python connector with ``pip`` (`PyPI`_ page):
 
 .. code-block:: bash
 
-     $ pip install tarantool
+     $ pip3 install tarantool
 
 Source code is available on `GitHub`_.
 

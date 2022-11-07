@@ -24,7 +24,7 @@ The recommended way to install the ``tarantool`` package is using ``pip``.
 
 .. code-block:: bash
 
-     $ pip install tarantool
+     $ pip3 install tarantool
 
 ZIP archive
 ^^^^^^^^^^^
@@ -42,7 +42,7 @@ You can also install the development version of the package using ``pip``.
 
 .. code-block:: bash
 
-    $ pip install git+https://github.com/tarantool/tarantool-python.git@master
+    $ pip3 install git+https://github.com/tarantool/tarantool-python.git@master
 
 --------------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ To build documentation, first you must install its build requirements:
 
 .. code-block:: bash
 
-    $ pip install -r docs/requirements.txt
+    $ pip3 install -r docs/requirements.txt
 
 Then run
 
@@ -124,7 +124,7 @@ You may host local documentation server with
 
 .. code-block:: bash
 
-    $ python -m http.server --directory build/sphinx/html
+    $ python3 -m http.server --directory build/sphinx/html
 
 Open ``localhost:8000`` in your browser to read the docs.
 
