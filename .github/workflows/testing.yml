@@ -195,9 +195,7 @@ jobs:
         run: pip3 install -r requirements-test.txt
 
       - name: Run tests
-        run: python3 -m unittest discover -v
-        env:
-          TEST_PURE_INSTALL: true
+        run: make test-pure-install
 
   run_tests_ce_windows:
     # We want to run on external PRs, but not on our own internal
@@ -341,8 +339,7 @@ jobs:
         env:
           REMOTE_TARANTOOL_HOST: localhost
           REMOTE_TARANTOOL_CONSOLE_PORT: 3302
-          TEST_PURE_INSTALL: true
-        run: python3 -m unittest discover -v
+        run: make test-pure-install
 
       - name: Stop test tarantool instance
         if: ${{ always() }}
