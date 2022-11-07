@@ -1,15 +1,15 @@
 .PHONY: install test docs
 install:
-	pip install --editable .
+	pip3 install --editable .
 test:
-	python setup.py test
+	python3 setup.py test
 testdata:
 	cd ./test/data/; ./generate.sh
 coverage:
-	python -m coverage run -p --source=. setup.py test
+	python3 -m coverage run -p --source=. setup.py test
 cov-html:
-	python -m coverage html -i
+	python3 -m coverage html -i
 cov-report:
-	python -m coverage report
+	python3 -m coverage report
 docs:
-	python setup.py build_sphinx
+	python3 setup.py build_sphinx

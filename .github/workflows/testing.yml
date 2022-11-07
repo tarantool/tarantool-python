@@ -76,14 +76,14 @@ jobs:
         # install of the newer msgpack package by overwriting it with sed.
         if: matrix.msgpack-deps != ''
         run: |
-          pip install ${{ matrix.msgpack-deps }}
+          pip3 install ${{ matrix.msgpack-deps }}
           sed -i -e "s/^msgpack.*$/${{ matrix.msgpack-deps }}/" requirements.txt
 
       - name: Install package requirements
-        run: pip install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip3 install -r requirements-test.txt
 
       - name: Run tests
         run: make test
@@ -136,10 +136,10 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install package requirements
-        run: pip install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip3 install -r requirements-test.txt
 
       - name: Run tests
         run: |
@@ -191,13 +191,13 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install the package with pip
-        run: pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_REF_NAME
+        run: pip3 install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_REF_NAME
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip3 install -r requirements-test.txt
 
       - name: Run tests
-        run: python -m unittest discover -v
+        run: python3 -m unittest discover -v
         env:
           TEST_PURE_INSTALL: true
 
@@ -235,10 +235,10 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install connector requirements
-        run: pip install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip3 install -r requirements-test.txt
 
       - name: Setup WSL for tarantool
         uses: Vampire/setup-wsl@v1
@@ -322,10 +322,10 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install the package with pip
-        run: pip install git+$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY@$env:GITHUB_REF_NAME
+        run: pip3 install git+$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY@$env:GITHUB_REF_NAME
 
       - name: Install test requirements
-        run: pip install -r requirements-test.txt
+        run: pip3 install -r requirements-test.txt
 
       - name: Setup WSL for tarantool
         uses: Vampire/setup-wsl@v1
@@ -351,7 +351,7 @@ jobs:
           REMOTE_TARANTOOL_HOST: localhost
           REMOTE_TARANTOOL_CONSOLE_PORT: 3302
           TEST_PURE_INSTALL: true
-        run: python -m unittest discover -v
+        run: python3 -m unittest discover -v
 
       - name: Stop test tarantool instance
         if: ${{ always() }}
