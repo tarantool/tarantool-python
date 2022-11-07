@@ -7,6 +7,10 @@ install:
 test:
 	python3 setup.py test
 
+.PHONY: test-pure-install
+test-pure-install:
+	TEST_PURE_INSTALL=true python3 -m unittest discover -v
+
 .PHONY: testdata
 testdata:
 	cd ./test/data/; ./generate.sh
