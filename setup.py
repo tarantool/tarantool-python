@@ -88,14 +88,14 @@ setup(
     author_email="admin@tarantool.org",
     url="https://github.com/tarantool/tarantool-python",
     license="BSD",
-    description="Python client library for Tarantool 1.6 Database",
+    description="Python client library for Tarantool",
     long_description=read('README.rst'),
     long_description_content_type='text/x-rst',
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python",
+        "Programming Language :: Python :: 3 :: Only",
         "Topic :: Database :: Front-Ends"
     ],
     cmdclass=cmdclass,
