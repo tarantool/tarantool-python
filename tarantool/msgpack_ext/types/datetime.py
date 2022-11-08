@@ -291,9 +291,9 @@ class Datetime():
                 datetime = pandas.to_datetime(timestamp, unit='s')
 
             if not timestamp_since_utc_epoch:
-                self._datetime = datetime.replace(tzinfo=tzinfo)
+                self._datetime = datetime.tz_localize(tzinfo)
             else:
-                self._datetime = datetime.replace(tzinfo=pytz.UTC).tz_convert(tzinfo)
+                self._datetime = datetime.tz_localize(pytz.UTC).tz_convert(tzinfo)
         else:
             if nsec is not None:
                 microsecond = nsec // NSEC_IN_MKSEC
@@ -306,7 +306,7 @@ class Datetime():
                 year=year, month=month, day=day,
                 hour=hour, minute=minute, second=sec,
                 microsecond=microsecond,
-                nanosecond=nanosecond, tzinfo=tzinfo)
+                nanosecond=nanosecond).tz_localize(tzinfo)
 
     def _interval_operation(self, other, sign=1):
         """
