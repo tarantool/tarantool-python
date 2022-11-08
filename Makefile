@@ -47,3 +47,16 @@ pip-dist: pip-sdist pip-bdist
 .PHONY: pip-dist-check
 pip-dist-check:
 	twine check pip_dist/*
+
+
+.PHONY: rpm-dist
+rpm-dist:
+	python3 setup.py sdist --dist-dir=rpm/SOURCES
+	rpmbuild -ba --define "_topdir `pwd`/rpm" rpm/SPECS/python-tarantool.spec
+	mkdir -p rpm_dist
+	mv rpm/SRPMS/*.rpm -t rpm_dist
+	mv rpm/RPMS/noarch/*.rpm -t rpm_dist
+
+.PHONY: rpm-dist-check
+rpm-dist-check:
+	rpm -K --nosignature rpm_dist/*.rpm

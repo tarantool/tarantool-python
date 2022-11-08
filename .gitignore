@@ -22,3 +22,13 @@ venv/*
 
 tarantool/version.py
 pip_dist
+
+# Cannot ignore a directory and negate a single file
+# https://www.atlassian.com/git/tutorials/saving-changes/gitignore
+rpm/SOURCES
+rpm/SRPMS
+rpm/BUILDROOT
+rpm/BUILD
+rpm/RPMS
+
+rpm_dist

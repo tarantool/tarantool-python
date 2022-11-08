@@ -187,6 +187,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support iproto feature push (#201).
 - Pack pip package with GitHub Actions (#198).
 - Publish pip package with GitHub Actions (#198).
+- Pack RPM package with GitHub Actions (#164, #198).
 
 ### Changed
 - Bump msgpack requirement to 1.0.4 (PR #223).
