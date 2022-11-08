@@ -64,7 +64,7 @@ rpm-dist-check:
 
 .PHONY: deb-changelog-entry
 deb-changelog-entry:
-	DEBEMAIL=admin@tarantool.org dch --distribution unstable \
+	DEBEMAIL=admin@tarantool.org dch --distribution unstable -b \
 									 --package "python3-tarantool" \
 									 --newversion $$(python3 setup.py --version) \
 									 "Nightly build"
