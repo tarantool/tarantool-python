@@ -14,6 +14,20 @@ Install Tarantool Python connector with ``pip`` (`PyPI`_ page):
 
      $ pip3 install tarantool
 
+Otherwise, you can install ``python3-tarantool`` RPM package if you use Fedora (34, 35, 36).
+
+Add the repository
+
+.. code-block:: bash
+
+     $ curl -L https://tarantool.io/OtKysgx/release/2/installer.sh | bash
+
+and then install the package
+
+.. code-block:: bash
+
+     $ dnf install -y python3-tarantool
+
 Source code is available on `GitHub`_.
 
 Documentation
