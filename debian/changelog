@@ -100,7 +100,7 @@ tarantool-python (0.9.0-0) unstable; urgency=medium
 
     * Tarantool Enterprise testing workflow on GitHub actions (PR #220).
 
- -- Georgy Moiseev <georgy.moiseev@tarantool.org> Mon, 20 Jun 2022 18:00:00 +0300
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Mon, 20 Jun 2022 18:00:00 +0300
 
 tarantool-python (0.8.0-0) unstable; urgency=medium
 
@@ -286,7 +286,7 @@ tarantool-python (0.8.0-0) unstable; urgency=medium
     - Fixed formatting and wording in README (PR #215).
     - Clarified license of the project (BSD-2-Clause) (#197, PR #210).
 
- -- Alexander Turenko <alexander.turenko@tarantool.org> Fri, 29 Apr 2022 22:30:00 +0300
+ -- Alexander Turenko <alexander.turenko@tarantool.org>  Fri, 29 Apr 2022 22:30:00 +0300
 
 tarantool-python (0.7.1-0) unstable; urgency=medium
 
@@ -295,7 +295,7 @@ tarantool-python (0.7.1-0) unstable; urgency=medium
     It is pure technical release. It fixes the dependency on the msgpack
     library.
 
- -- Alexander Turenko <alexander.turenko@tarantool.org> Mon, 28 Dec 2020 04:01:30 +0300
+ -- Alexander Turenko <alexander.turenko@tarantool.org>  Mon, 28 Dec 2020 04:01:30 +0300
 
 tarantool-python (0.7.0-0) unstable; urgency=medium
 
@@ -376,7 +376,7 @@ tarantool-python (0.7.0-0) unstable; urgency=medium
     * test: ensure compatibility with Python 3 for some testing /
       documentation building code (PR #181).
 
- -- Alexander Turenko <alexander.turenko@tarantool.org> Mon, 28 Dec 2020 03:11:10 +0300
+ -- Alexander Turenko <alexander.turenko@tarantool.org>  Mon, 28 Dec 2020 03:11:10 +0300
 
 tarantool-python (0.6.6-0) unstable; urgency=medium
 
@@ -398,7 +398,7 @@ tarantool-python (0.6.6-0) unstable; urgency=medium
     * Fixed a string representation of a Response object without data (say,
       authentication response) (#139).
 
- -- Alexander Turenko <alexander.turenko@tarantool.org> Fri, 14 Jun 2019 23:14:07 +0300
+ -- Alexander Turenko <alexander.turenko@tarantool.org>  Fri, 14 Jun 2019 23:14:07 +0300
 
 tarantool-python (0.6.5-0) unstable; urgency=medium
 
@@ -419,7 +419,7 @@ tarantool-python (0.6.5-0) unstable; urgency=medium
     * Eliminated deprecation warnings on Python 3 (#114).
     * Add TCP_NODEPLAY back (it was removed in 0.6.4) (#127).
 
- -- Alexander Turenko <alexander.turenko@tarantool.org> Tue, 19 Mar 2019 03:40:01 +0300
+ -- Alexander Turenko <alexander.turenko@tarantool.org>  Tue, 19 Mar 2019 03:40:01 +0300
 
 tarantool-python (0.6.4-0) unstable; urgency=medium
 

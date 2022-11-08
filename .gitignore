@@ -20,6 +20,8 @@ sophia
 
 venv/*
 
+.eggs
+
 tarantool/version.py
 pip_dist
 
@@ -32,3 +34,10 @@ rpm/BUILD
 rpm/RPMS
 
 rpm_dist
+
+debian/python3-tarantool
+debian/*debhelper*
+debian/files
+debian/*.substvars
+
+deb_dist

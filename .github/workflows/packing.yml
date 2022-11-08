@@ -380,3 +380,49 @@ jobs:
           RWS_AUTH: ${{ secrets.RWS_AUTH }}
           OS: ${{ matrix.target.os }}
           DIST: ${{ matrix.target.dist }}
+
+  pack_deb:
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Clone the connector repo
+        uses: actions/checkout@v3
+        # Checkout all tags for correct version computation
+        with:
+          fetch-depth: 0
+
+      - name: Install deb packing tools
+        run: |
+          sudo apt install -y devscripts equivs
+
+      - name: Make changelog entry for non-release build
+        if: startsWith(github.ref, 'refs/tags') != true
+        run: make deb-changelog-entry
+
+      - name: Install build tools
+        run: sudo mk-build-deps -i --tool "apt-get --no-install-recommends -y"
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Pack source and binary deb
+        run: make deb-dist
+
+      - name: Verify the package
+        run: make deb-dist-check
+
+      - name: Archive deb artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: deb_dist
+          path: deb_dist
