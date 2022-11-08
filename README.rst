@@ -26,6 +26,23 @@ The recommended way to install the ``tarantool`` package is using ``pip``.
 
      $ pip3 install tarantool
 
+With dnf
+^^^^^^^^
+
+You can install ``python3-tarantool`` RPM package if you use Fedora (34, 35, 36).
+
+Add the repository
+
+.. code-block:: bash
+
+     $ curl -L https://tarantool.io/OtKysgx/release/2/installer.sh | bash
+
+and then install the package
+
+.. code-block:: bash
+
+     $ dnf install -y python3-tarantool
+
 ZIP archive
 ^^^^^^^^^^^
 
