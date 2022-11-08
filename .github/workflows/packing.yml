@@ -494,3 +494,52 @@ jobs:
 
       - name: Run tests
         run: make test-pure-install
+
+  publish_deb:
+    if: startsWith(github.ref, 'refs/tags')
+
+    needs:
+      - run_tests_deb
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        target:
+        - os: ubuntu
+          dist: focal # 20.04
+        - os: ubuntu
+          dist: jammy # 22.04
+        - os: debian
+          dist: buster # 10
+        - os: debian
+          dist: bullseye # 11
+
+    steps:
+      - name: Clone the connector repo
+        uses: actions/checkout@v3
+
+      - name: Install tools for package publishing
+        run: sudo apt install -y curl make
+
+      - name: Download deb artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: deb_dist
+          path: deb_dist
+
+      - name: Publish artifacts
+        run: |
+          export FILE_FLAGS=$(find deb_dist/ -type f -regex '.*\.deb' -or -regex '.*\.dsc' \
+                              | xargs -I {} sh -c 'echo -F $(basename {})=@{}' \
+                              | xargs)
+          echo $FILE_FLAGS
+          curl -v -LfsS -X PUT $RWS_REPO/release/modules/$OS/$DIST \
+               -F product=python3-tarantool $FILE_FLAGS -u $RWS_AUTH
+        env:
+          RWS_REPO: https://rws.tarantool.org
+          RWS_AUTH: ${{ secrets.RWS_AUTH }}
+          OS: ${{ matrix.target.os }}
+          DIST: ${{ matrix.target.dist }}
