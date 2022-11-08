@@ -19,7 +19,7 @@ from tarantool.const import (
 
 def check_port(port, rais=True):
     try:
-        sock = socket.create_connection(("localhost", port))
+        sock = socket.create_connection(("0.0.0.0", port))
     except socket.error:
         return True
     sock.close()
@@ -103,7 +103,7 @@ class TarantoolServer(object):
             raise ValueError("Bad port number: '%s'" % port)
         if hasattr(self, 'admin'):
             del self.admin
-        self.admin = TarantoolAdmin('localhost', port)
+        self.admin = TarantoolAdmin('0.0.0.0', port)
 
     @property
     def log_des(self):
@@ -147,7 +147,7 @@ class TarantoolServer(object):
             self.args['primary'] = self._socket.name
             self.args['admin'] = find_port()
         else:
-            self.host = 'localhost'
+            self.host = '0.0.0.0'
             self.args = {}
             self._socket = None
             self.args['primary'] = find_port()
@@ -208,7 +208,7 @@ class TarantoolServer(object):
 
         while True:
             try:
-                temp = TarantoolAdmin('localhost', self.args['admin'])
+                temp = TarantoolAdmin('0.0.0.0', self.args['admin'])
                 while True:
                     ans = temp('box.info.status')[0]
                     if ans in ('running', 'hot_standby', 'orphan') or ans.startswith('replica'):
