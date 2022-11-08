@@ -28,6 +28,21 @@ and then install the package
 
      $ dnf install -y python3-tarantool
 
+Otherwise, you can install ``python3-tarantool`` deb package if you use Debian (10, 11)
+or Ubuntu (20.04, 22.04).
+
+Add the repository
+
+.. code-block:: bash
+
+     $ curl -L https://tarantool.io/OtKysgx/release/2/installer.sh | bash
+
+and then install the package
+
+.. code-block:: bash
+
+     $ apt install -y python3-tarantool
+
 Source code is available on `GitHub`_.
 
 Documentation
