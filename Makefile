@@ -60,3 +60,27 @@ rpm-dist:
 .PHONY: rpm-dist-check
 rpm-dist-check:
 	rpm -K --nosignature rpm_dist/*.rpm
+
+
+.PHONY: deb-changelog-entry
+deb-changelog-entry:
+	DEBEMAIL=admin@tarantool.org dch --distribution unstable \
+									 --package "python3-tarantool" \
+									 --newversion $$(python3 setup.py --version) \
+									 "Nightly build"
+
+.PHONY: deb-dist
+deb-dist:
+	dpkg-source -b .
+	dpkg-buildpackage -rfakeroot -us -uc
+	mkdir -p deb_dist
+	find .. -maxdepth 1 -type f -regex '.*/python3-tarantool_.*\.deb' \
+							-or -regex '.*/python3-tarantool_.*\.buildinfo' \
+							-or -regex '.*/python3-tarantool_.*\.changes' \
+							-or -regex '.*/python3-tarantool_.*\.dsc' \
+							-or -regex '.*/python3-tarantool_.*\.tar\.xz' \
+							| xargs -I {} mv {} deb_dist/
+
+.PHONY: deb-dist-check
+deb-dist-check:
+	dpkg -I deb_dist/*.deb
