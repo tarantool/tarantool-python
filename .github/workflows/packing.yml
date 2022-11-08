@@ -426,3 +426,71 @@ jobs:
         with:
           name: deb_dist
           path: deb_dist
+
+  run_tests_deb:
+    needs: pack_deb
+
+    # We want to run on external PRs, but not on our own internal
+    # PRs as they'll be run by the push to the branch.
+    #
+    # The main trick is described here:
+    # https://github.com/Dart-Code/Dart-Code/pull/2375
+    if: (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-latest
+
+    container:
+      image: ${{ matrix.target.os }}:${{ matrix.target.dist }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        target:
+        - os: ubuntu
+          dist: focal # 20.04
+        - os: ubuntu
+          dist: jammy # 22.04
+        - os: debian
+          dist: buster # 10
+        - os: debian
+          dist: bullseye # 11
+
+    steps:
+      - name: Clone the connector repo
+        uses: actions/checkout@v3
+
+      - name: Prepare apt
+        run: apt update
+
+      - name: Setup Python
+        run: apt install -y python3 python3-pip git
+
+      - name: Remove connector source code
+        run: python3 .github/scripts/remove_source_code.py
+
+      - name: Install tarantool ${{ matrix.tarantool }}
+        run: |
+          apt install -y curl
+          curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
+          apt install -y tarantool tarantool-dev
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Download deb artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: deb_dist
+          path: deb_dist
+
+      - name: Install the package from deb artifacts
+        run: apt install -y `pwd`/deb_dist/python3-tarantool_*.deb
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Install test requirements
+        run: pip3 install -r requirements-test.txt
+
+      - name: Run tests
+        run: make test-pure-install
