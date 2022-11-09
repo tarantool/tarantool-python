@@ -1,3 +1,208 @@
+python3-tarantool (0.10.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces the support of extention types
+    (decimal, uuid, error, datetime, interval) in MessagePack,
+    various IProto features support (feature discovery and push
+    protocol) and major infrastructure updates (scm version
+    computation, full documentation for external and internal
+    API both as code docstrings and readthedocs HTML, deb and
+    RPM packages, and everything is processed with CI/CD pipelines).
+
+    ## Breaking changes
+
+    This release should not break any existing behavior.
+
+    ## New features
+
+    - Backport ConnectionPool support for Python 3.6 (PR #245).
+    - Support iproto feature discovery (#206).
+    - Decimal type support (#203).
+    - UUID type support (#202).
+    - Support extra information for iproto errors (#232).
+    - Error extension type support (#232).
+    - Datetime type support and tarantool.Datetime type (#204, PR #252).
+
+      Tarantool datetime objects are decoded to `tarantool.Datetime`
+      type. `tarantool.Datetime` may be encoded to Tarantool datetime
+      objects.
+
+      You can create `tarantool.Datetime` objects either from
+      MessagePack data or by using the same API as in Tarantool:
+
+      ```python
+      dt1 = tarantool.Datetime(year=2022, month=8, day=31,
+                               hour=18, minute=7, sec=54,
+                               nsec=308543321)
+
+      dt2 = tarantool.Datetime(timestamp=1661969274)
+
+      dt3 = tarantool.Datetime(timestamp=1661969274, nsec=308543321)
+      ```
+
+      `tarantool.Datetime` exposes `year`, `month`, `day`, `hour`,
+      `minute`, `sec`, `nsec`, `timestamp` and `value` (integer epoch time
+      with nanoseconds precision) properties if you need to convert
+      `tarantool.Datetime` to any other kind of datetime object:
+
+      ```python
+      pdt = pandas.Timestamp(year=dt.year, month=dt.month, day=dt.day,
+                             hour=dt.hour, minute=dt.minute, second=dt.sec,
+                             microsecond=(dt.nsec // 1000),
+                             nanosecond=(dt.nsec % 1000))
+      ```
+
+      Use `tzoffset` parameter to set up offset timezone:
+
+      ```python
+      dt = tarantool.Datetime(year=2022, month=8, day=31,
+                              hour=18, minute=7, sec=54,
+                              nsec=308543321, tzoffset=180)
+      ```
+
+      You may use `tzoffset` property to get timezone offset of a datetime
+      object.
+
+
+      Use `tz` parameter to set up timezone name:
+
+      ```python
+      dt = tarantool.Datetime(year=2022, month=8, day=31,
+                              hour=18, minute=7, sec=54,
+                              nsec=308543321, tz='Europe/Moscow')
+      ```
+
+      If both `tz` and `tzoffset` is specified, `tz` is used.
+
+      You may use `tz` property to get timezone name of a datetime object.
+
+      `timestamp_since_utc_epoch` is a parameter to set timestamp
+      convertion behavior for timezone-aware datetimes.
+
+      If ``False`` (default), behaves similar to Tarantool `datetime.new()`:
+
+      ```python
+      >>> dt = tarantool.Datetime(timestamp=1640995200, timestamp_since_utc_epoch=False)
+      >>> dt
+      datetime: Timestamp('2022-01-01 00:00:00'), tz: ""
+      >>> dt.timestamp
+      1640995200.0
+      >>> dt = tarantool.Datetime(timestamp=1640995200, tz='Europe/Moscow',
+      ...                         timestamp_since_utc_epoch=False)
+      >>> dt
+      datetime: Timestamp('2022-01-01 00:00:00+0300', tz='Europe/Moscow'), tz: "Europe/Moscow"
+      >>> dt.timestamp
+      1640984400.0
+      ```
+
+      Thus, if ``False``, datetime is computed from timestamp
+      since epoch and then timezone is applied without any
+      convertion. In that case, `dt.timestamp` won't be equal to
+      initialization `timestamp` for all timezones with non-zero offset.
+
+      If ``True``, behaves similar to `pandas.Timestamp`:
+
+      ```python
+      >>> dt = tarantool.Datetime(timestamp=1640995200, timestamp_since_utc_epoch=True)
+      >>> dt
+      datetime: Timestamp('2022-01-01 00:00:00'), tz: ""
+      >>> dt.timestamp
+      1640995200.0
+      >>> dt = tarantool.Datetime(timestamp=1640995200, tz='Europe/Moscow',
+      ...                         timestamp_since_utc_epoch=True)
+      >>> dt
+      datetime: Timestamp('2022-01-01 03:00:00+0300', tz='Europe/Moscow'), tz: "Europe/Moscow"
+      >>> dt.timestamp
+      1640995200.0
+      ```
+
+      Thus, if ``True``, datetime is computed in a way that `dt.timestamp` will
+      always be equal to initialization `timestamp`.
+
+    - Datetime interval type support and tarantool.Interval type (#229).
+
+      Tarantool datetime interval objects are decoded to `tarantool.Interval`
+      type. `tarantool.Interval` may be encoded to Tarantool interval
+      objects.
+
+      You can create `tarantool.Interval` objects either from
+      MessagePack data or by using the same API as in Tarantool:
+
+      ```python
+      di = tarantool.Interval(year=-1, month=2, day=3,
+                              hour=4, minute=-5, sec=6,
+                              nsec=308543321,
+                              adjust=tarantool.IntervalAdjust.NONE)
+      ```
+
+      Its attributes (same as in init API) are exposed, so you can
+      use them if needed.
+
+    - Datetime interval arithmetic support (#229).
+
+      Valid operations:
+      - `tarantool.Datetime` + `tarantool.Interval` = `tarantool.Datetime`
+      - `tarantool.Datetime` - `tarantool.Interval` = `tarantool.Datetime`
+      - `tarantool.Datetime` - `tarantool.Datetime` = `tarantool.Interval`
+      - `tarantool.Interval` + `tarantool.Interval` = `tarantool.Interval`
+      - `tarantool.Interval` - `tarantool.Interval` = `tarantool.Interval`
+
+      Since `tarantool.Interval` could contain `month` and `year` fields
+      and such operations could be ambiguous, you can use `adjust` field
+      to tune the logic. The behavior is the same as in Tarantool, see
+      [Interval arithmetic RFC](https://github.com/tarantool/tarantool/wiki/Datetime-Internals#interval-arithmetic).
+
+      - `tarantool.IntervalAdjust.NONE` -- only truncation toward the end of
+        month performed (default mode).
+
+        ```python
+        >>> dt = tarantool.Datetime(year=2022, month=3, day=31)
+        datetime: Timestamp('2022-03-31 00:00:00'), tz: ""
+        >>> di = tarantool.Interval(month=1, adjust=tarantool.IntervalAdjust.NONE)
+        >>> dt + di
+        datetime: Timestamp('2022-04-30 00:00:00'), tz: ""
+        ```
+
+      - `tarantool.IntervalAdjust.EXCESS` -- overflow mode, without any snap
+        or truncation to the end of month, straight addition of days in month,
+        stopping over month boundaries if there is less number of days.
+
+        ```python
+        >>> dt = tarantool.Datetime(year=2022, month=1, day=31)
+        datetime: Timestamp('2022-01-31 00:00:00'), tz: ""
+        >>> di = tarantool.Interval(month=1, adjust=tarantool.IntervalAdjust.EXCESS)
+        >>> dt + di
+        datetime: Timestamp('2022-03-02 00:00:00'), tz: ""
+        ```
+
+      - `tarantool.IntervalAdjust.LAST` -- mode when day snaps to the end of month,
+        if happens.
+
+        ```python
+        >>> dt = tarantool.Datetime(year=2022, month=2, day=28)
+        datetime: Timestamp('2022-02-28 00:00:00'), tz: ""
+        >>> di = tarantool.Interval(month=1, adjust=tarantool.IntervalAdjust.LAST)
+        >>> dt + di
+        datetime: Timestamp('2022-03-31 00:00:00'), tz: ""
+        ```
+
+    - Full documentation of internal and external API (#67).
+
+    ## Bugfixes
+
+    - Allow any MessagePack supported type as a request key (#240).
+    - Make connection close idempotent (#250).
+
+    ## Infrastructure
+
+    - Use git version to set package version (#238).
+    - Test pip install from branch (PR #241).
+    - Pack and publish pip, RPM and deb packages with GitHub Actions (#164, #198).
+    - Publish on readthedocs with CI/CD (including PRs) (#67).
+
+ -- Georgy.moiseev <georgy.moiseev@tarantool.org>  Wed, 09 Nov 2022 13:14:20 +0300
+
 tarantool-python (0.9.0-0) unstable; urgency=medium
     ## Overview
 
