@@ -1,6 +1,11 @@
 Python driver for Tarantool
 ===========================
 
+.. image:: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml/badge.svg?branch=master
+    :target: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml
+.. image:: https://github.com/tarantool/tarantool-python/actions/workflows/packing.yml/badge.svg?branch=master
+    :target: https://github.com/tarantool/tarantool-python/actions/workflows/packing.yml
+
 This package is a pure-python client library for `Tarantool`_.
 
 `Documentation`_  |  `Downloads`_  |  `PyPI`_  |  `GitHub`_  | `Issue tracker`_
@@ -10,9 +15,6 @@ This package is a pure-python client library for `Tarantool`_.
 .. _`PyPI`: http://pypi.python.org/pypi/tarantool
 .. _`GitHub`: https://github.com/tarantool/tarantool-python
 .. _`Issue tracker`: https://github.com/tarantool/tarantool-python/issues
-
-.. image:: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml/badge.svg?branch=master
-    :target: https://github.com/tarantool/tarantool-python/actions/workflows/testing.yml
 
 Download and install
 --------------------
