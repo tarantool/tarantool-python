@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## 0.10.0 - 2022-11-09
+
+### Added
 - Decimal type support (#203).
 - UUID type support (#202).
 - Datetime type support and tarantool.Datetime type (#204).
