@@ -209,7 +209,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Package build (#238).
 - Allow any MessagePack supported type as a request key (#240).
-- Puting test files in pip package (#238).
+- Putting test files in pip package (#238).
 - Make connection close idempotent (#250).
 - readthedocs version (#255).
 - timezone offset with old pytz and pandas (#198).
