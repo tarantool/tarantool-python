@@ -63,7 +63,6 @@ from tarantool.const import (
     IPROTO_FEATURE_TRANSACTIONS,
     IPROTO_FEATURE_ERROR_EXTENSION,
     IPROTO_FEATURE_WATCHERS,
-    IPROTO_FEATURE_GRACEFUL_SHUTDOWN,
     IPROTO_CHUNK,
 )
 from tarantool.error import (
@@ -514,7 +513,6 @@ class Connection(ConnectionInterface):
             IPROTO_FEATURE_TRANSACTIONS: False,
             IPROTO_FEATURE_ERROR_EXTENSION: False,
             IPROTO_FEATURE_WATCHERS: False,
-            IPROTO_FEATURE_GRACEFUL_SHUTDOWN: False,
         }
 
         if connect_now:

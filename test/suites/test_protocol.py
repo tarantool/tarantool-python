@@ -13,7 +13,6 @@ from tarantool.const import (
     IPROTO_FEATURE_TRANSACTIONS,
     IPROTO_FEATURE_ERROR_EXTENSION,
     IPROTO_FEATURE_WATCHERS,
-    IPROTO_FEATURE_GRACEFUL_SHUTDOWN,
 )
 
 class TestSuite_Protocol(unittest.TestCase):
@@ -86,7 +85,6 @@ class TestSuite_Protocol(unittest.TestCase):
         self.assertEqual(self.con._features[IPROTO_FEATURE_STREAMS], False)
         self.assertEqual(self.con._features[IPROTO_FEATURE_TRANSACTIONS], False)
         self.assertEqual(self.con._features[IPROTO_FEATURE_WATCHERS], False)
-        self.assertEqual(self.con._features[IPROTO_FEATURE_GRACEFUL_SHUTDOWN], False)
 
     @classmethod
     def tearDownClass(self):
