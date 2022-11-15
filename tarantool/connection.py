@@ -84,6 +84,8 @@ from tarantool.error import (
     InternalError,
     ProgrammingError,
     NotSupportedError,
+    CrudModuleError,
+    CrudModuleManyError,
     SchemaReloadException,
     Warning,
     warn
@@ -95,6 +97,12 @@ from tarantool.utils import (
     wrap_key,
     ENCODING_DEFAULT,
 )
+from tarantool.crud import (
+    CrudResult,
+    CrudError,
+    call_crud,
+)
+from typing import Union
 
 # Based on https://realpython.com/python-interface/
 class ConnectionInterface(metaclass=abc.ABCMeta):
@@ -244,6 +252,198 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def crud_insert(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_insert`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_insert_object(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_insert_object`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_insert_many(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_insert_many`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_insert_object_many(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_insert_object_many`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_get(self, space_name, key, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_get`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_update(self, space_name, key, operations=[], opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_update`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_delete(self, space_name, key, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_delete`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_replace(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_replace`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_replace_object(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_replace_object`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_replace_many(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_replace_many`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_replace_object_many(self, space_name, values, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_replace_object_many`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_upsert(self, space_name, values, operations=[], opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_upsert`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_upsert_object(self, space_name, values, operations=[], opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_upsert_object`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_upsert_many(self, space_name, values_operation, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_upsert_many`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_upsert_object_many(self, space_name, values_operation, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_upsert_object_many`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_select(self, space_name: str, conditions=[], opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_select`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_min(self, space_name, index_name, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_min`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_max(self, space_name, index_name, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_max`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_truncate(self, space_name, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_truncate`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_len(self, space_name, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_len`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_storage_info(self, opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_storage_info`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_count(self, space_name, conditions=[], opts={}):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_count`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_stats(self, space_name=None):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_stats`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def crud_unflatten_rows(self, rows, metadata):
+        """
+        Reference implementation: :meth:`~tarantool.Connection.crud_unflatten_rows`.
+        """
+
+        raise NotImplementedError
+
 
 class Connection(ConnectionInterface):
     """
@@ -344,6 +544,13 @@ class Connection(ConnectionInterface):
     DBAPI compatibility.
 
     :value: :exc:`~tarantool.error.NotSupportedError`
+    """
+
+    CrudModuleError = CrudModuleError
+    """
+    DBAPI compatibility.
+
+    :value: :exc:`~tarantool.error.CrudModuleError`
     """
 
     def __init__(self, host, port,
@@ -1797,3 +2004,774 @@ class Connection(ConnectionInterface):
 
     def _unpacker_factory(self):
         return self._unpacker_factory_impl(self)
+
+    def crud_insert(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Inserts row through the 
+        `crud <https://github.com/tarantool/crud#insert>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.insert", space_name, values, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_insert_object(self, space_name: str, values: dict, opts: dict={}) -> CrudResult:
+        """
+        Inserts object row through the 
+        `crud <https://github.com/tarantool/crud#insert>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`dict`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, dict)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.insert_object", space_name, values, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_insert_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Inserts batch rows through the 
+        `crud <https://github.com/tarantool/crud#insert-many>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.insert_many", space_name, values, opts)
+
+        res = None
+        if crud_resp[0] is not None:
+            res = CrudResult(crud_resp[0])
+
+        if crud_resp[1] is not None:
+            errs = list()
+            for err in crud_resp[1]:
+                errs.append(CrudError(err))
+            raise CrudModuleManyError(res, errs)
+
+        return res
+
+    def crud_insert_object_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Inserts batch object rows through the 
+        `crud <https://github.com/tarantool/crud#insert-many>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.insert_object_many", space_name, values, opts)
+
+        res = None
+        if crud_resp[0] is not None:
+            res = CrudResult(crud_resp[0])
+
+        if crud_resp[1] is not None:
+            errs = list()
+            for err in crud_resp[1]:
+                errs.append(CrudError(err))
+            raise CrudModuleManyError(res, errs)
+
+        return res
+
+    def crud_get(self, space_name: str, key: int, opts: dict={}) -> CrudResult:
+        """
+        Gets row through the 
+        `crud <https://github.com/tarantool/crud#get>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param key: The primary key value.
+        :type key: :obj:`int`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.get", space_name, key, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_update(self, space_name: str, key: int, operations: list=[], opts: dict={}) -> CrudResult:
+        """
+        Updates row through the 
+        `crud <https://github.com/tarantool/crud#update>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param key: The primary key value.
+        :type key: :obj:`int`
+
+        :param operations: The update operations for the crud module.
+        :type operations: :obj:`list`, optional
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(operations, list)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.update", space_name, key, operations, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_delete(self, space_name: str, key: int, opts: dict={}) -> CrudResult:
+        """
+        Deletes row through the 
+        `crud <https://github.com/tarantool/crud#delete>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param key: The primary key value.
+        :type key: :obj:`int`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.delete", space_name, key, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_replace(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Replaces row through the 
+        `crud <https://github.com/tarantool/crud#replace>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.replace", space_name, values, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_replace_object(self, space_name: str, values: dict, opts: dict={}) -> CrudResult:
+        """
+        Replaces object row through the 
+        `crud <https://github.com/tarantool/crud#replace>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`dict`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, dict)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.replace_object", space_name, values, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_replace_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Replaces batch rows through the 
+        `crud <https://github.com/tarantool/crud#replace-many>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.replace_many", space_name, values, opts)
+
+        res = None
+        if crud_resp[0] is not None:
+            res = CrudResult(crud_resp[0])
+
+        if crud_resp[1] is not None:
+            errs = list()
+            for err in crud_resp[1]:
+                errs.append(CrudError(err))
+            raise CrudModuleManyError(res, errs)
+
+        return res
+
+    def crud_replace_object_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Replaces batch object rows through the 
+        `crud <https://github.com/tarantool/crud#replace-many>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.replace_object_many", space_name, values, opts)
+
+        res = None
+        if crud_resp[0] is not None:
+            res = CrudResult(crud_resp[0])
+
+        if crud_resp[1] is not None:
+            errs = list()
+            for err in crud_resp[1]:
+                errs.append(CrudError(err))
+            raise CrudModuleManyError(res, errs)
+
+        return res
+
+    def crud_upsert(self, space_name: str, values: Union[tuple, list], operations: list=[], opts: dict={}) -> CrudResult:
+        """
+        Upserts row through the 
+        `crud <https://github.com/tarantool/crud#upsert>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`tuple` or :obj:`list`
+
+        :param operations: The update operations for the crud module.
+        :type operations: :obj:`list`, optional
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, (tuple, list))
+        assert isinstance(operations, list)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.upsert", space_name, values, operations, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_upsert_object(self, space_name: str, values: dict, operations: list=[], opts: dict={}) -> CrudResult:
+        """
+        Upserts object row through the 
+        `crud <https://github.com/tarantool/crud#upsert>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values: Tuple to be inserted.
+        :type values: :obj:`dict`
+
+        :param operations: The update operations for the crud module.
+        :type operations: :obj:`list`, optional
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values, dict)
+        assert isinstance(operations, list)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.upsert_object", space_name, values, operations, opts)
+        
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_upsert_many(self, space_name: str, values_operation: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Upserts batch rows through the 
+        `crud <https://github.com/tarantool/crud#upsert-many>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values_operation: The data with update operations.
+        :type values_operation: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values_operation, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.upsert_many", space_name, values_operation, opts)
+
+        res = None
+        if crud_resp[0] is not None:
+            res = CrudResult(crud_resp[0])
+
+        if crud_resp[1] is not None:
+            errs = list()
+            for err in crud_resp[1]:
+                errs.append(CrudError(err))
+            raise CrudModuleManyError(res, errs)
+
+        return res
+
+    def crud_upsert_object_many(self, space_name: str, values_operation: Union[tuple, list], opts: dict={}) -> CrudResult:
+        """
+        Upserts batch object rows through the 
+        `crud <https://github.com/tarantool/crud#upsert-many>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param values_operation: The data with update operations.
+        :type values_operation: :obj:`tuple` or :obj:`list`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(values_operation, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.upsert_object_many", space_name, values_operation, opts)
+
+        res = None
+        if crud_resp[0] is not None:
+            res = CrudResult(crud_resp[0])
+
+        if crud_resp[1] is not None:
+            errs = list()
+            for err in crud_resp[1]:
+                errs.append(CrudError(err))
+            raise CrudModuleManyError(res, errs)
+
+        return res
+
+    def crud_select(self, space_name: str, conditions: list=[], opts: dict={}) -> CrudResult:
+        """
+        Selects rows through the 
+        `crud <https://github.com/tarantool/crud#select>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param conditions: The select conditions for the crud module.
+        :type conditions: :obj:`list`, optional
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`select
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(conditions, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.select", space_name, conditions, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_min(self, space_name: str, index_name: str, opts: dict={}) -> CrudResult:
+        """
+        Gets rows with minimum value in the specified index through 
+        the `crud <https://github.com/tarantool/crud#min-and-max>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param index_name: The name of the index.
+        :type index_name: :obj:`str`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.min", space_name, index_name, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_max(self, space_name: str, index_name: str, opts: dict={}) -> CrudResult:
+        """
+        Gets rows with maximum value in the specified index through 
+        the `crud <https://github.com/tarantool/crud#min-and-max>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param index_name: The name of the index.
+        :type index_name: :obj:`str`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.max", space_name, index_name, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return CrudResult(crud_resp[0])
+
+    def crud_truncate(self, space_name: str, opts: dict={}) -> bool:
+        """
+        Truncate rows through 
+        the `crud <https://github.com/tarantool/crud#truncate>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :obj:`bool`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.truncate", space_name, opts)
+
+        # In absence of an error, crud does not give 
+        # variable err as nil (as in most cases).
+        if len(crud_resp) != 1:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return crud_resp[0]
+    
+    def crud_len(self, space_name: str, opts: dict={}) -> int:
+        """
+        Gets the number of tuples in the space through 
+        the `crud <https://github.com/tarantool/crud#len>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :obj:`int`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.len", space_name, opts)
+
+        # In absence of an error, crud does not give 
+        # variable err as nil (as in most cases).
+        if len(crud_resp) != 1:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return crud_resp[0]
+
+    def crud_storage_info(self, opts: dict={}) -> dict:
+        """
+        Gets storages status through the 
+        `crud <https://github.com/tarantool/crud#storage-info>`__.
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :obj:`dict`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.storage_info", opts)
+
+        # In absence of an error, crud does not give 
+        # variable err as nil (as in most cases).
+        if len(crud_resp) != 1:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return crud_resp[0]
+
+    def crud_count(self, space_name: str, conditions: list=[], opts: dict={}) -> int:
+        """
+        Gets rows count through the 
+        `crud <https://github.com/tarantool/crud#count>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`
+
+        :param conditions: The conditions for the crud module.
+        :type conditions: :obj:`list`, optional
+
+        :param opts: The opts for the crud module.
+        :type opts: :obj:`dict`, optional
+
+        :rtype: :obj:`int`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        assert isinstance(space_name, str)
+        assert isinstance(conditions, (tuple, list))
+        assert isinstance(opts, dict)
+
+        crud_resp = call_crud(self, "crud.count", space_name, conditions, opts)
+
+        if crud_resp[1] is not None:
+            raise CrudModuleError(None, CrudError(crud_resp[1]))
+
+        return crud_resp[0]
+
+    def crud_stats(self, space_name: str=None) -> CrudResult:
+        """
+        Gets statistics from the 
+        `crud <https://github.com/tarantool/crud#statistics>`__.
+
+        :param space_name: The name of the target space.
+        :type space_name: :obj:`str`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.DatabaseError`
+        """
+
+        if space_name is not None:
+            assert isinstance(space_name, str)
+
+        crud_resp = call_crud(self, "crud.stats", space_name)
+
+        res = None
+        if len(crud_resp.data[0]) > 0:
+            res = CrudResult(crud_resp.data[0])
+
+        return res
+
+    def crud_unflatten_rows(self, rows: list, metadata: list) -> list:
+        """
+        Makes rows unflatten through the 
+        `crud <https://github.com/tarantool/crud#api>`__.
+
+        :param rows: The rows to unflatten.
+        :type rows: :obj:`list`
+
+        :param metadata: The metadata to unflatten.
+        :type metadata: :obj:`list`
+
+        :rtype: :obj:`list`
+        """
+
+        assert isinstance(rows, (tuple, list))
+        assert isinstance(metadata, (tuple, list))
+
+        res = []
+        for row in rows:
+            row_res = {}
+            for field_idx, field in enumerate(row):
+                row_res[metadata[field_idx]['name']] = field
+            res.append(row_res)
+
+        return res

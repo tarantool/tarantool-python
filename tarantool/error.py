@@ -330,6 +330,51 @@ class PoolTolopogyError(DatabaseError):
     pass
 
 
+class CrudModuleError(DatabaseError):
+    """
+    Exception raised for errors that are related to
+    the operation result of `crud`_ module.
+
+    .. _crud: https://github.com/tarantool/crud
+    """
+
+    def __init__(self, _, error):
+        """
+        Sets fields with result and errors.
+        
+        :param args: The tuple from the crud module with result and errors.
+        :type args: :obj:`tuple`
+        """
+
+        super(CrudModuleError, self).__init__(0, error.err)
+        # Sets tarantool.crud.CrudError object.
+        self.extra_info_error = error
+
+
+class CrudModuleManyError(DatabaseError):
+    """
+    Exception raised for errors that are related to
+    the batching operation result of `crud`_ module.
+
+    .. _crud: https://github.com/tarantool/crud
+    """
+
+    def __init__(self, success, error):
+        """
+        Sets fields with result and errors.
+        
+        :param args: The tuple from the crud module with result and errors.
+        :type args: :obj:`tuple`
+        """
+
+        exc_msg = "Got multiple errors, see errors_list and success_list"
+        super(CrudModuleManyError, self).__init__(0, exc_msg)
+        # Sets list of tarantool.crud.CrudResult objects.
+        self.success_list = success
+        # Sets list of tarantool.crud.CrudError objects.
+        self.errors_list = error
+
+
 # always print this warnings
 warnings.filterwarnings("always", category=NetworkWarning)
 
@@ -526,6 +571,12 @@ _strerror = {
           "Index '%s' (%s) of space '%s' (%s) does not support %s"),
     113: ("ER_VIEW_IS_RO", "View '%s' is read-only"),
 }
+
+
+# Response error code for case "Requested procedure is not defined".
+ER_NO_SUCH_PROC = 33
+# Response error code for case "Access is denied for user".
+ER_ACCESS_DENIED = 42
 
 
 def tnt_strerror(num):

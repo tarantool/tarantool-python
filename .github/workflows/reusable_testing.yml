@@ -39,4 +39,10 @@ jobs:
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
 
+      - name: Install the crud module for testing purposes
+        run: |
+          curl -L https://tarantool.io/release/2/installer.sh | bash
+          sudo apt install -y tt
+          tt rocks install crud
+
       - run: make test

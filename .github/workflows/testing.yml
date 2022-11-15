@@ -85,6 +85,12 @@ jobs:
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
 
+      - name: Install the crud module for testing purposes
+        run: |
+          curl -L https://tarantool.io/release/2/installer.sh | bash
+          sudo apt install -y tt
+          tt rocks install crud
+
       - name: Run tests
         run: make test
 
@@ -143,6 +149,15 @@ jobs:
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
 
+      - name: Install the crud module for testing purposes
+        # This is a workaround with TARANTOOL_DIR and should be reworked later.
+        # See more here: https://github.com/tarantool/tt/issues/282
+        run: |
+          source tarantool-enterprise/env.sh
+          curl -L https://tarantool.io/release/2/installer.sh | bash
+          sudo apt install -y tt
+          tt rocks install crud TARANTOOL_DIR=$PWD/tarantool-enterprise
+
       - name: Run tests
         run: |
           source tarantool-enterprise/env.sh
@@ -195,6 +210,12 @@ jobs:
 
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
+
+      - name: Install the crud module for testing purposes
+        run: |
+          curl -L https://tarantool.io/release/2/installer.sh | bash
+          sudo apt install -y tt
+          tt rocks install crud
 
       - name: Run tests
         run: make test-pure-install

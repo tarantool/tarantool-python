@@ -23,6 +23,7 @@ from .test_package import TestSuite_Package
 from .test_error_ext import TestSuite_ErrorExt
 from .test_push import TestSuite_Push
 from .test_connection import TestSuite_Connection
+from .test_crud import TestSuite_Crud
 
 test_cases = (TestSuite_Schema_UnicodeConnection,
               TestSuite_Schema_BinaryConnection,
@@ -31,7 +32,7 @@ test_cases = (TestSuite_Schema_UnicodeConnection,
               TestSuite_Encoding, TestSuite_Pool, TestSuite_Ssl,
               TestSuite_Decimal, TestSuite_UUID, TestSuite_Datetime,
               TestSuite_Interval, TestSuite_ErrorExt, TestSuite_Push,
-              TestSuite_Connection,)
+              TestSuite_Connection, TestSuite_Crud,)
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestSuite()

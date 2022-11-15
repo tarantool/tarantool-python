@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support custom packer and unpacker factories (#191).
 
+- Support [crud module](https://github.com/tarantool/crud) native API (#205).
+
 ### Changed
 
 ### Fixed
