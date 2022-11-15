@@ -63,6 +63,7 @@ API Reference
    api/module-tarantool.rst
    api/submodule-connection.rst
    api/submodule-connection-pool.rst
+   api/submodule-crud.rst
    api/submodule-dbapi.rst
    api/submodule-error.rst
    api/submodule-mesh-connection.rst

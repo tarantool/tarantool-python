@@ -347,3 +347,123 @@ with out-of-band message processing:
 
     print(callback_res)
     >>> [[[100, 1]], [[200, 1]], [[300, 1]]]
+
+
+Interaction with the crud module
+----------------------------------
+
+Through the :class:`~tarantool.Connection` object, you can access 
+`crud module <https://github.com/tarantool/crud>`_ methods:
+
+.. code-block:: python
+
+    >>> import tarantool
+    >>> from tarantool.error import CrudModuleError, CrudModuleManyError, DatabaseError
+    >>> conn = tarantool.Connection(host='localhost',port=3301)
+
+    >>> conn.crud_
+    conn.crud_count(                conn.crud_insert(               conn.crud_insert_object_many(   
+    conn.crud_min(                  conn.crud_replace_object(       conn.crud_stats(                
+    conn.crud_unflatten_rows(       conn.crud_upsert_many(          conn.crud_delete(               
+    conn.crud_insert_many(          conn.crud_len(                  conn.crud_replace(              
+    conn.crud_replace_object_many(  conn.crud_storage_info(         conn.crud_update(               
+    conn.crud_upsert_object(        conn.crud_get(                  conn.crud_insert_object(        
+    conn.crud_max(                  conn.crud_replace_many(         conn.crud_select(               
+    conn.crud_truncate(             conn.crud_upsert(               conn.crud_upsert_object_many(
+
+As an example, consider :meth:`~tarantool.Connection.crud_insert` and :meth:`~tarantool.Connection.crud_insert_object_many`. 
+It is recommended to enclose calls in the try-except construction as follows:
+
+.. code-block:: python
+
+    # Insert without exception:
+    >>> res = conn.crud_insert('tester', (3500,300,'Rob'))
+    >>> res
+    <tarantool.crud.CrudResult object at 0x11a56e320>
+    >>> res.
+    res.metadata  res.rows
+    >>> res.rows
+    [[3500, 300, 'Rob']]
+    >>> res.metadata
+    [{'name': 'id', 'type': 'unsigned'}, {'name': 'bucket_id', 'type': 'unsigned'}, {'name': 'name', 'type': 'string'}]
+
+    # Insert with exception (duplicate key exists):
+    >>> try:
+    ...     res = conn.crud_insert('tester', (3500,300,'Rob'))
+    ... except CrudModuleError as e:
+    ...     exc_crud = e
+    ... 
+    >>> exc_crud
+    CrudModuleError(0, 'Failed to insert: Duplicate key exists in unique index "primary_index" in space "tester" with old tuple - [3500, 300, "Rob"] and new tuple - [3500, 300, "Rob"]')
+    >>> exc_crud.extra_info_error
+    <tarantool.crud.CrudError object at 0x10a276950>
+    >>> exc_crud.extra_info_error.
+    exc_crud.extra_info_error.class_name  exc_crud.extra_info_error.err         exc_crud.extra_info_error.file        exc_crud.extra_info_error.line        exc_crud.extra_info_error.str       
+    >>> exc_crud.extra_info_error.class_name
+    'InsertError'
+    >>> exc_crud.extra_info_error.str
+    'InsertError: Failed to insert: Duplicate key exists in unique index "primary_index" in space "tester" with old tuple - [3500, 300, "Rob"] and new tuple - [3500, 300, "Rob"]'
+
+    # In case of batch operation (*_many), CrudModuleManyError exception contains both result and errors (if there is a problem with at least one row).
+    >>> try:
+    ...     res = conn.crud_insert_object_many('tester', ({'id':3,'bucket_id':100,'name':'Ann'}, {'id':4,'bucket_id':100,'name':'Sam'}), {'timeout':100, 'rollback_on_error':False})
+    ... except CrudModuleManyError as e:
+    ...     exc_crud = e
+    ... 
+    >>> exc_crud
+    CrudModuleManyError(0, 'Got multiple errors, see errors_list')
+    >>> exc_crud.success_list # some of the rows were inserted.
+    <tarantool.crud.CrudResult object at 0x11a56f310>
+    >>> exc_crud.success_list.rows
+    [[1, 100, 'Bob'], [2, 100, 'Rob']]
+    >>> exc_crud.errors_list # some of the rows were not inserted.
+    [<tarantool.crud.CrudError object at 0x11a56e9e0>, <tarantool.crud.CrudError object at 0x11a56f490>]
+    >>> exc_crud.errors_list[0].str
+    'CallError: Failed for 037adb3a-b9e3-4f78-a6d1-9f0cdb6cbefc: Function returned an error: Duplicate key exists in unique index "primary_index" in space "tester" with old tuple - [3500, 300, "Rob"] and new tuple - [3500, 100, "Mike"]'
+    >>> exc_crud.errors_list[1].str
+    'InsertManyError: Failed to flatten object: FlattenError: Object is specified in bad format: FlattenError: Unknown field "second_name" is specified'
+    
+    # If there are no problems with any rows, the entire response will be contained in the res variable.
+    >>> res = conn.crud_insert_object_many('tester', ({'id':3,'bucket_id':100,'name':'Ann'}, {'id':4,'bucket_id':100,'name':'Sam'}), {'timeout':100, 'rollback_on_error':False})
+    >>> res.rows
+    [[3, 100, 'Ann'], [4, 100, 'Sam']]
+
+If module crud not found on the router or user has not sufficient grants:
+
+.. code-block:: python
+
+    >>> try:
+    ...     res = conn.crud_insert('tester', (22221,300,'Rob'))
+    ... except DatabaseError as e:
+    ...     exc_db = e
+    ... 
+    >>> exc_db
+    DatabaseError(33, "Procedure 'crud.insert' is not defined. Ensure that you're calling crud.router and user has sufficient grants")
+    >>> exc_db.extra_info
+    BoxError(type='ClientError', file='/tmp/tarantool-20221003-6335-edruh3/tarantool-2.10.3/src/box/lua/call.c', line=112, message="Procedure 'crud.insert' is not defined", errno=0, errcode=33, fields=None, prev=None)
+
+Using :meth:`~tarantool.Connection.crud_select` and :meth:`~tarantool.Connection.crud_unflatten_rows`:
+
+.. code-block:: python
+
+    >>> res = conn.crud_select('tester', [], {'first':2})
+    >>> res
+    <tarantool.crud.CrudResult object at 0x10a276d10>
+    >>> res.rows
+    [[1, 100, 'Mike'], [2, 100, 'Bill']]
+    >>> res.metadata
+    [{'name': 'id', 'type': 'unsigned'}, {'name': 'bucket_id', 'type': 'unsigned'}, {'name': 'name', 'type': 'string'}]
+    >>> r = conn.crud_unflatten_rows(res.rows, res.metadata)
+    >>> r
+    [{'id': 1, 'bucket_id': 100, 'name': 'Mike'}, {'id': 2, 'bucket_id': 100, 'name': 'Bill'}]
+
+Using :meth:`~tarantool.Connection.crud_truncate` and :meth:`~tarantool.Connection.crud_len`:
+
+.. code-block:: python
+
+    >>> res = conn.crud_len('tester')
+    >>> res
+    26
+    >>> res = conn.crud_truncate('tester')
+    >>> res
+    True

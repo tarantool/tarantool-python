@@ -1025,3 +1025,638 @@ class ConnectionPool(ConnectionInterface):
             raise ValueError("Please, specify 'mode' keyword argument")
 
         return self._send(mode, 'execute', query, params)
+
+    def crud_insert(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_insert request on the pool server: 
+        inserts row through the 
+        `crud <https://github.com/tarantool/crud#insert>`__.
+        Refer to :meth:`~tarantool.Connection.crud_insert`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_insert.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_insert.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_insert.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_insert', space_name, values, opts)
+
+    def crud_insert_object(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_insert_object request on the pool server: 
+        inserts object row through the 
+        `crud <https://github.com/tarantool/crud#insert>`__.
+        Refer to :meth:`~tarantool.Connection.crud_insert_object`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_object.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_object.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_object.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_insert_object', space_name, values, opts)
+
+    def crud_insert_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_insert_many request on the pool server: 
+        inserts batch rows through the 
+        `crud <https://github.com/tarantool/crud#insert-many>`__.
+        Refer to :meth:`~tarantool.Connection.crud_insert_many`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_many.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_many.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_many.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_insert_many', space_name, values, opts)
+
+    def crud_insert_object_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_insert_object_many request on the pool server: 
+        inserts batch object rows through the
+        `crud <https://github.com/tarantool/crud#insert-many>`__.
+        Refer to :meth:`~tarantool.Connection.crud_insert_object_many`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_object_many.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_object_many.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_insert_object_many.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_insert_object_many', space_name, values, opts)
+
+    def crud_get(self, space_name, key, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_get request on the pool server: 
+        gets row through the 
+        `crud <https://github.com/tarantool/crud#get>`__.
+        Refer to :meth:`~tarantool.Connection.crud_get`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_get.params.space_name`.
+
+        :param key: Refer to
+            :paramref:`~tarantool.Connection.crud_get.params.key`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_get.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_get', space_name, key, opts)
+
+    def crud_update(self, space_name, key, operations=[], opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_update request on the pool server: 
+        updates row through the 
+        `crud <https://github.com/tarantool/crud#update>`__.
+        Refer to :meth:`~tarantool.Connection.crud_update`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_update.params.space_name`.
+
+        :param key: Refer to
+            :paramref:`~tarantool.Connection.crud_update.params.key`.
+
+        :param operations: Refer to
+            :paramref:`~tarantool.Connection.crud_update.params.operations`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_update.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_update', space_name, key, operations, opts)
+
+    def crud_delete(self, space_name, key, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_delete request on the pool server: 
+        deletes row through the 
+        `crud <https://github.com/tarantool/crud#delete>`__.
+        Refer to :meth:`~tarantool.Connection.crud_delete`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_delete.params.space_name`.
+
+        :param key: Refer to
+            :paramref:`~tarantool.Connection.crud_delete.params.key`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_delete.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_delete', space_name, key, opts)
+
+    def crud_replace(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_replace request on the pool server: 
+        replaces row through the 
+        `crud <https://github.com/tarantool/crud#replace>`__.
+        Refer to :meth:`~tarantool.Connection.crud_replace`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_replace.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_replace.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_replace.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_replace', space_name, values, opts)
+
+    def crud_replace_object(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_replace_object request on the pool server: 
+        replaces object row through the 
+        `crud <https://github.com/tarantool/crud#replace>`__.
+        Refer to :meth:`~tarantool.Connection.crud_replace_object`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_object.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_object.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_object.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_replace_object', space_name, values, opts)
+
+    def crud_replace_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_replace_many request on the pool server: 
+        replaces batch rows through the 
+        `crud <https://github.com/tarantool/crud#replace-many>`__.
+        Refer to :meth:`~tarantool.Connection.crud_replace_many`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_many.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_many.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_many.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_replace_many', space_name, values, opts)
+
+    def crud_replace_object_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_replace_object_many request on the pool server: 
+        replaces batch object rows through the 
+        `crud <https://github.com/tarantool/crud#replace-many>`__.
+        Refer to :meth:`~tarantool.Connection.crud_replace_object_many`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_object_many.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_object_many.params.values`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_replace_object_many.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_replace_object_many', space_name, values, opts)
+
+    def crud_upsert(self, space_name, values, operations=[], opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_upsert request on the pool server: 
+        upserts row through the 
+        `crud <https://github.com/tarantool/crud#upsert>`__.
+        Refer to :meth:`~tarantool.Connection.crud_upsert`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert.params.values`.
+
+        :param operations: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert.params.operations`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_upsert', space_name, values, operations, opts)
+
+    def crud_upsert_object(self, space_name, values, operations=[], opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_upsert_object request on the pool server: 
+        upserts object row through the 
+        `crud <https://github.com/tarantool/crud#upsert>`__.
+        Refer to :meth:`~tarantool.Connection.crud_upsert_object`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_object.params.space_name`.
+
+        :param values: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_object.params.values`.
+
+        :param operations: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_object.params.operations`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_object.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_upsert_object', space_name, values, operations, opts)
+
+    def crud_upsert_many(self, space_name, values_operation, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_upsert_many request on the pool server: 
+        upserts batch rows through the 
+        `crud <https://github.com/tarantool/crud#upsert-many>`__.
+        Refer to :meth:`~tarantool.Connection.crud_upsert_many`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_many.params.space_name`.
+
+        :param values_operation: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_many.params.values_operation`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_many.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_upsert_many', space_name, values_operation, opts)
+
+    def crud_upsert_object_many(self, space_name, values_operation, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_upsert_object_many request on the pool server: 
+        upserts batch object rows through the 
+        `crud <https://github.com/tarantool/crud#upsert-many>`__.
+        Refer to :meth:`~tarantool.Connection.crud_upsert_object_many`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_object_many.params.space_name`.
+
+        :param values_operation: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_object_many.params.values_operation`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_upsert_object_many.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_upsert_object_many', space_name, values_operation, opts)
+
+    def crud_select(self, space_name, conditions=[], opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_select request on the pool server: 
+        selects rows through the 
+        `crud <https://github.com/tarantool/crud#select>`__.
+        Refer to :meth:`~tarantool.Connection.crud_select`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_select.params.space_name`.
+
+        :param conditions: Refer to
+            :paramref:`~tarantool.Connection.crud_select.params.conditions`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_select.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_select', space_name, conditions, opts)
+
+    def crud_min(self, space_name, index_name, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_min request on the pool server: 
+        gets rows with minimum value in the specified index through 
+        `crud <https://github.com/tarantool/crud#min-and-max>`__.
+        Refer to :meth:`~tarantool.Connection.crud_min`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_min.params.space_name`.
+
+        :param index_name: Refer to
+            :paramref:`~tarantool.Connection.crud_min.params.index_name`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_min.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_min', space_name, index_name, opts)
+
+    def crud_max(self, space_name, index_name, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_max request on the pool server: 
+        gets rows with maximum value in the specified index through 
+        `crud <https://github.com/tarantool/crud#min-and-max>`__.
+        Refer to :meth:`~tarantool.Connection.crud_max`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_max.params.space_name`.
+
+        :param index_name: Refer to
+            :paramref:`~tarantool.Connection.crud_max.params.index_name`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_max.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_max', space_name, index_name, opts)
+
+    def crud_len(self, space_name, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_len request on the pool server: 
+        gets the number of tuples in the space through 
+        `crud <https://github.com/tarantool/crud#len>`__.
+        Refer to :meth:`~tarantool.Connection.crud_len`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_len.params.space_name`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_len.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_len', space_name, opts)
+
+    def crud_storage_info(self, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_storage_info request on the pool server: 
+        gets storages status through the 
+        `crud <https://github.com/tarantool/crud#storage-info>`__.
+        Refer to :meth:`~tarantool.Connection.crud_storage_info`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_storage_info.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_storage_info', opts)
+
+    def crud_count(self, space_name, conditions=[], opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_count request on the pool server: 
+        gets rows count through the 
+        `crud <https://github.com/tarantool/crud#count>`__.
+        Refer to :meth:`~tarantool.Connection.crud_count`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_count.params.space_name`.
+
+        :param conditions: Refer to
+            :paramref:`~tarantool.Connection.crud_count.params.conditions`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_count.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_count', space_name, conditions, opts)
+
+    def crud_stats(self, space_name=None, *, mode=Mode.ANY):
+        """
+        Execute an crud_stats request on the pool server: 
+        gets statistics through the 
+        `crud <https://github.com/tarantool/crud#statistics>`__.
+        Refer to :meth:`~tarantool.Connection.crud_stats`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_stats.params.space_name`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_stats', space_name)
+
+    def crud_unflatten_rows(self, rows, metadata, *, mode=Mode.ANY):
+        """
+        Makes rows unflatten through the 
+        `crud <https://github.com/tarantool/crud#api>`__.
+        Refer to :meth:`~tarantool.Connection.crud_unflatten_rows`.
+
+        :param rows: Refer to
+            :paramref:`~tarantool.Connection.crud_unflatten_rows.params.rows`.
+
+        :param metadata: Refer to
+            :paramref:`~tarantool.Connection.crud_unflatten_rows.params.metadata`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_unflatten_rows', rows, metadata)
+
+    def crud_truncate(self, space_name, opts={}, *, mode=Mode.ANY):
+        """
+        Execute an crud_truncate request on the pool server: 
+        truncates rows through 
+        `crud <https://github.com/tarantool/crud#truncate>`__.
+        Refer to :meth:`~tarantool.Connection.crud_truncate`.
+
+        :param space_name: Refer to
+            :paramref:`~tarantool.Connection.crud_truncate.params.space_name`.
+
+        :param opts: Refer to
+            :paramref:`~tarantool.Connection.crud_truncate.params.opts`.
+
+        :param mode: Request mode.
+        :type mode: :class:`~tarantool.Mode`, optional
+
+        :rtype: :class:`~tarantool.crud.CrudResult`
+
+        :raise: :exc:`~tarantool.error.CrudModuleError`,
+            :exc:`~tarantool.error.DatabaseError`
+        """
+
+        return self._send(mode, 'crud_truncate', space_name, opts)
