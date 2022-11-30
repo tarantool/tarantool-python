@@ -21,8 +21,12 @@ from ctypes import c_ssize_t
 
 import msgpack
 
-from tarantool.response import Response
+from tarantool.response import (
+    unpacker_factory as default_unpacker_factory,
+    Response,
+)
 from tarantool.request import (
+    packer_factory as default_packer_factory,
     Request,
     # RequestOK,
     RequestCall,
@@ -357,7 +361,9 @@ class Connection(ConnectionInterface):
                  ssl_key_file=DEFAULT_SSL_KEY_FILE,
                  ssl_cert_file=DEFAULT_SSL_CERT_FILE,
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
-                 ssl_ciphers=DEFAULT_SSL_CIPHERS):
+                 ssl_ciphers=DEFAULT_SSL_CIPHERS,
+                 packer_factory=default_packer_factory,
+                 unpacker_factory=default_unpacker_factory):
         """
         :param host: Server hostname or IP address. Use ``None`` for
             Unix sockets.
@@ -395,6 +401,16 @@ class Connection(ConnectionInterface):
         :param encoding: ``'utf-8'`` or ``None``. Use ``None`` to work
             with non-UTF8 strings.
 
+            If non-default
+            :paramref:`~tarantool.Connection.packer_factory` option is
+            used, :paramref:`~tarantool.Connection.encoding` option
+            value is ignored on encode until the factory explicitly uses
+            its value. If non-default
+            :paramref:`~tarantool.Connection.unpacker_factory` option is
+            used, :paramref:`~tarantool.Connection.encoding` option
+            value is ignored on decode until the factory explicitly uses
+            its value.
+
             If ``'utf-8'``, pack Unicode string (:obj:`str`) to
             MessagePack string (`mp_str`_) and unpack MessagePack string
             (`mp_str`_) Unicode string (:obj:`str`), pack :obj:`bytes`
@@ -429,6 +445,13 @@ class Connection(ConnectionInterface):
         :param use_list:
             If ``True``, unpack MessagePack array (`mp_array`_) to
             :obj:`list`. Otherwise, unpack to :obj:`tuple`.
+
+            If non-default
+            :paramref:`~tarantool.Connection.unpacker_factory` option is
+            used,
+            :paramref:`~tarantool.Connection.use_list` option value is
+            ignored on decode until the factory explicitly uses its
+            value.
         :type use_list: :obj:`bool`, optional
 
         :param call_16:
@@ -462,6 +485,23 @@ class Connection(ConnectionInterface):
         :param ssl_ciphers: Colon-separated (``:``) list of SSL cipher
             suites the connection can use.
         :type ssl_ciphers: :obj:`str` or :obj:`None`, optional
+
+        :param packer_factory: Request MessagePack packer factory.
+            Supersedes :paramref:`~tarantool.Connection.encoding`. See
+            :func:`~tarantool.request.packer_factory` for example of
+            a packer factory.
+        :type packer_factory:
+            callable[[:obj:`~tarantool.Connection`], :obj:`~msgpack.Packer`],
+            optional
+
+        :param unpacker_factory: Response MessagePack unpacker factory.
+            Supersedes :paramref:`~tarantool.Connection.encoding` and
+            :paramref:`~tarantool.Connection.use_list`. See
+            :func:`~tarantool.response.unpacker_factory` for example of
+            an unpacker factory.
+        :type unpacker_factory:
+            callable[[:obj:`~tarantool.Connection`], :obj:`~msgpack.Unpacker`],
+            optional
 
         :raise: :exc:`~tarantool.error.ConfigurationError`,
             :meth:`~tarantool.Connection.connect` exceptions
@@ -514,6 +554,8 @@ class Connection(ConnectionInterface):
             IPROTO_FEATURE_ERROR_EXTENSION: False,
             IPROTO_FEATURE_WATCHERS: False,
         }
+        self._packer_factory_impl = packer_factory
+        self._unpacker_factory_impl = unpacker_factory
 
         if connect_now:
             self.connect()
@@ -1749,3 +1791,9 @@ class Connection(ConnectionInterface):
         features_list = [val for val in CONNECTOR_FEATURES if val in server_features]
         for val in features_list:
             self._features[val] = True
+
+    def _packer_factory(self):
+        return self._packer_factory_impl(self)
+
+    def _unpacker_factory(self):
+        return self._unpacker_factory_impl(self)

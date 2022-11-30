@@ -63,7 +63,7 @@ from tarantool.utils import (
 
 from tarantool.msgpack_ext.packer import default as packer_default
 
-def build_packer(conn):
+def packer_factory(conn):
     """
     Build packer to pack request.
 
@@ -148,7 +148,7 @@ class Request(object):
         self._body = ''
         self.response_class = Response
 
-        self.packer = build_packer(conn)
+        self.packer = conn._packer_factory()
 
     def _dumps(self, src):
         """

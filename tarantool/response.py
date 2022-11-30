@@ -32,7 +32,7 @@ from tarantool.error import (
 
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
-def build_unpacker(conn):
+def unpacker_factory(conn):
     """
     Build unpacker to unpack request response.
 
@@ -108,7 +108,7 @@ class Response(Sequence):
         # created in the __new__().
         # super(Response, self).__init__()
 
-        unpacker = build_unpacker(conn)
+        unpacker = conn._unpacker_factory()
 
         unpacker.feed(response)
         header = unpacker.unpack()

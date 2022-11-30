@@ -8,8 +8,6 @@ import pkg_resources
 
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
-from tarantool.request import build_packer
-from tarantool.response import build_unpacker
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_error_ext_type_test
@@ -273,7 +271,7 @@ class TestSuite_ErrorExt(unittest.TestCase):
                     unpacker_ext_hook(
                         3,
                         case['msgpack'],
-                        build_unpacker(conn)
+                        conn._unpacker_factory(),
                     ),
                     case['python'])
 
@@ -330,7 +328,7 @@ class TestSuite_ErrorExt(unittest.TestCase):
                 case = self.cases[name]
                 conn = getattr(self, case['conn'])
 
-                self.assertEqual(packer_default(case['python'], build_packer(conn)),
+                self.assertEqual(packer_default(case['python'], conn._packer_factory()),
                                  msgpack.ExtType(code=3, data=case['msgpack']))
 
     @skip_or_run_error_ext_type_test
