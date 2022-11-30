@@ -9,7 +9,6 @@ import pytz
 
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
-from tarantool.response import build_unpacker
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
@@ -154,7 +153,7 @@ class TestSuite_Interval(unittest.TestCase):
                 self.assertEqual(unpacker_ext_hook(
                                     6,
                                     case['msgpack'],
-                                    build_unpacker(self.con),
+                                    self.con._unpacker_factory(),
                                  ),
                                  case['python'])
 
@@ -206,13 +205,13 @@ class TestSuite_Interval(unittest.TestCase):
         case = b'\x01\x09\xce\x00\x98\x96\x80'
         self.assertRaisesRegex(
             MsgpackError, 'Unknown interval field id 9',
-            lambda: unpacker_ext_hook(6, case, build_unpacker(self.con)))
+            lambda: unpacker_ext_hook(6, case, self.con._unpacker_factory()))
 
     def test_unknown_adjust_decode(self):
         case = b'\x02\x07\xce\x00\x98\x96\x80\x08\x03'
         self.assertRaisesRegex(
             MsgpackError, '3 is not a valid Adjust',
-            lambda: unpacker_ext_hook(6, case, build_unpacker(self.con)))
+            lambda: unpacker_ext_hook(6, case, self.con._unpacker_factory()))
 
 
     arithmetic_cases = {
