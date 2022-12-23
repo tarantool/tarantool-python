@@ -3,6 +3,39 @@ import pkg_resources
 import re
 import sys
 
+def fetch_tarantool_version(self):
+    """Helper to fetch current Tarantool version.
+    """
+    if not hasattr(self, 'tnt_version') or self.tnt_version is None:
+        srv = None
+
+        if hasattr(self, 'servers') and self.servers is not None:
+            srv = self.servers[0]
+
+        if hasattr(self, 'srv') and self.srv is not None:
+            srv = self.srv
+
+        assert srv is not None
+
+        try:
+            self.tnt_version = srv.admin.tnt_version
+        except:
+            self.__class__.tnt_version = srv.admin.tnt_version
+
+def skip_or_run_test_tarantool_impl(self, REQUIRED_TNT_VERSION, msg):
+    """Helper to skip or run tests depending on the Tarantool
+    version.
+
+    Also, it can be used with the 'setUp' method for skipping
+    the whole test suite.
+    """
+    fetch_tarantool_version(self)
+
+    support_version = pkg_resources.parse_version(REQUIRED_TNT_VERSION)
+
+    if self.tnt_version < support_version:
+        self.skipTest('Tarantool %s %s' % (self.tnt_version, msg))
+
 
 def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
     """Decorator to skip or run tests depending on the tarantool
@@ -17,28 +50,24 @@ def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
         if func.__name__ == 'setUp':
             func(self, *args, **kwargs)
 
-        if not hasattr(self, 'tnt_version'):
-            srv = None
-
-            if hasattr(self, 'servers'):
-                srv = self.servers[0]
-
-            if hasattr(self, 'srv'):
-                srv = self.srv
-
-            assert srv is not None
-
-            self.__class__.tnt_version = srv.admin.tnt_version
-
-        support_version = pkg_resources.parse_version(REQUIRED_TNT_VERSION)
-
-        if self.tnt_version < support_version:
-            self.skipTest('Tarantool %s %s' % (self.tnt_version, msg))
+        skip_or_run_test_tarantool_impl(self, REQUIRED_TNT_VERSION, msg)
 
         if func.__name__ != 'setUp':
             func(self, *args, **kwargs)
 
     return wrapper
+
+def skip_or_run_test_tarantool_call(self, REQUIRED_TNT_VERSION, msg):
+    """Function to skip or run tests depending on the tarantool
+    version. Useful in cases when in is inconvenient to work
+    with decorators.
+
+    Also, it can be used with the 'setUp' method for skipping
+    the whole test suite.
+    """
+
+    skip_or_run_test_tarantool_impl(self, REQUIRED_TNT_VERSION, msg)
+
 
 def skip_or_run_test_pcall_require(func, REQUIRED_TNT_MODULE, msg):
     """Decorator to skip or run tests depending on tarantool
@@ -178,3 +207,17 @@ def skip_or_run_error_ext_type_test(func):
 
     return skip_or_run_test_tarantool(func, '2.10.0',
                                       'does not support error extension type')
+
+def skip_or_run_ssl_password_test_call(self):
+    """Function to skip or run tests related to SSL password
+    and SSL password files support. Supported only in Tarantool EE.
+    Do not check Enterprise prefix since TNT_SSL_TEST already assumes
+    it.
+
+    Tarantool EE supports SSL passwords and password files only in
+    current master since commit e1f47dd4 (after 2.11.0-entrypoint).
+    See https://github.com/tarantool/tarantool-ee/issues/22
+    """
+
+    return skip_or_run_test_tarantool_call(self, '2.11.0',
+                                           'does not support SSL passwords')

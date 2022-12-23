@@ -113,9 +113,14 @@ jobs:
       fail-fast: false
       matrix:
         tarantool:
-          - '1.10.11-0-gf0b0e7ecf-r470'
-          - '2.8.3-21-g7d35cd2be-r470'
-          - '2.10.0-1-gfa775b383-r486-linux-x86_64'
+          - bundle: 'bundle-1.10.11-0-gf0b0e7ecf-r470'
+            path: ''
+          - bundle: 'bundle-2.8.3-21-g7d35cd2be-r470'
+            path: ''
+          - bundle: 'bundle-2.10.0-1-gfa775b383-r486-linux-x86_64'
+            path: ''
+          - bundle: 'sdk-gc64-2.11.0-entrypoint-107-ga18449d54-r524.linux.x86_64'
+            path: 'dev/linux/x86_64/master/'
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
 
     steps:
@@ -131,10 +136,10 @@ jobs:
         if: github.event_name != 'pull_request_target'
         uses: actions/checkout@v2
 
-      - name: Install tarantool ${{ matrix.tarantool }}
+      - name: Install Tarantool EE SDK
         run: |
-          ARCHIVE_NAME=tarantool-enterprise-bundle-${{ matrix.tarantool }}.tar.gz
-          curl -O -L https://${{ secrets.SDK_DOWNLOAD_TOKEN }}@download.tarantool.io/enterprise/${ARCHIVE_NAME}
+          ARCHIVE_NAME=tarantool-enterprise-${{ matrix.tarantool.bundle }}.tar.gz
+          curl -O -L https://${{ secrets.SDK_DOWNLOAD_TOKEN }}@download.tarantool.io/enterprise/${{ matrix.tarantool.path }}${ARCHIVE_NAME}
           tar -xzf ${ARCHIVE_NAME}
           rm -f ${ARCHIVE_NAME}
 
@@ -163,7 +168,8 @@ jobs:
           source tarantool-enterprise/env.sh
           make test
         env:
-          TEST_TNT_SSL: ${{ matrix.tarantool == '2.10.0-1-gfa775b383-r486-linux-x86_64' }}
+          TEST_TNT_SSL: ${{ matrix.tarantool.bundle == 'bundle-2.10.0-1-gfa775b383-r486-linux-x86_64' ||
+                            matrix.tarantool.bundle == 'sdk-gc64-2.11.0-entrypoint-107-ga18449d54-r524.linux.x86_64'}}
 
   run_tests_pip_branch_install_linux:
     # We want to run on external PRs, but not on our own internal

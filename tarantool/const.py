@@ -117,6 +117,10 @@ DEFAULT_SSL_CERT_FILE = None
 DEFAULT_SSL_CA_FILE = None
 # Default value for list of SSL ciphers
 DEFAULT_SSL_CIPHERS = None
+# Default value for SSL key file password
+DEFAULT_SSL_PASSWORD = None
+# Default value for a path to file with SSL key file password
+DEFAULT_SSL_PASSWORD_FILE = None
 # Default cluster nodes list refresh interval (seconds)
 CLUSTER_DISCOVERY_DELAY = 60
 # Default cluster nodes state refresh interval (seconds)

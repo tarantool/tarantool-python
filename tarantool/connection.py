@@ -56,6 +56,8 @@ from tarantool.const import (
     DEFAULT_SSL_CERT_FILE,
     DEFAULT_SSL_CA_FILE,
     DEFAULT_SSL_CIPHERS,
+    DEFAULT_SSL_PASSWORD,
+    DEFAULT_SSL_PASSWORD_FILE,
     REQUEST_TYPE_OK,
     REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE,
@@ -569,6 +571,8 @@ class Connection(ConnectionInterface):
                  ssl_cert_file=DEFAULT_SSL_CERT_FILE,
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
                  ssl_ciphers=DEFAULT_SSL_CIPHERS,
+                 ssl_password=DEFAULT_SSL_PASSWORD,
+                 ssl_password_file=DEFAULT_SSL_PASSWORD_FILE,
                  packer_factory=default_packer_factory,
                  unpacker_factory=default_unpacker_factory):
         """
@@ -693,6 +697,15 @@ class Connection(ConnectionInterface):
             suites the connection can use.
         :type ssl_ciphers: :obj:`str` or :obj:`None`, optional
 
+        :param ssl_password: Password for decrypting
+            :paramref:`~tarantool.Connection.ssl_key_file`.
+        :type ssl_password: :obj:`str` or :obj:`None`, optional
+
+        :param ssl_password_file: File with password for decrypting
+            :paramref:`~tarantool.Connection.ssl_key_file`. Connection
+            tries every line from the file as a password.
+        :type ssl_password_file: :obj:`str` or :obj:`None`, optional
+
         :param packer_factory: Request MessagePack packer factory.
             Supersedes :paramref:`~tarantool.Connection.encoding`. See
             :func:`~tarantool.request.packer_factory` for example of
@@ -754,6 +767,8 @@ class Connection(ConnectionInterface):
         self.ssl_cert_file = ssl_cert_file
         self.ssl_ca_file = ssl_ca_file
         self.ssl_ciphers = ssl_ciphers
+        self.ssl_password = ssl_password
+        self.ssl_password_file = ssl_password_file
         self._protocol_version = None
         self._features = {
             IPROTO_FEATURE_STREAMS: False,
@@ -884,21 +899,7 @@ class Connection(ConnectionInterface):
                 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
             if self.ssl_cert_file:
-                # If the password argument is not specified and a password is
-                # required, OpenSSL’s built-in password prompting mechanism
-                # will be used to interactively prompt the user for a password.
-                #
-                # We should disable this behaviour, because a python
-                # application that uses the connector unlikely assumes
-                # interaction with a human + a Tarantool implementation does
-                # not support this at least for now.
-                def password_raise_error():
-                    raise SslError("Password for decrypting the private " +
-                                   "key is unsupported")
-                context.load_cert_chain(certfile=self.ssl_cert_file,
-                                        keyfile=self.ssl_key_file,
-                                        password=password_raise_error)
-
+                self._ssl_load_cert_chain(context)
             if self.ssl_ca_file:
                 context.load_verify_locations(cafile=self.ssl_ca_file)
                 context.verify_mode = ssl.CERT_REQUIRED
@@ -914,6 +915,60 @@ class Connection(ConnectionInterface):
             raise e
         except Exception as e:
             raise SslError(e)
+
+    def _ssl_load_cert_chain(self, context):
+        """
+        Decrypt and load SSL certificate and private key files.
+        Mimic Tarantool EE approach here: see `SSL commit`_.
+
+        :param context: SSL context.
+        :type context: :obj:`ssl.SSLContext`
+
+        :raise: :exc:`~tarantool.error.SslError`
+
+        :meta private:
+
+        .. _SSL commit: https://github.com/tarantool/tarantool-ee/commit/e1f47dd4adbc6657159c611298aad225883a536b
+        """
+
+        exc_list = []
+
+        if self.ssl_password is not None:
+            try:
+                context.load_cert_chain(certfile=self.ssl_cert_file,
+                                        keyfile=self.ssl_key_file,
+                                        password=self.ssl_password)
+                return
+            except Exception as e:
+                exc_list.append(e)
+
+
+        if self.ssl_password_file is not None:
+            with open(self.ssl_password_file) as file:
+                for line in file:
+                    try:
+                        context.load_cert_chain(certfile=self.ssl_cert_file,
+                                                keyfile=self.ssl_key_file,
+                                                password=line.rstrip())
+                        return
+                    except Exception as e:
+                        exc_list.append(e)
+
+
+        try:
+            def password_raise_error():
+                raise SslError("Password prompt for decrypting the private " +
+                               "key is unsupported, use ssl_password or " +
+                               "ssl_password_file")
+            context.load_cert_chain(certfile=self.ssl_cert_file,
+                                    keyfile=self.ssl_key_file,
+                                    password=password_raise_error)
+
+            return
+        except Exception as e:
+            exc_list.append(e)
+
+        raise SslError(exc_list)
 
     def handshake(self):
         """
