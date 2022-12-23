@@ -41,3 +41,15 @@ debian/files
 debian/*.substvars
 
 deb_dist
+
+test/data/*.crt
+!test/data/ca.crt
+!test/data/invalidhost.crt
+!test/data/localhost.crt
+test/data/*.csr
+test/data/*.ext
+test/data/*.key
+!test/data/localhost.key
+!test/data/localhost.enc.key
+test/data/*.pem
+test/data/*.srl

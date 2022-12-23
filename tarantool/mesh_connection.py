@@ -24,6 +24,8 @@ from tarantool.const import (
     DEFAULT_SSL_CERT_FILE,
     DEFAULT_SSL_CA_FILE,
     DEFAULT_SSL_CIPHERS,
+    DEFAULT_SSL_PASSWORD,
+    DEFAULT_SSL_PASSWORD_FILE,
     CLUSTER_DISCOVERY_DELAY,
 )
 
@@ -36,7 +38,9 @@ default_addr_opts = {
     'ssl_key_file': DEFAULT_SSL_KEY_FILE,
     'ssl_cert_file': DEFAULT_SSL_CERT_FILE,
     'ssl_ca_file': DEFAULT_SSL_CA_FILE,
-    'ssl_ciphers': DEFAULT_SSL_CIPHERS
+    'ssl_ciphers': DEFAULT_SSL_CIPHERS,
+    'ssl_password': DEFAULT_SSL_PASSWORD,
+    'ssl_password_file': DEFAULT_SSL_PASSWORD_FILE,
 }
 
 
@@ -188,6 +192,8 @@ def update_connection(conn, address):
     conn.ssl_cert_file = address['ssl_cert_file']
     conn.ssl_ca_file = address['ssl_ca_file']
     conn.ssl_ciphers = address['ssl_ciphers']
+    conn.ssl_password = address['ssl_password']
+    conn.ssl_password_file = address['ssl_password_file']
 
 
 class RoundRobinStrategy(object):
@@ -269,6 +275,8 @@ class MeshConnection(Connection):
                  ssl_cert_file=DEFAULT_SSL_CERT_FILE,
                  ssl_ca_file=DEFAULT_SSL_CA_FILE,
                  ssl_ciphers=DEFAULT_SSL_CIPHERS,
+                 ssl_password=DEFAULT_SSL_PASSWORD,
+                 ssl_password_file=DEFAULT_SSL_PASSWORD_FILE,
                  addrs=None,
                  strategy_class=RoundRobinStrategy,
                  cluster_discovery_function=None,
@@ -427,7 +435,9 @@ class MeshConnection(Connection):
                              'ssl_key_file': ssl_key_file,
                              'ssl_cert_file': ssl_cert_file,
                              'ssl_ca_file': ssl_ca_file,
-                             'ssl_ciphers': ssl_ciphers})
+                             'ssl_ciphers': ssl_ciphers,
+                             'ssl_password': ssl_password,
+                             'ssl_password_file': ssl_password_file})
 
         # Verify that at least one address is provided.
         if not addrs:
@@ -467,7 +477,9 @@ class MeshConnection(Connection):
             ssl_key_file=addr['ssl_key_file'],
             ssl_cert_file=addr['ssl_cert_file'],
             ssl_ca_file=addr['ssl_ca_file'],
-            ssl_ciphers=addr['ssl_ciphers'])
+            ssl_ciphers=addr['ssl_ciphers'],
+            ssl_password=addr['ssl_password'],
+            ssl_password_file=addr['ssl_password_file'])
 
     def connect(self):
         """
@@ -574,7 +586,9 @@ class MeshConnection(Connection):
                         'ssl_key_file': self.ssl_key_file,
                         'ssl_cert_file': self.ssl_cert_file,
                         'ssl_ca_file': self.ssl_ca_file,
-                        'ssl_ciphers': self.ssl_ciphers}
+                        'ssl_ciphers': self.ssl_ciphers,
+                        'ssl_password': self.ssl_password,
+                        'ssl_password_file': self.ssl_password_file}
         if current_addr not in self.strategy.addrs:
             self.close()
             addr = self.strategy.getnext()

@@ -17,7 +17,9 @@ from tarantool.const import (
     POOL_INSTANCE_RECONNECT_DELAY,
     POOL_INSTANCE_RECONNECT_MAX_ATTEMPTS,
     POOL_REFRESH_DELAY,
-    SOCKET_TIMEOUT
+    SOCKET_TIMEOUT,
+    DEFAULT_SSL_PASSWORD,
+    DEFAULT_SSL_PASSWORD_FILE,
 )
 from tarantool.error import (
     ClusterConnectWarning,
@@ -383,13 +385,15 @@ class ConnectionPool(ConnectionInterface):
             .. code-block:: python
 
                 {
-                    "host': "str" or None,  # mandatory
-                    "port": int or "str",   # mandatory
-                    "transport": "str",     # optional
-                    "ssl_key_file": "str",  # optional
-                    "ssl_cert_file": "str", # optional
-                    "ssl_ca_file": "str",   # optional
-                    "ssl_ciphers": "str"    # optional
+                    "host': "str" or None,     # mandatory
+                    "port": int or "str",      # mandatory
+                    "transport": "str",        # optional
+                    "ssl_key_file": "str",     # optional
+                    "ssl_cert_file": "str",    # optional
+                    "ssl_ca_file": "str",      # optional
+                    "ssl_ciphers": "str"       # optional
+                    "ssl_password": "str",     # optional
+                    "ssl_password_file": "str" # optional
                 }
 
             Refer to corresponding :class:`~tarantool.Connection`
@@ -492,7 +496,9 @@ class ConnectionPool(ConnectionInterface):
                     ssl_key_file=addr['ssl_key_file'],
                     ssl_cert_file=addr['ssl_cert_file'],
                     ssl_ca_file=addr['ssl_ca_file'],
-                    ssl_ciphers=addr['ssl_ciphers'])
+                    ssl_ciphers=addr['ssl_ciphers'],
+                    ssl_password=addr['ssl_password'],
+                    ssl_password_file=addr['ssl_password_file'])
             )
 
         if connect_now:

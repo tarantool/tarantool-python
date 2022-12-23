@@ -125,6 +125,8 @@ class TarantoolServer(object):
                 ssl_cert_file=None,
                 ssl_ca_file=None,
                 ssl_ciphers=None,
+                ssl_password=None,
+                ssl_password_file=None,
                 create_unix_socket=False):
         if os.name == 'nt':
             from .remote_tarantool_server import RemoteTarantoolServer
@@ -137,6 +139,8 @@ class TarantoolServer(object):
                  ssl_cert_file=None,
                  ssl_ca_file=None,
                  ssl_ciphers=None,
+                 ssl_password=None,
+                 ssl_password_file=None,
                  create_unix_socket=False):
         os.popen('ulimit -c unlimited').close()
 
@@ -162,6 +166,8 @@ class TarantoolServer(object):
         self.ssl_cert_file = ssl_cert_file
         self.ssl_ca_file = ssl_ca_file
         self.ssl_ciphers = ssl_ciphers
+        self.ssl_password = ssl_password
+        self.ssl_password_file = ssl_password_file
 
     def find_exe(self):
         if 'TARANTOOL_BOX_PATH' in os.environ:
@@ -184,6 +190,10 @@ class TarantoolServer(object):
                 listen += "ssl_ca_file={}&".format(self.ssl_ca_file)
             if self.ssl_ciphers:
                 listen += "ssl_ciphers={}&".format(self.ssl_ciphers)
+            if self.ssl_password:
+                listen += "ssl_password={}&".format(self.ssl_password)
+            if self.ssl_password_file:
+                listen += "ssl_password_file={}&".format(self.ssl_password_file)
             listen = listen[:-1]
         else:
             listen = str(port)
