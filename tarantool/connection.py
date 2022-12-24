@@ -69,7 +69,11 @@ from tarantool.const import (
     IPROTO_FEATURE_TRANSACTIONS,
     IPROTO_FEATURE_ERROR_EXTENSION,
     IPROTO_FEATURE_WATCHERS,
+    IPROTO_AUTH_TYPE,
     IPROTO_CHUNK,
+    AUTH_TYPE_CHAP_SHA1,
+    AUTH_TYPE_PAP_SHA256,
+    AUTH_TYPES,
 )
 from tarantool.error import (
     Error,
@@ -574,7 +578,8 @@ class Connection(ConnectionInterface):
                  ssl_password=DEFAULT_SSL_PASSWORD,
                  ssl_password_file=DEFAULT_SSL_PASSWORD_FILE,
                  packer_factory=default_packer_factory,
-                 unpacker_factory=default_unpacker_factory):
+                 unpacker_factory=default_unpacker_factory,
+                 auth_type=None):
         """
         :param host: Server hostname or IP address. Use ``None`` for
             Unix sockets.
@@ -723,6 +728,14 @@ class Connection(ConnectionInterface):
             callable[[:obj:`~tarantool.Connection`], :obj:`~msgpack.Unpacker`],
             optional
 
+        :param auth_type: Authentication method: ``"chap-sha1"`` (supported in
+            Tarantool CE and EE) or ``"pap-sha256"`` (supported in Tarantool EE,
+            ``"ssl"`` :paramref:`~tarantool.Connection.transport` must be used).
+            If `None`, use authentication method provided by server in IPROTO_ID
+            exchange. If server does not provide an authentication method, use
+            ``"chap-sha1"``.
+        :type auth_type: :obj:`None` or :obj:`str`, optional
+
         :raise: :exc:`~tarantool.error.ConfigurationError`,
             :meth:`~tarantool.Connection.connect` exceptions
 
@@ -778,6 +791,8 @@ class Connection(ConnectionInterface):
         }
         self._packer_factory_impl = packer_factory
         self._unpacker_factory_impl = unpacker_factory
+        self._client_auth_type = auth_type
+        self._server_auth_type = None
 
         if connect_now:
             self.connect()
@@ -985,6 +1000,7 @@ class Connection(ConnectionInterface):
         if greeting.protocol != "Binary":
             raise NetworkError("Unsupported protocol: " + greeting.protocol)
         self.version_id = greeting.version_id
+        self._check_features()
         self.uuid = greeting.uuid
         self._salt = greeting.salt
         if self.user:
@@ -1008,7 +1024,6 @@ class Connection(ConnectionInterface):
                 self.wrap_socket_ssl()
             self.handshake()
             self.load_schema()
-            self._check_features()
         except SslError as e:
             raise e
         except Exception as e:
@@ -1390,12 +1405,43 @@ class Connection(ConnectionInterface):
         if not self._socket:
             return self._opt_reconnect()
 
-        request = RequestAuthenticate(self, self._salt, self.user,
-                                      self.password)
+        request = RequestAuthenticate(self,
+                              salt=self._salt,
+                              user=self.user,
+                              password=self.password,
+                              auth_type=self._get_auth_type())
         auth_response = self._send_request_wo_reconnect(request)
         if auth_response.return_code == 0:
             self.flush_schema()
         return auth_response
+
+    def _get_auth_type(self):
+        """
+        Get authentication method based on client and server settings.
+
+        :rtype: :obj:`str`
+
+        :raise: :exc:`~tarantool.error.DatabaseError`
+
+        :meta private:
+        """
+
+        if self._client_auth_type is None:
+            if self._server_auth_type is None:
+                auth_type = AUTH_TYPE_CHAP_SHA1
+            else:
+                if self._server_auth_type not in AUTH_TYPES:
+                    raise ConfigurationError(f'Unknown server authentication type {self._server_auth_type}')
+                auth_type = self._server_auth_type
+        else:
+            if self._client_auth_type not in AUTH_TYPES:
+                raise ConfigurationError(f'Unknown client authentication type {self._client_auth_type}')
+            auth_type = self._client_auth_type
+
+        if auth_type == AUTH_TYPE_PAP_SHA256 and self.transport != SSL_TRANSPORT:
+            raise ConfigurationError('Use PAP-SHA256 only with ssl transport')
+
+        return auth_type
 
     def _join_v16(self, server_uuid):
         """
@@ -2037,11 +2083,13 @@ class Connection(ConnectionInterface):
             response = self._send_request(request)
             server_protocol_version = response.protocol_version
             server_features = response.features
+            server_auth_type = response.auth_type
         except DatabaseError as exc:
             ER_UNKNOWN_REQUEST_TYPE = 48
             if exc.code == ER_UNKNOWN_REQUEST_TYPE:
                 server_protocol_version = None
                 server_features = []
+                server_auth_type = None
             else:
                 raise exc
 
@@ -2053,6 +2101,8 @@ class Connection(ConnectionInterface):
         features_list = [val for val in CONNECTOR_FEATURES if val in server_features]
         for val in features_list:
             self._features[val] = True
+
+        self._server_auth_type = server_auth_type
 
     def _packer_factory(self):
         return self._packer_factory_impl(self)

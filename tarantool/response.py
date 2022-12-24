@@ -21,6 +21,7 @@ from tarantool.const import (
     IPROTO_SQL_INFO_AUTOINCREMENT_IDS,
     IPROTO_VERSION,
     IPROTO_FEATURES,
+    IPROTO_AUTH_TYPE,
 )
 from tarantool.types import decode_box_error
 from tarantool.error import (
@@ -386,3 +387,14 @@ class ResponseProtocolVersion(Response):
             return []
         return self._body.get(IPROTO_FEATURES)
 
+    @property
+    def auth_type(self):
+        """
+        Server expected authentication method.
+
+        :rtype: :obj:`str` or :obj:`None`
+        """
+
+        if self._return_code != 0:
+            return None
+        return self._body.get(IPROTO_AUTH_TYPE)

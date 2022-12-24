@@ -51,6 +51,8 @@ from tarantool.const import (
     REQUEST_TYPE_JOIN,
     REQUEST_TYPE_SUBSCRIBE,
     REQUEST_TYPE_ID,
+    AUTH_TYPE_CHAP_SHA1,
+    AUTH_TYPE_PAP_SHA256,
 )
 from tarantool.response import (
     Response,
@@ -223,6 +225,26 @@ class RequestInsert(Request):
 
         self._body = request_body
 
+def sha1(values):
+    """
+    Compute hash.
+
+    :param values: Values to hash.
+    :type values: :obj:`tuple`
+
+    :rtype: :obj:`str`
+
+    :meta private:
+    """
+
+    sha = hashlib.sha1()
+    for i in values:
+        if i is not None:
+            if isinstance(i, bytes):
+                sha.update(i)
+            else:
+                sha.update(i.encode())
+    return sha.digest()
 
 class RequestAuthenticate(Request):
     """
@@ -231,7 +253,7 @@ class RequestAuthenticate(Request):
 
     request_type = REQUEST_TYPE_AUTHENTICATE
 
-    def __init__(self, conn, salt, user, password):
+    def __init__(self, conn, salt, user, password, auth_type=AUTH_TYPE_CHAP_SHA1):
         """
         :param conn: Request sender.
         :type conn: :class:`~tarantool.Connection`
@@ -246,27 +268,25 @@ class RequestAuthenticate(Request):
         :param password: User password for authentication on the
             Tarantool server.
         :type password: :obj:`str`
+
+        :param auth_type: Refer to :paramref:`~tarantool.Connection.auth_type`.
+        :type auth_type: :obj:`str`, optional
         """
 
         super(RequestAuthenticate, self).__init__(conn)
 
-        def sha1(values):
-            sha = hashlib.sha1()
-            for i in values:
-                if i is not None:
-                    if isinstance(i, bytes):
-                        sha.update(i)
-                    else:
-                        sha.update(i.encode())
-            return sha.digest()
+        if auth_type == AUTH_TYPE_CHAP_SHA1:
+            hash1 = sha1((password,))
+            hash2 = sha1((hash1,))
+            scramble = sha1((salt, hash2))
+            scramble = strxor(hash1, scramble)
+        elif auth_type == AUTH_TYPE_PAP_SHA256:
+            scramble = password
+        else:
+            raise ValueError(f'Unexpected auth_type {auth_type}')
 
-        hash1 = sha1((password,))
-        hash2 = sha1((hash1,))
-        scramble = sha1((salt, hash2))
-        scramble = strxor(hash1, scramble)
-        request_body = self._dumps({IPROTO_USER_NAME: user,
-                                    IPROTO_TUPLE: ("chap-sha1", scramble)})
-        self._body = request_body
+        self._body = self._dumps({IPROTO_USER_NAME: user,
+                                  IPROTO_TUPLE: (auth_type, scramble)})
 
     def header(self, length):
         """
