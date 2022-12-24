@@ -221,3 +221,18 @@ def skip_or_run_ssl_password_test_call(self):
 
     return skip_or_run_test_tarantool_call(self, '2.11.0',
                                            'does not support SSL passwords')
+
+def skip_or_run_auth_type_test_call(self):
+    """Function to skip or run tests related to configuring
+    authentication method.
+
+    Tarantool supports auth_type only in current master since
+    commit 2574ff1a (after 2.11.0-entrypoint).
+    See https://github.com/tarantool/tarantool/issues/7988
+    https://github.com/tarantool/tarantool/issues/7989
+    https://github.com/tarantool/tarantool-ee/issues/295
+    https://github.com/tarantool/tarantool-ee/issues/322
+    """
+
+    return skip_or_run_test_tarantool_call(self, '2.11.0',
+                                           'does not support auth type')

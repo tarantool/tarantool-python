@@ -7,13 +7,16 @@ from tarantool.error import (
 )
 from tarantool.const import (
     DEFAULT_TRANSPORT,
-    SSL_TRANSPORT
+    SSL_TRANSPORT,
+    AUTH_TYPE_CHAP_SHA1,
+    AUTH_TYPE_PAP_SHA256,
 )
 import tarantool
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import (
     fetch_tarantool_version,
     skip_or_run_ssl_password_test_call,
+    skip_or_run_auth_type_test_call,
 )
 
 
@@ -29,6 +32,7 @@ class SslTestCase:
     def __init__(self,
                  name="",
                  ok=False,
+                 expected_error=tarantool.error.SslError,
                  server_transport=SSL_TRANSPORT,
                  server_key_file=None,
                  server_cert_file=None,
@@ -36,14 +40,18 @@ class SslTestCase:
                  server_ciphers=None,
                  server_password=None,
                  server_password_file=None,
+                 server_auth_type=None,
+                 client_transport=SSL_TRANSPORT,
                  client_cert_file=None,
                  client_key_file=None,
                  client_ca_file=None,
                  client_ciphers=None,
                  client_password=None,
-                 client_password_file=None):
+                 client_password_file=None,
+                 client_auth_type=None):
         self.name = name
         self.ok = ok
+        self.expected_error = expected_error
         self.server_transport = server_transport
         self.server_key_file = server_key_file
         self.server_cert_file = server_cert_file
@@ -51,12 +59,15 @@ class SslTestCase:
         self.server_ciphers = server_ciphers
         self.server_password = server_password
         self.server_password_file = server_password_file
+        self.server_auth_type = server_auth_type
+        self.client_transport = client_transport
         self.client_cert_file = client_cert_file
         self.client_key_file = client_key_file
         self.client_ca_file = client_ca_file
         self.client_ciphers = client_ciphers
         self.client_password = client_password
         self.client_password_file = client_password_file
+        self.client_auth_type = client_auth_type
 
 @unittest.skipIf(not is_test_ssl(), "TEST_TNT_SSL is not set.")
 class TestSuite_Ssl(unittest.TestCase):
@@ -398,6 +409,46 @@ class TestSuite_Ssl(unittest.TestCase):
                 client_ca_file=self.ca_file,
                 client_ciphers="ECDHE-RSA-AES256-GCM-SHA384",
                 client_password=self.password),
+            SslTestCase(
+                name="pap-sha256_auth",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_auth_type=AUTH_TYPE_PAP_SHA256,
+                client_auth_type=AUTH_TYPE_PAP_SHA256),
+            SslTestCase(
+                name="chap-sha1_auth",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_auth_type=AUTH_TYPE_CHAP_SHA1,
+                client_auth_type=AUTH_TYPE_CHAP_SHA1),
+            SslTestCase(
+                name="pap-sha256_auth_no_ssl",
+                ok=False,
+                expected_error=tarantool.error.NetworkError,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_auth_type=AUTH_TYPE_CHAP_SHA1,
+                client_transport=DEFAULT_TRANSPORT,
+                client_auth_type=AUTH_TYPE_CHAP_SHA1),
+            SslTestCase(
+                name="auth_type_mismatch",
+                ok=False,
+                expected_error=tarantool.error.DatabaseError,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_auth_type=AUTH_TYPE_PAP_SHA256,
+                client_auth_type=AUTH_TYPE_CHAP_SHA1),
+            # uncomment after this Tarantool EE SDK will be available on CI:
+            # tarantool-enterprise-sdk-nogc64-2.11.0-entrypoint-110
+            #
+            # SslTestCase(
+            #     name="auth_type_use_server_id",
+            #     ok=True,
+            #     server_key_file=self.key_file,
+            #     server_cert_file=self.cert_file,
+            #     server_auth_type=AUTH_TYPE_PAP_SHA256),
         ]
         for t in testcases:
             with self.subTest(msg=t.name):
@@ -407,6 +458,10 @@ class TestSuite_Ssl(unittest.TestCase):
                 or t.server_password_file is not None:
                     skip_or_run_ssl_password_test_call(self)
 
+                if t.server_auth_type is not None \
+                or t.client_auth_type is not None:
+                    skip_or_run_auth_type_test_call(self)
+
                 srv = TarantoolServer(
                     transport=t.server_transport,
                     ssl_key_file=t.server_key_file,
@@ -414,7 +469,8 @@ class TestSuite_Ssl(unittest.TestCase):
                     ssl_ca_file=t.server_ca_file,
                     ssl_ciphers=t.server_ciphers,
                     ssl_password=t.server_password,
-                    ssl_password_file=t.server_password_file)
+                    ssl_password_file=t.server_password_file,
+                    auth_type=t.server_auth_type)
                 srv.script = 'test/suites/box.lua'
                 srv.start()
 
@@ -439,7 +495,7 @@ class TestSuite_Ssl(unittest.TestCase):
                         srv.host, srv.args['primary'],
                         user="test",
                         password="test",
-                        transport="ssl",
+                        transport=t.client_transport,
                         ssl_key_file=t.client_key_file,
                         ssl_cert_file=t.client_cert_file,
                         ssl_ca_file=t.client_ca_file,
@@ -447,12 +503,13 @@ class TestSuite_Ssl(unittest.TestCase):
                         ssl_password=t.client_password,
                         ssl_password_file=t.client_password_file,
                         connection_timeout=0.5,
-                        socket_timeout=0.5)
+                        socket_timeout=0.5,
+                        auth_type=t.client_auth_type)
 
                     self.assertEqual(con.insert('space_1', [1])[0], [1])
                     self.assertEqual(len(con.select('space_1')), 1)
                     self.assertTrue(t.ok)
-                except tarantool.error.SslError:
+                except t.expected_error:
                     self.assertFalse(t.ok)
                 finally:
                     self.stop_srv(srv)
@@ -491,6 +548,26 @@ class TestSuite_Ssl(unittest.TestCase):
                 client_key_file=self.key_enc_file,
                 client_cert_file=self.cert_file,
                 client_password_file=self.password_file),
+            SslTestCase(
+                name="pap-sha256_auth",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_ca_file=self.ca_file,
+                server_auth_type=AUTH_TYPE_PAP_SHA256,
+                client_key_file=self.key_file,
+                client_cert_file=self.cert_file,
+                client_ca_file=self.ca_file,
+                client_auth_type=AUTH_TYPE_PAP_SHA256),
+            # uncomment after this Tarantool EE SDK will be available on CI:
+            # tarantool-enterprise-sdk-nogc64-2.11.0-entrypoint-110
+            #
+            # SslTestCase(
+            #     name="auth_type_use_server_id",
+            #     ok=True,
+            #     server_key_file=self.key_file,
+            #     server_cert_file=self.cert_file,
+            #     server_auth_type=AUTH_TYPE_PAP_SHA256),
         ]
         for t in testcases:
             cnt = 5
@@ -501,17 +578,22 @@ class TestSuite_Ssl(unittest.TestCase):
                 or t.server_password_file is not None:
                     skip_or_run_ssl_password_test_call(self)
 
+                if t.server_auth_type is not None \
+                or t.client_auth_type is not None:
+                    skip_or_run_auth_type_test_call(self)
+
                 addrs = []
                 servers = []
                 for i in range(cnt):
                     srv = TarantoolServer(
-                        transport='ssl',
+                        transport=t.server_transport,
                         ssl_key_file=t.server_key_file,
                         ssl_cert_file=t.server_cert_file,
                         ssl_ca_file=t.server_ca_file,
                         ssl_ciphers=t.server_ciphers,
                         ssl_password=t.server_password,
-                        ssl_password_file=t.server_password_file)
+                        ssl_password_file=t.server_password_file,
+                        auth_type=t.server_auth_type)
                     srv.script = 'test/suites/box.lua'
                     srv.start()
                     srv.admin("""
@@ -524,7 +606,7 @@ class TestSuite_Ssl(unittest.TestCase):
                     addr = {
                         'host': srv.host,
                         'port': srv.args['primary'],
-                        'transport': 'ssl',
+                        'transport': t.client_transport,
                     }
                     if t.client_key_file is not None:
                         addr['ssl_key_file'] = t.client_key_file
@@ -538,6 +620,8 @@ class TestSuite_Ssl(unittest.TestCase):
                         addr['ssl_password'] = t.client_password
                     if t.client_password_file is not None:
                         addr['ssl_password_file'] = t.client_password_file
+                    if t.client_auth_type is not None:
+                        addr['auth_type'] = t.client_auth_type
                     addrs.append(addr)
 
                 pool = None
@@ -551,7 +635,7 @@ class TestSuite_Ssl(unittest.TestCase):
                     self.assertSequenceEqual(
                         pool.eval('return box.info().ro', mode=tarantool.Mode.RW),
                         [False])
-                except tarantool.error.SslError:
+                except t.expected_error:
                     self.assertFalse(t.ok)
                 finally:
                     self.stop_pool(pool)
@@ -588,6 +672,30 @@ class TestSuite_Ssl(unittest.TestCase):
                 client_key_file=self.key_enc_file,
                 client_cert_file=self.cert_file,
                 client_password_file=self.password_file),
+            SslTestCase(
+                name="pap-sha256_auth",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_ca_file=self.ca_file,
+                server_auth_type=AUTH_TYPE_PAP_SHA256,
+                client_key_file=self.key_file,
+                client_cert_file=self.cert_file,
+                client_ca_file=self.ca_file,
+                client_auth_type=AUTH_TYPE_PAP_SHA256),
+            # uncomment after this Tarantool EE SDK will be available on CI:
+            # tarantool-enterprise-sdk-nogc64-2.11.0-entrypoint-110
+            #
+            # SslTestCase(
+            #     name="auth_type_use_server_id",
+            #     ok=True,
+            #     server_key_file=self.key_file,
+            #     server_cert_file=self.cert_file,
+            #     server_ca_file=self.ca_file,
+            #     server_auth_type=AUTH_TYPE_PAP_SHA256
+            #     client_key_file=self.key_file,
+            #     client_cert_file=self.cert_file,
+            #     client_ca_file=self.ca_file,),
         ]
         for t in testcases:
             cnt = 5
@@ -598,17 +706,22 @@ class TestSuite_Ssl(unittest.TestCase):
                 or t.server_password_file is not None:
                     skip_or_run_ssl_password_test_call(self)
 
+                if t.server_auth_type is not None \
+                or t.client_auth_type is not None:
+                    skip_or_run_auth_type_test_call(self)
+
                 addrs = []
                 servers = []
                 for i in range(cnt):
                     srv = TarantoolServer(
-                        transport='ssl',
+                        transport=t.server_transport,
                         ssl_key_file=t.server_key_file,
                         ssl_cert_file=t.server_cert_file,
                         ssl_ca_file=t.server_ca_file,
                         ssl_ciphers=t.server_ciphers,
                         ssl_password=t.server_password,
-                        ssl_password_file=t.server_password_file)
+                        ssl_password_file=t.server_password_file,
+                        auth_type=t.server_auth_type)
                     srv.script = 'test/suites/box.lua'
                     srv.start()
                     srv.admin("""
@@ -622,7 +735,7 @@ class TestSuite_Ssl(unittest.TestCase):
                     addr = {
                         'host': srv.host,
                         'port': srv.args['primary'],
-                        'transport': 'ssl',
+                        'transport': t.client_transport,
                     }
                     if t.client_key_file is not None:
                         addr['ssl_key_file'] = t.client_key_file
@@ -636,6 +749,8 @@ class TestSuite_Ssl(unittest.TestCase):
                         addr['ssl_password'] = t.client_password
                     if t.client_password_file is not None:
                         addr['ssl_password_file'] = t.client_password_file
+                    if t.client_auth_type is not None:
+                        addr['auth_type'] = t.client_auth_type
                     addrs.append(addr)
 
                 mesh = None
@@ -652,7 +767,9 @@ class TestSuite_Ssl(unittest.TestCase):
                             resp = mesh.call('srv_id')
                             self.assertEqual(resp.data and resp.data[0], i)
                             servers[i].stop()
-                except tarantool.error.SslError:
+                            servers[i].clean()
+                    servers = []
+                except t.expected_error:
                     self.assertFalse(t.ok)
                 finally:
                     self.stop_mesh(mesh)

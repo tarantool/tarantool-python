@@ -127,7 +127,8 @@ class TarantoolServer(object):
                 ssl_ciphers=None,
                 ssl_password=None,
                 ssl_password_file=None,
-                create_unix_socket=False):
+                create_unix_socket=False,
+                auth_type=None):
         if os.name == 'nt':
             from .remote_tarantool_server import RemoteTarantoolServer
             return RemoteTarantoolServer()
@@ -141,7 +142,8 @@ class TarantoolServer(object):
                  ssl_ciphers=None,
                  ssl_password=None,
                  ssl_password_file=None,
-                 create_unix_socket=False):
+                 create_unix_socket=False,
+                 auth_type=None):
         os.popen('ulimit -c unlimited').close()
 
         if create_unix_socket:
@@ -168,6 +170,7 @@ class TarantoolServer(object):
         self.ssl_ciphers = ssl_ciphers
         self.ssl_password = ssl_password
         self.ssl_password_file = ssl_password_file
+        self.auth_type = auth_type
 
     def find_exe(self):
         if 'TARANTOOL_BOX_PATH' in os.environ:
@@ -204,6 +207,10 @@ class TarantoolServer(object):
         admin_listen = self.generate_listen(self.args['admin'], True)
         os.putenv("LISTEN", primary_listen)
         os.putenv("ADMIN", admin_listen)
+        if self.auth_type is not None:
+            os.putenv("AUTH_TYPE", self.auth_type)
+        else:
+            os.putenv("AUTH_TYPE", "")
 
     def prepare_args(self):
         return shlex.split(self.binary if not self.script else self.script_dst)

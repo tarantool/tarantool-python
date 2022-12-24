@@ -394,6 +394,7 @@ class ConnectionPool(ConnectionInterface):
                     "ssl_ciphers": "str"       # optional
                     "ssl_password": "str",     # optional
                     "ssl_password_file": "str" # optional
+                    "auth_type": "str"         # optional
                 }
 
             Refer to corresponding :class:`~tarantool.Connection`
@@ -498,7 +499,8 @@ class ConnectionPool(ConnectionInterface):
                     ssl_ca_file=addr['ssl_ca_file'],
                     ssl_ciphers=addr['ssl_ciphers'],
                     ssl_password=addr['ssl_password'],
-                    ssl_password_file=addr['ssl_password_file'])
+                    ssl_password_file=addr['ssl_password_file'],
+                    auth_type=addr['auth_type'])
             )
 
         if connect_now:

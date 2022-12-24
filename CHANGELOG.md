@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support [crud module](https://github.com/tarantool/crud) native API (#205).
 - Support `ssl_password` and `ssl_password_file` options
   to decrypt private SSL key file (#224).
+- Support specifying authentication method with `auth_type`
+  and Tarantool EE `pap-sha256` authentication method (#269).
 
 ### Changed
 
