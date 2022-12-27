@@ -440,15 +440,12 @@ class TestSuite_Ssl(unittest.TestCase):
                 server_cert_file=self.cert_file,
                 server_auth_type=AUTH_TYPE_PAP_SHA256,
                 client_auth_type=AUTH_TYPE_CHAP_SHA1),
-            # uncomment after this Tarantool EE SDK will be available on CI:
-            # tarantool-enterprise-sdk-nogc64-2.11.0-entrypoint-110
-            #
-            # SslTestCase(
-            #     name="auth_type_use_server_id",
-            #     ok=True,
-            #     server_key_file=self.key_file,
-            #     server_cert_file=self.cert_file,
-            #     server_auth_type=AUTH_TYPE_PAP_SHA256),
+            SslTestCase(
+                name="auth_type_use_server_id",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_auth_type=AUTH_TYPE_PAP_SHA256),
         ]
         for t in testcases:
             with self.subTest(msg=t.name):
@@ -559,15 +556,12 @@ class TestSuite_Ssl(unittest.TestCase):
                 client_cert_file=self.cert_file,
                 client_ca_file=self.ca_file,
                 client_auth_type=AUTH_TYPE_PAP_SHA256),
-            # uncomment after this Tarantool EE SDK will be available on CI:
-            # tarantool-enterprise-sdk-nogc64-2.11.0-entrypoint-110
-            #
-            # SslTestCase(
-            #     name="auth_type_use_server_id",
-            #     ok=True,
-            #     server_key_file=self.key_file,
-            #     server_cert_file=self.cert_file,
-            #     server_auth_type=AUTH_TYPE_PAP_SHA256),
+            SslTestCase(
+                name="auth_type_use_server_id",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_auth_type=AUTH_TYPE_PAP_SHA256),
         ]
         for t in testcases:
             cnt = 5
@@ -683,19 +677,16 @@ class TestSuite_Ssl(unittest.TestCase):
                 client_cert_file=self.cert_file,
                 client_ca_file=self.ca_file,
                 client_auth_type=AUTH_TYPE_PAP_SHA256),
-            # uncomment after this Tarantool EE SDK will be available on CI:
-            # tarantool-enterprise-sdk-nogc64-2.11.0-entrypoint-110
-            #
-            # SslTestCase(
-            #     name="auth_type_use_server_id",
-            #     ok=True,
-            #     server_key_file=self.key_file,
-            #     server_cert_file=self.cert_file,
-            #     server_ca_file=self.ca_file,
-            #     server_auth_type=AUTH_TYPE_PAP_SHA256
-            #     client_key_file=self.key_file,
-            #     client_cert_file=self.cert_file,
-            #     client_ca_file=self.ca_file,),
+            SslTestCase(
+                name="auth_type_use_server_id",
+                ok=True,
+                server_key_file=self.key_file,
+                server_cert_file=self.cert_file,
+                server_ca_file=self.ca_file,
+                server_auth_type=AUTH_TYPE_PAP_SHA256,
+                client_key_file=self.key_file,
+                client_cert_file=self.cert_file,
+                client_ca_file=self.ca_file),
         ]
         for t in testcases:
             cnt = 5
