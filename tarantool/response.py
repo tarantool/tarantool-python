@@ -30,6 +30,7 @@ from tarantool.error import (
     SchemaReloadException,
     tnt_strerror
 )
+from tarantool.schema import to_unicode
 
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
@@ -397,4 +398,4 @@ class ResponseProtocolVersion(Response):
 
         if self._return_code != 0:
             return None
-        return self._body.get(IPROTO_AUTH_TYPE)
+        return to_unicode(self._body.get(IPROTO_AUTH_TYPE))
