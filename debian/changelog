@@ -1,3 +1,25 @@
+python3-tarantool (0.11.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces the support of crud module API, encoding and
+    decoding customization and various security features for Tarantool EE.
+
+    ## Breaking changes
+
+    This release should not break any existing behavior.
+
+    ## New features
+    - Support custom packer and unpacker factories (#191).
+    - Support [crud module](https://github.com/tarantool/crud) native API
+      (#205).
+    - Support `ssl_password` and `ssl_password_file` options
+      to decrypt private SSL key file (#224).
+    - Support specifying authentication method with `auth_type`
+      and Tarantool EE `pap-sha256` authentication method (#269).
+
+ -- Georgy.moiseev <admin@tarantool.org>  Sat, 31 Dec 2022 02:09:03 +0300
+
 python3-tarantool (0.10.0-0) unstable; urgency=medium
 
     ## Overview

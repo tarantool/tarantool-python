@@ -7,16 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## 0.11.0 - 2022-12-31
+
+### Added
 - Support custom packer and unpacker factories (#191).
 - Support [crud module](https://github.com/tarantool/crud) native API (#205).
 - Support `ssl_password` and `ssl_password_file` options
   to decrypt private SSL key file (#224).
 - Support specifying authentication method with `auth_type`
   and Tarantool EE `pap-sha256` authentication method (#269).
-
-### Changed
-
-### Fixed
 
 ## 0.10.0 - 2022-11-09
 
