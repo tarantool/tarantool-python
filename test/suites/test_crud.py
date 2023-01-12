@@ -40,6 +40,12 @@ class TestSuite_Crud(unittest.TestCase):
                                                      user='guest', password='')
         # Time for vshard group configuration.
         time.sleep(1)
+        if self.conn.eval('return ROCKS_IMPORT_FAIL').data[0] == True:
+            raise unittest.SkipTest('The crud/vshard modules are not detected, ' +
+                                    'installation via rocks install is required ' +
+                                    'for CRUD testing purposes. You can use ' +
+                                    '<tarantoolctl rocks install crud> or ' +
+                                    '<tt rocks install crud> to install modules')
 
     crud_test_cases = {
         'crud_insert': {
