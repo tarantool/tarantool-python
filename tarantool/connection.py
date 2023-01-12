@@ -579,7 +579,8 @@ class Connection(ConnectionInterface):
                  ssl_password_file=DEFAULT_SSL_PASSWORD_FILE,
                  packer_factory=default_packer_factory,
                  unpacker_factory=default_unpacker_factory,
-                 auth_type=None):
+                 auth_type=None,
+                 fetch_schema=True):
         """
         :param host: Server hostname or IP address. Use ``None`` for
             Unix sockets.
@@ -736,6 +737,18 @@ class Connection(ConnectionInterface):
             ``"chap-sha1"``.
         :type auth_type: :obj:`None` or :obj:`str`, optional
 
+        :param bool fetch_schema: If ``False``, schema is not loaded on connect
+            and schema updates are not automatically loaded.
+            As a result, these methods become unavailable:
+            :meth:`~tarantool.Connection.replace`,
+            :meth:`~tarantool.Connection.insert`,
+            :meth:`~tarantool.Connection.delete`,
+            :meth:`~tarantool.Connection.upsert`,
+            :meth:`~tarantool.Connection.update`,
+            :meth:`~tarantool.Connection.select`,
+            :meth:`~tarantool.Connection.space`.
+        :type fetch_schema: :obj:`bool`, optional
+
         :raise: :exc:`~tarantool.error.ConfigurationError`,
             :meth:`~tarantool.Connection.connect` exceptions
 
@@ -766,8 +779,9 @@ class Connection(ConnectionInterface):
         self.socket_timeout = socket_timeout
         self.reconnect_delay = reconnect_delay
         self.reconnect_max_attempts = reconnect_max_attempts
-        self.schema = Schema(self)
-        self.schema_version = 1
+        self.fetch_schema = fetch_schema
+        self.schema = None
+        self.schema_version = 0
         self._socket = None
         self.connected = False
         self.error = True
@@ -1023,7 +1037,11 @@ class Connection(ConnectionInterface):
             if self.transport == SSL_TRANSPORT:
                 self.wrap_socket_ssl()
             self.handshake()
-            self.load_schema()
+            if self.fetch_schema:
+                self.schema = Schema(self)
+                self.load_schema()
+            else:
+                self.schema = None
         except SslError as e:
             raise e
         except Exception as e:
@@ -1118,7 +1136,8 @@ class Connection(ConnectionInterface):
                 response = request.response_class(self, self._read_response())
                 break
             except SchemaReloadException as e:
-                self.update_schema(e.schema_version)
+                if self.schema is not None:
+                    self.update_schema(e.schema_version)
                 continue
 
         while response._code == IPROTO_CHUNK:
@@ -1255,6 +1274,9 @@ class Connection(ConnectionInterface):
         :meta private:
         """
 
+        if self.schema is None:
+            self.schema = Schema(self)
+
         self.schema_version = schema_version
         self.flush_schema()
 
@@ -1268,6 +1290,19 @@ class Connection(ConnectionInterface):
 
         self.schema.flush()
         self.load_schema()
+
+    def _schemaful_connection_check(self):
+        """
+        Checks whether the connection is schemaful.
+        If the connection is schemaless, an exception will be thrown
+        about unsupporting the method in connection opened
+        with fetch_schema=False.
+
+        :raise: :exc:`~tarantool.error.NotSupportedError`
+        """
+        if self.schema is None:
+            raise NotSupportedError('This method is not available in ' +
+                                    'connection opened with fetch_schema=False')
 
     def call(self, func_name, *args, on_push=None, on_push_ctx=None):
         """
@@ -1366,10 +1401,13 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.DatabaseError`,
             :exc:`~tarantool.error.SchemaError`,
             :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
+            :exc:`~tarantool.error.SslError`,
+            :exc:`~tarantool.error.NotSupportedError`
 
         .. _replace: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/replace/
         """
+
+        self._schemaful_connection_check()
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
@@ -1411,7 +1449,7 @@ class Connection(ConnectionInterface):
                               password=self.password,
                               auth_type=self._get_auth_type())
         auth_response = self._send_request_wo_reconnect(request)
-        if auth_response.return_code == 0:
+        if auth_response.return_code == 0 and self.schema is not None:
             self.flush_schema()
         return auth_response
 
@@ -1584,10 +1622,13 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.DatabaseError`,
             :exc:`~tarantool.error.SchemaError`,
             :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
+            :exc:`~tarantool.error.SslError`,
+            :exc:`~tarantool.error.NotSupportedError`
 
         .. _insert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/insert/
         """
+
+        self._schemaful_connection_check()
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
@@ -1623,10 +1664,13 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.DatabaseError`,
             :exc:`~tarantool.error.SchemaError`,
             :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
+            :exc:`~tarantool.error.SslError`,
+            :exc:`~tarantool.error.NotSupportedError`
 
         .. _delete: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/delete/
         """
+
+        self._schemaful_connection_check()
 
         key = wrap_key(key)
         if isinstance(space_name, str):
@@ -1682,10 +1726,13 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.DatabaseError`,
             :exc:`~tarantool.error.SchemaError`,
             :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
+            :exc:`~tarantool.error.SslError`,
+            :exc:`~tarantool.error.NotSupportedError`
 
         .. _upsert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/upsert/
         """
+
+        self._schemaful_connection_check()
 
         if isinstance(space_name, str):
             space_name = self.schema.get_space(space_name).sid
@@ -1770,10 +1817,13 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.DatabaseError`,
             :exc:`~tarantool.error.SchemaError`,
             :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
+            :exc:`~tarantool.error.SslError`,
+            :exc:`~tarantool.error.NotSupportedError`
 
         .. _update: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/update/
         """
+
+        self._schemaful_connection_check()
 
         key = wrap_key(key)
         if isinstance(space_name, str):
@@ -1956,10 +2006,13 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.DatabaseError`,
             :exc:`~tarantool.error.SchemaError`,
             :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
+            :exc:`~tarantool.error.SslError`,
+            :exc:`~tarantool.error.NotSupportedError`
 
         .. _select: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/select/
         """
+
+        self._schemaful_connection_check()
 
         if iterator is None:
             iterator = ITERATOR_EQ
@@ -1995,6 +2048,8 @@ class Connection(ConnectionInterface):
 
         :raise: :exc:`~tarantool.error.SchemaError`
         """
+
+        self._schemaful_connection_check()
 
         return Space(self, space_name)
 

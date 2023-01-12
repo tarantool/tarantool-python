@@ -188,9 +188,13 @@ class Request(object):
         """
 
         self._sync = self.conn.generate_sync()
-        header = self._dumps({IPROTO_REQUEST_TYPE: self.request_type,
-                              IPROTO_SYNC: self._sync,
-                              IPROTO_SCHEMA_ID: self.conn.schema_version})
+        header_fields = {
+            IPROTO_REQUEST_TYPE: self.request_type,
+            IPROTO_SYNC: self._sync,
+        }
+        if self.conn.schema is not None:
+            header_fields[IPROTO_SCHEMA_ID] = self.conn.schema_version
+        header = self._dumps(header_fields)
 
         return self._dumps(length + len(header)) + header
 

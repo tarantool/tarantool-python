@@ -2,6 +2,7 @@ import sys
 import unittest
 import tarantool
 from .lib.tarantool_server import TarantoolServer
+from tarantool.error import NotSupportedError
 
 
 # FIXME: I'm quite sure that there is a simpler way to count
@@ -41,8 +42,47 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self.srv = TarantoolServer()
         self.srv.script = 'test/suites/box.lua'
         self.srv.start()
+        self.srv.admin("box.schema.user.create('test', {password = 'test', " +
+              "if_not_exists = true})")
+        self.srv.admin("box.schema.user.grant('test', 'read,write,execute', 'universe')")
+
+        # Create server_function and tester space (for fetch_schema opt testing purposes).
+        self.srv.admin("function server_function() return 2+2 end")
+        self.srv.admin("""
+        box.schema.create_space(
+            'tester', {
+            format = {
+                {name = 'id', type = 'unsigned'},
+                {name = 'name', type = 'string', is_nullable = true},
+            }
+        })
+        """)
+        self.srv.admin("""
+        box.space.tester:create_index(
+            'primary_index', {
+            parts = {
+                {field = 1, type = 'unsigned'},
+            }
+        })
+        """)
+        self.srv.admin("box.space.tester:insert({1, null})")
+
         self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
-                                        encoding=self.encoding)
+                                        encoding=self.encoding, user='test', password='test')
+        self.con_schema_disable = tarantool.Connection(self.srv.host, self.srv.args['primary'],
+                                                       encoding=self.encoding, fetch_schema=False,
+                                                       user='test', password='test')
+        if not sys.platform.startswith("win"):
+            # Schema fetch disable tests via mesh and pool connection
+            # are not supported on windows platform.
+            self.mesh_con_schema_disable = tarantool.MeshConnection(host=self.srv.host, 
+                                                                    port=self.srv.args['primary'],
+                                                                    fetch_schema=False, 
+                                                                    user='test', password='test')
+            self.pool_con_schema_disable = tarantool.ConnectionPool([{'host':self.srv.host, 
+                                                                    'port':self.srv.args['primary']}], 
+                                                                    user='test', password='test',
+                                                                    fetch_schema=False)
         self.sch = self.con.schema
 
         # The relevant test cases mainly target Python 2, where
@@ -96,12 +136,6 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self.assertEqual(index.iid, self.unicode_index_id)
         self.assertEqual(index.name, self.unicode_index_name_u)
         self.assertEqual(len(index.parts), 1)
-
-    def test_00_authenticate(self):
-        self.assertIsNone(self.srv.admin("box.schema.user.create('test', { password = 'test' })"))
-        self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'read,write', 'space', '_space')"))
-        self.assertIsNone(self.srv.admin("box.schema.user.grant('test', 'read,write', 'space', '_index')"))
-        self.assertEqual(self.con.authenticate('test', 'test')._data, None)
 
     def test_01_space_bad(self):
         with self.assertRaisesRegex(tarantool.SchemaError,
@@ -341,9 +375,181 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self.srv.admin("box.schema.create_space('ttt22')")
         self.assertEqual(len(self.con.select('_space')), _space_len + 1)
 
+    # For schema fetch disable testing purposes.
+    testing_methods = {
+        'unavailable': {
+            'replace': {
+                'input': ['tester', (1, None)],
+                'output': [[1, None]],
+            },
+             'delete': {
+                'input': ['tester', 1],
+                'output': [[1, None]],
+            },
+            'insert': {
+                'input': ['tester', (1, None)],
+                'output': [[1, None]],
+            }, 
+            'upsert': {
+                'input': ['tester', (1, None), []],
+                'output': [],
+            },
+            'update': {
+                'input': ['tester', 1, []],
+                'output': [[1, None]],
+            }, 
+            'select': {
+                'input': ['tester', 1],
+                'output': [[1, None]],
+            },
+            'space': {
+                'input': ['tester'],
+            },
+        },
+        'available': {
+            # CRUD methods are also tested with the fetch_schema=False opt,
+            # see the test_crud.py file.
+            'call': {
+                'input': ['server_function'],
+                'output': [4],
+            },
+            'eval': {
+                'input': ['return 2+2'],
+                'output': [4],
+            },
+            'ping': {
+                'input': [],
+            },
+        },
+    }
+
+    def _run_test_schema_fetch_disable(self, con, mode=None):
+            # Enable SQL test case for tarantool 2.* and higher.
+            if int(self.srv.admin.tnt_version.__str__()[0]) > 1:
+                self.testing_methods['available']['execute'] = {
+                    'input': ['SELECT * FROM "tester"'],
+                    'output': [[1, None]],
+                }
+
+            # Testing the schemaless connection with methods
+            # that should NOT be available.
+            if mode is not None:
+                for addr in con.pool.keys():
+                    self.assertEqual(con.pool[addr].conn.schema_version, 0)
+                    self.assertEqual(con.pool[addr].conn.schema, None)
+            else:
+                self.assertEqual(con.schema_version, 0)
+                self.assertEqual(con.schema, None)
+            for method_case in self.testing_methods['unavailable'].keys():
+                with self.subTest(name=method_case):
+                    if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
+                        continue
+                    testing_function = getattr(con, method_case)
+                    try:
+                        if mode is not None:
+                            _ = testing_function(
+                                *self.testing_methods['unavailable'][method_case]['input'], 
+                                mode=mode)
+                        else:
+                            _ = testing_function(
+                                *self.testing_methods['unavailable'][method_case]['input'])
+                    except NotSupportedError as e:
+                        self.assertEqual(e.message, 'This method is not available in ' + 
+                                                    'connection opened with fetch_schema=False')
+            # Testing the schemaless connection with methods
+            # that should be available.
+            for method_case in self.testing_methods['available'].keys():
+                with self.subTest(name=method_case):
+                    testing_function = getattr(con, method_case)
+                    if mode is not None:
+                        resp = testing_function(
+                            *self.testing_methods['available'][method_case]['input'], 
+                            mode=mode)
+                    else:
+                        resp = testing_function(
+                            *self.testing_methods['available'][method_case]['input'])
+                    if method_case == 'ping':
+                        self.assertEqual(isinstance(resp, float), True)
+                    else:
+                        self.assertEqual(
+                            resp.data,
+                            self.testing_methods['available'][method_case]['output'])
+
+            # Turning the same connection into schemaful.
+            if mode is not None:
+                for addr in con.pool.keys():
+                    con.pool[addr].conn.update_schema(con.pool[addr].conn.schema_version)
+            else:
+                con.update_schema(con.schema_version)
+
+            # Testing the schemaful connection with methods
+            # that should NOW be available.
+            for method_case in self.testing_methods['unavailable'].keys():
+                with self.subTest(name=method_case):
+                    if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
+                        continue
+                    testing_function = getattr(con, method_case)
+                    if mode is not None:
+                        resp = testing_function(
+                            *self.testing_methods['unavailable'][method_case]['input'], 
+                            mode=mode)
+                    else:
+                        resp = testing_function(
+                            *self.testing_methods['unavailable'][method_case]['input'])
+                    if method_case == 'space':
+                        self.assertEqual(isinstance(resp, tarantool.space.Space), True)
+                    else:
+                        self.assertEqual(
+                            resp.data, 
+                            self.testing_methods['unavailable'][method_case]['output'])
+            # Testing the schemaful connection with methods
+            # that should have remained available.
+            for method_case in self.testing_methods['available'].keys():
+                with self.subTest(name=method_case):
+                    testing_function = getattr(con, method_case)
+                    if mode is not None:
+                        resp = testing_function(
+                            *self.testing_methods['available'][method_case]['input'], 
+                            mode=mode)
+                    else:
+                        resp = testing_function(
+                            *self.testing_methods['available'][method_case]['input'])
+                    if method_case == 'ping':
+                        self.assertEqual(isinstance(resp, float), True)
+                    else:
+                        self.assertEqual(
+                            resp.data, 
+                            self.testing_methods['available'][method_case]['output'])
+            if mode is not None:
+                self.assertNotEqual(con.pool[addr].conn.schema_version, 1)
+                self.assertNotEqual(con.pool[addr].conn.schema, None)
+            else:      
+                self.assertNotEqual(con.schema_version, 1)
+                self.assertNotEqual(con.schema, None)
+
+    def test_08_schema_fetch_disable_via_connection(self):
+        self._run_test_schema_fetch_disable(self.con_schema_disable)
+
+    @unittest.skipIf(sys.platform.startswith("win"),
+        'Schema fetch disable tests via mesh connection on windows platform are not supported')
+    def test_08_schema_fetch_disable_via_mesh_connection(self):
+        self._run_test_schema_fetch_disable(self.mesh_con_schema_disable)
+
+    @unittest.skipIf(sys.platform.startswith("win"),
+        'Schema fetch disable tests via connection pool on windows platform are not supported')
+    def test_08_schema_fetch_disable_via_connection_pool(self):
+        self._run_test_schema_fetch_disable(self.pool_con_schema_disable,
+                                            mode=tarantool.Mode.ANY)
+
     @classmethod
     def tearDownClass(self):
         self.con.close()
+        self.con_schema_disable.close()
+        if not sys.platform.startswith("win"):
+            # Schema fetch disable tests via mesh and pool connection
+            # are not supported on windows platform.
+            self.mesh_con_schema_disable.close()
+            self.pool_con_schema_disable.close()
         self.srv.stop()
         self.srv.clean()
 
