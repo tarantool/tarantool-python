@@ -378,7 +378,8 @@ class ConnectionPool(ConnectionInterface):
                  call_16=False,
                  connection_timeout=CONNECTION_TIMEOUT,
                  strategy_class=RoundRobinStrategy,
-                 refresh_delay=POOL_REFRESH_DELAY):
+                 refresh_delay=POOL_REFRESH_DELAY,
+                 fetch_schema=True):
         """
         :param addrs: List of dictionaries describing server addresses:
 
@@ -452,6 +453,9 @@ class ConnectionPool(ConnectionInterface):
             `box.info.ro`_ status background refreshes, in seconds.
         :type connection_timeout: :obj:`float`, optional
 
+        :param fetch_schema: Refer to
+            :paramref:`~tarantool.Connection.params.fetch_schema`.
+
         :raise: :exc:`~tarantool.error.ConfigurationError`,
             :class:`~tarantool.Connection` exceptions
 
@@ -500,7 +504,8 @@ class ConnectionPool(ConnectionInterface):
                     ssl_ciphers=addr['ssl_ciphers'],
                     ssl_password=addr['ssl_password'],
                     ssl_password_file=addr['ssl_password_file'],
-                    auth_type=addr['auth_type'])
+                    auth_type=addr['auth_type'],
+                    fetch_schema=fetch_schema)
             )
 
         if connect_now:

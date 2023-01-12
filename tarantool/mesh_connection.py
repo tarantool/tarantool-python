@@ -283,7 +283,8 @@ class MeshConnection(Connection):
                  addrs=None,
                  strategy_class=RoundRobinStrategy,
                  cluster_discovery_function=None,
-                 cluster_discovery_delay=CLUSTER_DISCOVERY_DELAY):
+                 cluster_discovery_delay=CLUSTER_DISCOVERY_DELAY,
+                 fetch_schema=True):
         """
         :param host: Refer to
             :paramref:`~tarantool.Connection.params.host`.
@@ -425,6 +426,9 @@ class MeshConnection(Connection):
             list refresh.
         :type cluster_discovery_delay: :obj:`float`, optional
 
+        :param fetch_schema: Refer to
+            :paramref:`~tarantool.Connection.params.fetch_schema`.
+
         :raises: :exc:`~tarantool.error.ConfigurationError`,
             :class:`~tarantool.Connection` exceptions,
             :class:`~tarantool.MeshConnection.connect` exceptions
@@ -489,7 +493,8 @@ class MeshConnection(Connection):
             ssl_ciphers=addr['ssl_ciphers'],
             ssl_password=addr['ssl_password'],
             ssl_password_file=addr['ssl_password_file'],
-            auth_type=addr['auth_type'])
+            auth_type=addr['auth_type'],
+            fetch_schema=fetch_schema)
 
     def connect(self):
         """

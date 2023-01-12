@@ -33,11 +33,12 @@ class TestSuite_Crud(unittest.TestCase):
         time.sleep(1)
         # Open connections to instance.
         self.conn = tarantool.Connection(host=self.host, port=self.port, 
-                                         user='guest', password='')
+                                         user='guest', password='', fetch_schema=False)
         self.conn_mesh = tarantool.MeshConnection(host=self.host, port=self.port, 
-                                         user='guest', password='')
+                                         user='guest', password='', fetch_schema=False)
         self.conn_pool = tarantool.ConnectionPool([{'host':self.host, 'port':self.port}], 
-                                                     user='guest', password='')
+                                                     user='guest', password='', 
+                                                     fetch_schema=False)
         # Time for vshard group configuration.
         time.sleep(1)
         if self.conn.eval('return ROCKS_IMPORT_FAIL').data[0] == True:

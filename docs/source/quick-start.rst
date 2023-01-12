@@ -359,7 +359,7 @@ Through the :class:`~tarantool.Connection` object, you can access
 
     >>> import tarantool
     >>> from tarantool.error import CrudModuleError, CrudModuleManyError, DatabaseError
-    >>> conn = tarantool.Connection(host='localhost',port=3301)
+    >>> conn = tarantool.Connection(host='localhost',port=3301,fetch_schema=False)
 
     >>> conn.crud_
     conn.crud_count(                conn.crud_insert(               conn.crud_insert_object_many(   

@@ -53,3 +53,5 @@ test/data/*.key
 !test/data/localhost.enc.key
 test/data/*.pem
 test/data/*.srl
+
+.rocks
