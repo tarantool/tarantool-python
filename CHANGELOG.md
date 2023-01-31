@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+- Error code on socket error (#279).
 
 ## 0.11.0 - 2022-12-31
 

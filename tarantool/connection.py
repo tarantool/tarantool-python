@@ -1168,7 +1168,7 @@ class Connection(ConnectionInterface):
                 sock_fd = self._socket.fileno()
             except socket.error as e:
                 if e.errno == errno.EBADF:
-                    return errno.ECONNRESETtuple_value
+                    return errno.ECONNRESET
             else:
                 if os.name == 'nt':
                     flag = socket.MSG_PEEK
