@@ -212,7 +212,7 @@ jobs:
         run: python3 .github/scripts/remove_source_code.py
 
       - name: Install the package with pip
-        run: pip3 install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_REF_NAME
+        run: pip3 install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_REF
 
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
@@ -340,7 +340,7 @@ jobs:
         run: python3 .github/scripts/remove_source_code.py
 
       - name: Install the package with pip
-        run: pip3 install git+$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY@$env:GITHUB_REF_NAME
+        run: pip3 install git+$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY@$env:GITHUB_REF
 
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
