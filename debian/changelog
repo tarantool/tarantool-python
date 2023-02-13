@@ -18,7 +18,7 @@ python3-tarantool (0.11.0-0) unstable; urgency=medium
     - Support specifying authentication method with `auth_type`
       and Tarantool EE `pap-sha256` authentication method (#269).
 
- -- Georgy.moiseev <admin@tarantool.org>  Sat, 31 Dec 2022 02:09:03 +0300
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Sat, 31 Dec 2022 02:09:03 +0300
 
 python3-tarantool (0.10.0-0) unstable; urgency=medium
 
@@ -223,7 +223,7 @@ python3-tarantool (0.10.0-0) unstable; urgency=medium
     - Pack and publish pip, RPM and deb packages with GitHub Actions (#164, #198).
     - Publish on readthedocs with CI/CD (including PRs) (#67).
 
- -- Georgy.moiseev <georgy.moiseev@tarantool.org>  Wed, 09 Nov 2022 13:14:20 +0300
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Wed, 09 Nov 2022 13:14:20 +0300
 
 tarantool-python (0.9.0-0) unstable; urgency=medium
     ## Overview
