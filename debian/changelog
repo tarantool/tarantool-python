@@ -1,3 +1,25 @@
+python3-tarantool (0.12.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces the support of `fetch_schema` connection
+    option to disable schema fetch and various fixes.
+
+    ### Breaking changes
+
+    This release should not break any existing behavior.
+
+    ### New features
+    - `fetch_schema` parameter for a connection (#219).
+
+    ### Bugfixes
+    - Error code on socket error (#279).
+
+    ### Thanks
+    We want to thank @bekhzod91 for a bugfix contribution.
+
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Mon, 13 Feb 2023 11:43:30 +0300
+
 python3-tarantool (0.11.0-0) unstable; urgency=medium
 
     ## Overview
