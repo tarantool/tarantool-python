@@ -1,7 +1,10 @@
 import sys
 import unittest
 import tarantool
+import pkg_resources
+
 from .lib.tarantool_server import TarantoolServer
+from .lib.skip import skip_or_run_constraints_test
 from tarantool.error import NotSupportedError
 
 
@@ -101,6 +104,33 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                 return space.id, index.id
             end
         """)
+
+        if self.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
+            self.srv.admin("""
+            box.schema.create_space(
+                'constr_tester_1', {
+                format = {
+                    { name = 'id', type = 'unsigned' },
+                    { name = 'payload', type = 'number' },
+                }
+            })
+            box.space.constr_tester_1:create_index('I1', { parts = {'id'} })
+
+            box.space.constr_tester_1:replace({1, 999})
+
+            box.schema.create_space(
+                'constr_tester_2', {
+                format = {
+                    { name = 'id', type = 'unsigned' },
+                    { name = 'table1_id', type = 'unsigned', 
+                      foreign_key = { fk_video = { space = 'constr_tester_1', field = 'id' } },
+                    },
+                    { name = 'payload', type = 'number' },
+                }
+            })
+            box.space.constr_tester_2:create_index('I1', { parts = {'id'} })
+            box.space.constr_tester_2:create_index('I2', { parts = {'table1_id'} })
+            """)
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
@@ -541,8 +571,32 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self._run_test_schema_fetch_disable(self.pool_con_schema_disable,
                                             mode=tarantool.Mode.ANY)
 
+    @skip_or_run_constraints_test
+    def test_09_foreign_key_info_fetched_to_schema(self):
+        self.assertIn('foreign_key', self.sch.get_space('constr_tester_2').format['table1_id'])
+
+    @skip_or_run_constraints_test
+    def test_10_foreign_key_valid_replace(self):
+        self.assertSequenceEqual(
+            self.con.replace('constr_tester_2', [1, 1, 623]),
+            [[1, 1, 623]])
+
+    @skip_or_run_constraints_test
+    def test_11_foreign_key_invalid_replace(self):
+        with self.assertRaisesRegex(tarantool.DatabaseError,
+                                    'foreign tuple was not found'):
+                self.con.replace('constr_tester_2', [2, 999, 623])
+
     @classmethod
     def tearDownClass(self):
+        # We need to drop spaces with foreign keys with predetermined order,
+        # otherwise remote server clean() will fail to clean up resources.
+        if self.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
+            self.srv.admin("""
+            box.space.constr_tester_2:drop()
+            box.space.constr_tester_1:drop()
+            """)
+
         self.con.close()
         self.con_schema_disable.close()
         if not sys.platform.startswith("win"):

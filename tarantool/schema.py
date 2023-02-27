@@ -12,6 +12,13 @@ from tarantool.error import (
 import tarantool.const as const
 
 
+"""
+Max possible known schema depth is 4 if foreign keys are used (since
+Tarantool 2.10), but there are no restrictions in protocol.
+"""
+MAX_RECURSION_DEPTH = 32
+
+
 class RecursionError(Error):
     """
     Report the situation when max recursion depth is reached.
@@ -102,7 +109,7 @@ class SchemaIndex(object):
         self.unique = index_row[4]
         self.parts = []
         try:
-            parts_raw = to_unicode_recursive(index_row[5], 3)
+            parts_raw = to_unicode_recursive(index_row[5], MAX_RECURSION_DEPTH)
         except RecursionError as e:
             errmsg = 'Unexpected index parts structure: ' + str(e)
             raise SchemaError(errmsg)
@@ -159,7 +166,7 @@ class SchemaSpace(object):
             self.schema[self.name] = self
         self.format = dict()
         try:
-            format_raw = to_unicode_recursive(space_row[6], 3)
+            format_raw = to_unicode_recursive(space_row[6], MAX_RECURSION_DEPTH)
         except RecursionError as e:
             errmsg = 'Unexpected space format structure: ' + str(e)
             raise SchemaError(errmsg)
