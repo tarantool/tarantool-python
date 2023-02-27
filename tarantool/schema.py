@@ -97,7 +97,6 @@ class SchemaIndex(object):
         """
 
         self.iid = index_row[1]
-        self.name = index_row[2]
         self.name = to_unicode(index_row[2])
         self.index = index_row[3]
         self.unique = index_row[4]
