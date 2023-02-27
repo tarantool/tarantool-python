@@ -1014,7 +1014,8 @@ class Connection(ConnectionInterface):
         if greeting.protocol != "Binary":
             raise NetworkError("Unsupported protocol: " + greeting.protocol)
         self.version_id = greeting.version_id
-        self._check_features()
+        if self.version_id >= version_id(2, 10, 0):
+            self._check_features()
         self.uuid = greeting.uuid
         self._salt = greeting.salt
         if self.user:
