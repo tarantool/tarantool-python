@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Discovery iproto features only for Tarantools since version 2.10.0 (#283). 
 
+### Fixed
+- Schema fetch for spaces with foreign keys (#282).
+
 ## 0.12.0 - 2023-02-13
 
 ### Added

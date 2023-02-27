@@ -236,3 +236,14 @@ def skip_or_run_auth_type_test_call(self):
 
     return skip_or_run_test_tarantool_call(self, '2.11.0',
                                            'does not support auth type')
+
+def skip_or_run_constraints_test(func):
+    """Decorator to skip or run tests related to spaces with
+    schema constraints.
+
+    Tarantool supports schema constraints only since 2.10.0 version.
+    See https://github.com/tarantool/tarantool/issues/6436
+    """
+
+    return skip_or_run_test_tarantool(func, '2.10.0',
+                                      'does not support schema constraints')
