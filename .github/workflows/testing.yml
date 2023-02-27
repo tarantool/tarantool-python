@@ -56,15 +56,15 @@ jobs:
 
     steps:
       - name: Clone the connector
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install tarantool ${{ matrix.tarantool }}
-        uses: tarantool/setup-tarantool@v1
+        uses: tarantool/setup-tarantool@v2
         with:
           tarantool-version: ${{ matrix.tarantool }}
 
       - name: Setup Python for tests
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
@@ -127,14 +127,14 @@ jobs:
       - name: Clone the connector
         # `ref` as merge request is needed for pull_request_target because this
         # target runs in the context of the base commit of the pull request.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         if: github.event_name == 'pull_request_target'
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
 
       - name: Clone the connector
         if: github.event_name != 'pull_request_target'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Tarantool EE SDK
         run: |
@@ -144,7 +144,7 @@ jobs:
           rm -f ${ARCHIVE_NAME}
 
       - name: Setup Python for tests
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
@@ -196,15 +196,15 @@ jobs:
           - '3.10'
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install tarantool ${{ matrix.tarantool }}
-        uses: tarantool/setup-tarantool@v1
+        uses: tarantool/setup-tarantool@v2
         with:
           tarantool-version: ${{ matrix.tarantool }}
 
       - name: Setup Python for tests
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
@@ -252,10 +252,10 @@ jobs:
 
     steps:
       - name: Clone the connector
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python for tests
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
@@ -266,7 +266,7 @@ jobs:
         run: pip3 install -r requirements-test.txt
 
       - name: Setup WSL for tarantool
-        uses: Vampire/setup-wsl@v1
+        uses: Vampire/setup-wsl@v2
         with:
           distribution: Ubuntu-20.04
 
@@ -329,10 +329,10 @@ jobs:
           - '3.10'
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python for tests
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
@@ -346,7 +346,7 @@ jobs:
         run: pip3 install -r requirements-test.txt
 
       - name: Setup WSL for tarantool
-        uses: Vampire/setup-wsl@v1
+        uses: Vampire/setup-wsl@v2
         with:
           distribution: Ubuntu-20.04
 

@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Clone the tarantool-python connector
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.repository_owner }}/tarantool-python
 
       - name: Download the tarantool build artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artifact_name }}
 
@@ -29,7 +29,7 @@ jobs:
         run: sudo dpkg -i tarantool*.deb
 
       - name: Setup python3 for tests
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 

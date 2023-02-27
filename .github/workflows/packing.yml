@@ -79,7 +79,7 @@ jobs:
         run: python3 .github/scripts/remove_source_code.py
 
       - name: Install tarantool
-        uses: tarantool/setup-tarantool@v1
+        uses: tarantool/setup-tarantool@v2
         with:
           tarantool-version: '2.10'
 
