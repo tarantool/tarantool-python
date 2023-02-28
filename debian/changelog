@@ -1,3 +1,19 @@
+python3-tarantool (0.12.1-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces several bugfixes and behavior improvements.
+
+    ## Breaking changes
+
+    This release should not break any existing behavior.
+
+    ## Bugfixes
+    - Discovery iproto features only for Tarantools since version 2.10.0 (#283).
+    - Schema fetch for spaces with foreign keys (#282).
+
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Tue, 28 Feb 2023 10:20:48 +0300
+
 python3-tarantool (0.12.0-0) unstable; urgency=medium
 
     ## Overview
