@@ -37,7 +37,7 @@ jobs:
           - ''
 
         # Adding too many elements to three-dimentional matrix results in
-        # too many test cases. It causes GitHub webpages to fail with 
+        # too many test cases. It causes GitHub webpages to fail with
         # "This page is taking too long to load." error. Thus we use
         # pairwise testing.
         include:

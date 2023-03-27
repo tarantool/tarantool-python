@@ -78,7 +78,7 @@ class TestSuite_ErrorExt(unittest.TestCase):
 
     # msgpack data for different encodings are actually the same,
     # but sometimes python msgpack module use different string
-    # types (str8 and str16) for the same strings depending on use_bin_type: 
+    # types (str8 and str16) for the same strings depending on use_bin_type:
     #
     # >>> msgpack.Packer(use_bin_type=True).pack('[string "                     local err = box.error.ne..."]')
     # b'\xd9;[string "                     local err = box.error.ne..."]'

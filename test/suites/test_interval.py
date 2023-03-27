@@ -186,7 +186,7 @@ class TestSuite_Interval(unittest.TestCase):
 
                 lua_eval = f"""
                     local interval = {case['tarantool']}
-                    
+                   
                     local tuple = box.space['test']:get('{name}')
                     assert(tuple ~= nil)
 

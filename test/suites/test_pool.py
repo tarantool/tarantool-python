@@ -177,7 +177,7 @@ class TestSuite_Pool(unittest.TestCase):
                 PREFER_RW_ports_result_all_ro.add(get_port(self, tarantool.Mode.PREFER_RW))
 
             self.assertSetEqual(PREFER_RW_ports_result_all_ro, all_ports)
-    
+
         self.retry(func=expect_PREFER_RW_iterate_through_all_instances_if_there_are_no_RW)
 
         # Setup cluster with no RO.

@@ -87,11 +87,11 @@ class TestSuite_Push(unittest.TestCase):
 
     def setUp(self):
         # Open connection, connection pool and mesh connection to instance.
-        self.conn = tarantool.Connection(host=self.host, port=self.port, 
+        self.conn = tarantool.Connection(host=self.host, port=self.port,
                                          user='test', password='test')
-        self.conn_pool = tarantool.ConnectionPool([{'host':self.host, 'port':self.port}], 
+        self.conn_pool = tarantool.ConnectionPool([{'host':self.host, 'port':self.port}],
                                                      user='test', password='test')
-        self.mesh_conn = tarantool.MeshConnection(host=self.host, port=self.port, 
+        self.mesh_conn = tarantool.MeshConnection(host=self.host, port=self.port,
                                                   user='test', password='test')
 
     push_test_cases = {

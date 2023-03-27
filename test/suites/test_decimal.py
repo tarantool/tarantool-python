@@ -398,7 +398,7 @@ class TestSuite_Decimal(unittest.TestCase):
                                 msgpack.ExtType(code=1, data=case['msgpack'])
                             )
                     )
-                
+
 
     @skip_or_run_decimal_test
     def test_tarantool_encode_with_precision_loss(self):

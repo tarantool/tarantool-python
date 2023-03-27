@@ -56,7 +56,7 @@ Throws an error if there is already a tuple with the same primary key.
     ...     conn.insert('demo', ('BBBB', 'Bravo'))
     ... except Exception as exc:
     ...     print(exc)
-    ... 
+    ...
     (3, 'Duplicate key exists in unique index "pk" in space "demo" with old tuple - ["BBBB", "Bravo"] and new tuple - ["BBBB", "Bravo"]')
 
 Replace
@@ -125,7 +125,7 @@ Creating a space instance
 An instance of :class:`~tarantool.space.Space` is a named object to access
 the key space.
 
-Create a ``demo`` object that will be used to access the space 
+Create a ``demo`` object that will be used to access the space
 with id ``'demo'``:
 
 .. code-block:: python
@@ -205,26 +205,26 @@ read-write and read-only pool instances:
 Receiving out-of-band messages
 ----------------------------------
 
-Receiving out-of-band messages from a server that uses box.session.push 
-call is supported for methods: :meth:`~tarantool.Connection.call`, 
-:meth:`~tarantool.Connection.eval`, :meth:`~tarantool.Connection.select`, 
-:meth:`~tarantool.Connection.insert`, :meth:`~tarantool.Connection.replace`, 
-:meth:`~tarantool.Connection.update`, :meth:`~tarantool.Connection.upsert`, 
+Receiving out-of-band messages from a server that uses box.session.push
+call is supported for methods: :meth:`~tarantool.Connection.call`,
+:meth:`~tarantool.Connection.eval`, :meth:`~tarantool.Connection.select`,
+:meth:`~tarantool.Connection.insert`, :meth:`~tarantool.Connection.replace`,
+:meth:`~tarantool.Connection.update`, :meth:`~tarantool.Connection.upsert`,
 :meth:`~tarantool.Connection.delete`.
 
-To work with out-of-band messages, 2 optional arguments are used in 
+To work with out-of-band messages, 2 optional arguments are used in
 the methods listed above:
 
  * `on_push` - callback, launched with the received data for each out-of-band message. Two arguments for this callback are expected:
-   
+  
     * the first is the received from an out-of-band message data.
 
     * the second is `on_push_ctx`, variable for working with callback context (for example, recording the result or pass data to callback).
  * `on_push_ctx` - result of the `on_push` work can be written to this variable, or through this variable you can pass data to `on_push` callback.
 
-Below is an example of the proposed API with method :meth:`~tarantool.Connection.call` 
-and :meth:`~tarantool.Connection.insert`. In the described example, before the end 
-of the :meth:`~tarantool.Connection.call` and :meth:`~tarantool.Connection.insert`, 
+Below is an example of the proposed API with method :meth:`~tarantool.Connection.call`
+and :meth:`~tarantool.Connection.insert`. In the described example, before the end
+of the :meth:`~tarantool.Connection.call` and :meth:`~tarantool.Connection.insert`,
 out-of-band messages are processed via specified callback.
 
 In the example below, two shells are used, in the first we will configure the server:
@@ -249,7 +249,7 @@ In the example below, two shells are used, in the first we will configure the se
         return x
     end
 
-In the second shell, we will execute a :meth:`~tarantool.Connection.call` 
+In the second shell, we will execute a :meth:`~tarantool.Connection.call`
 with receiving out-of-band messages from the server:
 
 .. code-block:: python
@@ -266,11 +266,11 @@ with receiving out-of-band messages from the server:
     conn = tarantool.Connection(port=3301)
     res = conn.call(
         'server_function',
-        on_push=callback, 
+        on_push=callback,
         on_push_ctx=callback_res
     )
 
-    # receiving out-of-band messages, 
+    # receiving out-of-band messages,
     # the conn.call is not finished yet.
 
     >>> run callback with data:  [[1, 0]]
@@ -285,7 +285,7 @@ with receiving out-of-band messages from the server:
     print(callback_res)
     >>> [[[1, 1]], [[2, 1]], [[3, 1]]]
 
-Let's go back to the first shell with the server and 
+Let's go back to the first shell with the server and
 create a space and a trigger for it:
 
 .. code-block:: lua
@@ -315,7 +315,7 @@ create a space and a trigger for it:
         on_replace_callback
     )
 
-Now, in the second shell, we will execute an :meth:`~tarantool.ConnectionPool.insert` 
+Now, in the second shell, we will execute an :meth:`~tarantool.ConnectionPool.insert`
 with out-of-band message processing:
 
 .. code-block:: python
@@ -333,7 +333,7 @@ with out-of-band message processing:
         on_push_ctx=callback_res,
     )
 
-    # receiving out-of-band messages, 
+    # receiving out-of-band messages,
     # the conn_pool.insert is not finished yet.
 
     >>> run callback with data:  [[100, 0]]
@@ -352,7 +352,7 @@ with out-of-band message processing:
 Interaction with the crud module
 ----------------------------------
 
-Through the :class:`~tarantool.Connection` object, you can access 
+Through the :class:`~tarantool.Connection` object, you can access
 `crud module <https://github.com/tarantool/crud>`_ methods:
 
 .. code-block:: python
@@ -362,16 +362,16 @@ Through the :class:`~tarantool.Connection` object, you can access
     >>> conn = tarantool.Connection(host='localhost',port=3301,fetch_schema=False)
 
     >>> conn.crud_
-    conn.crud_count(                conn.crud_insert(               conn.crud_insert_object_many(   
-    conn.crud_min(                  conn.crud_replace_object(       conn.crud_stats(                
-    conn.crud_unflatten_rows(       conn.crud_upsert_many(          conn.crud_delete(               
-    conn.crud_insert_many(          conn.crud_len(                  conn.crud_replace(              
-    conn.crud_replace_object_many(  conn.crud_storage_info(         conn.crud_update(               
-    conn.crud_upsert_object(        conn.crud_get(                  conn.crud_insert_object(        
-    conn.crud_max(                  conn.crud_replace_many(         conn.crud_select(               
+    conn.crud_count(                conn.crud_insert(               conn.crud_insert_object_many(  
+    conn.crud_min(                  conn.crud_replace_object(       conn.crud_stats(               
+    conn.crud_unflatten_rows(       conn.crud_upsert_many(          conn.crud_delete(              
+    conn.crud_insert_many(          conn.crud_len(                  conn.crud_replace(             
+    conn.crud_replace_object_many(  conn.crud_storage_info(         conn.crud_update(              
+    conn.crud_upsert_object(        conn.crud_get(                  conn.crud_insert_object(       
+    conn.crud_max(                  conn.crud_replace_many(         conn.crud_select(              
     conn.crud_truncate(             conn.crud_upsert(               conn.crud_upsert_object_many(
 
-As an example, consider :meth:`~tarantool.Connection.crud_insert` and :meth:`~tarantool.Connection.crud_insert_object_many`. 
+As an example, consider :meth:`~tarantool.Connection.crud_insert` and :meth:`~tarantool.Connection.crud_insert_object_many`.
 It is recommended to enclose calls in the try-except construction as follows:
 
 .. code-block:: python
@@ -392,13 +392,13 @@ It is recommended to enclose calls in the try-except construction as follows:
     ...     res = conn.crud_insert('tester', (3500,300,'Rob'))
     ... except CrudModuleError as e:
     ...     exc_crud = e
-    ... 
+    ...
     >>> exc_crud
     CrudModuleError(0, 'Failed to insert: Duplicate key exists in unique index "primary_index" in space "tester" with old tuple - [3500, 300, "Rob"] and new tuple - [3500, 300, "Rob"]')
     >>> exc_crud.extra_info_error
     <tarantool.crud.CrudError object at 0x10a276950>
     >>> exc_crud.extra_info_error.
-    exc_crud.extra_info_error.class_name  exc_crud.extra_info_error.err         exc_crud.extra_info_error.file        exc_crud.extra_info_error.line        exc_crud.extra_info_error.str       
+    exc_crud.extra_info_error.class_name  exc_crud.extra_info_error.err         exc_crud.extra_info_error.file        exc_crud.extra_info_error.line        exc_crud.extra_info_error.str      
     >>> exc_crud.extra_info_error.class_name
     'InsertError'
     >>> exc_crud.extra_info_error.str
@@ -409,7 +409,7 @@ It is recommended to enclose calls in the try-except construction as follows:
     ...     res = conn.crud_insert_object_many('tester', ({'id':3,'bucket_id':100,'name':'Ann'}, {'id':4,'bucket_id':100,'name':'Sam'}), {'timeout':100, 'rollback_on_error':False})
     ... except CrudModuleManyError as e:
     ...     exc_crud = e
-    ... 
+    ...
     >>> exc_crud
     CrudModuleManyError(0, 'Got multiple errors, see errors_list')
     >>> exc_crud.success_list # some of the rows were inserted.
@@ -422,7 +422,7 @@ It is recommended to enclose calls in the try-except construction as follows:
     'CallError: Failed for 037adb3a-b9e3-4f78-a6d1-9f0cdb6cbefc: Function returned an error: Duplicate key exists in unique index "primary_index" in space "tester" with old tuple - [3500, 300, "Rob"] and new tuple - [3500, 100, "Mike"]'
     >>> exc_crud.errors_list[1].str
     'InsertManyError: Failed to flatten object: FlattenError: Object is specified in bad format: FlattenError: Unknown field "second_name" is specified'
-    
+   
     # If there are no problems with any rows, the entire response will be contained in the res variable.
     >>> res = conn.crud_insert_object_many('tester', ({'id':3,'bucket_id':100,'name':'Ann'}, {'id':4,'bucket_id':100,'name':'Sam'}), {'timeout':100, 'rollback_on_error':False})
     >>> res.rows
@@ -436,7 +436,7 @@ If module crud not found on the router or user has not sufficient grants:
     ...     res = conn.crud_insert('tester', (22221,300,'Rob'))
     ... except DatabaseError as e:
     ...     exc_db = e
-    ... 
+    ...
     >>> exc_db
     DatabaseError(33, "Procedure 'crud.insert' is not defined. Ensure that you're calling crud.router and user has sufficient grants")
     >>> exc_db.extra_info

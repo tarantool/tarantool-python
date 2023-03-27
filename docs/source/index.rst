@@ -5,7 +5,7 @@ Python client library for Tarantool
 
 :Version: |version|
 
-`Tarantool`_ is an in-memory computing platform originally designed by 
+`Tarantool`_ is an in-memory computing platform originally designed by
 `VK`_ and released under the terms of `BSD license`_.
 
 Install Tarantool Python connector with ``pip`` (`PyPI`_ page):
@@ -78,7 +78,7 @@ API Reference
 
 .. Indices and tables
 .. ==================
-.. 
+..
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`

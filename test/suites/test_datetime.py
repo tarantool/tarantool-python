@@ -315,7 +315,7 @@ class TestSuite_Datetime(unittest.TestCase):
 
                 lua_eval = f"""
                     local dt = {case['tarantool']}
-                    
+                   
                     local tuple = box.space['test']:get('{name}')
                     assert(tuple ~= nil)
 

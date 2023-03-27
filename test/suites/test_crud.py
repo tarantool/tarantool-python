@@ -32,12 +32,12 @@ class TestSuite_Crud(unittest.TestCase):
     def setUp(self):
         time.sleep(1)
         # Open connections to instance.
-        self.conn = tarantool.Connection(host=self.host, port=self.port, 
+        self.conn = tarantool.Connection(host=self.host, port=self.port,
                                          user='guest', password='', fetch_schema=False)
-        self.conn_mesh = tarantool.MeshConnection(host=self.host, port=self.port, 
+        self.conn_mesh = tarantool.MeshConnection(host=self.host, port=self.port,
                                          user='guest', password='', fetch_schema=False)
-        self.conn_pool = tarantool.ConnectionPool([{'host':self.host, 'port':self.port}], 
-                                                     user='guest', password='', 
+        self.conn_pool = tarantool.ConnectionPool([{'host':self.host, 'port':self.port}],
+                                                     user='guest', password='',
                                                      fetch_schema=False)
         # Time for vshard group configuration.
         time.sleep(1)
@@ -93,7 +93,7 @@ class TestSuite_Crud(unittest.TestCase):
             'success': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             [3, 100, 'Jacob'],
                             [4, 100, 'Wyatt'],
@@ -115,7 +115,7 @@ class TestSuite_Crud(unittest.TestCase):
             'error': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             [3, 100, 'Julian'],
                             [4, 100, 'Hudson'],
@@ -137,7 +137,7 @@ class TestSuite_Crud(unittest.TestCase):
             'success': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             {'id': 9, 'bucket_id': 100, 'name': 'Sharar'},
                             {'id': 10, 'bucket_id': 100, 'name': 'Thaddeus'},
@@ -159,7 +159,7 @@ class TestSuite_Crud(unittest.TestCase):
             'error': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             {'id': 9, 'bucket_id': 100, 'name': 'Silvanus'},
                             {'id': 10, 'bucket_id': 100, 'name': 'Timeus'},
@@ -192,7 +192,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'GetError: Space "no-such-space-name" doesn\'t exist', 
+                            r'GetError: Space "no-such-space-name" doesn\'t exist',
                         ],
                 },
             },
@@ -212,7 +212,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r"UpdateError", 
+                            r"UpdateError",
                         ],
                 },
             },
@@ -232,7 +232,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'DeleteError: Space "no-such-space-name" doesn\'t exist', 
+                            r'DeleteError: Space "no-such-space-name" doesn\'t exist',
                         ],
                 },
             },
@@ -281,7 +281,7 @@ class TestSuite_Crud(unittest.TestCase):
             'success': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             [2, 100, 'Cephus'],
                             [3, 100, 'Esau'],
@@ -303,7 +303,7 @@ class TestSuite_Crud(unittest.TestCase):
             'error': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             [3, 100, 'Ephron'],
                             [4, 100, 'Ethan'],
@@ -325,7 +325,7 @@ class TestSuite_Crud(unittest.TestCase):
             'success': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             {'id': 2, 'bucket_id': 100, 'name': 'Cephus'},
                             {'id': 3, 'bucket_id': 100, 'name': 'Esau'},
@@ -347,7 +347,7 @@ class TestSuite_Crud(unittest.TestCase):
             'error': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             {'id': 3, 'bucket_id': 100, 'name': 'Ephron'},
                             {'id': 4, 'bucket_id': 100, 'name': 'Ethan'},
@@ -380,7 +380,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r"UpsertError", 
+                            r"UpsertError",
                         ],
                 },
             },
@@ -388,7 +388,7 @@ class TestSuite_Crud(unittest.TestCase):
         'crud_upsert_object': {
             'success': {
                 'input': {
-                    'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Cephus'}, 
+                    'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Cephus'},
                         [['+', 'bucket_id', 1]], {'timeout': 10}],
                 },
                 'output': {
@@ -397,7 +397,7 @@ class TestSuite_Crud(unittest.TestCase):
             },
             'error': {
                 'input': {
-                    'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Cephus'}, 
+                    'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Cephus'},
                         [['+', 'age', 1]], {'timeout': 10}],
                 },
                 'output': {
@@ -426,7 +426,7 @@ class TestSuite_Crud(unittest.TestCase):
             'error': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             [[3, 100, 'Ephron'], [['+', 'bucket_id', 1]]],
                             [[4, 100, 'Ethan'], [['+', 'bucket_id', 1]]],
@@ -462,7 +462,7 @@ class TestSuite_Crud(unittest.TestCase):
             'error': {
                 'input': {
                     'args': [
-                        'tester', 
+                        'tester',
                         [
                             [{'id': 3, 'bucket_id': 100, 'name': 'Ephron'}, [['+', 'bucket_id', 1]]],
                             [{'id': 4, 'bucket_id': 100, 'name': 'Ethan'}, [['+', 'bucket_id', 1]]],
@@ -494,7 +494,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'SelectError: Space "no-such-space-name" doesn\'t exist', 
+                            r'SelectError: Space "no-such-space-name" doesn\'t exist',
                         ],
                 },
             },
@@ -514,7 +514,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'BorderError: Index "no-idx" of space "tester" doesn\'t exist', 
+                            r'BorderError: Index "no-idx" of space "tester" doesn\'t exist',
                         ],
                 },
             },
@@ -534,7 +534,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'BorderError: Index "no-idx" of space "tester" doesn\'t exist', 
+                            r'BorderError: Index "no-idx" of space "tester" doesn\'t exist',
                         ],
                 },
             },
@@ -554,7 +554,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'LenError: Space "no-such-space-name" doesn\'t exist', 
+                            r'LenError: Space "no-such-space-name" doesn\'t exist',
                         ],
                 },
             },
@@ -574,7 +574,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'CountError: Space "no-such-space-name" doesn\'t exist', 
+                            r'CountError: Space "no-such-space-name" doesn\'t exist',
                         ],
                 },
             },
@@ -584,27 +584,27 @@ class TestSuite_Crud(unittest.TestCase):
                 'input': {
                     'args': [
                         [
-                            [1, 100, 'Mike'], 
-                            [2, 100, 'Mike'], 
-                            [3, 100, 'Mike'], 
-                            [4, 100, 'Mike'], 
-                            [5, 200, 'Bill'], 
+                            [1, 100, 'Mike'],
+                            [2, 100, 'Mike'],
+                            [3, 100, 'Mike'],
+                            [4, 100, 'Mike'],
+                            [5, 200, 'Bill'],
                             [6, 300, 'Rob'],
                         ],
                         [
-                            {'name': 'id', 'type': 'unsigned'}, 
-                            {'name': 'bucket_id', 'type': 'unsigned'}, 
+                            {'name': 'id', 'type': 'unsigned'},
+                            {'name': 'bucket_id', 'type': 'unsigned'},
                             {'name': 'name', 'type': 'string'}
                         ],
                     ],
                 },
                 'output': {
                     'scalar': [
-                        {'bucket_id': 100, 'name': 'Mike', 'id': 1}, 
-                        {'bucket_id': 100, 'name': 'Mike', 'id': 2}, 
-                        {'bucket_id': 100, 'name': 'Mike', 'id': 3}, 
-                        {'bucket_id': 100, 'name': 'Mike', 'id': 4}, 
-                        {'bucket_id': 200, 'name': 'Bill', 'id': 5}, 
+                        {'bucket_id': 100, 'name': 'Mike', 'id': 1},
+                        {'bucket_id': 100, 'name': 'Mike', 'id': 2},
+                        {'bucket_id': 100, 'name': 'Mike', 'id': 3},
+                        {'bucket_id': 100, 'name': 'Mike', 'id': 4},
+                        {'bucket_id': 200, 'name': 'Bill', 'id': 5},
                         {'bucket_id': 300, 'name': 'Rob', 'id': 6},
                     ],
                 },
@@ -633,7 +633,7 @@ class TestSuite_Crud(unittest.TestCase):
                 },
                 'output': {
                     'str': [
-                            r'"no-such-space-name" doesn\'t exist', 
+                            r'"no-such-space-name" doesn\'t exist',
                         ],
                 },
             },
@@ -684,8 +684,8 @@ class TestSuite_Crud(unittest.TestCase):
         if 'operations' in case['success']['output']:
             # Case for statistics testing.
             for operation in case['success']['output']['operations']:
-                self.assertEqual(operation in resp.__dict__, True, 
-                    'Problem with finding a field with a statistic about operation ' 
+                self.assertEqual(operation in resp.__dict__, True,
+                    'Problem with finding a field with a statistic about operation '
                         + operation)
 
     def _exception_operation_with_crud(self, testing_function, case, mode=None):

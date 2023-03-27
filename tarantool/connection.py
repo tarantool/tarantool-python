@@ -216,7 +216,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upsert(self, space_name, tuple_value, op_list, *, index=None, 
+    def upsert(self, space_name, tuple_value, op_list, *, index=None,
                on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.upsert`.
@@ -1141,7 +1141,7 @@ class Connection(ConnectionInterface):
                 continue
 
         while response._code == IPROTO_CHUNK:
-            if on_push is not None: 
+            if on_push is not None:
                 on_push(response._data, on_push_ctx)
             response = request.response_class(self, self._read_response())
 
@@ -1999,7 +1999,7 @@ class Connection(ConnectionInterface):
 
         :param on_push_ctx: Сontext for working with on_push callback.
         :type on_push_ctx: optional
-        
+
         :rtype: :class:`~tarantool.response.Response`
 
         :raise: :exc:`~AssertionError`,
@@ -2167,7 +2167,7 @@ class Connection(ConnectionInterface):
 
     def crud_insert(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Inserts row through the 
+        Inserts row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
 
         :param space_name: The name of the target space.
@@ -2198,7 +2198,7 @@ class Connection(ConnectionInterface):
 
     def crud_insert_object(self, space_name: str, values: dict, opts: dict={}) -> CrudResult:
         """
-        Inserts object row through the 
+        Inserts object row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
 
         :param space_name: The name of the target space.
@@ -2229,7 +2229,7 @@ class Connection(ConnectionInterface):
 
     def crud_insert_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Inserts batch rows through the 
+        Inserts batch rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
 
         :param space_name: The name of the target space.
@@ -2267,7 +2267,7 @@ class Connection(ConnectionInterface):
 
     def crud_insert_object_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Inserts batch object rows through the 
+        Inserts batch object rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
 
         :param space_name: The name of the target space.
@@ -2305,7 +2305,7 @@ class Connection(ConnectionInterface):
 
     def crud_get(self, space_name: str, key: int, opts: dict={}) -> CrudResult:
         """
-        Gets row through the 
+        Gets row through the
         `crud <https://github.com/tarantool/crud#get>`__.
 
         :param space_name: The name of the target space.
@@ -2335,7 +2335,7 @@ class Connection(ConnectionInterface):
 
     def crud_update(self, space_name: str, key: int, operations: list=[], opts: dict={}) -> CrudResult:
         """
-        Updates row through the 
+        Updates row through the
         `crud <https://github.com/tarantool/crud#update>`__.
 
         :param space_name: The name of the target space.
@@ -2369,7 +2369,7 @@ class Connection(ConnectionInterface):
 
     def crud_delete(self, space_name: str, key: int, opts: dict={}) -> CrudResult:
         """
-        Deletes row through the 
+        Deletes row through the
         `crud <https://github.com/tarantool/crud#delete>`__.
 
         :param space_name: The name of the target space.
@@ -2399,7 +2399,7 @@ class Connection(ConnectionInterface):
 
     def crud_replace(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Replaces row through the 
+        Replaces row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
 
         :param space_name: The name of the target space.
@@ -2430,7 +2430,7 @@ class Connection(ConnectionInterface):
 
     def crud_replace_object(self, space_name: str, values: dict, opts: dict={}) -> CrudResult:
         """
-        Replaces object row through the 
+        Replaces object row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
 
         :param space_name: The name of the target space.
@@ -2461,7 +2461,7 @@ class Connection(ConnectionInterface):
 
     def crud_replace_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Replaces batch rows through the 
+        Replaces batch rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
 
         :param space_name: The name of the target space.
@@ -2499,7 +2499,7 @@ class Connection(ConnectionInterface):
 
     def crud_replace_object_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Replaces batch object rows through the 
+        Replaces batch object rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
 
         :param space_name: The name of the target space.
@@ -2537,7 +2537,7 @@ class Connection(ConnectionInterface):
 
     def crud_upsert(self, space_name: str, values: Union[tuple, list], operations: list=[], opts: dict={}) -> CrudResult:
         """
-        Upserts row through the 
+        Upserts row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
 
         :param space_name: The name of the target space.
@@ -2572,7 +2572,7 @@ class Connection(ConnectionInterface):
 
     def crud_upsert_object(self, space_name: str, values: dict, operations: list=[], opts: dict={}) -> CrudResult:
         """
-        Upserts object row through the 
+        Upserts object row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
 
         :param space_name: The name of the target space.
@@ -2599,7 +2599,7 @@ class Connection(ConnectionInterface):
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.upsert_object", space_name, values, operations, opts)
-        
+
         if crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
@@ -2607,7 +2607,7 @@ class Connection(ConnectionInterface):
 
     def crud_upsert_many(self, space_name: str, values_operation: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Upserts batch rows through the 
+        Upserts batch rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
 
         :param space_name: The name of the target space.
@@ -2645,7 +2645,7 @@ class Connection(ConnectionInterface):
 
     def crud_upsert_object_many(self, space_name: str, values_operation: Union[tuple, list], opts: dict={}) -> CrudResult:
         """
-        Upserts batch object rows through the 
+        Upserts batch object rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
 
         :param space_name: The name of the target space.
@@ -2683,7 +2683,7 @@ class Connection(ConnectionInterface):
 
     def crud_select(self, space_name: str, conditions: list=[], opts: dict={}) -> CrudResult:
         """
-        Selects rows through the 
+        Selects rows through the
         `crud <https://github.com/tarantool/crud#select>`__.
 
         :param space_name: The name of the target space.
@@ -2714,7 +2714,7 @@ class Connection(ConnectionInterface):
 
     def crud_min(self, space_name: str, index_name: str, opts: dict={}) -> CrudResult:
         """
-        Gets rows with minimum value in the specified index through 
+        Gets rows with minimum value in the specified index through
         the `crud <https://github.com/tarantool/crud#min-and-max>`__.
 
         :param space_name: The name of the target space.
@@ -2744,7 +2744,7 @@ class Connection(ConnectionInterface):
 
     def crud_max(self, space_name: str, index_name: str, opts: dict={}) -> CrudResult:
         """
-        Gets rows with maximum value in the specified index through 
+        Gets rows with maximum value in the specified index through
         the `crud <https://github.com/tarantool/crud#min-and-max>`__.
 
         :param space_name: The name of the target space.
@@ -2774,7 +2774,7 @@ class Connection(ConnectionInterface):
 
     def crud_truncate(self, space_name: str, opts: dict={}) -> bool:
         """
-        Truncate rows through 
+        Truncate rows through
         the `crud <https://github.com/tarantool/crud#truncate>`__.
 
         :param space_name: The name of the target space.
@@ -2794,16 +2794,16 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.truncate", space_name, opts)
 
-        # In absence of an error, crud does not give 
+        # In absence of an error, crud does not give
         # variable err as nil (as in most cases).
         if len(crud_resp) != 1:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return crud_resp[0]
-    
+
     def crud_len(self, space_name: str, opts: dict={}) -> int:
         """
-        Gets the number of tuples in the space through 
+        Gets the number of tuples in the space through
         the `crud <https://github.com/tarantool/crud#len>`__.
 
         :param space_name: The name of the target space.
@@ -2823,7 +2823,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.len", space_name, opts)
 
-        # In absence of an error, crud does not give 
+        # In absence of an error, crud does not give
         # variable err as nil (as in most cases).
         if len(crud_resp) != 1:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
@@ -2832,7 +2832,7 @@ class Connection(ConnectionInterface):
 
     def crud_storage_info(self, opts: dict={}) -> dict:
         """
-        Gets storages status through the 
+        Gets storages status through the
         `crud <https://github.com/tarantool/crud#storage-info>`__.
 
         :param opts: The opts for the crud module.
@@ -2848,7 +2848,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.storage_info", opts)
 
-        # In absence of an error, crud does not give 
+        # In absence of an error, crud does not give
         # variable err as nil (as in most cases).
         if len(crud_resp) != 1:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
@@ -2857,7 +2857,7 @@ class Connection(ConnectionInterface):
 
     def crud_count(self, space_name: str, conditions: list=[], opts: dict={}) -> int:
         """
-        Gets rows count through the 
+        Gets rows count through the
         `crud <https://github.com/tarantool/crud#count>`__.
 
         :param space_name: The name of the target space.
@@ -2888,7 +2888,7 @@ class Connection(ConnectionInterface):
 
     def crud_stats(self, space_name: str=None) -> CrudResult:
         """
-        Gets statistics from the 
+        Gets statistics from the
         `crud <https://github.com/tarantool/crud#statistics>`__.
 
         :param space_name: The name of the target space.
@@ -2912,7 +2912,7 @@ class Connection(ConnectionInterface):
 
     def crud_unflatten_rows(self, rows: list, metadata: list) -> list:
         """
-        Makes rows unflatten through the 
+        Makes rows unflatten through the
         `crud <https://github.com/tarantool/crud#api>`__.
 
         :param rows: The rows to unflatten.

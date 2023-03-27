@@ -131,12 +131,12 @@ class TestSuite_DBAPI(dbapi20.DatabaseAPI20Test):
     def test_ExceptionsAsConnectionAttributes(self):
         # Workaround for https://github.com/baztian/dbapi-compliance/issues/5
 
-        # OPTIONAL EXTENSION 
-        # Test for the optional DB API 2.0 extension, where the exceptions 
-        # are exposed as attributes on the Connection object 
-        # I figure this optional extension will be implemented by any 
-        # driver author who is using this test suite, so it is enabled 
-        # by default. 
+        # OPTIONAL EXTENSION
+        # Test for the optional DB API 2.0 extension, where the exceptions
+        # are exposed as attributes on the Connection object
+        # I figure this optional extension will be implemented by any
+        # driver author who is using this test suite, so it is enabled
+        # by default.
         drv = self.driver
         con = self._connect()
         try:

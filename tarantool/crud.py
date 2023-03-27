@@ -9,7 +9,7 @@ from tarantool.error import DatabaseError, ER_NO_SUCH_PROC, ER_ACCESS_DENIED
 
 class CrudResponse(object):
     """
-    Contains response fields from the `crud`_ module that correspond 
+    Contains response fields from the `crud`_ module that correspond
     to the Lua implementation.
 
     .. _crud: https://github.com/tarantool/crud/
@@ -35,14 +35,14 @@ class CrudResponse(object):
 
 class CrudResult(CrudResponse):
     """
-    Contains result's fields from result variable 
+    Contains result's fields from result variable
     of crud module operation.
     """
 
 
 class CrudError(CrudResponse):
     """
-    Contains error's fields from error variable 
+    Contains error's fields from error variable
     of crud module operation.
     """
 
