@@ -945,7 +945,7 @@ class ConnectionPool(ConnectionInterface):
         .. _update: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/update/
         """
 
-        return self._send(mode, 'update', space_name, key, 
+        return self._send(mode, 'update', space_name, key,
             op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
 
     def ping(self, notime=False, *, mode=None):
@@ -1041,8 +1041,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_insert(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_insert request on the pool server: 
-        inserts row through the 
+        Execute an crud_insert request on the pool server:
+        inserts row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
         Refer to :meth:`~tarantool.Connection.crud_insert`.
 
@@ -1068,8 +1068,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_insert_object(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_insert_object request on the pool server: 
-        inserts object row through the 
+        Execute an crud_insert_object request on the pool server:
+        inserts object row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
         Refer to :meth:`~tarantool.Connection.crud_insert_object`.
 
@@ -1095,8 +1095,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_insert_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_insert_many request on the pool server: 
-        inserts batch rows through the 
+        Execute an crud_insert_many request on the pool server:
+        inserts batch rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
         Refer to :meth:`~tarantool.Connection.crud_insert_many`.
 
@@ -1122,7 +1122,7 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_insert_object_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_insert_object_many request on the pool server: 
+        Execute an crud_insert_object_many request on the pool server:
         inserts batch object rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
         Refer to :meth:`~tarantool.Connection.crud_insert_object_many`.
@@ -1149,8 +1149,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_get(self, space_name, key, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_get request on the pool server: 
-        gets row through the 
+        Execute an crud_get request on the pool server:
+        gets row through the
         `crud <https://github.com/tarantool/crud#get>`__.
         Refer to :meth:`~tarantool.Connection.crud_get`.
 
@@ -1176,8 +1176,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_update(self, space_name, key, operations=[], opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_update request on the pool server: 
-        updates row through the 
+        Execute an crud_update request on the pool server:
+        updates row through the
         `crud <https://github.com/tarantool/crud#update>`__.
         Refer to :meth:`~tarantool.Connection.crud_update`.
 
@@ -1206,8 +1206,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_delete(self, space_name, key, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_delete request on the pool server: 
-        deletes row through the 
+        Execute an crud_delete request on the pool server:
+        deletes row through the
         `crud <https://github.com/tarantool/crud#delete>`__.
         Refer to :meth:`~tarantool.Connection.crud_delete`.
 
@@ -1233,8 +1233,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_replace(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_replace request on the pool server: 
-        replaces row through the 
+        Execute an crud_replace request on the pool server:
+        replaces row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
         Refer to :meth:`~tarantool.Connection.crud_replace`.
 
@@ -1260,8 +1260,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_replace_object(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_replace_object request on the pool server: 
-        replaces object row through the 
+        Execute an crud_replace_object request on the pool server:
+        replaces object row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
         Refer to :meth:`~tarantool.Connection.crud_replace_object`.
 
@@ -1287,8 +1287,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_replace_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_replace_many request on the pool server: 
-        replaces batch rows through the 
+        Execute an crud_replace_many request on the pool server:
+        replaces batch rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
         Refer to :meth:`~tarantool.Connection.crud_replace_many`.
 
@@ -1314,8 +1314,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_replace_object_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_replace_object_many request on the pool server: 
-        replaces batch object rows through the 
+        Execute an crud_replace_object_many request on the pool server:
+        replaces batch object rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
         Refer to :meth:`~tarantool.Connection.crud_replace_object_many`.
 
@@ -1341,8 +1341,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_upsert(self, space_name, values, operations=[], opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_upsert request on the pool server: 
-        upserts row through the 
+        Execute an crud_upsert request on the pool server:
+        upserts row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
         Refer to :meth:`~tarantool.Connection.crud_upsert`.
 
@@ -1371,8 +1371,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_upsert_object(self, space_name, values, operations=[], opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_upsert_object request on the pool server: 
-        upserts object row through the 
+        Execute an crud_upsert_object request on the pool server:
+        upserts object row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
         Refer to :meth:`~tarantool.Connection.crud_upsert_object`.
 
@@ -1401,8 +1401,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_upsert_many(self, space_name, values_operation, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_upsert_many request on the pool server: 
-        upserts batch rows through the 
+        Execute an crud_upsert_many request on the pool server:
+        upserts batch rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
         Refer to :meth:`~tarantool.Connection.crud_upsert_many`.
 
@@ -1428,8 +1428,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_upsert_object_many(self, space_name, values_operation, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_upsert_object_many request on the pool server: 
-        upserts batch object rows through the 
+        Execute an crud_upsert_object_many request on the pool server:
+        upserts batch object rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
         Refer to :meth:`~tarantool.Connection.crud_upsert_object_many`.
 
@@ -1455,8 +1455,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_select(self, space_name, conditions=[], opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_select request on the pool server: 
-        selects rows through the 
+        Execute an crud_select request on the pool server:
+        selects rows through the
         `crud <https://github.com/tarantool/crud#select>`__.
         Refer to :meth:`~tarantool.Connection.crud_select`.
 
@@ -1482,8 +1482,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_min(self, space_name, index_name, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_min request on the pool server: 
-        gets rows with minimum value in the specified index through 
+        Execute an crud_min request on the pool server:
+        gets rows with minimum value in the specified index through
         `crud <https://github.com/tarantool/crud#min-and-max>`__.
         Refer to :meth:`~tarantool.Connection.crud_min`.
 
@@ -1509,8 +1509,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_max(self, space_name, index_name, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_max request on the pool server: 
-        gets rows with maximum value in the specified index through 
+        Execute an crud_max request on the pool server:
+        gets rows with maximum value in the specified index through
         `crud <https://github.com/tarantool/crud#min-and-max>`__.
         Refer to :meth:`~tarantool.Connection.crud_max`.
 
@@ -1536,8 +1536,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_len(self, space_name, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_len request on the pool server: 
-        gets the number of tuples in the space through 
+        Execute an crud_len request on the pool server:
+        gets the number of tuples in the space through
         `crud <https://github.com/tarantool/crud#len>`__.
         Refer to :meth:`~tarantool.Connection.crud_len`.
 
@@ -1560,8 +1560,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_storage_info(self, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_storage_info request on the pool server: 
-        gets storages status through the 
+        Execute an crud_storage_info request on the pool server:
+        gets storages status through the
         `crud <https://github.com/tarantool/crud#storage-info>`__.
         Refer to :meth:`~tarantool.Connection.crud_storage_info`.
 
@@ -1581,8 +1581,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_count(self, space_name, conditions=[], opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_count request on the pool server: 
-        gets rows count through the 
+        Execute an crud_count request on the pool server:
+        gets rows count through the
         `crud <https://github.com/tarantool/crud#count>`__.
         Refer to :meth:`~tarantool.Connection.crud_count`.
 
@@ -1608,8 +1608,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_stats(self, space_name=None, *, mode=Mode.ANY):
         """
-        Execute an crud_stats request on the pool server: 
-        gets statistics through the 
+        Execute an crud_stats request on the pool server:
+        gets statistics through the
         `crud <https://github.com/tarantool/crud#statistics>`__.
         Refer to :meth:`~tarantool.Connection.crud_stats`.
 
@@ -1629,7 +1629,7 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_unflatten_rows(self, rows, metadata, *, mode=Mode.ANY):
         """
-        Makes rows unflatten through the 
+        Makes rows unflatten through the
         `crud <https://github.com/tarantool/crud#api>`__.
         Refer to :meth:`~tarantool.Connection.crud_unflatten_rows`.
 
@@ -1652,8 +1652,8 @@ class ConnectionPool(ConnectionInterface):
 
     def crud_truncate(self, space_name, opts={}, *, mode=Mode.ANY):
         """
-        Execute an crud_truncate request on the pool server: 
-        truncates rows through 
+        Execute an crud_truncate request on the pool server:
+        truncates rows through
         `crud <https://github.com/tarantool/crud#truncate>`__.
         Refer to :meth:`~tarantool.Connection.crud_truncate`.
 

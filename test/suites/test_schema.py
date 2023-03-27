@@ -78,12 +78,12 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         if not sys.platform.startswith("win"):
             # Schema fetch disable tests via mesh and pool connection
             # are not supported on windows platform.
-            self.mesh_con_schema_disable = tarantool.MeshConnection(host=self.srv.host, 
+            self.mesh_con_schema_disable = tarantool.MeshConnection(host=self.srv.host,
                                                                     port=self.srv.args['primary'],
-                                                                    fetch_schema=False, 
+                                                                    fetch_schema=False,
                                                                     user='test', password='test')
-            self.pool_con_schema_disable = tarantool.ConnectionPool([{'host':self.srv.host, 
-                                                                    'port':self.srv.args['primary']}], 
+            self.pool_con_schema_disable = tarantool.ConnectionPool([{'host':self.srv.host,
+                                                                    'port':self.srv.args['primary']}],
                                                                     user='test', password='test',
                                                                     fetch_schema=False)
         self.sch = self.con.schema
@@ -122,7 +122,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                 'constr_tester_2', {
                 format = {
                     { name = 'id', type = 'unsigned' },
-                    { name = 'table1_id', type = 'unsigned', 
+                    { name = 'table1_id', type = 'unsigned',
                       foreign_key = { fk_video = { space = 'constr_tester_1', field = 'id' } },
                     },
                     { name = 'payload', type = 'number' },
@@ -419,7 +419,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
             'insert': {
                 'input': ['tester', (1, None)],
                 'output': [[1, None]],
-            }, 
+            },
             'upsert': {
                 'input': ['tester', (1, None), []],
                 'output': [],
@@ -427,7 +427,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
             'update': {
                 'input': ['tester', 1, []],
                 'output': [[1, None]],
-            }, 
+            },
             'select': {
                 'input': ['tester', 1],
                 'output': [[1, None]],
@@ -478,13 +478,13 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                     try:
                         if mode is not None:
                             _ = testing_function(
-                                *self.testing_methods['unavailable'][method_case]['input'], 
+                                *self.testing_methods['unavailable'][method_case]['input'],
                                 mode=mode)
                         else:
                             _ = testing_function(
                                 *self.testing_methods['unavailable'][method_case]['input'])
                     except NotSupportedError as e:
-                        self.assertEqual(e.message, 'This method is not available in ' + 
+                        self.assertEqual(e.message, 'This method is not available in ' +
                                                     'connection opened with fetch_schema=False')
             # Testing the schemaless connection with methods
             # that should be available.
@@ -493,7 +493,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                     testing_function = getattr(con, method_case)
                     if mode is not None:
                         resp = testing_function(
-                            *self.testing_methods['available'][method_case]['input'], 
+                            *self.testing_methods['available'][method_case]['input'],
                             mode=mode)
                     else:
                         resp = testing_function(
@@ -521,7 +521,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                     testing_function = getattr(con, method_case)
                     if mode is not None:
                         resp = testing_function(
-                            *self.testing_methods['unavailable'][method_case]['input'], 
+                            *self.testing_methods['unavailable'][method_case]['input'],
                             mode=mode)
                     else:
                         resp = testing_function(
@@ -530,7 +530,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                         self.assertEqual(isinstance(resp, tarantool.space.Space), True)
                     else:
                         self.assertEqual(
-                            resp.data, 
+                            resp.data,
                             self.testing_methods['unavailable'][method_case]['output'])
             # Testing the schemaful connection with methods
             # that should have remained available.
@@ -539,7 +539,7 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                     testing_function = getattr(con, method_case)
                     if mode is not None:
                         resp = testing_function(
-                            *self.testing_methods['available'][method_case]['input'], 
+                            *self.testing_methods['available'][method_case]['input'],
                             mode=mode)
                     else:
                         resp = testing_function(
@@ -548,12 +548,12 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                         self.assertEqual(isinstance(resp, float), True)
                     else:
                         self.assertEqual(
-                            resp.data, 
+                            resp.data,
                             self.testing_methods['available'][method_case]['output'])
             if mode is not None:
                 self.assertNotEqual(con.pool[addr].conn.schema_version, 1)
                 self.assertNotEqual(con.pool[addr].conn.schema, None)
-            else:      
+            else:
                 self.assertNotEqual(con.schema_version, 1)
                 self.assertNotEqual(con.schema, None)
 

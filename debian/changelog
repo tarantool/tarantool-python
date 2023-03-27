@@ -290,7 +290,7 @@ tarantool-python (0.9.0-0) unstable; urgency=medium
         transport="ssl",
         ssl_ca_file=client_ca_file)
     ```
-    
+   
     If the server authenticates clients using certificates issued by
     given CA, you must provide private SSL key file with `ssl_key_file`
     parameter and SSL certificate file with `ssl_cert_file` parameter.
@@ -351,7 +351,7 @@ tarantool-python (0.9.0-0) unstable; urgency=medium
     ```
 
     See [Tarantool Enterprise Edition manual](https://www.tarantool.io/en/enterprise_doc/security/#enterprise-iproto-encryption)
-    for details. 
+    for details.
 
     ## Breaking changes
 

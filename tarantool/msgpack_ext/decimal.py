@@ -263,7 +263,7 @@ def encode(obj, _):
     bytes_reverted.append(get_mp_sign(sign))
 
     digit_count = 0
-    # We need to update the scale after possible strip_decimal_str() 
+    # We need to update the scale after possible strip_decimal_str()
     scale = 0
 
     for i in range(len(str_repr) - 1, first_digit_ind - 1, -1):
@@ -348,7 +348,7 @@ def decode(data, _):
     :raise: :exc:`~tarantool.error.MsgpackError`
     """
 
-    scale = data[0] 
+    scale = data[0]
 
     sign = get_str_sign(data[-1] & 0x0f)
 

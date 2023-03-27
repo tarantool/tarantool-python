@@ -90,7 +90,7 @@ class Interval():
             :meth:`~tarantool.Datetime.__add__`.
         :type adjust: :class:`~tarantool.IntervalAdjust`, optional
         """
-        
+
         self.year = year
         self.month = month
         self.week = week

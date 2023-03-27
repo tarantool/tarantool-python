@@ -86,7 +86,7 @@ You can also install the development version of the package using ``pip``.
 What is Tarantool?
 ------------------
 
-`Tarantool`_ is an in-memory computing platform originally designed by 
+`Tarantool`_ is an in-memory computing platform originally designed by
 `VK`_ and released under the terms of `BSD license`_.
 
 Features

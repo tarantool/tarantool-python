@@ -126,7 +126,7 @@ html_theme_options = {'sidebarwidth': '30%'}
 # pixels large.
 #html_favicon = None
 
-# Set up favicons with sphinx_favicon. 
+# Set up favicons with sphinx_favicon.
 favicons = [
     {
         "rel": "icon",

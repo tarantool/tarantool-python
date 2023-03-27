@@ -340,7 +340,7 @@ class CrudModuleError(DatabaseError):
     def __init__(self, _, error):
         """
         Sets fields with result and errors.
-        
+
         :param args: The tuple from the crud module with result and errors.
         :type args: :obj:`tuple`
         """
@@ -361,7 +361,7 @@ class CrudModuleManyError(DatabaseError):
     def __init__(self, success, error):
         """
         Sets fields with result and errors.
-        
+
         :param args: The tuple from the crud module with result and errors.
         :type args: :obj:`tuple`
         """

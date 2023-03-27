@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.12.1 - 2023-02-28
 
 ### Changed
-- Discovery iproto features only for Tarantools since version 2.10.0 (#283). 
+- Discovery iproto features only for Tarantools since version 2.10.0 (#283).
 
 ### Fixed
 - Schema fetch for spaces with foreign keys (#282).
@@ -352,7 +352,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Various improvements and fixes in README (PR #210, PR #215).
 
 ### Fixed
-- json.dumps compatibility with Python 2 (PR #186). 
+- json.dumps compatibility with Python 2 (PR #186).
 - Unix socket support in mesh_connection (PR #189, #111).
 - Various fixes in tests (PR #189, #111, PR #195, #194).
 

@@ -14,7 +14,7 @@ override_dh_auto_build:
 	python3 setup.py build --force
 
 override_dh_auto_install:
-	python3 setup.py install --force --root=debian/python3-tarantool --no-compile -O0 --install-layout=deb --prefix=/usr 
+	python3 setup.py install --force --root=debian/python3-tarantool --no-compile -O0 --install-layout=deb --prefix=/usr
 
 override_dh_python2:
 	dh_python2 --no-guessing-versions
