@@ -470,7 +470,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
             else:
                 self.assertEqual(con.schema_version, 0)
                 self.assertEqual(con.schema, None)
-            for method_case in self.testing_methods['unavailable'].keys():
+            for method_case in self.testing_methods['unavailable']:
                 with self.subTest(name=method_case):
                     if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
                         continue
@@ -488,7 +488,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                                                       'connection opened with fetch_schema=False')
             # Testing the schemaless connection with methods
             # that should be available.
-            for method_case in self.testing_methods['available'].keys():
+            for method_case in self.testing_methods['available']:
                 with self.subTest(name=method_case):
                     testing_function = getattr(con, method_case)
                     if mode is not None:
@@ -514,7 +514,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
 
             # Testing the schemaful connection with methods
             # that should NOW be available.
-            for method_case in self.testing_methods['unavailable'].keys():
+            for method_case in self.testing_methods['unavailable']:
                 with self.subTest(name=method_case):
                     if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
                         continue
@@ -534,7 +534,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                             self.testing_methods['unavailable'][method_case]['output'])
             # Testing the schemaful connection with methods
             # that should have remained available.
-            for method_case in self.testing_methods['available'].keys():
+            for method_case in self.testing_methods['available']:
                 with self.subTest(name=method_case):
                     testing_function = getattr(con, method_case)
                     if mode is not None:
