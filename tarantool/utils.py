@@ -3,6 +3,8 @@ This module provides untility functions for the package.
 """
 
 from base64 import decodebytes as base64_decode
+from dataclasses import dataclass, field
+import typing
 import sys
 import uuid
 
@@ -68,6 +70,32 @@ def version_id(major, minor, patch):
 
     return (((major << 8) | minor) << 8) | patch
 
+@dataclass
+class Greeting():
+    """
+    Connection greeting info.
+    """
+
+    version_id: typing.Optional = 0
+    """
+    :type: :obj:`tuple` or :obj:`list`
+    """
+
+    protocol: typing.Optional[str] = None
+    """
+    :type: :obj:`str`, optional
+    """
+
+    uuid: typing.Optional[str] = None
+    """
+    :type: :obj:`str`, optional
+    """
+
+    salt: typing.Optional[str] = None
+    """
+    :type: :obj:`str`, optional
+    """
+
 def greeting_decode(greeting_buf):
     """
     Decode Tarantool server greeting.
@@ -80,12 +108,6 @@ def greeting_decode(greeting_buf):
 
     :raise: :exc:`~Exception`
     """
-
-    class Greeting:
-        version_id = 0
-        protocol = None
-        uuid = None
-        salt = None
 
     # Tarantool 1.6.6
     # Tarantool 1.6.6-102-g4e9bde2
