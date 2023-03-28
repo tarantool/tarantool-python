@@ -8,44 +8,44 @@ from .lib.skip import skip_or_run_error_extra_info_test
 
 class TestSuiteRequest(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' DML '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
-        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
-        self.adm = self.srv.admin
-        self.space_created = self.adm("box.schema.create_space('space_1')")
-        self.adm("""
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
+        cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])
+        cls.adm = cls.srv.admin
+        cls.space_created = cls.adm("box.schema.create_space('space_1')")
+        cls.adm("""
         box.space['space_1']:create_index('primary', {
             type = 'tree',
             parts = {1, 'num'},
             unique = true})
         """.replace('\n', ' '))
-        self.adm("""
+        cls.adm("""
         box.space['space_1']:create_index('secondary', {
             type = 'tree',
             parts = {2, 'num', 3, 'str'},
             unique = false})
         """.replace('\n', ' '))
-        self.space_created = self.adm("box.schema.create_space('space_2')")
-        self.adm("""
+        cls.space_created = cls.adm("box.schema.create_space('space_2')")
+        cls.adm("""
         box.space['space_2']:create_index('primary', {
             type = 'hash',
             parts = {1, 'num'},
             unique = true})
         """.replace('\n', ' '))
-        self.adm("json = require('json')")
-        self.adm("fiber = require('fiber')")
-        self.adm("uuid = require('uuid')")
+        cls.adm("json = require('json')")
+        cls.adm("fiber = require('fiber')")
+        cls.adm("uuid = require('uuid')")
 
         if not sys.platform.startswith("win"):
-            self.sock_srv = TarantoolServer(create_unix_socket=True)
-            self.sock_srv.script = 'test/suites/box.lua'
-            self.sock_srv.start()
+            cls.sock_srv = TarantoolServer(create_unix_socket=True)
+            cls.sock_srv.script = 'test/suites/box.lua'
+            cls.sock_srv.start()
         else:
-            self.sock_srv = None
+            cls.sock_srv = None
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
@@ -399,11 +399,11 @@ class TestSuiteRequest(unittest.TestCase):
             self.fail('Expected error')
 
     @classmethod
-    def tearDownClass(self):
-        self.con.close()
-        self.srv.stop()
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.con.close()
+        cls.srv.stop()
+        cls.srv.clean()
 
-        if self.sock_srv is not None:
-            self.sock_srv.stop()
-            self.sock_srv.clean()
+        if cls.sock_srv is not None:
+            cls.sock_srv.stop()
+            cls.sock_srv.clean()

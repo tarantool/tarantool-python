@@ -19,13 +19,13 @@ class TestSuiteExecute(unittest.TestCase):
     ]
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' EXECUTE '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
-        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
+        cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])
 
     @skip_or_run_sql_test
     def setUp(self):
@@ -39,10 +39,10 @@ class TestSuiteExecute(unittest.TestCase):
                        "execute', 'universe')")
 
     @classmethod
-    def tearDownClass(self):
-        self.con.close()
-        self.srv.stop()
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.con.close()
+        cls.srv.stop()
+        cls.srv.clean()
 
     def _populate_data(self, table_name):
         query = f"insert into {table_name} values (:id, :name)"

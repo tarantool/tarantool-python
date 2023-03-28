@@ -38,20 +38,20 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
     # Define 'encoding' field in a concrete class.
 
     @classmethod
-    def setUpClass(self):
-        params = f'connection.encoding: {repr(self.encoding)}'
+    def setUpClass(cls):
+        params = f'connection.encoding: {repr(cls.encoding)}'
         print(f' SCHEMA ({params}) '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
-        self.srv.admin("box.schema.user.create('test', {password = 'test', " +
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
+        cls.srv.admin("box.schema.user.create('test', {password = 'test', " +
               "if_not_exists = true})")
-        self.srv.admin("box.schema.user.grant('test', 'read,write,execute', 'universe')")
+        cls.srv.admin("box.schema.user.grant('test', 'read,write,execute', 'universe')")
 
         # Create server_function and tester space (for fetch_schema opt testing purposes).
-        self.srv.admin("function server_function() return 2+2 end")
-        self.srv.admin("""
+        cls.srv.admin("function server_function() return 2+2 end")
+        cls.srv.admin("""
         box.schema.create_space(
             'tester', {
             format = {
@@ -60,7 +60,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
             }
         })
         """)
-        self.srv.admin("""
+        cls.srv.admin("""
         box.space.tester:create_index(
             'primary_index', {
             parts = {
@@ -68,36 +68,36 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
             }
         })
         """)
-        self.srv.admin("box.space.tester:insert({1, null})")
+        cls.srv.admin("box.space.tester:insert({1, null})")
 
-        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
-                                        encoding=self.encoding, user='test', password='test')
-        self.con_schema_disable = tarantool.Connection(self.srv.host, self.srv.args['primary'],
-                                                       encoding=self.encoding, fetch_schema=False,
-                                                       user='test', password='test')
+        cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'],
+                                       encoding=cls.encoding, user='test', password='test')
+        cls.con_schema_disable = tarantool.Connection(cls.srv.host, cls.srv.args['primary'],
+                                                      encoding=cls.encoding, fetch_schema=False,
+                                                      user='test', password='test')
         if not sys.platform.startswith("win"):
             # Schema fetch disable tests via mesh and pool connection
             # are not supported on windows platform.
-            self.mesh_con_schema_disable = tarantool.MeshConnection(host=self.srv.host,
-                                                                    port=self.srv.args['primary'],
-                                                                    fetch_schema=False,
-                                                                    user='test', password='test')
-            self.pool_con_schema_disable = tarantool.ConnectionPool([{'host':self.srv.host,
-                                                                    'port':self.srv.args['primary']}],
-                                                                    user='test', password='test',
-                                                                    fetch_schema=False)
-        self.sch = self.con.schema
+            cls.mesh_con_schema_disable = tarantool.MeshConnection(host=cls.srv.host,
+                                                                   port=cls.srv.args['primary'],
+                                                                   fetch_schema=False,
+                                                                   user='test', password='test')
+            cls.pool_con_schema_disable = tarantool.ConnectionPool([{'host':cls.srv.host,
+                                                                     'port':cls.srv.args['primary']}],
+                                                                      user='test', password='test',
+                                                                      fetch_schema=False)
+        cls.sch = cls.con.schema
 
         # The relevant test cases mainly target Python 2, where
         # a user may want to pass a string literal as a space or
         # an index name and don't bother whether all symbols in it
         # are ASCII.
-        self.unicode_space_name_literal = '∞'
-        self.unicode_index_name_literal = '→'
+        cls.unicode_space_name_literal = '∞'
+        cls.unicode_index_name_literal = '→'
 
-        self.unicode_space_name_u = u'∞'
-        self.unicode_index_name_u = u'→'
-        self.unicode_space_id, self.unicode_index_id = self.srv.admin("""
+        cls.unicode_space_name_u = u'∞'
+        cls.unicode_index_name_u = u'→'
+        cls.unicode_space_id, cls.unicode_index_id = cls.srv.admin("""
             do
                 local space = box.schema.create_space('\\xe2\\x88\\x9e')
                 local index = space:create_index('\\xe2\\x86\\x92')
@@ -105,8 +105,8 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
             end
         """)
 
-        if self.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
-            self.srv.admin("""
+        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
+            cls.srv.admin("""
             box.schema.create_space(
                 'constr_tester_1', {
                 format = {
@@ -588,24 +588,24 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                 self.con.replace('constr_tester_2', [2, 999, 623])
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):
         # We need to drop spaces with foreign keys with predetermined order,
         # otherwise remote server clean() will fail to clean up resources.
-        if self.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
-            self.srv.admin("""
+        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
+            cls.srv.admin("""
             box.space.constr_tester_2:drop()
             box.space.constr_tester_1:drop()
             """)
 
-        self.con.close()
-        self.con_schema_disable.close()
+        cls.con.close()
+        cls.con_schema_disable.close()
         if not sys.platform.startswith("win"):
             # Schema fetch disable tests via mesh and pool connection
             # are not supported on windows platform.
-            self.mesh_con_schema_disable.close()
-            self.pool_con_schema_disable.close()
-        self.srv.stop()
-        self.srv.clean()
+            cls.mesh_con_schema_disable.close()
+            cls.pool_con_schema_disable.close()
+        cls.srv.stop()
+        cls.srv.clean()
 
 
 class TestSuiteSchemaUnicodeConnection(TestSuiteSchemaAbstract):

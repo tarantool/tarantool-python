@@ -11,34 +11,34 @@ class TestSuiteEncoding(unittest.TestCase):
     # pylint: disable=invalid-name
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' ENCODING '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
 
-        self.srv.admin("""
+        cls.srv.admin("""
             box.schema.user.create('test', { password = 'test' })
             box.schema.user.grant('test', 'execute,read,write', 'universe')
         """)
 
-        args = [self.srv.host, self.srv.args['primary']]
+        args = [cls.srv.host, cls.srv.args['primary']]
         kwargs = { 'user': 'test', 'password': 'test' }
-        self.con_encoding_utf8 = tarantool.Connection(*args, encoding='utf-8', **kwargs)
-        self.con_encoding_none = tarantool.Connection(*args, encoding=None, **kwargs)
-        self.conns = [self.con_encoding_utf8, self.con_encoding_none]
+        cls.con_encoding_utf8 = tarantool.Connection(*args, encoding='utf-8', **kwargs)
+        cls.con_encoding_none = tarantool.Connection(*args, encoding=None, **kwargs)
+        cls.conns = [cls.con_encoding_utf8, cls.con_encoding_none]
 
-        self.srv.admin("box.schema.create_space('space_str')")
-        self.srv.admin("""
+        cls.srv.admin("box.schema.create_space('space_str')")
+        cls.srv.admin("""
             box.space['space_str']:create_index('primary', {
                 type = 'tree',
                 parts = {1, 'str'},
                 unique = true})
         """.replace('\n', ' '))
 
-        self.srv.admin("box.schema.create_space('space_varbin')")
-        self.srv.admin(r"""
+        cls.srv.admin("box.schema.create_space('space_varbin')")
+        cls.srv.admin(r"""
             box.space['space_varbin']:format({
                 {
                     'id',
@@ -52,13 +52,13 @@ class TestSuiteEncoding(unittest.TestCase):
                 }
             })
         """.replace('\n', ' '))
-        self.srv.admin("""
+        cls.srv.admin("""
             box.space['space_varbin']:create_index('id', {
                 type = 'tree',
                 parts = {1, 'number'},
                 unique = true})
         """.replace('\n', ' '))
-        self.srv.admin("""
+        cls.srv.admin("""
             box.space['space_varbin']:create_index('varbin', {
                 type = 'tree',
                 parts = {2, 'varbinary'},
@@ -197,8 +197,8 @@ class TestSuiteEncoding(unittest.TestCase):
             self.fail('Expected error')
 
     @classmethod
-    def tearDownClass(self):
-        for con in self.conns:
+    def tearDownClass(cls):
+        for con in cls.conns:
             con.close()
-        self.srv.stop()
-        self.srv.clean()
+        cls.srv.stop()
+        cls.srv.clean()

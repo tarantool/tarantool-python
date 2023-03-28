@@ -7,11 +7,11 @@ from .lib.tarantool_server import TarantoolServer
 
 class TestSuiteReconnect(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' RECONNECT '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
@@ -80,5 +80,5 @@ class TestSuiteReconnect(unittest.TestCase):
         self.srv.stop()
 
     @classmethod
-    def tearDownClass(self):
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.srv.clean()

@@ -72,34 +72,34 @@ class SslTestCase:
 @unittest.skipIf(not is_test_ssl(), "TEST_TNT_SSL is not set.")
 class TestSuiteSsl(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' SSL '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
 
         test_suites_dir = os.path.dirname(__file__)
         test_data_dir = os.path.join(test_suites_dir, "..", "data")
-        self.cert_file = os.path.join(test_data_dir, "localhost.crt")
-        self.invalidhost_cert_file = os.path.join(test_data_dir,
+        cls.cert_file = os.path.join(test_data_dir, "localhost.crt")
+        cls.invalidhost_cert_file = os.path.join(test_data_dir,
                                                   "invalidhost.crt")
-        self.key_file = os.path.join(test_data_dir, "localhost.key")
-        self.key_enc_file = os.path.join(test_data_dir, "localhost.enc.key")
-        self.ca_file = os.path.join(test_data_dir, "ca.crt")
-        self.empty_file = os.path.join(test_data_dir, "empty")
-        self.password = "mysslpassword"
-        self.invalid_password = "notmysslpassword"
-        self.password_file = os.path.join(test_data_dir, "passwords")
-        self.invalid_password_file = os.path.join(test_data_dir, "invalidpasswords")
-        self.invalid_file = "any_invalid_path"
+        cls.key_file = os.path.join(test_data_dir, "localhost.key")
+        cls.key_enc_file = os.path.join(test_data_dir, "localhost.enc.key")
+        cls.ca_file = os.path.join(test_data_dir, "ca.crt")
+        cls.empty_file = os.path.join(test_data_dir, "empty")
+        cls.password = "mysslpassword"
+        cls.invalid_password = "notmysslpassword"
+        cls.password_file = os.path.join(test_data_dir, "passwords")
+        cls.invalid_password_file = os.path.join(test_data_dir, "invalidpasswords")
+        cls.invalid_file = "any_invalid_path"
 
         # Extract the version for skips.
-        self.tnt_version = None
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
-        fetch_tarantool_version(self)
-        self.srv.stop()
-        self.srv.clean()
-        self.srv = None
+        cls.tnt_version = None
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
+        fetch_tarantool_version(cls)
+        cls.srv.stop()
+        cls.srv.clean()
+        cls.srv = None
 
     def stop_srv(self, srv):
         if srv:

@@ -77,13 +77,13 @@ def push_callback(data, on_push_ctx=[]):
 class TestSuitePush(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' PUSH '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
         # Create server and extract helpful fields for tests.
-        self.srv = create_server()
-        self.host = self.srv.host
-        self.port = self.srv.args['primary']
+        cls.srv = create_server()
+        cls.host = cls.srv.host
+        cls.port = cls.srv.args['primary']
 
     def setUp(self):
         # Open connection, connection pool and mesh connection to instance.
@@ -248,7 +248,7 @@ class TestSuitePush(unittest.TestCase):
         self.mesh_conn.close()
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):
         # Stop instance.
-        self.srv.stop()
-        self.srv.clean()
+        cls.srv.stop()
+        cls.srv.clean()

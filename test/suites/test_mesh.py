@@ -49,7 +49,7 @@ class TestSuiteMesh(unittest.TestCase):
             srv.admin(func_body)
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' MESH '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
 

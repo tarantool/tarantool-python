@@ -14,15 +14,15 @@ from .lib.skip import skip_or_run_error_ext_type_test
 
 class TestSuiteErrorExt(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' ERROR EXT TYPE '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
 
-        self.adm = self.srv.admin
-        self.adm(r"""
+        cls.adm = cls.srv.admin
+        cls.adm(r"""
             box.schema.space.create('test')
             box.space['test']:create_index('primary', {
                 type = 'tree',
@@ -35,23 +35,23 @@ class TestSuiteErrorExt(unittest.TestCase):
             box.schema.user.create('no_grants', {if_not_exists = true})
         """)
 
-        self.conn_encoding_utf8 = tarantool.Connection(
-            self.srv.host, self.srv.args['primary'],
+        cls.conn_encoding_utf8 = tarantool.Connection(
+            cls.srv.host, cls.srv.args['primary'],
             user='test', password='test',
             encoding='utf-8')
-        self.conn_encoding_none = tarantool.Connection(
-            self.srv.host, self.srv.args['primary'],
+        cls.conn_encoding_none = tarantool.Connection(
+            cls.srv.host, cls.srv.args['primary'],
             user='test', password='test',
             encoding=None)
 
-        if self.adm.tnt_version >= pkg_resources.parse_version('2.10.0'):
-            self.conn_encoding_utf8.eval(r"""
+        if cls.adm.tnt_version >= pkg_resources.parse_version('2.10.0'):
+            cls.conn_encoding_utf8.eval(r"""
                 local err = box.error.new(box.error.UNKNOWN)
                 rawset(_G, 'simple_error', err)
             """)
 
             # https://github.com/tarantool/tarantool/blob/125c13c81abb302708771ba04d59382d44a4a512/test/box-tap/extended_error.test.lua
-            self.conn_encoding_utf8.eval(r"""
+            cls.conn_encoding_utf8.eval(r"""
                 local user = box.session.user()
                 box.schema.func.create('forbidden_function', {body = 'function() end'})
                 box.session.su('no_grants')
@@ -61,7 +61,7 @@ class TestSuiteErrorExt(unittest.TestCase):
             """)
 
             # https://github.com/tarantool/tarantool/blob/125c13c81abb302708771ba04d59382d44a4a512/test/box-tap/extended_error.test.lua
-            self.conn_encoding_utf8.eval(r"""
+            cls.conn_encoding_utf8.eval(r"""
                 local e1 = box.error.new(box.error.UNKNOWN)
                 local e2 = box.error.new(box.error.UNKNOWN)
                 e2:set_prev(e1)
@@ -386,8 +386,8 @@ class TestSuiteErrorExt(unittest.TestCase):
 
 
     @classmethod
-    def tearDownClass(self):
-        self.conn_encoding_utf8.close()
-        self.conn_encoding_none.close()
-        self.srv.stop()
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.conn_encoding_utf8.close()
+        cls.conn_encoding_none.close()
+        cls.srv.stop()
+        cls.srv.clean()

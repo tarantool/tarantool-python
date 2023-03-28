@@ -16,15 +16,15 @@ from tarantool.error import MsgpackError
 
 class TestSuiteInterval(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' INTERVAL EXT TYPE '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
 
-        self.adm = self.srv.admin
-        self.adm(r"""
+        cls.adm = cls.srv.admin
+        cls.adm(r"""
             _, datetime = pcall(require, 'datetime')
 
             box.schema.space.create('test')
@@ -47,8 +47,8 @@ class TestSuiteInterval(unittest.TestCase):
             rawset(_G, 'sub', sub)
         """)
 
-        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
-                                        user='test', password='test')
+        cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'],
+                                       user='test', password='test')
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
@@ -289,7 +289,7 @@ class TestSuiteInterval(unittest.TestCase):
 
 
     @classmethod
-    def tearDownClass(self):
-        self.con.close()
-        self.srv.stop()
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.con.close()
+        cls.srv.stop()
+        cls.srv.clean()
