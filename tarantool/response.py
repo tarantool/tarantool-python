@@ -191,7 +191,7 @@ class Response(Sequence):
             raise InterfaceError("Trying to access data when there's no data")
         return self._data.index(*args)
 
-    def count(self, item):
+    def count(self, value):
         """
         Refer to :class:`collections.abc.Sequence`.
 
@@ -200,7 +200,7 @@ class Response(Sequence):
 
         if self._data is None:
             raise InterfaceError("Trying to access data when there's no data")
-        return self._data.count(item)
+        return self._data.count(value)
 
     @property
     def rowcount(self):
