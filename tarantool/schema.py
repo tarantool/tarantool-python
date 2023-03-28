@@ -10,12 +10,11 @@ from tarantool.error import (
 )
 import tarantool.const as const
 
-
+MAX_RECURSION_DEPTH = 32
 """
 Max possible known schema depth is 4 if foreign keys are used (since
 Tarantool 2.10), but there are no restrictions in protocol.
 """
-MAX_RECURSION_DEPTH = 32
 
 
 class RecursionError(Error):
