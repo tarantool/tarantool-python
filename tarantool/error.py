@@ -271,7 +271,6 @@ class NetworkWarning(UserWarning):
     """
     Warning related to network.
     """
-    pass
 
 class SslError(DatabaseError):
     """
@@ -301,23 +300,17 @@ class ClusterDiscoveryWarning(UserWarning):
     """
     Warning related to cluster discovery.
     """
-    pass
-
 
 class ClusterConnectWarning(UserWarning):
     """
     Warning related to cluster pool connection.
     """
-    pass
-
 
 class PoolTolopogyWarning(UserWarning):
     """
     Warning related to unsatisfying `box.info.ro`_ state of
     pool instances.
     """
-    pass
-
 
 class PoolTolopogyError(DatabaseError):
     """
@@ -326,8 +319,6 @@ class PoolTolopogyError(DatabaseError):
 
     .. _box.info.ro: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
     """
-    pass
-
 
 class CrudModuleError(DatabaseError):
     """

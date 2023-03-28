@@ -123,7 +123,6 @@ class RemoteTarantoolServer(object):
         """
         Do nothing.
         """
-        pass
 
     def __del__(self):
         self.admin.disconnect()
