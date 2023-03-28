@@ -94,7 +94,6 @@ from tarantool.error import (
     CrudModuleError,
     CrudModuleManyError,
     SchemaReloadException,
-    Warning,
     warn
 )
 from tarantool.schema import Schema

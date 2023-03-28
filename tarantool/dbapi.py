@@ -8,6 +8,8 @@ Python DB API implementation, refer to `PEP-249`_.
 from tarantool.connection import Connection as BaseConnection
 from tarantool.error import *
 
+Warning = Warning # pylint: disable=redefined-builtin,self-assigning-variable
+
 # pylint: disable=invalid-name
 paramstyle = 'named'
 apilevel = "2.0"
