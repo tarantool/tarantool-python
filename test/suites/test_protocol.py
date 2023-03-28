@@ -91,4 +91,3 @@ class TestSuiteProtocol(unittest.TestCase):
         cls.con.close()
         cls.srv.stop()
         cls.srv.clean()
-
