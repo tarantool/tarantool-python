@@ -140,7 +140,7 @@ class TestSuiteRequest(unittest.TestCase):
         # Check that <index_id> field has no meaning, yet.
         with self.assertRaisesRegex(tarantool.DatabaseError,
                 '(19, .*)'):
-                self.con.delete('space_1', [1, 'tuple_21'])
+            self.con.delete('space_1', [1, 'tuple_21'])
         self.assertSequenceEqual(self.con.select('space_1', [21], index='primary'), [[21, 1, 'tuple_21']])
 
     def test_04_replace(self):

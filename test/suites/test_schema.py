@@ -460,108 +460,108 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
     }
 
     def _run_test_schema_fetch_disable(self, con, mode=None):
-            # Enable SQL test case for tarantool 2.* and higher.
-            if int(self.srv.admin.tnt_version.__str__()[0]) > 1:
-                self.testing_methods['available']['execute'] = {
-                    'input': ['SELECT * FROM "tester"'],
-                    'output': [[1, None]],
-                }
+        # Enable SQL test case for tarantool 2.* and higher.
+        if int(self.srv.admin.tnt_version.__str__()[0]) > 1:
+            self.testing_methods['available']['execute'] = {
+                'input': ['SELECT * FROM "tester"'],
+                'output': [[1, None]],
+            }
 
-            # Testing the schemaless connection with methods
-            # that should NOT be available.
-            if mode is not None:
-                for addr in con.pool.keys():
-                    self.assertEqual(con.pool[addr].conn.schema_version, 0)
-                    self.assertEqual(con.pool[addr].conn.schema, None)
-            else:
-                self.assertEqual(con.schema_version, 0)
-                self.assertEqual(con.schema, None)
-            for method_case in self.testing_methods['unavailable']:
-                with self.subTest(name=method_case):
-                    if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
-                        continue
-                    testing_function = getattr(con, method_case)
-                    try:
-                        if mode is not None:
-                            _ = testing_function(
-                                *self.testing_methods['unavailable'][method_case]['input'],
-                                mode=mode)
-                        else:
-                            _ = testing_function(
-                                *self.testing_methods['unavailable'][method_case]['input'])
-                    except NotSupportedError as exc:
-                        self.assertEqual(exc.message, 'This method is not available in ' +
-                                                      'connection opened with fetch_schema=False')
-            # Testing the schemaless connection with methods
-            # that should be available.
-            for method_case in self.testing_methods['available']:
-                with self.subTest(name=method_case):
-                    testing_function = getattr(con, method_case)
+        # Testing the schemaless connection with methods
+        # that should NOT be available.
+        if mode is not None:
+            for addr in con.pool.keys():
+                self.assertEqual(con.pool[addr].conn.schema_version, 0)
+                self.assertEqual(con.pool[addr].conn.schema, None)
+        else:
+            self.assertEqual(con.schema_version, 0)
+            self.assertEqual(con.schema, None)
+        for method_case in self.testing_methods['unavailable']:
+            with self.subTest(name=method_case):
+                if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
+                    continue
+                testing_function = getattr(con, method_case)
+                try:
                     if mode is not None:
-                        resp = testing_function(
-                            *self.testing_methods['available'][method_case]['input'],
-                            mode=mode)
-                    else:
-                        resp = testing_function(
-                            *self.testing_methods['available'][method_case]['input'])
-                    if method_case == 'ping':
-                        self.assertEqual(isinstance(resp, float), True)
-                    else:
-                        self.assertEqual(
-                            resp.data,
-                            self.testing_methods['available'][method_case]['output'])
-
-            # Turning the same connection into schemaful.
-            if mode is not None:
-                for addr in con.pool.keys():
-                    con.pool[addr].conn.update_schema(con.pool[addr].conn.schema_version)
-            else:
-                con.update_schema(con.schema_version)
-
-            # Testing the schemaful connection with methods
-            # that should NOW be available.
-            for method_case in self.testing_methods['unavailable']:
-                with self.subTest(name=method_case):
-                    if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
-                        continue
-                    testing_function = getattr(con, method_case)
-                    if mode is not None:
-                        resp = testing_function(
+                        _ = testing_function(
                             *self.testing_methods['unavailable'][method_case]['input'],
                             mode=mode)
                     else:
-                        resp = testing_function(
+                        _ = testing_function(
                             *self.testing_methods['unavailable'][method_case]['input'])
-                    if method_case == 'space':
-                        self.assertEqual(isinstance(resp, tarantool.space.Space), True)
-                    else:
-                        self.assertEqual(
-                            resp.data,
-                            self.testing_methods['unavailable'][method_case]['output'])
-            # Testing the schemaful connection with methods
-            # that should have remained available.
-            for method_case in self.testing_methods['available']:
-                with self.subTest(name=method_case):
-                    testing_function = getattr(con, method_case)
-                    if mode is not None:
-                        resp = testing_function(
-                            *self.testing_methods['available'][method_case]['input'],
-                            mode=mode)
-                    else:
-                        resp = testing_function(
-                            *self.testing_methods['available'][method_case]['input'])
-                    if method_case == 'ping':
-                        self.assertEqual(isinstance(resp, float), True)
-                    else:
-                        self.assertEqual(
-                            resp.data,
-                            self.testing_methods['available'][method_case]['output'])
-            if mode is not None:
-                self.assertNotEqual(con.pool[addr].conn.schema_version, 1)
-                self.assertNotEqual(con.pool[addr].conn.schema, None)
-            else:
-                self.assertNotEqual(con.schema_version, 1)
-                self.assertNotEqual(con.schema, None)
+                except NotSupportedError as exc:
+                    self.assertEqual(exc.message, 'This method is not available in ' +
+                                                  'connection opened with fetch_schema=False')
+        # Testing the schemaless connection with methods
+        # that should be available.
+        for method_case in self.testing_methods['available']:
+            with self.subTest(name=method_case):
+                testing_function = getattr(con, method_case)
+                if mode is not None:
+                    resp = testing_function(
+                        *self.testing_methods['available'][method_case]['input'],
+                        mode=mode)
+                else:
+                    resp = testing_function(
+                        *self.testing_methods['available'][method_case]['input'])
+                if method_case == 'ping':
+                    self.assertEqual(isinstance(resp, float), True)
+                else:
+                    self.assertEqual(
+                        resp.data,
+                        self.testing_methods['available'][method_case]['output'])
+
+        # Turning the same connection into schemaful.
+        if mode is not None:
+            for addr in con.pool.keys():
+                con.pool[addr].conn.update_schema(con.pool[addr].conn.schema_version)
+        else:
+            con.update_schema(con.schema_version)
+
+        # Testing the schemaful connection with methods
+        # that should NOW be available.
+        for method_case in self.testing_methods['unavailable']:
+            with self.subTest(name=method_case):
+                if isinstance(con, tarantool.ConnectionPool) and method_case == 'space':
+                    continue
+                testing_function = getattr(con, method_case)
+                if mode is not None:
+                    resp = testing_function(
+                        *self.testing_methods['unavailable'][method_case]['input'],
+                        mode=mode)
+                else:
+                    resp = testing_function(
+                        *self.testing_methods['unavailable'][method_case]['input'])
+                if method_case == 'space':
+                    self.assertEqual(isinstance(resp, tarantool.space.Space), True)
+                else:
+                    self.assertEqual(
+                        resp.data,
+                        self.testing_methods['unavailable'][method_case]['output'])
+        # Testing the schemaful connection with methods
+        # that should have remained available.
+        for method_case in self.testing_methods['available']:
+            with self.subTest(name=method_case):
+                testing_function = getattr(con, method_case)
+                if mode is not None:
+                    resp = testing_function(
+                        *self.testing_methods['available'][method_case]['input'],
+                        mode=mode)
+                else:
+                    resp = testing_function(
+                        *self.testing_methods['available'][method_case]['input'])
+                if method_case == 'ping':
+                    self.assertEqual(isinstance(resp, float), True)
+                else:
+                    self.assertEqual(
+                        resp.data,
+                        self.testing_methods['available'][method_case]['output'])
+        if mode is not None:
+            self.assertNotEqual(con.pool[addr].conn.schema_version, 1)
+            self.assertNotEqual(con.pool[addr].conn.schema, None)
+        else:
+            self.assertNotEqual(con.schema_version, 1)
+            self.assertNotEqual(con.schema, None)
 
     def test_08_schema_fetch_disable_via_connection(self):
         self._run_test_schema_fetch_disable(self.con_schema_disable)
@@ -591,7 +591,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
     def test_11_foreign_key_invalid_replace(self):
         with self.assertRaisesRegex(tarantool.DatabaseError,
                                     'foreign tuple was not found'):
-                self.con.replace('constr_tester_2', [2, 999, 623])
+            self.con.replace('constr_tester_2', [2, 999, 623])
 
     @classmethod
     def tearDownClass(cls):
