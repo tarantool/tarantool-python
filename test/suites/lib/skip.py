@@ -9,7 +9,8 @@ import sys
 import pkg_resources
 
 def fetch_tarantool_version(self):
-    """Helper to fetch current Tarantool version.
+    """
+    Helper to fetch current Tarantool version.
     """
     if not hasattr(self, 'tnt_version') or self.tnt_version is None:
         srv = None
@@ -28,7 +29,8 @@ def fetch_tarantool_version(self):
             self.__class__.tnt_version = srv.admin.tnt_version
 
 def skip_or_run_test_tarantool_impl(self, required_tt_version, msg):
-    """Helper to skip or run tests depending on the Tarantool
+    """
+    Helper to skip or run tests depending on the Tarantool
     version.
 
     Also, it can be used with the 'setUp' method for skipping
@@ -43,7 +45,8 @@ def skip_or_run_test_tarantool_impl(self, required_tt_version, msg):
 
 
 def skip_or_run_test_tarantool(func, required_tt_version, msg):
-    """Decorator to skip or run tests depending on the tarantool
+    """
+    Decorator to skip or run tests depending on the tarantool
     version.
 
     Also, it can be used with the 'setUp' method for skipping
@@ -63,7 +66,8 @@ def skip_or_run_test_tarantool(func, required_tt_version, msg):
     return wrapper
 
 def skip_or_run_test_tarantool_call(self, required_tt_version, msg):
-    """Function to skip or run tests depending on the tarantool
+    """
+    Function to skip or run tests depending on the tarantool
     version. Useful in cases when in is inconvenient to work
     with decorators.
 
@@ -75,7 +79,8 @@ def skip_or_run_test_tarantool_call(self, required_tt_version, msg):
 
 
 def skip_or_run_test_pcall_require(func, required_tt_module, msg):
-    """Decorator to skip or run tests depending on tarantool
+    """
+    Decorator to skip or run tests depending on tarantool
     module requre success or fail.
 
     Also, it can be used with the 'setUp' method for skipping
@@ -108,7 +113,8 @@ def skip_or_run_test_pcall_require(func, required_tt_module, msg):
 
 
 def skip_or_run_test_python(func, required_python_version, msg):
-    """Decorator to skip or run tests depending on the Python version.
+    """
+    Decorator to skip or run tests depending on the Python version.
 
     Also, it can be used with the 'setUp' method for skipping
     the whole test suite.
@@ -133,7 +139,8 @@ def skip_or_run_test_python(func, required_python_version, msg):
 
 
 def skip_or_run_sql_test(func):
-    """Decorator to skip or run SQL-related tests depending on the
+    """
+    Decorator to skip or run SQL-related tests depending on the
     tarantool version.
 
     Tarantool supports SQL-related stuff only since 2.0.0 version.
@@ -145,7 +152,8 @@ def skip_or_run_sql_test(func):
 
 
 def skip_or_run_varbinary_test(func):
-    """Decorator to skip or run VARBINARY-related tests depending on
+    """
+    Decorator to skip or run VARBINARY-related tests depending on
     the tarantool version.
 
     Tarantool supports VARBINARY type only since 2.2.1 version.
@@ -157,7 +165,8 @@ def skip_or_run_varbinary_test(func):
 
 
 def skip_or_run_decimal_test(func):
-    """Decorator to skip or run decimal-related tests depending on
+    """
+    Decorator to skip or run decimal-related tests depending on
     the tarantool version.
 
     Tarantool supports decimal type only since 2.2.1 version.
@@ -168,7 +177,8 @@ def skip_or_run_decimal_test(func):
                                       'does not support decimal type')
 
 def skip_or_run_uuid_test(func):
-    """Decorator to skip or run UUID-related tests depending on
+    """
+    Decorator to skip or run UUID-related tests depending on
     the tarantool version.
 
     Tarantool supports UUID type only since 2.4.1 version.
@@ -179,7 +189,8 @@ def skip_or_run_uuid_test(func):
                                       'does not support UUID type')
 
 def skip_or_run_datetime_test(func):
-    """Decorator to skip or run datetime-related tests depending on
+    """
+    Decorator to skip or run datetime-related tests depending on
     the tarantool version.
 
     Tarantool supports datetime type only since 2.10.0 version.
@@ -190,7 +201,8 @@ def skip_or_run_datetime_test(func):
                                       'does not support datetime type')
 
 def skip_or_run_error_extra_info_test(func):
-    """Decorator to skip or run tests related to extra error info
+    """
+    Decorator to skip or run tests related to extra error info
     provided over iproto depending on the tarantool version.
 
     Tarantool provides extra error info only since 2.4.1 version.
@@ -201,7 +213,8 @@ def skip_or_run_error_extra_info_test(func):
                                       'does not provide extra error info')
 
 def skip_or_run_error_ext_type_test(func):
-    """Decorator to skip or run tests related to error extension
+    """
+    Decorator to skip or run tests related to error extension
     type depending on the tarantool version.
 
     Tarantool supports error extension type only since 2.4.1 version,
@@ -214,7 +227,8 @@ def skip_or_run_error_ext_type_test(func):
                                       'does not support error extension type')
 
 def skip_or_run_ssl_password_test_call(self):
-    """Function to skip or run tests related to SSL password
+    """
+    Function to skip or run tests related to SSL password
     and SSL password files support. Supported only in Tarantool EE.
     Do not check Enterprise prefix since TNT_SSL_TEST already assumes
     it.
@@ -228,7 +242,8 @@ def skip_or_run_ssl_password_test_call(self):
                                            'does not support SSL passwords')
 
 def skip_or_run_auth_type_test_call(self):
-    """Function to skip or run tests related to configuring
+    """
+    Function to skip or run tests related to configuring
     authentication method.
 
     Tarantool supports auth_type only in current master since
@@ -243,7 +258,8 @@ def skip_or_run_auth_type_test_call(self):
                                            'does not support auth type')
 
 def skip_or_run_constraints_test(func):
-    """Decorator to skip or run tests related to spaces with
+    """
+    Decorator to skip or run tests related to spaces with
     schema constraints.
 
     Tarantool supports schema constraints only since 2.10.0 version.

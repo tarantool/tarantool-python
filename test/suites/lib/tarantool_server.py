@@ -22,6 +22,10 @@ from .tarantool_admin import TarantoolAdmin
 from .remote_tarantool_server import RemoteTarantoolServer
 
 def check_port(port, rais=True):
+    """
+    Check if port is free.
+    """
+
     try:
         sock = socket.create_connection(("0.0.0.0", port))
     except socket.error:
@@ -34,6 +38,10 @@ def check_port(port, rais=True):
 
 
 def find_port(port=None):
+    """
+    Pick some free socket.
+    """
+
     if port is None:
         port = random.randrange(3300, 9999)
     while port < 9999:
@@ -60,28 +68,52 @@ class TarantoolServer(object):
 
     @property
     def logfile_path(self):
+        """
+        Path to server logs.
+        """
+
         return os.path.join(self.vardir, self.default_tarantool['logfile'])
 
     @property
     def cfgfile_path(self):
+        """
+        Path to server configuration.
+        """
+
         return os.path.join(self.vardir, self.default_tarantool['config'])
 
     @property
     def script_path(self):
+        """
+        Path to server init.lua script.
+        """
+
         return os.path.join(self.vardir, self.default_tarantool['init'])
 
     @property
     def script_dst(self):
+        """
+        Path to server init.lua folder.
+        """
+
         return os.path.join(self.vardir, os.path.basename(self.script))
 
     @property
     def script(self):
+        """
+        Get server init.lua script.
+        """
+
         if not hasattr(self, '_script'):
             self._script = None
         return self._script
 
     @script.setter
     def script(self, val):
+        """
+        Set server init.lua script.
+        """
+
         if val is None:
             if hasattr(self, '_script'):
                 delattr(self, '_script')
@@ -90,18 +122,30 @@ class TarantoolServer(object):
 
     @property
     def binary(self):
+        """
+        Get Tarantool binary used to start the server.
+        """
+
         if not hasattr(self, '_binary'):
             self._binary = self.find_exe()
         return self._binary
 
     @property
     def _admin(self):
+        """
+        Get admin connection used to set up the server.
+        """
+
         if not hasattr(self, 'admin'):
             self.admin = None
         return self.admin
 
     @_admin.setter
     def _admin(self, port):
+        """
+        Set admin connection used to set up the server.
+        """
+
         try:
             int(port)
         except ValueError:
@@ -112,12 +156,20 @@ class TarantoolServer(object):
 
     @property
     def log_des(self):
+        """
+        Get server log file descriptor.
+        """
+
         if not hasattr(self, '_log_des'):
             self._log_des = open(self.logfile_path, 'a')
         return self._log_des
 
     @log_des.deleter
     def log_des(self):
+        """
+        Set server log file descriptor.
+        """
+
         if not hasattr(self, '_log_des'):
             return
         if not self._log_des.closed:
@@ -177,6 +229,10 @@ class TarantoolServer(object):
         self.auth_type = auth_type
 
     def find_exe(self):
+        """
+        Find Tarantool executable.
+        """
+
         if 'TARANTOOL_BOX_PATH' in os.environ:
             os.environ["PATH"] = os.environ["TARANTOOL_BOX_PATH"] + os.pathsep + os.environ["PATH"]
 
@@ -187,6 +243,10 @@ class TarantoolServer(object):
         raise RuntimeError("Can't find server executable in " + os.environ["PATH"])
 
     def generate_listen(self, port, port_only):
+        """
+        Generate Tarantool server box.cfg listen.
+        """
+
         if not port_only and self.transport == SSL_TRANSPORT:
             listen = self.host + ":" + str(port) + "?transport=ssl&"
             if self.ssl_key_file:
@@ -207,6 +267,10 @@ class TarantoolServer(object):
         return listen
 
     def generate_configuration(self):
+        """
+        Generate Tarantool box.cfg values.
+        """
+
         primary_listen = self.generate_listen(self.args['primary'], False)
         admin_listen = self.generate_listen(self.args['admin'], True)
         os.putenv("LISTEN", primary_listen)
@@ -217,10 +281,15 @@ class TarantoolServer(object):
             os.putenv("AUTH_TYPE", "")
 
     def prepare_args(self):
+        """
+        Prepare Tarantool server init.lua script.
+        """
+
         return shlex.split(self.binary if not self.script else self.script_dst)
 
     def wait_until_started(self):
-        """ Wait until server is started.
+        """
+        Wait until server is started.
 
         Server consists of two parts:
         1) wait until server is listening on sockets
@@ -246,15 +315,18 @@ class TarantoolServer(object):
                 raise
 
     def start(self):
-        # Main steps for running Tarantool\Box
-        # * Find binary file          --DONE(find_exe -> binary)
-        # * Create vardir             --DONE(__init__)
-        # * Generate cfgfile          --DONE(generate_configuration)
-        # * (MAYBE) Copy init.lua     --INSIDE
-        # * Concatenate arguments and
-        #   start Tarantool\Box       --DONE(prepare_args)
-        # * Wait unitl Tarantool\Box
-        #   started                   --DONE(wait_until_started)
+        """
+        Main steps for running Tarantool\\Box
+        * Find binary file          --DONE(find_exe -> binary)
+        * Create vardir             --DONE(__init__)
+        * Generate cfgfile          --DONE(generate_configuration)
+        * (MAYBE) Copy init.lua     --INSIDE
+        * Concatenate arguments and
+          start Tarantool\\Box       --DONE(prepare_args)
+        * Wait unitl Tarantool\\Box
+          started                   --DONE(wait_until_started)
+        """
+
         self.generate_configuration()
         if self.script:
             shutil.copy(self.script, self.script_dst)
@@ -267,16 +339,28 @@ class TarantoolServer(object):
         self.wait_until_started()
 
     def stop(self):
+        """
+        Stop Tarantool server.
+        """
+
         self.admin.disconnect()
         if self.process.poll() is None:
             self.process.terminate()
             self.process.wait()
 
     def restart(self):
+        """
+        Restart Tarantool server.
+        """
+
         self.stop()
         self.start()
 
     def clean(self):
+        """
+        Clean Tarantool resources.
+        """
+
         if os.path.isdir(self.vardir):
             shutil.rmtree(self.vardir)
 
@@ -293,9 +377,16 @@ class TarantoolServer(object):
         self.clean()
 
     def touch_lock(self):
-        # A stub method to be compatible with
-        # RemoteTarantoolServer.
+        """
+        A stub method to be compatible with
+        RemoteTarantoolServer.
+        """
+
         pass
 
     def is_started(self):
+        """
+        Is Tarantool server has need started.
+        """
+
         return self.process is not None
