@@ -133,35 +133,35 @@ class TestSuitePool(unittest.TestCase):
 
         # Expect ANY iterate through all instances.
         any_ports_result = set()
-        for i in range(len(self.servers)):
+        for _ in range(len(self.servers)):
             any_ports_result.add(get_port(self, tarantool.Mode.ANY))
 
         self.assertSetEqual(any_ports_result, all_ports)
 
         # Expect RW iterate through all RW instances.
         rw_ports_result = set()
-        for i in range(len(self.servers)):
+        for _ in range(len(self.servers)):
             rw_ports_result.add(get_port(self, tarantool.Mode.RW))
 
         self.assertSetEqual(rw_ports_result, rw_ports)
 
         # Expect RO iterate through all RO instances.
         ro_ports_result = set()
-        for i in range(len(self.servers)):
+        for _ in range(len(self.servers)):
             ro_ports_result.add(get_port(self, tarantool.Mode.RO))
 
         self.assertSetEqual(ro_ports_result, ro_ports)
 
         # Expect PREFER_RW iterate through all RW instances if there is at least one.
         prefer_rw_ports_result = set()
-        for i in range(len(self.servers)):
+        for _ in range(len(self.servers)):
             prefer_rw_ports_result.add(get_port(self, tarantool.Mode.PREFER_RW))
 
         self.assertSetEqual(prefer_rw_ports_result, rw_ports)
 
         # Expect PREFER_RO iterate through all RO instances if there is at least one.
         prefer_ro_ports_result = set()
-        for i in range(len(self.servers)):
+        for _ in range(len(self.servers)):
             prefer_ro_ports_result.add(get_port(self, tarantool.Mode.PREFER_RO))
 
         self.assertSetEqual(prefer_ro_ports_result, ro_ports)
@@ -179,7 +179,7 @@ class TestSuitePool(unittest.TestCase):
         # Expect PREFER_RW iterate through all instances if there are no RW.
         def expect_prefer_rw_iterate_through_all_instances_if_there_are_no_rw():
             prefer_rw_ports_result_all_ro = set()
-            for i in range(len(self.servers)):
+            for _ in range(len(self.servers)):
                 prefer_rw_ports_result_all_ro.add(get_port(self, tarantool.Mode.PREFER_RW))
 
             self.assertSetEqual(prefer_rw_ports_result_all_ro, all_ports)
@@ -199,7 +199,7 @@ class TestSuitePool(unittest.TestCase):
         # Expect PREFER_RO iterate through all instances if there are no RO.
         def expect_prefer_ro_iterate_through_all_instances_if_there_are_no_ro():
             prefer_ro_ports_result_all_rw = set()
-            for i in range(len(self.servers)):
+            for _ in range(len(self.servers)):
                 prefer_ro_ports_result_all_rw.add(get_port(self, tarantool.Mode.PREFER_RO))
 
             self.assertSetEqual(prefer_ro_ports_result_all_rw, all_ports)

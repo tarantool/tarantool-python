@@ -80,7 +80,6 @@ def get_dependencies(filename):
 
     root = os.path.dirname(os.path.realpath(__file__))
     requirements = os.path.join(root, filename)
-    result = []
     if os.path.isfile(requirements):
         with open(requirements) as file:
             return file.read().splitlines()
