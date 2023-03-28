@@ -583,7 +583,7 @@ class TestSuiteSsl(unittest.TestCase):
 
                 addrs = []
                 servers = []
-                for i in range(cnt):
+                for _ in range(cnt):
                     srv = TarantoolServer(
                         transport=t.server_transport,
                         ssl_key_file=t.server_key_file,

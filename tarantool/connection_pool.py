@@ -547,7 +547,7 @@ class ConnectionPool(ConnectionInterface):
             try:
                 conn.connect()
             except NetworkError as exc:
-                msg = f"Failed to connect to {unit.addr['host']}:{unit.addr['port']}"
+                msg = f"Failed to connect to {unit.addr['host']}:{unit.addr['port']}, reason: {repr(exc)}"
                 warn(msg, ClusterConnectWarning)
                 return InstanceState(Status.UNHEALTHY)
 
