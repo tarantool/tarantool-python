@@ -15,13 +15,6 @@ import sys
 import warnings
 
 
-
-class Warning(Exception):
-    """
-    Exception raised for important warnings
-    like data truncations while inserting, etc.
-    """
-
 class Error(Exception):
     """
     Base class for error exceptions.

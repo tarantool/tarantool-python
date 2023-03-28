@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Breaking**: Allow only named `on_push` and `on_push_ctx` for `insert` and `replace`.
+- Migrate to built-in `Warning` instead of a custom one.
 
 ## 0.12.1 - 2023-02-28
 
