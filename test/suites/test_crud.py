@@ -716,30 +716,27 @@ class TestSuiteCrud(unittest.TestCase):
                     self.assertEqual(exc.success_list.rows, case['error']['output']['res_rows'])
 
     def test_crud_module_via_connection(self):
-        for case_name in self.crud_test_cases.keys():
-            with self.subTest(name=case_name):
-                case = self.crud_test_cases[case_name]
-                testing_function = getattr(self.conn, case_name)
+        for name, case in self.crud_test_cases.items():
+            with self.subTest(name=name):
+                testing_function = getattr(self.conn, name)
                 # Correct try testing.
                 self._correct_operation_with_crud(testing_function, case)
                 # Exception try testing.
                 self._exception_operation_with_crud(testing_function, case)
 
     def test_crud_module_via_mesh_connection(self):
-        for case_name in self.crud_test_cases.keys():
-            with self.subTest(name=case_name):
-                case = self.crud_test_cases[case_name]
-                testing_function = getattr(self.conn_mesh, case_name)
+        for name, case in self.crud_test_cases.items():
+            with self.subTest(name=name):
+                testing_function = getattr(self.conn_mesh, name)
                 # Correct try testing.
                 self._correct_operation_with_crud(testing_function, case)
                 # Exception try testing.
                 self._exception_operation_with_crud(testing_function, case)
 
     def test_crud_module_via_pool_connection(self):
-        for case_name in self.crud_test_cases.keys():
-            with self.subTest(name=case_name):
-                case = self.crud_test_cases[case_name]
-                testing_function = getattr(self.conn_pool, case_name)
+        for name, case in self.crud_test_cases.items():
+            with self.subTest(name=name):
+                testing_function = getattr(self.conn_pool, name)
                 # Correct try testing.
                 self._correct_operation_with_crud(testing_function, case, mode=tarantool.Mode.RW)
                 # Exception try testing.

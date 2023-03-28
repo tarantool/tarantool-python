@@ -115,7 +115,7 @@ def skip_or_run_test_python(func, required_python_version, msg):
             func(self, *args, **kwargs)
 
         ver = sys.version_info
-        python_version_str = '%d.%d' % (ver.major, ver.minor)
+        python_version_str = f'{ver.major}.{ver.minor}'
         python_version = pkg_resources.parse_version(python_version_str)
         support_version = pkg_resources.parse_version(required_python_version)
         if python_version < support_version:

@@ -262,9 +262,8 @@ class TestSuiteErrorExt(unittest.TestCase):
 
 
     def test_msgpack_decode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
                 conn = getattr(self, case['conn'])
 
                 self.assertEqual(
@@ -277,9 +276,8 @@ class TestSuiteErrorExt(unittest.TestCase):
 
     @skip_or_run_error_ext_type_test
     def test_tarantool_decode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
                 conn = getattr(self, case['conn'])
 
                 self.adm(f"""
@@ -323,9 +321,8 @@ class TestSuiteErrorExt(unittest.TestCase):
 
 
     def test_msgpack_encode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
                 conn = getattr(self, case['conn'])
 
                 self.assertEqual(packer_default(case['python'], conn._packer_factory()),
@@ -333,9 +330,8 @@ class TestSuiteErrorExt(unittest.TestCase):
 
     @skip_or_run_error_ext_type_test
     def test_tarantool_encode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
                 conn = getattr(self, case['conn'])
 
                 conn.insert(

@@ -219,8 +219,7 @@ class Interval():
         # - false
         # ...
 
-        for field_id in id_map.keys():
-            field_name = id_map[field_id]
+        for _, field_name in id_map.items():
             if getattr(self, field_name) != getattr(other, field_name):
                 return False
 

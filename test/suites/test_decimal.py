@@ -224,19 +224,15 @@ class TestSuiteDecimal(unittest.TestCase):
     }
 
     def test_msgpack_decode(self):
-        for name in self.valid_cases.keys():
+        for name, case in self.valid_cases.items():
             with self.subTest(msg=name):
-                case = self.valid_cases[name]
-
                 self.assertEqual(unpacker_ext_hook(1, case['msgpack']),
                                  case['python'])
 
     @skip_or_run_decimal_test
     def test_tarantool_decode(self):
-        for name in self.valid_cases.keys():
+        for name, case in self.valid_cases.items():
             with self.subTest(msg=name):
-                case = self.valid_cases[name]
-
                 self.adm(f"box.space['test']:replace{{'{name}', {case['tarantool']}}}")
 
                 self.assertSequenceEqual(
@@ -244,19 +240,15 @@ class TestSuiteDecimal(unittest.TestCase):
                     [[name, case['python']]])
 
     def test_msgpack_encode(self):
-        for name in self.valid_cases.keys():
+        for name, case in self.valid_cases.items():
             with self.subTest(msg=name):
-                case = self.valid_cases[name]
-
                 self.assertEqual(packer_default(case['python']),
                                  msgpack.ExtType(code=1, data=case['msgpack']))
 
     @skip_or_run_decimal_test
     def test_tarantool_encode(self):
-        for name in self.valid_cases.keys():
+        for name, case in self.valid_cases.items():
             with self.subTest(msg=name):
-                case = self.valid_cases[name]
-
                 self.con.insert('test', [name, case['python']])
 
                 lua_eval = f"""
@@ -303,10 +295,8 @@ class TestSuiteDecimal(unittest.TestCase):
     }
 
     def test_msgpack_encode_error(self):
-        for name in self.error_cases.keys():
+        for name, case in self.error_cases.items():
             with self.subTest(msg=name):
-                case = self.error_cases[name]
-
                 msg = 'Decimal cannot be encoded: Tarantool decimal ' + \
                       'supports a maximum of 38 digits.'
                 self.assertRaisesRegex(
@@ -315,10 +305,8 @@ class TestSuiteDecimal(unittest.TestCase):
 
     @skip_or_run_decimal_test
     def test_tarantool_encode_error(self):
-        for name in self.error_cases.keys():
+        for name, case in self.error_cases.items():
             with self.subTest(msg=name):
-                case = self.error_cases[name]
-
                 msg = 'Decimal cannot be encoded: Tarantool decimal ' + \
                       'supports a maximum of 38 digits.'
                 self.assertRaisesRegex(
@@ -384,10 +372,8 @@ class TestSuiteDecimal(unittest.TestCase):
     }
 
     def test_msgpack_encode_with_precision_loss(self):
-        for name in self.precision_loss_cases.keys():
+        for name, case in self.precision_loss_cases.items():
             with self.subTest(msg=name):
-                case = self.precision_loss_cases[name]
-
                 msg = 'Decimal encoded with loss of precision: ' + \
                       'Tarantool decimal supports a maximum of 38 digits.'
 
@@ -402,10 +388,8 @@ class TestSuiteDecimal(unittest.TestCase):
 
     @skip_or_run_decimal_test
     def test_tarantool_encode_with_precision_loss(self):
-        for name in self.precision_loss_cases.keys():
+        for name, case in self.precision_loss_cases.items():
             with self.subTest(msg=name):
-                case = self.precision_loss_cases[name]
-
                 msg = 'Decimal encoded with loss of precision: ' + \
                       'Tarantool decimal supports a maximum of 38 digits.'
 

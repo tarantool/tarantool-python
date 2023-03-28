@@ -65,8 +65,7 @@ def encode(obj, _):
     buf = bytes()
 
     count = 0
-    for field_id in id_map.keys():
-        field_name = id_map[field_id]
+    for field_id, field_name in id_map.items():
         value = getattr(obj, field_name)
 
         if field_name == 'adjust':

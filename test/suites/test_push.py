@@ -199,11 +199,10 @@ class TestSuitePush(unittest.TestCase):
     }
 
     def test_00_00_push_via_connection(self):
-        for case_name in self.push_test_cases.keys():
-            with self.subTest(name=case_name):
+        for name, case in self.push_test_cases.items():
+            with self.subTest(name=name):
                 callback_res = []
-                case = self.push_test_cases[case_name]
-                testing_function = getattr(self.conn, case_name)
+                testing_function = getattr(self.conn, name)
                 case['input']['kwargs']['on_push_ctx'] = callback_res
                 resp = testing_function(
                     *case['input']['args'],
@@ -214,11 +213,10 @@ class TestSuitePush(unittest.TestCase):
                     self.assertEqual(resp.data[0], case['output']['resp'])
 
     def test_00_01_push_via_mesh_connection(self):
-        for case_name in self.push_test_cases.keys():
-            with self.subTest(name=case_name):
+        for name, case in self.push_test_cases.items():
+            with self.subTest(name=name):
                 callback_res = []
-                case = self.push_test_cases[case_name]
-                testing_function = getattr(self.mesh_conn, case_name)
+                testing_function = getattr(self.mesh_conn, name)
                 case['input']['kwargs']['on_push_ctx'] = callback_res
                 resp = testing_function(
                     *case['input']['args'],
@@ -229,11 +227,10 @@ class TestSuitePush(unittest.TestCase):
                     self.assertEqual(resp.data[0], case['output']['resp'])
 
     def test_00_02_push_via_connection_pool(self):
-        for case_name in self.push_test_cases.keys():
-            with self.subTest(name=case_name):
+        for name, case in self.push_test_cases.items():
+            with self.subTest(name=name):
                 callback_res = []
-                case = self.push_test_cases[case_name]
-                testing_function = getattr(self.conn_pool, case_name)
+                testing_function = getattr(self.conn_pool, name)
                 case['input']['kwargs']['on_push_ctx'] = callback_res
                 resp = testing_function(
                     *case['input']['args'],
