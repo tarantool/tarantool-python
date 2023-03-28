@@ -1,6 +1,7 @@
 """
 This module provides API for interaction with Tarantool servers cluster.
 """
+# pylint: disable=fixme
 
 import time
 
