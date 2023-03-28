@@ -39,6 +39,7 @@ def load_tests(loader, tests, pattern):
     """
     Add suites to test run.
     """
+    # pylint: disable=unused-argument
 
     suite = unittest.TestSuite()
     for testc in test_cases:

@@ -186,6 +186,8 @@ class TarantoolServer(object):
                 ssl_password_file=None,
                 create_unix_socket=False,
                 auth_type=None):
+        # pylint: disable=unused-argument
+
         if os.name == 'nt':
             return RemoteTarantoolServer()
         return super(TarantoolServer, cls).__new__(cls)
