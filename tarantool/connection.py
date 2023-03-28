@@ -19,7 +19,7 @@ import abc
 import ctypes
 import ctypes.util
 from ctypes import c_ssize_t
-from typing import Union
+from typing import Optional, Union
 
 import msgpack
 
@@ -263,7 +263,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_insert(self, space_name, values, opts={}):
+    def crud_insert(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_insert`.
         """
@@ -271,7 +271,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_insert_object(self, space_name, values, opts={}):
+    def crud_insert_object(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_insert_object`.
         """
@@ -279,7 +279,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_insert_many(self, space_name, values, opts={}):
+    def crud_insert_many(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_insert_many`.
         """
@@ -287,7 +287,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_insert_object_many(self, space_name, values, opts={}):
+    def crud_insert_object_many(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_insert_object_many`.
         """
@@ -295,7 +295,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_get(self, space_name, key, opts={}):
+    def crud_get(self, space_name, key, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_get`.
         """
@@ -303,7 +303,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_update(self, space_name, key, operations=[], opts={}):
+    def crud_update(self, space_name, key, operations=None, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_update`.
         """
@@ -311,7 +311,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_delete(self, space_name, key, opts={}):
+    def crud_delete(self, space_name, key, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_delete`.
         """
@@ -319,7 +319,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_replace(self, space_name, values, opts={}):
+    def crud_replace(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_replace`.
         """
@@ -327,7 +327,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_replace_object(self, space_name, values, opts={}):
+    def crud_replace_object(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_replace_object`.
         """
@@ -335,7 +335,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_replace_many(self, space_name, values, opts={}):
+    def crud_replace_many(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_replace_many`.
         """
@@ -343,7 +343,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_replace_object_many(self, space_name, values, opts={}):
+    def crud_replace_object_many(self, space_name, values, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_replace_object_many`.
         """
@@ -351,7 +351,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_upsert(self, space_name, values, operations=[], opts={}):
+    def crud_upsert(self, space_name, values, operations=None, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_upsert`.
         """
@@ -359,7 +359,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_upsert_object(self, space_name, values, operations=[], opts={}):
+    def crud_upsert_object(self, space_name, values, operations=None, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_upsert_object`.
         """
@@ -367,7 +367,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_upsert_many(self, space_name, values_operation, opts={}):
+    def crud_upsert_many(self, space_name, values_operation, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_upsert_many`.
         """
@@ -375,7 +375,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_upsert_object_many(self, space_name, values_operation, opts={}):
+    def crud_upsert_object_many(self, space_name, values_operation, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_upsert_object_many`.
         """
@@ -383,7 +383,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_select(self, space_name: str, conditions=[], opts={}):
+    def crud_select(self, space_name: str, conditions=None, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_select`.
         """
@@ -391,7 +391,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_min(self, space_name, index_name, opts={}):
+    def crud_min(self, space_name, index_name, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_min`.
         """
@@ -399,7 +399,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_max(self, space_name, index_name, opts={}):
+    def crud_max(self, space_name, index_name, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_max`.
         """
@@ -407,7 +407,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_truncate(self, space_name, opts={}):
+    def crud_truncate(self, space_name, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_truncate`.
         """
@@ -415,7 +415,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_len(self, space_name, opts={}):
+    def crud_len(self, space_name, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_len`.
         """
@@ -423,7 +423,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_storage_info(self, opts={}):
+    def crud_storage_info(self, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_storage_info`.
         """
@@ -431,7 +431,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def crud_count(self, space_name, conditions=[], opts={}):
+    def crud_count(self, space_name, conditions=None, opts=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.crud_count`.
         """
@@ -2195,7 +2195,7 @@ class Connection(ConnectionInterface):
     def _unpacker_factory(self):
         return self._unpacker_factory_impl(self)
 
-    def crud_insert(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_insert(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
@@ -2217,6 +2217,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.insert", space_name, values, opts)
@@ -2226,7 +2228,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_insert_object(self, space_name: str, values: dict, opts: dict={}) -> CrudResult:
+    def crud_insert_object(self, space_name: str, values: dict, opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts object row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
@@ -2248,6 +2250,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, dict)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.insert_object", space_name, values, opts)
@@ -2257,7 +2261,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_insert_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_insert_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts batch rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
@@ -2279,6 +2283,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.insert_many", space_name, values, opts)
@@ -2295,7 +2301,7 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_insert_object_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_insert_object_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts batch object rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
@@ -2317,6 +2323,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.insert_object_many", space_name, values, opts)
@@ -2333,7 +2341,7 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_get(self, space_name: str, key: int, opts: dict={}) -> CrudResult:
+    def crud_get(self, space_name: str, key: int, opts: Optional[dict]=None) -> CrudResult:
         """
         Gets row through the
         `crud <https://github.com/tarantool/crud#get>`__.
@@ -2354,6 +2362,8 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.get", space_name, key, opts)
@@ -2363,7 +2373,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_update(self, space_name: str, key: int, operations: list=[], opts: dict={}) -> CrudResult:
+    def crud_update(self, space_name: str, key: int, operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
         """
         Updates row through the
         `crud <https://github.com/tarantool/crud#update>`__.
@@ -2387,7 +2397,11 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
+        if operations is None:
+            operations = []
         assert isinstance(operations, list)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.update", space_name, key, operations, opts)
@@ -2397,7 +2411,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_delete(self, space_name: str, key: int, opts: dict={}) -> CrudResult:
+    def crud_delete(self, space_name: str, key: int, opts: Optional[dict]=None) -> CrudResult:
         """
         Deletes row through the
         `crud <https://github.com/tarantool/crud#delete>`__.
@@ -2418,6 +2432,8 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.delete", space_name, key, opts)
@@ -2427,7 +2443,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_replace(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_replace(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
@@ -2449,6 +2465,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.replace", space_name, values, opts)
@@ -2458,7 +2476,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_replace_object(self, space_name: str, values: dict, opts: dict={}) -> CrudResult:
+    def crud_replace_object(self, space_name: str, values: dict, opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces object row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
@@ -2480,6 +2498,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, dict)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.replace_object", space_name, values, opts)
@@ -2489,7 +2509,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_replace_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_replace_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces batch rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
@@ -2511,6 +2531,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.replace_many", space_name, values, opts)
@@ -2527,7 +2549,7 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_replace_object_many(self, space_name: str, values: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_replace_object_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces batch object rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
@@ -2549,6 +2571,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.replace_object_many", space_name, values, opts)
@@ -2565,7 +2589,7 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_upsert(self, space_name: str, values: Union[tuple, list], operations: list=[], opts: dict={}) -> CrudResult:
+    def crud_upsert(self, space_name: str, values: Union[tuple, list], operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
@@ -2590,7 +2614,11 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, (tuple, list))
+        if operations is None:
+            operations = []
         assert isinstance(operations, list)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.upsert", space_name, values, operations, opts)
@@ -2600,7 +2628,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_upsert_object(self, space_name: str, values: dict, operations: list=[], opts: dict={}) -> CrudResult:
+    def crud_upsert_object(self, space_name: str, values: dict, operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts object row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
@@ -2625,7 +2653,11 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values, dict)
+        if operations is None:
+            operations = []
         assert isinstance(operations, list)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.upsert_object", space_name, values, operations, opts)
@@ -2635,7 +2667,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_upsert_many(self, space_name: str, values_operation: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_upsert_many(self, space_name: str, values_operation: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts batch rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
@@ -2657,6 +2689,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values_operation, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.upsert_many", space_name, values_operation, opts)
@@ -2673,7 +2707,7 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_upsert_object_many(self, space_name: str, values_operation: Union[tuple, list], opts: dict={}) -> CrudResult:
+    def crud_upsert_object_many(self, space_name: str, values_operation: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts batch object rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
@@ -2695,6 +2729,8 @@ class Connection(ConnectionInterface):
 
         assert isinstance(space_name, str)
         assert isinstance(values_operation, (tuple, list))
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.upsert_object_many", space_name, values_operation, opts)
@@ -2711,7 +2747,7 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_select(self, space_name: str, conditions: list=[], opts: dict={}) -> CrudResult:
+    def crud_select(self, space_name: str, conditions: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
         """
         Selects rows through the
         `crud <https://github.com/tarantool/crud#select>`__.
@@ -2732,7 +2768,11 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
-        assert isinstance(conditions, (tuple, list))
+        if conditions is None:
+            conditions = []
+        assert isinstance(conditions, list)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.select", space_name, conditions, opts)
@@ -2742,7 +2782,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_min(self, space_name: str, index_name: str, opts: dict={}) -> CrudResult:
+    def crud_min(self, space_name: str, index_name: str, opts: Optional[dict]=None) -> CrudResult:
         """
         Gets rows with minimum value in the specified index through
         the `crud <https://github.com/tarantool/crud#min-and-max>`__.
@@ -2763,6 +2803,8 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.min", space_name, index_name, opts)
@@ -2772,7 +2814,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_max(self, space_name: str, index_name: str, opts: dict={}) -> CrudResult:
+    def crud_max(self, space_name: str, index_name: str, opts: Optional[dict]=None) -> CrudResult:
         """
         Gets rows with maximum value in the specified index through
         the `crud <https://github.com/tarantool/crud#min-and-max>`__.
@@ -2793,6 +2835,8 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.max", space_name, index_name, opts)
@@ -2802,7 +2846,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_truncate(self, space_name: str, opts: dict={}) -> bool:
+    def crud_truncate(self, space_name: str, opts: Optional[dict]=None) -> bool:
         """
         Truncate rows through
         the `crud <https://github.com/tarantool/crud#truncate>`__.
@@ -2820,6 +2864,8 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.truncate", space_name, opts)
@@ -2831,7 +2877,7 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_len(self, space_name: str, opts: dict={}) -> int:
+    def crud_len(self, space_name: str, opts: Optional[dict]=None) -> int:
         """
         Gets the number of tuples in the space through
         the `crud <https://github.com/tarantool/crud#len>`__.
@@ -2849,6 +2895,8 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.len", space_name, opts)
@@ -2860,7 +2908,7 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_storage_info(self, opts: dict={}) -> dict:
+    def crud_storage_info(self, opts: Optional[dict]=None) -> dict:
         """
         Gets storages status through the
         `crud <https://github.com/tarantool/crud#storage-info>`__.
@@ -2874,6 +2922,8 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.DatabaseError`
         """
 
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.storage_info", opts)
@@ -2885,7 +2935,7 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_count(self, space_name: str, conditions: list=[], opts: dict={}) -> int:
+    def crud_count(self, space_name: str, conditions: Optional[list]=None, opts: Optional[dict]=None) -> int:
         """
         Gets rows count through the
         `crud <https://github.com/tarantool/crud#count>`__.
@@ -2906,7 +2956,11 @@ class Connection(ConnectionInterface):
         """
 
         assert isinstance(space_name, str)
-        assert isinstance(conditions, (tuple, list))
+        if conditions is None:
+            conditions = []
+        assert isinstance(conditions, list)
+        if opts is None:
+            opts = {}
         assert isinstance(opts, dict)
 
         crud_resp = call_crud(self, "crud.count", space_name, conditions, opts)

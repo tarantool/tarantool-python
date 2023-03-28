@@ -1033,7 +1033,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'execute', query, params)
 
-    def crud_insert(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_insert(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_insert request on the pool server:
         inserts row through the
@@ -1060,7 +1060,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_insert', space_name, values, opts)
 
-    def crud_insert_object(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_insert_object(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_insert_object request on the pool server:
         inserts object row through the
@@ -1087,7 +1087,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_insert_object', space_name, values, opts)
 
-    def crud_insert_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_insert_many(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_insert_many request on the pool server:
         inserts batch rows through the
@@ -1114,7 +1114,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_insert_many', space_name, values, opts)
 
-    def crud_insert_object_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_insert_object_many(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_insert_object_many request on the pool server:
         inserts batch object rows through the
@@ -1141,7 +1141,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_insert_object_many', space_name, values, opts)
 
-    def crud_get(self, space_name, key, opts={}, *, mode=Mode.ANY):
+    def crud_get(self, space_name, key, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_get request on the pool server:
         gets row through the
@@ -1168,7 +1168,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_get', space_name, key, opts)
 
-    def crud_update(self, space_name, key, operations=[], opts={}, *, mode=Mode.ANY):
+    def crud_update(self, space_name, key, operations=None, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_update request on the pool server:
         updates row through the
@@ -1198,7 +1198,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_update', space_name, key, operations, opts)
 
-    def crud_delete(self, space_name, key, opts={}, *, mode=Mode.ANY):
+    def crud_delete(self, space_name, key, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_delete request on the pool server:
         deletes row through the
@@ -1225,7 +1225,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_delete', space_name, key, opts)
 
-    def crud_replace(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_replace(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_replace request on the pool server:
         replaces row through the
@@ -1252,7 +1252,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_replace', space_name, values, opts)
 
-    def crud_replace_object(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_replace_object(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_replace_object request on the pool server:
         replaces object row through the
@@ -1279,7 +1279,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_replace_object', space_name, values, opts)
 
-    def crud_replace_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_replace_many(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_replace_many request on the pool server:
         replaces batch rows through the
@@ -1306,7 +1306,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_replace_many', space_name, values, opts)
 
-    def crud_replace_object_many(self, space_name, values, opts={}, *, mode=Mode.ANY):
+    def crud_replace_object_many(self, space_name, values, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_replace_object_many request on the pool server:
         replaces batch object rows through the
@@ -1333,7 +1333,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_replace_object_many', space_name, values, opts)
 
-    def crud_upsert(self, space_name, values, operations=[], opts={}, *, mode=Mode.ANY):
+    def crud_upsert(self, space_name, values, operations=None, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_upsert request on the pool server:
         upserts row through the
@@ -1363,7 +1363,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_upsert', space_name, values, operations, opts)
 
-    def crud_upsert_object(self, space_name, values, operations=[], opts={}, *, mode=Mode.ANY):
+    def crud_upsert_object(self, space_name, values, operations=None, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_upsert_object request on the pool server:
         upserts object row through the
@@ -1393,7 +1393,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_upsert_object', space_name, values, operations, opts)
 
-    def crud_upsert_many(self, space_name, values_operation, opts={}, *, mode=Mode.ANY):
+    def crud_upsert_many(self, space_name, values_operation, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_upsert_many request on the pool server:
         upserts batch rows through the
@@ -1420,7 +1420,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_upsert_many', space_name, values_operation, opts)
 
-    def crud_upsert_object_many(self, space_name, values_operation, opts={}, *, mode=Mode.ANY):
+    def crud_upsert_object_many(self, space_name, values_operation, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_upsert_object_many request on the pool server:
         upserts batch object rows through the
@@ -1447,7 +1447,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_upsert_object_many', space_name, values_operation, opts)
 
-    def crud_select(self, space_name, conditions=[], opts={}, *, mode=Mode.ANY):
+    def crud_select(self, space_name, conditions=None, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_select request on the pool server:
         selects rows through the
@@ -1474,7 +1474,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_select', space_name, conditions, opts)
 
-    def crud_min(self, space_name, index_name, opts={}, *, mode=Mode.ANY):
+    def crud_min(self, space_name, index_name, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_min request on the pool server:
         gets rows with minimum value in the specified index through
@@ -1501,7 +1501,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_min', space_name, index_name, opts)
 
-    def crud_max(self, space_name, index_name, opts={}, *, mode=Mode.ANY):
+    def crud_max(self, space_name, index_name, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_max request on the pool server:
         gets rows with maximum value in the specified index through
@@ -1528,7 +1528,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_max', space_name, index_name, opts)
 
-    def crud_len(self, space_name, opts={}, *, mode=Mode.ANY):
+    def crud_len(self, space_name, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_len request on the pool server:
         gets the number of tuples in the space through
@@ -1552,7 +1552,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_len', space_name, opts)
 
-    def crud_storage_info(self, opts={}, *, mode=Mode.ANY):
+    def crud_storage_info(self, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_storage_info request on the pool server:
         gets storages status through the
@@ -1573,7 +1573,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_storage_info', opts)
 
-    def crud_count(self, space_name, conditions=[], opts={}, *, mode=Mode.ANY):
+    def crud_count(self, space_name, conditions=None, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_count request on the pool server:
         gets rows count through the
@@ -1644,7 +1644,7 @@ class ConnectionPool(ConnectionInterface):
 
         return self._send(mode, 'crud_unflatten_rows', rows, metadata)
 
-    def crud_truncate(self, space_name, opts={}, *, mode=Mode.ANY):
+    def crud_truncate(self, space_name, opts=None, *, mode=Mode.ANY):
         """
         Execute an crud_truncate request on the pool server:
         truncates rows through
