@@ -10,12 +10,11 @@ import time
 import shutil
 import subprocess
 
-from .tarantool_admin import TarantoolAdmin
-
 from tarantool.const import (
     SSL_TRANSPORT
 )
 
+from .tarantool_admin import TarantoolAdmin
 
 def check_port(port, rais=True):
     try:

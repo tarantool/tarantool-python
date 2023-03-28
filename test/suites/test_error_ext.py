@@ -1,11 +1,12 @@
 import sys
 import unittest
 import uuid
-import msgpack
 import warnings
-import tarantool
 import pkg_resources
 
+import msgpack
+
+import tarantool
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 

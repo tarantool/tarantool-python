@@ -4,11 +4,10 @@ send pre-build request objects.
 """
 
 import sys
-import msgpack
 import hashlib
-
 from collections.abc import Sequence, Mapping
 
+import msgpack
 
 from tarantool.error import DatabaseError
 from tarantool.const import (

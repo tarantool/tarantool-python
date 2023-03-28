@@ -1,19 +1,19 @@
 import sys
-import pkg_resources
 import unittest
 import uuid
 
+import pkg_resources
+
 import tarantool
-from tarantool.utils import greeting_decode, version_id
-
-from .lib.tarantool_server import TarantoolServer
-
 from tarantool.const import (
     IPROTO_FEATURE_STREAMS,
     IPROTO_FEATURE_TRANSACTIONS,
     IPROTO_FEATURE_ERROR_EXTENSION,
     IPROTO_FEATURE_WATCHERS,
 )
+from tarantool.utils import greeting_decode, version_id
+
+from .lib.tarantool_server import TarantoolServer
 
 class TestSuiteProtocol(unittest.TestCase):
     @classmethod

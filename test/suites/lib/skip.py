@@ -1,7 +1,8 @@
 import functools
-import pkg_resources
 import re
 import sys
+
+import pkg_resources
 
 def fetch_tarantool_version(self):
     """Helper to fetch current Tarantool version.

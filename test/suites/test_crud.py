@@ -2,10 +2,11 @@ import re
 import sys
 import time
 import unittest
+
 import tarantool
-from .lib.tarantool_server import TarantoolServer
 from tarantool.error import DatabaseError
 
+from .lib.tarantool_server import TarantoolServer
 
 def create_server():
     srv = TarantoolServer()

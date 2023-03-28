@@ -1,17 +1,18 @@
 import sys
 import re
 import unittest
-import msgpack
 import warnings
-import tarantool
+
+import msgpack
 import pandas
 
+import tarantool
+from tarantool.error import MsgpackError, MsgpackWarning
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
-from tarantool.error import MsgpackError, MsgpackWarning
 
 class TestSuiteDatetime(unittest.TestCase):
     @classmethod
