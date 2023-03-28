@@ -43,11 +43,11 @@ def find_port(port=None):
     return find_port(3300)
 
 
-class RunnerException(object):
-    pass
-
-
 class TarantoolServer(object):
+    """
+    Class to start up a new Tarantool server.
+    """
+
     default_tarantool = {
             "bin":     "tarantool",
             "logfile": "tarantool.log",

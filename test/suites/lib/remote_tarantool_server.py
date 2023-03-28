@@ -24,6 +24,10 @@ def get_random_string():
 
 
 class RemoteTarantoolServer(object):
+    """
+    Class to work with remote Tarantool server.
+    """
+
     def __init__(self):
         self.host = os.environ['REMOTE_TARANTOOL_HOST']
 

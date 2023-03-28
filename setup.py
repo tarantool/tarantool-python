@@ -18,10 +18,13 @@ except ImportError:
 cmdclass = {}
 command_options = {}
 
-# Build the package
-# python setup.py build_py
-# builds the package with generating correspondent VERSION file
 class BuildPyCommand(build_py):
+    """
+    Build the package
+    python setup.py build_py
+    builds the package with generating correspondent VERSION file
+    """
+
     def run(self):
         # Import here to allow to run commands
         # like `python setup.py test` without setuptools_scm.
