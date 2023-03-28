@@ -15,6 +15,7 @@ from tarantool.const import (
 )
 
 from .tarantool_admin import TarantoolAdmin
+from .remote_tarantool_server import RemoteTarantoolServer
 
 def check_port(port, rais=True):
     try:
@@ -130,7 +131,6 @@ class TarantoolServer(object):
                 create_unix_socket=False,
                 auth_type=None):
         if os.name == 'nt':
-            from .remote_tarantool_server import RemoteTarantoolServer
             return RemoteTarantoolServer()
         return super(TarantoolServer, cls).__new__(cls)
 
