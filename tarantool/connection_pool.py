@@ -663,9 +663,7 @@ class ConnectionPool(ConnectionInterface):
         and refresh the info would be processed in the background.
         """
 
-        for key in self.pool:
-            unit = self.pool[key]
-
+        for key, unit in self.pool.items():
             self._refresh_state(key)
             last_refresh = time.time()
 

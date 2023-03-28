@@ -83,38 +83,30 @@ class TestSuiteUUID(unittest.TestCase):
     }
 
     def test_msgpack_decode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.assertEqual(unpacker_ext_hook(2, case['msgpack']),
                                  case['python'])
 
     @skip_or_run_uuid_test
     def test_tarantool_decode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.adm(f"box.space['test']:replace{{'{name}', {case['tarantool']}}}")
 
                 self.assertSequenceEqual(self.con.select('test', name),
                                          [[name, case['python']]])
 
     def test_msgpack_encode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.assertEqual(packer_default(case['python']),
                                  msgpack.ExtType(code=2, data=case['msgpack']))
 
     @skip_or_run_uuid_test
     def test_tarantool_encode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.con.insert('test', [name, case['python']])
 
                 lua_eval = f"""

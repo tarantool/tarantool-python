@@ -146,10 +146,8 @@ class TestSuiteInterval(unittest.TestCase):
     }
 
     def test_msgpack_decode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.assertEqual(unpacker_ext_hook(
                                     6,
                                     case['msgpack'],
@@ -159,29 +157,23 @@ class TestSuiteInterval(unittest.TestCase):
 
     @skip_or_run_datetime_test
     def test_tarantool_decode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.adm(f"box.space['test']:replace{{'{name}', {case['tarantool']}, 'field'}}")
 
                 self.assertSequenceEqual(self.con.select('test', name),
                                          [[name, case['python'], 'field']])
 
     def test_msgpack_encode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.assertEqual(packer_default(case['python']),
                                  msgpack.ExtType(code=6, data=case['msgpack']))
 
     @skip_or_run_datetime_test
     def test_tarantool_encode(self):
-        for name in self.cases.keys():
+        for name, case in self.cases.items():
             with self.subTest(msg=name):
-                case = self.cases[name]
-
                 self.con.insert('test', [name, case['python'], 'field'])
 
                 lua_eval = f"""
@@ -272,34 +264,26 @@ class TestSuiteInterval(unittest.TestCase):
     }
 
     def test_python_interval_addition(self):
-        for name in self.arithmetic_cases.keys():
+        for name, case in self.arithmetic_cases.items():
             with self.subTest(msg=name):
-                case = self.arithmetic_cases[name]
-
                 self.assertEqual(case['arg_1'] + case['arg_2'], case['res_add'])
 
     def test_python_interval_subtraction(self):
-        for name in self.arithmetic_cases.keys():
+        for name, case in self.arithmetic_cases.items():
             with self.subTest(msg=name):
-                case = self.arithmetic_cases[name]
-
                 self.assertEqual(case['arg_1'] - case['arg_2'], case['res_sub'])
 
     @skip_or_run_datetime_test
     def test_tarantool_interval_addition(self):
-        for name in self.arithmetic_cases.keys():
+        for name, case in self.arithmetic_cases.items():
             with self.subTest(msg=name):
-                case = self.arithmetic_cases[name]
-
                 self.assertSequenceEqual(self.con.call('add', case['arg_1'], case['arg_2']),
                                          [case['res_add']])
 
     @skip_or_run_datetime_test
     def test_tarantool_interval_subtraction(self):
-        for name in self.arithmetic_cases.keys():
+        for name, case in self.arithmetic_cases.items():
             with self.subTest(msg=name):
-                case = self.arithmetic_cases[name]
-
                 self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
                                          [case['res_sub']])
 
