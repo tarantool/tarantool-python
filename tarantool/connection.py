@@ -1,6 +1,7 @@
 """
 This module provides API for interaction with a Tarantool server.
 """
+# pylint: disable=too-many-lines
 
 import os
 import time
