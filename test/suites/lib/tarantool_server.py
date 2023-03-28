@@ -72,7 +72,8 @@ class TarantoolServer(object):
 
     @property
     def script(self):
-        if not hasattr(self, '_script'): self._script = None
+        if not hasattr(self, '_script'):
+            self._script = None
         return self._script
 
     @script.setter
