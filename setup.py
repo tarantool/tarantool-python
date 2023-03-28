@@ -22,6 +22,7 @@ class BuildPyCommand(build_py):
     def run(self):
         # Import here to allow to run commands
         # like `python setup.py test` without setuptools_scm.
+        # pylint: disable=import-outside-toplevel,import-error
         from setuptools_scm import get_version
         version = get_version()
 
