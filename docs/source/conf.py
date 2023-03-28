@@ -11,6 +11,7 @@
 # pylint: disable=invalid-name
 
 import sys, os
+import tarantool
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -52,8 +53,6 @@ copyright = u'2011-2022, tarantool-python AUTHORS'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-
-import tarantool
 
 # The short X.Y version.
 version = tarantool.__version__
