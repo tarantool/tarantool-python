@@ -196,7 +196,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def replace(self, space_name, values, on_push=None, on_push_ctx=None):
+    def replace(self, space_name, values, *, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.replace`.
         """
@@ -204,7 +204,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def insert(self, space_name, values, on_push=None, on_push_ctx=None):
+    def insert(self, space_name, values, *, on_push=None, on_push_ctx=None):
         """
         Reference implementation: :meth:`~tarantool.Connection.insert`.
         """
@@ -1406,7 +1406,7 @@ class Connection(ConnectionInterface):
         response = self._send_request(request, on_push, on_push_ctx)
         return response
 
-    def replace(self, space_name, values, on_push=None, on_push_ctx=None):
+    def replace(self, space_name, values, *, on_push=None, on_push_ctx=None):
         """
         Execute a REPLACE request: `replace`_ a tuple in the space.
         Doesn't throw an error if there is no tuple with the specified
@@ -1628,7 +1628,7 @@ class Connection(ConnectionInterface):
                 return
         self.close()  # close connection after SUBSCRIBE
 
-    def insert(self, space_name, values, on_push=None, on_push_ctx=None):
+    def insert(self, space_name, values, *, on_push=None, on_push_ctx=None):
         """
         Execute an INSERT request: `insert`_ a tuple to the space.
         Throws an error if there is already a tuple with the same
