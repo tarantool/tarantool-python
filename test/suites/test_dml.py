@@ -111,7 +111,7 @@ class TestSuiteRequest(unittest.TestCase):
         select_req = self.con.select('space_1', [0], index='secondary')
         self.assertEqual(len(select_req), 99)
         for i in select_req:
-            self.assertTrue(not (i[0] % 5))
+            self.assertTrue(not i[0] % 5)
             self.assertTrue(not i[1])
             self.assertTrue(i[2] == 'tuple_' + str(i[0]))
 
