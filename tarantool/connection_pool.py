@@ -526,7 +526,7 @@ class ConnectionPool(ConnectionInterface):
         :meta private:
         """
 
-        return '{0}:{1}'.format(addr['host'], addr['port'])
+        return f"{addr['host']}:{addr['port']}"
 
     def _get_new_state(self, unit):
         """
@@ -546,24 +546,21 @@ class ConnectionPool(ConnectionInterface):
             try:
                 conn.connect()
             except NetworkError as exc:
-                msg = "Failed to connect to {0}:{1}".format(
-                    unit.addr['host'], unit.addr['port'])
+                msg = f"Failed to connect to {unit.addr['host']}:{unit.addr['port']}"
                 warn(msg, ClusterConnectWarning)
                 return InstanceState(Status.UNHEALTHY)
 
         try:
             resp = conn.call('box.info')
         except NetworkError as exc:
-            msg = "Failed to get box.info for {0}:{1}, reason: {2}".format(
-                unit.addr['host'], unit.addr['port'], repr(exc))
+            msg = f"Failed to get box.info for {unit.addr['host']}:{unit.addr['port']}, reason: {repr(exc)}"
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 
         try:
             read_only = resp.data[0]['ro']
         except (IndexError, KeyError) as exc:
-            msg = "Incorrect box.info response from {0}:{1}".format(
-                unit.addr['host'], unit.addr['port'])
+            msg = f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 
@@ -571,13 +568,11 @@ class ConnectionPool(ConnectionInterface):
             status = resp.data[0]['status']
 
             if status != 'running':
-                msg = "{0}:{1} instance status is not 'running'".format(
-                    unit.addr['host'], unit.addr['port'])
+                msg = f"{unit.addr['host']}:{unit.addr['port']} instance status is not 'running'"
                 warn(msg, PoolTolopogyWarning)
                 return InstanceState(Status.UNHEALTHY)
         except (IndexError, KeyError) as exc:
-            msg = "Incorrect box.info response from {0}:{1}".format(
-                unit.addr['host'], unit.addr['port'])
+            msg = f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 

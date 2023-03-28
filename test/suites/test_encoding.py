@@ -69,7 +69,7 @@ class TestSuiteEncoding(unittest.TestCase):
         try:
             func(*args, **kwargs)
         except Exception as exc:
-            self.fail('Function raised Exception: %s' % repr(exc))
+            self.fail(f'Function raised Exception: {repr(exc)}')
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
@@ -94,9 +94,9 @@ class TestSuiteEncoding(unittest.TestCase):
         data = 'test_01_02'
         space = 'space_str'
 
-        self.srv.admin("box.space['%s']:insert{'%s'}" % (space, data))
+        self.srv.admin(f"box.space['{space}']:insert{{'{data}'}}")
 
-        resp = self.con_encoding_utf8.eval("return box.space['%s']:get('%s')" % (space, data))
+        resp = self.con_encoding_utf8.eval(f"return box.space['{space}']:get('{data}')")
         self.assertSequenceEqual(resp, [[data]])
 
     @skip_or_run_varbinary_test
@@ -117,13 +117,13 @@ class TestSuiteEncoding(unittest.TestCase):
         data = bytes(bytearray.fromhex(data_hex))
         space = 'space_varbin'
 
-        self.con_encoding_utf8.execute("""
-            INSERT INTO "%s" VALUES (%d, x'%s');
-        """ % (space, data_id, data_hex))
+        self.con_encoding_utf8.execute(f"""
+            INSERT INTO "{space}" VALUES ({data_id}, x'{data_hex}');
+        """)
 
-        resp = self.con_encoding_utf8.execute("""
-            SELECT * FROM "%s" WHERE "varbin" == x'%s';
-        """ % (space, data_hex))
+        resp = self.con_encoding_utf8.execute(f"""
+            SELECT * FROM "{space}" WHERE "varbin" == x'{data_hex}';
+        """)
         self.assertSequenceEqual(resp, [[data_id, data]])
 
     # encoding = None
@@ -146,9 +146,9 @@ class TestSuiteEncoding(unittest.TestCase):
         data_decoded = b'test_02_02'
         space = 'space_str'
 
-        self.srv.admin("box.space['%s']:insert{'%s'}" % (space, data))
+        self.srv.admin(f"box.space['{space}']:insert{{'{data}'}}")
 
-        resp = self.con_encoding_none.eval("return box.space['%s']:get('%s')" % (space, data))
+        resp = self.con_encoding_none.eval(f"return box.space['{space}']:get('{data}')")
         self.assertSequenceEqual(resp, [[data_decoded]])
 
     def test_02_03_bytes_encode_for_encoding_none_behavior(self):
@@ -167,13 +167,13 @@ class TestSuiteEncoding(unittest.TestCase):
         data = bytes(bytearray.fromhex(data_hex))
         space = 'space_varbin'
 
-        self.con_encoding_none.execute("""
-            INSERT INTO "%s" VALUES (%d, x'%s');
-        """ % (space, data_id, data_hex))
+        self.con_encoding_none.execute(f"""
+            INSERT INTO "{space}" VALUES ({data_id}, x'{data_hex}');
+        """)
 
-        resp = self.con_encoding_none.execute("""
-            SELECT * FROM "%s" WHERE "varbin" == x'%s';
-        """ % (space, data_hex))
+        resp = self.con_encoding_none.execute(f"""
+            SELECT * FROM "{space}" WHERE "varbin" == x'{data_hex}';
+        """)
         self.assertSequenceEqual(resp, [[data_id, data]])
 
     @skip_or_run_error_extra_info_test

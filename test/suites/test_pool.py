@@ -39,7 +39,7 @@ def create_server(_id):
     srv.admin("json = require('json')")
 
     # Create srv_id function (for testing purposes).
-    srv.admin("function srv_id() return %s end" % _id)
+    srv.admin(f"function srv_id() return {_id} end")
     return srv
 
 

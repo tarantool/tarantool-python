@@ -61,7 +61,7 @@ class TestSuiteConnection(unittest.TestCase):
             if isinstance(obj, decimal.Decimal):
                 obj = obj + 1
                 return msgpack.ExtType(ext_decimal.EXT_ID, ext_decimal.encode(obj, None))
-            raise TypeError("Unknown type: %r" % (obj,))
+            raise TypeError(f"Unknown type: {repr(obj)}")
 
         def my_packer_factory(_):
             return msgpack.Packer(default=my_ext_type_encoder)
@@ -92,7 +92,7 @@ class TestSuiteConnection(unittest.TestCase):
         def my_ext_type_decoder(code, data):
             if code == ext_decimal.EXT_ID:
                 return ext_decimal.decode(data, None) - 1
-            raise NotImplementedError("Unknown msgpack extension type code %d" % (code,))
+            raise NotImplementedError(f"Unknown msgpack extension type code {code}")
 
         def my_unpacker_factory(_):
             if msgpack.version >= (1, 0, 0):
@@ -127,13 +127,13 @@ class TestSuiteConnection(unittest.TestCase):
         data = bytes(bytearray.fromhex(data_hex))
         space = 'space_varbin'
 
-        self.con.execute("""
-            INSERT INTO "%s" VALUES (%d, x'%s');
-        """ % (space, data_id, data_hex))
+        self.con.execute(f"""
+            INSERT INTO "{space}" VALUES ({data_id}, x'{data_hex}');
+        """)
 
-        resp = self.con.execute("""
-            SELECT * FROM "%s" WHERE "varbin" == x'%s';
-        """ % (space, data_hex))
+        resp = self.con.execute(f"""
+            SELECT * FROM "{space}" WHERE "varbin" == x'{data_hex}';
+        """)
         self.assertSequenceEqual(resp, [[data_id, data]])
 
     def test_custom_unpacker_supersedes_use_list(self):

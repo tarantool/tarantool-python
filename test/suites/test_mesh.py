@@ -21,7 +21,7 @@ def create_server(_id):
     srv.admin("box.schema.user.grant('test', 'execute', 'universe')")
 
     # Create srv_id function (for testing purposes).
-    srv.admin("function srv_id() return %s end" % _id)
+    srv.admin(f"function srv_id() return {_id} end")
     return srv
 
 
@@ -30,21 +30,21 @@ def create_server(_id):
 class TestSuiteMesh(unittest.TestCase):
     def define_cluster_function(self, func_name, servers):
         addresses = [(srv.host, srv.args['primary']) for srv in servers]
-        addresses_lua = ",".join("'%s:%d'" % address for address in addresses)
-        func_body = """
-            function %s()
-                return {%s}
+        addresses_lua = ",".join(f"'{address[0]}:{address[1]}'" for address in addresses)
+        func_body = f"""
+            function {func_name}()
+                return {{{addresses_lua}}}
             end
-        """ % (func_name, addresses_lua)
+        """
         for srv in self.servers:
             srv.admin(func_body)
 
     def define_custom_cluster_function(self, func_name, retval):
-        func_body = """
-            function %s()
-                return %s
+        func_body = f"""
+            function {func_name}()
+                return {retval}
             end
-        """ % (func_name, retval)
+        """
         for srv in self.servers:
             srv.admin(func_body)
 
@@ -173,7 +173,7 @@ class TestSuiteMesh(unittest.TestCase):
 
     def test_03_discovery_bad_good_addresses(self):
         func_name = 'bad_and_good_addresses'
-        retval = "{'localhost:', '%s:%d'}" % (self.host_2, self.port_2)
+        retval = f"{{'localhost:', '{self.host_2}:{self.port_2}'}}"
         self.define_custom_cluster_function(func_name, retval)
         con = tarantool.MeshConnection(self.host_1, self.port_1,
                                        user='test', password='test')

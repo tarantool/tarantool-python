@@ -12,11 +12,11 @@ from .lib.skip import skip_or_run_sql_test
 class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
     table_prefix = 'dbapi20test_'  # If you need to specify a prefix for tables
 
-    ddl0 = 'create table %s (id INTEGER PRIMARY KEY AUTOINCREMENT, ' \
+    ddl0 = f'create table {table_prefix} (id INTEGER PRIMARY KEY AUTOINCREMENT, ' \
            'name varchar(20))'
-    ddl1 = 'create table %sbooze (name varchar(20) primary key)' % table_prefix
-    ddl2 = 'create table %sbarflys (name varchar(20) primary key, ' \
-           'drink varchar(30))' % table_prefix
+    ddl1 = f'create table {table_prefix}booze (name varchar(20) primary key)'
+    ddl2 = f'create table {table_prefix}barflys (name varchar(20) primary key, ' \
+           'drink varchar(30))'
 
     @classmethod
     def setUpClass(self):
@@ -57,14 +57,12 @@ class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
                 'cursor.rowcount should be -1 or 1 after executing no-result '
                 'statements' + str(cur.rowcount)
                 )
-            cur.execute("%s into %sbooze values ('Victoria Bitter')" % (
-                self.insert, self.table_prefix
-                ))
+            cur.execute(f"{self.insert} into {self.table_prefix}booze values ('Victoria Bitter')")
             dbapi20._failUnless(self,cur.rowcount == 1,
                 'cursor.rowcount should == number or rows inserted, or '
                 'set to -1 after executing an insert statement'
                 )
-            cur.execute("select name from %sbooze" % self.table_prefix)
+            cur.execute(f"select name from {self.table_prefix}booze")
             dbapi20._failUnless(self,cur.rowcount == -1,
                 'cursor.rowcount should == number of rows returned, or '
                 'set to -1 after executing a select statement'

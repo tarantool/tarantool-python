@@ -1210,8 +1210,8 @@ class Connection(ConnectionInterface):
             else:
                 if self.connected:
                     break
-            warn("Reconnecting, attempt %d of %d" %
-                 (attempt, self.reconnect_max_attempts), NetworkWarning)
+            warn(f"Reconnecting, attempt {attempt} of {self.reconnect_max_attempts}",
+                 NetworkWarning)
             if attempt == self.reconnect_max_attempts:
                 raise NetworkError(
                     socket.error(last_errno, errno.errorcode[last_errno]))

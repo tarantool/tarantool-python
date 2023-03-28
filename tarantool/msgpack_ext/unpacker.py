@@ -42,4 +42,4 @@ def ext_hook(code, data, unpacker=None):
 
     if code in decoders:
         return decoders[code](data, unpacker)
-    raise NotImplementedError("Unknown msgpack extension type code %d" % (code,))
+    raise NotImplementedError(f"Unknown msgpack extension type code {code}")

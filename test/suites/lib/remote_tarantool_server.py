@@ -41,42 +41,38 @@ class RemoteTarantoolServer(object):
     def acquire_lock(self):
         deadline = time.time() + AWAIT_TIME
         while True:
-            res = self.admin.execute('return acquire_lock("%s")' % self.whoami)
+            res = self.admin.execute(f'return acquire_lock("{ self.whoami}")')
             ok = res[0]
             err = res[1] if not ok else None
             if ok:
                 break
             if time.time() > deadline:
-                raise RuntimeError('can not acquire "%s" lock: %s' % (
-                    self.whoami, str(err)))
-            print('waiting to acquire "%s" lock' % self.whoami,
+                raise RuntimeError(f'can not acquire "{self.whoami}" lock: {str(err)}')
+            print(f'waiting to acquire "{self.whoami}" lock',
                   file=sys.stderr)
             time.sleep(1)
         self.lock_is_acquired = True
 
     def touch_lock(self):
         assert(self.lock_is_acquired)
-        res = self.admin.execute('return touch_lock("%s")' % self.whoami)
+        res = self.admin.execute(f'return touch_lock("{self.whoami}")')
         ok = res[0]
         err = res[1] if not ok else None
         if not ok:
-            raise RuntimeError('can not update "%s" lock: %s' % (
-                self.whoami, str(err)))
+            raise RuntimeError(f'can not update "{self.whoami}" lock: {str(err)}')
 
     def release_lock(self):
-        res = self.admin.execute('return release_lock("%s")' % self.whoami)
+        res = self.admin.execute(f'return release_lock("{self.whoami}")')
         ok = res[0]
         err = res[1] if not ok else None
         if not ok:
-            raise RuntimeError('can not release "%s" lock: %s' % (
-                self.whoami, str(err)))
+            raise RuntimeError(f'can not release "{self.whoami}" lock: {str(err)}')
         self.lock_is_acquired = False
 
     def start(self):
         if not self.lock_is_acquired:
             self.acquire_lock()
-        self.admin.execute('box.cfg{listen = "0.0.0.0:%s"}' %
-                           self.args['primary'])
+        self.admin.execute(f'box.cfg{{listen = "0.0.0.0:{self.args["primary"]}"}}')
 
     def stop(self):
         self.admin.execute('box.cfg{listen = box.NULL}')

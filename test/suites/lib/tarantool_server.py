@@ -25,7 +25,7 @@ def check_port(port, rais=True):
     sock.close()
 
     if rais:
-        raise RuntimeError("The server is already running on port {0}".format(port))
+        raise RuntimeError(f"The server is already running on port {port}")
     return False
 
 
@@ -100,7 +100,7 @@ class TarantoolServer(object):
         try:
             int(port)
         except ValueError:
-            raise ValueError("Bad port number: '%s'" % port)
+            raise ValueError(f"Bad port number: '{port}'")
         if hasattr(self, 'admin'):
             del self.admin
         self.admin = TarantoolAdmin('0.0.0.0', port)
@@ -186,17 +186,17 @@ class TarantoolServer(object):
         if not port_only and self.transport == SSL_TRANSPORT:
             listen = self.host + ":" + str(port) + "?transport=ssl&"
             if self.ssl_key_file:
-                listen += "ssl_key_file={}&".format(self.ssl_key_file)
+                listen += f"ssl_key_file={self.ssl_key_file}&"
             if self.ssl_cert_file:
-                listen += "ssl_cert_file={}&".format(self.ssl_cert_file)
+                listen += f"ssl_cert_file={self.ssl_cert_file}&"
             if self.ssl_ca_file:
-                listen += "ssl_ca_file={}&".format(self.ssl_ca_file)
+                listen += f"ssl_ca_file={self.ssl_ca_file}&"
             if self.ssl_ciphers:
-                listen += "ssl_ciphers={}&".format(self.ssl_ciphers)
+                listen += f"ssl_ciphers={self.ssl_ciphers}&"
             if self.ssl_password:
-                listen += "ssl_password={}&".format(self.ssl_password)
+                listen += f"ssl_password={self.ssl_password}&"
             if self.ssl_password_file:
-                listen += "ssl_password_file={}&".format(self.ssl_password_file)
+                listen += f"ssl_password_file={self.ssl_password_file}&"
             listen = listen[:-1]
         else:
             listen = str(port)
@@ -234,7 +234,7 @@ class TarantoolServer(object):
                     elif ans in ('loading',):
                         continue
                     else:
-                        raise Exception("Strange output for `box.info.status`: %s" % (ans))
+                        raise Exception(f"Strange output for `box.info.status`: {ans}")
             except socket.error as exc:
                 if exc.errno == errno.ECONNREFUSED:
                     time.sleep(0.1)
