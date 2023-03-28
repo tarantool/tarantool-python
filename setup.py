@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Package setup commands.
+"""
 
 import codecs
 import os

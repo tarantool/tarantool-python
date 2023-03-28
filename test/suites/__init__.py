@@ -1,3 +1,7 @@
+"""
+Module tests entrypoint.
+"""
+
 import os
 import unittest
 

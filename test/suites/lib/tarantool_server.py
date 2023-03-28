@@ -1,3 +1,7 @@
+"""
+This module provides helpers start up a Tarantool server.
+"""
+
 import os
 import os.path
 import errno

@@ -1,3 +1,7 @@
+"""
+This module tests package features.
+"""
+
 import os
 import sys
 import unittest

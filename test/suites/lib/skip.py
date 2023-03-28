@@ -1,3 +1,7 @@
+"""
+This module provides helpers to skip specific tests.
+"""
+
 import functools
 import re
 import sys

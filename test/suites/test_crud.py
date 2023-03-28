@@ -1,3 +1,7 @@
+"""
+This module tests integration with tarantool/crud.
+"""
+
 import re
 import sys
 import time

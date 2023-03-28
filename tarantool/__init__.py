@@ -1,3 +1,7 @@
+"""
+This package provides API for interaction with a Tarantool server.
+"""
+
 import sys
 
 from tarantool.connection import Connection

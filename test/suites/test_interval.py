@@ -1,3 +1,7 @@
+"""
+This module tests work with datetime interval type.
+"""
+
 import re
 import sys
 import unittest

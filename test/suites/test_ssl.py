@@ -1,3 +1,7 @@
+"""
+This module tests connection through SSL.
+"""
+
 import os
 import sys
 import unittest

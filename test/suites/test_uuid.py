@@ -1,3 +1,7 @@
+"""
+This module tests work with UUID type.
+"""
+
 import sys
 import unittest
 import uuid

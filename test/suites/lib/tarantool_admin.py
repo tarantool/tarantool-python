@@ -1,3 +1,7 @@
+"""
+This module provides helpers to setup running Tarantool server.
+"""
+
 import socket
 import re
 

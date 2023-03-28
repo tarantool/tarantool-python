@@ -1,3 +1,7 @@
+"""
+This module tests basic connection behavior.
+"""
+
 import sys
 import unittest
 

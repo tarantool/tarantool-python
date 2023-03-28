@@ -1,3 +1,8 @@
+"""
+This module provides helpers to work with remote Tarantool server
+(used on Windows).
+"""
+
 import sys
 import os
 import random
