@@ -1,7 +1,7 @@
 """
 This module tests integration with tarantool/crud.
 """
-# pylint: disable=missing-class-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring
 
 import re
 import sys

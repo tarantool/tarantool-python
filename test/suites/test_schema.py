@@ -1,7 +1,7 @@
 """
 This module tests space and index schema fetch.
 """
-# pylint: disable=missing-class-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring
 
 import sys
 import unittest

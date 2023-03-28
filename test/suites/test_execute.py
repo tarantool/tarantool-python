@@ -1,7 +1,7 @@
 """
 This module tests API fo execute SQL on a server.
 """
-# pylint: disable=missing-class-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring
 
 import sys
 import unittest
