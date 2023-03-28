@@ -404,7 +404,7 @@ class Schema(object):
         if space is None and index is None:
             _key_tuple = ()
         elif space is not None and index is None:
-            _key_tuple = (space)
+            _key_tuple = (space, )
         elif space is not None and index is not None:
             _key_tuple = (space, index)
         else:
