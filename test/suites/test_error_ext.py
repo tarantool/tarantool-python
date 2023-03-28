@@ -12,7 +12,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_error_ext_type_test
 
-class TestSuite_ErrorExt(unittest.TestCase):
+class TestSuiteErrorExt(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' ERROR EXT TYPE '.center(70, '='), file=sys.stderr)

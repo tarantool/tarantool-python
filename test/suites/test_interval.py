@@ -14,7 +14,7 @@ from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
 from tarantool.error import MsgpackError
 
-class TestSuite_Interval(unittest.TestCase):
+class TestSuiteInterval(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' INTERVAL EXT TYPE '.center(70, '='), file=sys.stderr)
@@ -57,7 +57,7 @@ class TestSuite_Interval(unittest.TestCase):
 
         self.adm("box.space['test']:truncate()")
 
-    def test_Interval_positional_init(self):
+    def test_interval_positional_init(self):
         self.assertRaisesRegex(
             TypeError, re.escape('__init__() takes 1 positional argument but 2 were given'),
             lambda: tarantool.Interval(1))

@@ -93,13 +93,13 @@ class InstanceState():
     """
     :type: :class:`~tarantool.connection_pool.Status`
     """
-    ro: typing.Optional[bool] = None
+    read_only: typing.Optional[bool] = None
     """
     :type: :obj:`bool`, optional
     """
 
 
-def QueueFactory():
+def queue_factory():
     """
     Build a queue-based channel.
     """
@@ -126,14 +126,14 @@ class PoolUnit():
     :type: :class:`~tarantool.Connection`
     """
 
-    input_queue: queue.Queue = field(default_factory=QueueFactory)
+    input_queue: queue.Queue = field(default_factory=queue_factory)
     """
     Channel to pass requests for the server thread.
 
     :type: :obj:`queue.Queue`
     """
 
-    output_queue: queue.Queue = field(default_factory=QueueFactory)
+    output_queue: queue.Queue = field(default_factory=queue_factory)
     """
     Channel to receive responses from the server thread.
 
@@ -216,9 +216,9 @@ class RoundRobinStrategy(StrategyInterface):
             :class:`~tarantool.connection_pool.PoolUnit` objects
         """
 
-        self.ANY_iter = None
-        self.RW_iter = None
-        self.RO_iter = None
+        self.any_iter = None
+        self.rw_iter = None
+        self.ro_iter = None
         self.pool = pool
         self.rebuild_needed = True
 
@@ -228,9 +228,9 @@ class RoundRobinStrategy(StrategyInterface):
         based on `box.info.ro`_ state.
         """
 
-        ANY_pool = []
-        RW_pool = []
-        RO_pool = []
+        any_pool = []
+        rw_pool = []
+        ro_pool = []
 
         for key in self.pool:
             state = self.pool[key].state
@@ -238,27 +238,27 @@ class RoundRobinStrategy(StrategyInterface):
             if state.status == Status.UNHEALTHY:
                 continue
 
-            ANY_pool.append(key)
+            any_pool.append(key)
 
-            if state.ro == False:
-                RW_pool.append(key)
+            if state.read_only == False:
+                rw_pool.append(key)
             else:
-                RO_pool.append(key)
+                ro_pool.append(key)
 
-        if len(ANY_pool) > 0:
-            self.ANY_iter = itertools.cycle(ANY_pool)
+        if len(any_pool) > 0:
+            self.any_iter = itertools.cycle(any_pool)
         else:
-            self.ANY_iter = None
+            self.any_iter = None
 
-        if len(RW_pool) > 0:
-            self.RW_iter = itertools.cycle(RW_pool)
+        if len(rw_pool) > 0:
+            self.rw_iter = itertools.cycle(rw_pool)
         else:
-            self.RW_iter = None
+            self.rw_iter = None
 
-        if len(RO_pool) > 0:
-            self.RO_iter = itertools.cycle(RO_pool)
+        if len(ro_pool) > 0:
+            self.ro_iter = itertools.cycle(ro_pool)
         else:
-            self.RO_iter = None
+            self.ro_iter = None
 
         self.rebuild_needed = False
 
@@ -287,32 +287,32 @@ class RoundRobinStrategy(StrategyInterface):
             self.build()
 
         if mode == Mode.ANY:
-            if self.ANY_iter is not None:
-                return next(self.ANY_iter)
+            if self.any_iter is not None:
+                return next(self.any_iter)
             else:
                 raise PoolTolopogyError("Can't find healthy instance in pool")
         elif mode == Mode.RW:
-            if self.RW_iter is not None:
-                return next(self.RW_iter)
+            if self.rw_iter is not None:
+                return next(self.rw_iter)
             else:
                 raise PoolTolopogyError("Can't find healthy rw instance in pool")
         elif mode == Mode.RO:
-            if self.RO_iter is not None:
-                return next(self.RO_iter)
+            if self.ro_iter is not None:
+                return next(self.ro_iter)
             else:
                 raise PoolTolopogyError("Can't find healthy ro instance in pool")
         elif mode == Mode.PREFER_RO:
-            if self.RO_iter is not None:
-                return next(self.RO_iter)
-            elif self.RW_iter is not None:
-                return next(self.RW_iter)
+            if self.ro_iter is not None:
+                return next(self.ro_iter)
+            elif self.rw_iter is not None:
+                return next(self.rw_iter)
             else:
                 raise PoolTolopogyError("Can't find healthy instance in pool")
         elif mode == Mode.PREFER_RW:
-            if self.RW_iter is not None:
-                return next(self.RW_iter)
-            elif self.RO_iter is not None:
-                return next(self.RO_iter)
+            if self.rw_iter is not None:
+                return next(self.rw_iter)
+            elif self.ro_iter is not None:
+                return next(self.ro_iter)
             else:
                 raise PoolTolopogyError("Can't find healthy instance in pool")
 
@@ -545,7 +545,7 @@ class ConnectionPool(ConnectionInterface):
         if conn.is_closed():
             try:
                 conn.connect()
-            except NetworkError as e:
+            except NetworkError as exc:
                 msg = "Failed to connect to {0}:{1}".format(
                     unit.addr['host'], unit.addr['port'])
                 warn(msg, ClusterConnectWarning)
@@ -553,15 +553,15 @@ class ConnectionPool(ConnectionInterface):
 
         try:
             resp = conn.call('box.info')
-        except NetworkError as e:
+        except NetworkError as exc:
             msg = "Failed to get box.info for {0}:{1}, reason: {2}".format(
-                unit.addr['host'], unit.addr['port'], repr(e))
+                unit.addr['host'], unit.addr['port'], repr(exc))
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 
         try:
-            ro = resp.data[0]['ro']
-        except (IndexError, KeyError) as e:
+            read_only = resp.data[0]['ro']
+        except (IndexError, KeyError) as exc:
             msg = "Incorrect box.info response from {0}:{1}".format(
                 unit.addr['host'], unit.addr['port'])
             warn(msg, PoolTolopogyWarning)
@@ -575,13 +575,13 @@ class ConnectionPool(ConnectionInterface):
                     unit.addr['host'], unit.addr['port'])
                 warn(msg, PoolTolopogyWarning)
                 return InstanceState(Status.UNHEALTHY)
-        except (IndexError, KeyError) as e:
+        except (IndexError, KeyError) as exc:
             msg = "Incorrect box.info response from {0}:{1}".format(
                 unit.addr['host'], unit.addr['port'])
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 
-        return InstanceState(Status.HEALTHY, ro)
+        return InstanceState(Status.HEALTHY, read_only)
 
     def _refresh_state(self, key):
         """
@@ -644,8 +644,8 @@ class ConnectionPool(ConnectionInterface):
                 method = getattr(Connection, task.method_name)
                 try:
                     resp = method(unit.conn, *task.args, **task.kwargs)
-                except Exception as e:
-                    unit.output_queue.put(e)
+                except Exception as exc:
+                    unit.output_queue.put(exc)
                 else:
                     unit.output_queue.put(resp)
 

@@ -7,7 +7,7 @@ from tarantool.error import DatabaseError
 from .lib.skip import skip_or_run_varbinary_test, skip_or_run_error_extra_info_test
 from .lib.tarantool_server import TarantoolServer
 
-class TestSuite_Encoding(unittest.TestCase):
+class TestSuiteEncoding(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' ENCODING '.center(70, '='), file=sys.stderr)
@@ -66,8 +66,8 @@ class TestSuite_Encoding(unittest.TestCase):
     def assertNotRaises(self, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
-        except Exception as e:
-            self.fail('Function raised Exception: %s' % repr(e))
+        except Exception as exc:
+            self.fail('Function raised Exception: %s' % repr(exc))
 
     def setUp(self):
         # prevent a remote tarantool from clean our session

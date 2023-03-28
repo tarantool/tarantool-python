@@ -64,9 +64,9 @@ def call_crud(conn, *args):
 
     try:
         crud_resp = conn.call(*args)
-    except DatabaseError as e:
-        if e.code == ER_NO_SUCH_PROC or e.code == ER_ACCESS_DENIED:
+    except DatabaseError as exc:
+        if exc.code == ER_NO_SUCH_PROC or exc.code == ER_ACCESS_DENIED:
             exc_msg = ". Ensure that you're calling crud.router and user has sufficient grants"
-            raise DatabaseError(e.code, e.message + exc_msg, extra_info=e.extra_info) from e
+            raise DatabaseError(exc.code, exc.message + exc_msg, extra_info=exc.extra_info) from exc
 
     return crud_resp

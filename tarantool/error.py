@@ -8,9 +8,9 @@ import os
 import socket
 try:
     import ssl
-    is_ssl_supported = True
+    IS_SSL_SUPPORTED = True
 except ImportError:
-    is_ssl_supported = False
+    IS_SSL_SUPPORTED = False
 import sys
 import warnings
 
@@ -291,7 +291,7 @@ class SslError(DatabaseError):
         if hasattr(orig_exception, 'errno'):
             self.errno = orig_exception.errno
         if orig_exception:
-            if is_ssl_supported and isinstance(orig_exception, ssl.SSLError):
+            if IS_SSL_SUPPORTED and isinstance(orig_exception, ssl.SSLError):
                 super(SslError, self).__init__(orig_exception, *args)
             else:
                 super(SslError, self).__init__(orig_exception, *args)

@@ -235,8 +235,8 @@ class TarantoolServer(object):
                         continue
                     else:
                         raise Exception("Strange output for `box.info.status`: %s" % (ans))
-            except socket.error as e:
-                if e.errno == errno.ECONNREFUSED:
+            except socket.error as exc:
+                if exc.errno == errno.ECONNREFUSED:
                     time.sleep(0.1)
                     continue
                 raise

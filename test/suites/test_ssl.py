@@ -70,7 +70,7 @@ class SslTestCase:
         self.client_auth_type = client_auth_type
 
 @unittest.skipIf(not is_test_ssl(), "TEST_TNT_SSL is not set.")
-class TestSuite_Ssl(unittest.TestCase):
+class TestSuiteSsl(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' SSL '.center(70, '='), file=sys.stderr)

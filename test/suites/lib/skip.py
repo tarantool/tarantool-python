@@ -22,7 +22,7 @@ def fetch_tarantool_version(self):
         except:
             self.__class__.tnt_version = srv.admin.tnt_version
 
-def skip_or_run_test_tarantool_impl(self, REQUIRED_TNT_VERSION, msg):
+def skip_or_run_test_tarantool_impl(self, required_tt_version, msg):
     """Helper to skip or run tests depending on the Tarantool
     version.
 
@@ -31,13 +31,13 @@ def skip_or_run_test_tarantool_impl(self, REQUIRED_TNT_VERSION, msg):
     """
     fetch_tarantool_version(self)
 
-    support_version = pkg_resources.parse_version(REQUIRED_TNT_VERSION)
+    support_version = pkg_resources.parse_version(required_tt_version)
 
     if self.tnt_version < support_version:
         self.skipTest('Tarantool %s %s' % (self.tnt_version, msg))
 
 
-def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
+def skip_or_run_test_tarantool(func, required_tt_version, msg):
     """Decorator to skip or run tests depending on the tarantool
     version.
 
@@ -50,14 +50,14 @@ def skip_or_run_test_tarantool(func, REQUIRED_TNT_VERSION, msg):
         if func.__name__ == 'setUp':
             func(self, *args, **kwargs)
 
-        skip_or_run_test_tarantool_impl(self, REQUIRED_TNT_VERSION, msg)
+        skip_or_run_test_tarantool_impl(self, required_tt_version, msg)
 
         if func.__name__ != 'setUp':
             func(self, *args, **kwargs)
 
     return wrapper
 
-def skip_or_run_test_tarantool_call(self, REQUIRED_TNT_VERSION, msg):
+def skip_or_run_test_tarantool_call(self, required_tt_version, msg):
     """Function to skip or run tests depending on the tarantool
     version. Useful in cases when in is inconvenient to work
     with decorators.
@@ -66,10 +66,10 @@ def skip_or_run_test_tarantool_call(self, REQUIRED_TNT_VERSION, msg):
     the whole test suite.
     """
 
-    skip_or_run_test_tarantool_impl(self, REQUIRED_TNT_VERSION, msg)
+    skip_or_run_test_tarantool_impl(self, required_tt_version, msg)
 
 
-def skip_or_run_test_pcall_require(func, REQUIRED_TNT_MODULE, msg):
+def skip_or_run_test_pcall_require(func, required_tt_module, msg):
     """Decorator to skip or run tests depending on tarantool
     module requre success or fail.
 
@@ -92,7 +92,7 @@ def skip_or_run_test_pcall_require(func, REQUIRED_TNT_MODULE, msg):
 
         assert srv is not None
 
-        resp = srv.admin("pcall(require, '%s')" % REQUIRED_TNT_MODULE)
+        resp = srv.admin("pcall(require, '%s')" % required_tt_module)
         if not resp[0]:
             self.skipTest('Tarantool %s' % (msg, ))
 
@@ -102,7 +102,7 @@ def skip_or_run_test_pcall_require(func, REQUIRED_TNT_MODULE, msg):
     return wrapper
 
 
-def skip_or_run_test_python(func, REQUIRED_PYTHON_VERSION, msg):
+def skip_or_run_test_python(func, required_python_version, msg):
     """Decorator to skip or run tests depending on the Python version.
 
     Also, it can be used with the 'setUp' method for skipping
@@ -117,7 +117,7 @@ def skip_or_run_test_python(func, REQUIRED_PYTHON_VERSION, msg):
         ver = sys.version_info
         python_version_str = '%d.%d' % (ver.major, ver.minor)
         python_version = pkg_resources.parse_version(python_version_str)
-        support_version = pkg_resources.parse_version(REQUIRED_PYTHON_VERSION)
+        support_version = pkg_resources.parse_version(required_python_version)
         if python_version < support_version:
             self.skipTest('Python %s connector %s' % (python_version, msg))
 
@@ -162,7 +162,7 @@ def skip_or_run_decimal_test(func):
     return skip_or_run_test_pcall_require(func, 'decimal',
                                       'does not support decimal type')
 
-def skip_or_run_UUID_test(func):
+def skip_or_run_uuid_test(func):
     """Decorator to skip or run UUID-related tests depending on
     the tarantool version.
 

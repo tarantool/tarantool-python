@@ -9,7 +9,7 @@ from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_sql_test
 
 
-class TestSuite_DBAPI(dbapi20.DatabaseAPI20Test):
+class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
     table_prefix = 'dbapi20test_'  # If you need to specify a prefix for tables
 
     ddl0 = 'create table %s (id INTEGER PRIMARY KEY AUTOINCREMENT, ' \

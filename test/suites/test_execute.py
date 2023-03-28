@@ -6,7 +6,7 @@ from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_sql_test
 
 
-class TestSuite_Execute(unittest.TestCase):
+class TestSuiteExecute(unittest.TestCase):
     ddl = 'create table %s (id INTEGER PRIMARY KEY AUTOINCREMENT, ' \
           'name varchar(20))'
 

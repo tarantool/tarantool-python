@@ -12,7 +12,7 @@ from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_decimal_test
 from tarantool.error import MsgpackError, MsgpackWarning
 
-class TestSuite_Decimal(unittest.TestCase):
+class TestSuiteDecimal(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' DECIMAL EXT TYPE '.center(70, '='), file=sys.stderr)

@@ -115,6 +115,6 @@ def greeting_decode(greeting_buf):
             raise Exception("x")  # Unsupported greeting
         result.salt = base64_decode(greeting_buf[64:])[:20]
         return result
-    except Exception as e:
-        print('exx', e)
+    except Exception as exc:
+        print('exx', exc)
         raise ValueError("Invalid greeting: " + str(greeting_buf))

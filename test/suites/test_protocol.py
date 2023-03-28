@@ -15,7 +15,7 @@ from tarantool.const import (
     IPROTO_FEATURE_WATCHERS,
 )
 
-class TestSuite_Protocol(unittest.TestCase):
+class TestSuiteProtocol(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' PROTOCOL '.center(70, '='), file=sys.stderr)

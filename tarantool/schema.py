@@ -28,11 +28,11 @@ class RecursionError(Error):
     """
 
 
-def to_unicode(s):
+def to_unicode(string):
     """
     Decode :obj:`bytes` to unicode :obj:`str`.
 
-    :param s: Value to convert.
+    :param string: Value to convert.
 
     :return: Decoded unicode :obj:`str`, if value is :obj:`bytes`.
         Otherwise, it returns the original value.
@@ -40,17 +40,17 @@ def to_unicode(s):
     :meta private:
     """
 
-    if isinstance(s, bytes):
-        return s.decode(encoding='utf-8')
-    return s
+    if isinstance(string, bytes):
+        return string.decode(encoding='utf-8')
+    return string
 
 
-def to_unicode_recursive(x, max_depth):
+def to_unicode_recursive(value, max_depth):
     """
     Recursively decode :obj:`bytes` to unicode :obj:`str` over
     :obj:`dict`, :obj:`list` and :obj:`tuple`.
 
-    :param x: Value to convert.
+    :param value: Value to convert.
 
     :param max_depth: Maximum depth recursion.
     :type max_depth: :obj:`int`
@@ -66,24 +66,24 @@ def to_unicode_recursive(x, max_depth):
     if max_depth <= 0:
         raise RecursionError('Max recursion depth is reached')
 
-    if isinstance(x, dict):
+    if isinstance(value, dict):
         res = dict()
-        for key, val in x.items():
+        for key, val in value.items():
             key = to_unicode_recursive(key, max_depth - 1)
             val = to_unicode_recursive(val, max_depth - 1)
             res[key] = val
         return res
 
-    if isinstance(x, list) or isinstance(x, tuple):
+    if isinstance(value, list) or isinstance(value, tuple):
         res = []
-        for val in x:
-            val = to_unicode_recursive(val, max_depth - 1)
-            res.append(val)
-        if isinstance(x, tuple):
+        for item in value:
+            item = to_unicode_recursive(item, max_depth - 1)
+            res.append(item)
+        if isinstance(value, tuple):
             return tuple(res)
         return res
 
-    return to_unicode(x)
+    return to_unicode(value)
 
 
 class SchemaIndex(object):
@@ -109,8 +109,8 @@ class SchemaIndex(object):
         self.parts = []
         try:
             parts_raw = to_unicode_recursive(index_row[5], MAX_RECURSION_DEPTH)
-        except RecursionError as e:
-            errmsg = 'Unexpected index parts structure: ' + str(e)
+        except RecursionError as exc:
+            errmsg = 'Unexpected index parts structure: ' + str(exc)
             raise SchemaError(errmsg)
         if isinstance(parts_raw, (list, tuple)):
             for val in parts_raw:
@@ -166,8 +166,8 @@ class SchemaSpace(object):
         self.format = dict()
         try:
             format_raw = to_unicode_recursive(space_row[6], MAX_RECURSION_DEPTH)
-        except RecursionError as e:
-            errmsg = 'Unexpected space format structure: ' + str(e)
+        except RecursionError as exc:
+            errmsg = 'Unexpected space format structure: ' + str(exc)
             raise SchemaError(errmsg)
         for part_id, part in enumerate(format_raw):
             part['id'] = part_id
@@ -279,10 +279,10 @@ class Schema(object):
             # Try to fetch from '_vspace'
             space_row = self.con.select(const.SPACE_VSPACE, space,
                                         index=_index)
-        except DatabaseError as e:
+        except DatabaseError as exc:
             # if space can't be found, then user is using old version of
             # tarantool, try again with '_space'
-            if e.args[0] != 36:
+            if exc.args[0] != 36:
                 raise
         if space_row is None:
             # Try to fetch from '_space'
@@ -416,10 +416,10 @@ class Schema(object):
             # Try to fetch from '_vindex'
             index_row = self.con.select(const.SPACE_VINDEX, _key_tuple,
                                         index=_index)
-        except DatabaseError as e:
+        except DatabaseError as exc:
             # if space can't be found, then user is using old version of
             # tarantool, try again with '_index'
-            if e.args[0] != 36:
+            if exc.args[0] != 36:
                 raise
         if index_row is None:
             # Try to fetch from '_index'
@@ -451,9 +451,9 @@ class Schema(object):
         try:
             return _space.format[field]
         except:
-            tp = 'name' if isinstance(field, str) else 'id'
+            kind = 'name' if isinstance(field, str) else 'id'
             errmsg = "There's no field with {2} '{0}' in space '{1}'".format(
-                    field, _space.name, tp
+                    field, _space.name, kind
             )
             raise SchemaError(errmsg)
 

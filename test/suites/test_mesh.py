@@ -27,7 +27,7 @@ def create_server(_id):
 
 @unittest.skipIf(sys.platform.startswith("win"),
                  'Mesh tests on windows platform are not supported')
-class TestSuite_Mesh(unittest.TestCase):
+class TestSuiteMesh(unittest.TestCase):
     def define_cluster_function(self, func_name, servers):
         addresses = [(srv.host, srv.args['primary']) for srv in servers]
         addresses_lua = ",".join("'%s:%d'" % address for address in addresses)
@@ -158,11 +158,11 @@ class TestSuite_Mesh(unittest.TestCase):
 
                 # Verify that a cluster discovery (that is triggered
                 # by ping) give one or two warnings.
-                with warnings.catch_warnings(record=True) as ws:
+                with warnings.catch_warnings(record=True) as warns:
                     con.ping()
-                    self.assertTrue(len(ws) in (1, 2))
-                    for w in ws:
-                        self.assertIs(w.category, ClusterDiscoveryWarning)
+                    self.assertTrue(len(warns) in (1, 2))
+                    for warn in warns:
+                        self.assertIs(warn.category, ClusterDiscoveryWarning)
 
                 # Verify that incorrect or empty result was discarded.
                 self.assertEqual(len(con.strategy.addrs), 1)
@@ -182,10 +182,10 @@ class TestSuite_Mesh(unittest.TestCase):
 
             # Verify that a cluster discovery (that is triggered
             # by ping) give one warning.
-            with warnings.catch_warnings(record=True) as ws:
+            with warnings.catch_warnings(record=True) as warns:
                 con.ping()
-                self.assertEqual(len(ws), 1)
-                self.assertIs(ws[0].category, ClusterDiscoveryWarning)
+                self.assertEqual(len(warns), 1)
+                self.assertIs(warns[0].category, ClusterDiscoveryWarning)
 
             # Verify that only second address was accepted.
             self.assertEqual(len(con.strategy.addrs), 1)
