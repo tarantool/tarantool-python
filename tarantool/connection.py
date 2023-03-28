@@ -1174,9 +1174,9 @@ class Connection(ConnectionInterface):
                     self.update_schema(exc.schema_version)
                 continue
 
-        while response._code == IPROTO_CHUNK:
+        while response.code == IPROTO_CHUNK:
             if on_push is not None:
-                on_push(response._data, on_push_ctx)
+                on_push(response.data, on_push_ctx)
             response = request.response_class(self, self._read_response())
 
         return response
