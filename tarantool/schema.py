@@ -4,7 +4,6 @@ pre-build schema objects.
 """
 
 from tarantool.error import (
-    Error,
     SchemaError,
     DatabaseError
 )
@@ -15,17 +14,6 @@ MAX_RECURSION_DEPTH = 32
 Max possible known schema depth is 4 if foreign keys are used (since
 Tarantool 2.10), but there are no restrictions in protocol.
 """
-
-
-class RecursionError(Error):
-    """
-    Report the situation when max recursion depth is reached.
-
-    This is an internal error of
-    :func:`~tarantool.schema.to_unicode_recursive` caller and it should
-    be re-raised properly by the caller.
-    """
-
 
 def to_unicode(string):
     """
@@ -57,7 +45,7 @@ def to_unicode_recursive(value, max_depth):
     :return: The same structure where all :obj:`bytes` are replaced
         with unicode :obj:`str`.
 
-    :raise: :exc:`~tarantool.schema.RecursionError`
+    :raise: :exc:`~RecursionError`
 
     :meta private:
     """
