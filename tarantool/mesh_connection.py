@@ -61,7 +61,7 @@ def parse_uri(uri):
 
     # TODO: Support Unix sockets.
     def parse_error(uri, msg):
-        msg = 'URI "%s": %s' % (uri, msg)
+        msg = f'URI "{uri}": {msg}'
         return None, msg
 
     if not uri:
@@ -119,7 +119,7 @@ def prepare_address(address):
     """
 
     def format_error(address, err):
-        return None, 'Address %s: %s' % (str(address), err)
+        return None, f'Address {str(address)}: {err}'
 
     if not isinstance(address, dict):
         return format_error(address, 'address must be a dict')
@@ -559,7 +559,7 @@ class MeshConnection(Connection):
         try:
             resp = self._send_request_wo_reconnect(request)
         except DatabaseError as exc:
-            msg = 'got "%s" error, skipped address updates' % str(exc)
+            msg = f'got "{str(exc)}" error, skipped address updates'
             warn(msg, ClusterDiscoveryWarning)
             return
 

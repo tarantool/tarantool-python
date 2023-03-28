@@ -48,4 +48,4 @@ def default(obj, packer=None):
     for encoder in encoders:
         if isinstance(obj, encoder['type']):
             return ExtType(encoder['ext'].EXT_ID, encoder['ext'].encode(obj, packer))
-    raise TypeError("Unknown type: %r" % (obj,))
+    raise TypeError(f"Unknown type: {repr(obj)}")

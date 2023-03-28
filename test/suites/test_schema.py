@@ -39,8 +39,8 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        params = 'connection.encoding: {}'.format(repr(self.encoding))
-        print(' SCHEMA ({}) '.format(params).center(70, '='), file=sys.stderr)
+        params = f'connection.encoding: {repr(self.encoding)}'
+        print(f' SCHEMA ({params}) '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
         self.srv = TarantoolServer()
         self.srv.script = 'test/suites/box.lua'

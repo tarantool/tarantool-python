@@ -683,10 +683,10 @@ class RequestExecute(Request):
 
         super(RequestExecute, self).__init__(conn)
         if isinstance(args, Mapping):
-            args = [{":%s" % name: value} for name, value in args.items()]
+            args = [{f":{name}": value} for name, value in args.items()]
         elif not isinstance(args, Sequence):
-            raise TypeError("Parameter type '%s' is not supported. "
-                            "Must be a mapping or sequence" % type(args))
+            raise TypeError(f"Parameter type '{type(args)}' is not supported. "
+                            "Must be a mapping or sequence")
 
         request_body = self._dumps({IPROTO_SQL_TEXT: sql,
                                     IPROTO_SQL_BIND: args})

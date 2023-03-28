@@ -291,7 +291,7 @@ class Connection(BaseConnection):
 
         if not isinstance(autocommit, bool):
             raise InterfaceError("autocommit parameter must be boolean, "
-                                 "not %s" % autocommit.__class__.__name__)
+                                 f"not {autocommit.__class__.__name__}")
         if autocommit is False:
             raise NotSupportedError("The connector supports "
                                     "only autocommit mode")

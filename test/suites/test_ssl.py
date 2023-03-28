@@ -721,7 +721,7 @@ class TestSuiteSsl(unittest.TestCase):
                     srv.admin("""
                     box.schema.user.grant('test', 'execute,read,write', 'universe')
                     """.replace('\n', ' '))
-                    srv.admin("function srv_id() return %s end" % i)
+                    srv.admin(f"function srv_id() return {i} end")
                     servers.append(srv)
                     addr = {
                         'host': srv.host,

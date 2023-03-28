@@ -244,7 +244,7 @@ class Schema(object):
         elif len(space_row) == 0 or not len(space_row[0]):
             # We can't find space with this name or id
             temp_name = 'name' if isinstance(space, str) else 'id'
-            errmsg = "There's no space with {1} '{0}'".format(space, temp_name)
+            errmsg = f"There's no space with {temp_name} '{space}'"
             raise SchemaError(errmsg)
 
         space_row = space_row[0]
@@ -356,9 +356,8 @@ class Schema(object):
         elif len(index_row) == 0 or not len(index_row[0]):
             # We can't find index with this name or id
             temp_name = 'name' if isinstance(index, str) else 'id'
-            errmsg = ("There's no index with {2} '{0}'"
-                      " in space '{1}'").format(index, space_object.name,
-                                                temp_name)
+            errmsg = (f"There's no index with {temp_name} '{index}'"
+                      f" in space '{space_object.name}'")
             raise SchemaError(errmsg)
 
         index_row = index_row[0]
@@ -452,9 +451,7 @@ class Schema(object):
             return _space.format[field]
         except:
             kind = 'name' if isinstance(field, str) else 'id'
-            errmsg = "There's no field with {2} '{0}' in space '{1}'".format(
-                    field, _space.name, kind
-            )
+            errmsg = f"There's no field with {kind} '{field}' in space '{_space.name}'"
             raise SchemaError(errmsg)
 
         return field

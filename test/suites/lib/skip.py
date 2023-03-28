@@ -34,7 +34,7 @@ def skip_or_run_test_tarantool_impl(self, required_tt_version, msg):
     support_version = pkg_resources.parse_version(required_tt_version)
 
     if self.tnt_version < support_version:
-        self.skipTest('Tarantool %s %s' % (self.tnt_version, msg))
+        self.skipTest(f'Tarantool {self.tnt_version} {msg}')
 
 
 def skip_or_run_test_tarantool(func, required_tt_version, msg):
@@ -92,9 +92,9 @@ def skip_or_run_test_pcall_require(func, required_tt_module, msg):
 
         assert srv is not None
 
-        resp = srv.admin("pcall(require, '%s')" % required_tt_module)
+        resp = srv.admin(f"pcall(require, '{required_tt_module}')")
         if not resp[0]:
-            self.skipTest('Tarantool %s' % (msg, ))
+            self.skipTest(f'Tarantool {msg}')
 
         if func.__name__ != 'setUp':
             func(self, *args, **kwargs)
@@ -119,7 +119,7 @@ def skip_or_run_test_python(func, required_python_version, msg):
         python_version = pkg_resources.parse_version(python_version_str)
         support_version = pkg_resources.parse_version(required_python_version)
         if python_version < support_version:
-            self.skipTest('Python %s connector %s' % (python_version, msg))
+            self.skipTest(f'Python {python_version} connector {msg}')
 
         if func.__name__ != 'setUp':
             func(self, *args, **kwargs)

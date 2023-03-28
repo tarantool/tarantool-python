@@ -45,7 +45,7 @@ class TestSuiteExecute(unittest.TestCase):
         self.srv.clean()
 
     def _populate_data(self, table_name):
-        query = "insert into %s values (:id, :name)" % table_name
+        query = f"insert into {table_name} values (:id, :name)"
         for param in self.dml_params:
             self.con.execute(query, param)
 
@@ -59,7 +59,7 @@ class TestSuiteExecute(unittest.TestCase):
         self.assertEqual(response.affected_row_count, 1)
         self.assertEqual(response.data, None)
 
-        query = "insert into %s values (:id, :name)" % table_name
+        query = f"insert into {table_name} values (:id, :name)"
 
         for num, param in enumerate(self.dml_params, start=1):
             response = self.con.execute(query, param)
@@ -67,7 +67,7 @@ class TestSuiteExecute(unittest.TestCase):
             self.assertEqual(response.affected_row_count, 1)
             self.assertEqual(response.data, None)
 
-        query = "delete from %s where id in (4, 5)" % table_name
+        query = f"delete from {table_name} where id in (4, 5)"
         response = self.con.execute(query)
         self.assertEqual(response.autoincrement_ids, None)
         self.assertEqual(response.affected_row_count, 2)
@@ -78,7 +78,7 @@ class TestSuiteExecute(unittest.TestCase):
         self._create_table(table_name)
         self._populate_data(table_name)
 
-        select_query = "select name from %s where id in (1, 3, 5)" % table_name
+        select_query = f"select name from {table_name} where id in (1, 3, 5)"
         response = self.con.execute(select_query)
         self.assertEqual(response.autoincrement_ids, None)
         self.assertEqual(response.affected_row_count, None)
