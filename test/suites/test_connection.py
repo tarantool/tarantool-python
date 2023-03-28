@@ -1,6 +1,7 @@
 """
 This module tests basic connection behavior.
 """
+# pylint: disable=missing-class-docstring
 
 import sys
 import unittest
