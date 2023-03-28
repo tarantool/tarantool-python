@@ -1,3 +1,7 @@
+"""
+This module tests basic reconnect behavior.
+"""
+
 import sys
 import unittest
 import warnings

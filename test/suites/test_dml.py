@@ -1,3 +1,7 @@
+"""
+This module tests basic data operations.
+"""
+
 import sys
 import unittest
 import tarantool

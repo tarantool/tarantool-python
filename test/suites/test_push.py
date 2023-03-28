@@ -1,3 +1,7 @@
+"""
+This module tests work with IPROTO pushed messages.
+"""
+
 import sys
 import unittest
 import tarantool

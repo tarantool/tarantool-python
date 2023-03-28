@@ -1,3 +1,8 @@
+"""
+This module tests work with a cluster of Tarantool servers through
+MeshConnection.
+"""
+
 import sys
 import unittest
 import warnings

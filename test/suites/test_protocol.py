@@ -1,3 +1,7 @@
+"""
+This module tests connection authentication.
+"""
+
 import sys
 import unittest
 import uuid

@@ -1,3 +1,7 @@
+"""
+This module tests various type encoding cases.
+"""
+
 import sys
 import unittest
 

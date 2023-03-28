@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+This module describes class implementing `python setup.py test`.
+"""
 
 import os
 import sys

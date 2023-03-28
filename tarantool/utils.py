@@ -1,3 +1,7 @@
+"""
+This module provides untility functions for the package.
+"""
+
 from base64 import decodebytes as base64_decode
 import sys
 import uuid

@@ -1,3 +1,7 @@
+"""
+This module tests work with decimal type.
+"""
+
 import sys
 import unittest
 import decimal

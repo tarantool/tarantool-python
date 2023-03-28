@@ -1,3 +1,7 @@
+"""
+This module tests compatibility with DBAPI standards.
+"""
+
 import sys
 import unittest
 

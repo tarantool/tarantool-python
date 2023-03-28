@@ -1,3 +1,7 @@
+"""
+This module a set of constants for the package.
+"""
+
 IPROTO_REQUEST_TYPE = 0x00
 IPROTO_SYNC = 0x01
 # replication keys (header)

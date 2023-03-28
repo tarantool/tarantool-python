@@ -1,3 +1,7 @@
+"""
+This module tests space and index schema fetch.
+"""
+
 import sys
 import unittest
 import pkg_resources

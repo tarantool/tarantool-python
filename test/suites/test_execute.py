@@ -1,3 +1,7 @@
+"""
+This module tests API fo execute SQL on a server.
+"""
+
 import sys
 import unittest
 
