@@ -53,7 +53,7 @@ class TarantoolAdmin(object):
         self.connect()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exception_type, exception_value, exception_traceback):
         self.disconnect()
 
     def __call__(self, command):
