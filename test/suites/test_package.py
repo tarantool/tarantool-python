@@ -20,7 +20,7 @@ def is_test_pure_install():
 
 class TestSuitePackage(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' PACKAGE '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
 

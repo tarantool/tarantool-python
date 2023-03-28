@@ -12,15 +12,15 @@ from .lib.tarantool_server import TarantoolServer
 
 class TestSuiteConnection(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' CONNECTION '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
 
-        self.adm = self.srv.admin
-        self.adm(r"""
+        cls.adm = cls.srv.admin
+        cls.adm(r"""
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
             box.schema.user.grant('test', 'read,write,execute', 'universe')
 
@@ -151,11 +151,11 @@ class TestSuiteConnection(unittest.TestCase):
         self.assertIsInstance(resp[0], tuple)
 
     @classmethod
-    def tearDown(self):
-        if hasattr(self, 'con'):
-            self.con.close()
+    def tearDown(cls):
+        if hasattr(cls, 'con'):
+            cls.con.close()
 
     @classmethod
-    def tearDownClass(self):
-        self.srv.stop()
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.srv.stop()
+        cls.srv.clean()

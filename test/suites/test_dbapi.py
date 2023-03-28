@@ -19,17 +19,17 @@ class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
            'drink varchar(30))'
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' DBAPI '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
-        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
-        self.driver = dbapi
-        self.connect_kw_args = dict(
-            host=self.srv.host,
-            port=self.srv.args['primary'])
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
+        cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])
+        cls.driver = dbapi
+        cls.connect_kw_args = dict(
+            host=cls.srv.host,
+            port=cls.srv.args['primary'])
 
     @skip_or_run_sql_test
     def setUp(self):
@@ -43,10 +43,10 @@ class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
                        "execute', 'universe')")
 
     @classmethod
-    def tearDownClass(self):
-        self.con.close()
-        self.srv.stop()
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.con.close()
+        cls.srv.stop()
+        cls.srv.clean()
 
     def test_rowcount(self):
         con = self._connect()

@@ -17,14 +17,14 @@ from tarantool.const import (
 
 class TestSuiteProtocol(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' PROTOCOL '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        self.srv = TarantoolServer()
-        self.srv.script = 'test/suites/box.lua'
-        self.srv.start()
-        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'])
-        self.adm = self.srv.admin
+        cls.srv = TarantoolServer()
+        cls.srv.script = 'test/suites/box.lua'
+        cls.srv.start()
+        cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])
+        cls.adm = cls.srv.admin
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
@@ -87,8 +87,8 @@ class TestSuiteProtocol(unittest.TestCase):
         self.assertEqual(self.con._features[IPROTO_FEATURE_WATCHERS], False)
 
     @classmethod
-    def tearDownClass(self):
-        self.con.close()
-        self.srv.stop()
-        self.srv.clean()
+    def tearDownClass(cls):
+        cls.con.close()
+        cls.srv.stop()
+        cls.srv.clean()
 

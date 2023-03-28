@@ -71,7 +71,7 @@ class TestSuitePool(unittest.TestCase):
             time.sleep(timeout)
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         print(' POOL '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
 
