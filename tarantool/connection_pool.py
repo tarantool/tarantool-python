@@ -240,7 +240,7 @@ class RoundRobinStrategy(StrategyInterface):
 
             any_pool.append(key)
 
-            if state.read_only == False:
+            if state.read_only is False:
                 rw_pool.append(key)
             else:
                 ro_pool.append(key)
@@ -620,7 +620,7 @@ class ConnectionPool(ConnectionInterface):
         :rtype: :obj:`bool`
         """
 
-        return all(unit.request_processing_enabled == False for unit in self.pool.values())
+        return all(unit.request_processing_enabled is False for unit in self.pool.values())
 
     def _request_process_loop(self, key, unit, last_refresh):
         """
