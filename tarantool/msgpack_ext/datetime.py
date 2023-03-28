@@ -95,9 +95,9 @@ def encode(obj, _):
     nsec = obj.nsec
     tzoffset = obj.tzoffset
 
-    tz = obj.tz
-    if tz != '':
-        tzindex = tt_timezones.timezoneToIndex[tz]
+    timezone = obj.tz
+    if timezone != '':
+        tzindex = tt_timezones.timezoneToIndex[timezone]
     else:
         tzindex = 0
 

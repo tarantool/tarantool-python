@@ -45,7 +45,7 @@ def create_server(_id):
 
 @unittest.skipIf(sys.platform.startswith("win"),
                  'Pool tests on windows platform are not supported')
-class TestSuite_Pool(unittest.TestCase):
+class TestSuitePool(unittest.TestCase):
     def set_ro(self, srv, read_only):
         if read_only:
             req = r'box.cfg{read_only = true}'
@@ -64,9 +64,9 @@ class TestSuite_Pool(unittest.TestCase):
         for i in range(count):
             try:
                 func()
-            except Exception as e:
+            except Exception as exc:
                 if i + 1 == count:
-                    raise e
+                    raise exc
 
             time.sleep(timeout)
 
@@ -108,8 +108,8 @@ class TestSuite_Pool(unittest.TestCase):
 
     def test_01_roundrobin(self):
         self.set_cluster_ro([False, False, True, False, True])
-        RW_ports = set([str(self.addrs[0]['port']), str(self.addrs[1]['port']), str(self.addrs[3]['port'])])
-        RO_ports = set([str(self.addrs[2]['port']), str(self.addrs[4]['port'])])
+        rw_ports = set([str(self.addrs[0]['port']), str(self.addrs[1]['port']), str(self.addrs[3]['port'])])
+        ro_ports = set([str(self.addrs[2]['port']), str(self.addrs[4]['port'])])
         all_ports = set()
         for addr in self.addrs:
             all_ports.add(str(addr['port']))
@@ -126,79 +126,79 @@ class TestSuite_Pool(unittest.TestCase):
             return resp.data[0]
 
         # Expect ANY iterate through all instances.
-        ANY_ports_result = set()
+        any_ports_result = set()
         for i in range(len(self.servers)):
-            ANY_ports_result.add(get_port(self, tarantool.Mode.ANY))
+            any_ports_result.add(get_port(self, tarantool.Mode.ANY))
 
-        self.assertSetEqual(ANY_ports_result, all_ports)
+        self.assertSetEqual(any_ports_result, all_ports)
 
         # Expect RW iterate through all RW instances.
-        RW_ports_result = set()
+        rw_ports_result = set()
         for i in range(len(self.servers)):
-            RW_ports_result.add(get_port(self, tarantool.Mode.RW))
+            rw_ports_result.add(get_port(self, tarantool.Mode.RW))
 
-        self.assertSetEqual(RW_ports_result, RW_ports)
+        self.assertSetEqual(rw_ports_result, rw_ports)
 
         # Expect RO iterate through all RO instances.
-        RO_ports_result = set()
+        ro_ports_result = set()
         for i in range(len(self.servers)):
-            RO_ports_result.add(get_port(self, tarantool.Mode.RO))
+            ro_ports_result.add(get_port(self, tarantool.Mode.RO))
 
-        self.assertSetEqual(RO_ports_result, RO_ports)
+        self.assertSetEqual(ro_ports_result, ro_ports)
 
         # Expect PREFER_RW iterate through all RW instances if there is at least one.
-        PREFER_RW_ports_result = set()
+        prefer_rw_ports_result = set()
         for i in range(len(self.servers)):
-            PREFER_RW_ports_result.add(get_port(self, tarantool.Mode.PREFER_RW))
+            prefer_rw_ports_result.add(get_port(self, tarantool.Mode.PREFER_RW))
 
-        self.assertSetEqual(PREFER_RW_ports_result, RW_ports)
+        self.assertSetEqual(prefer_rw_ports_result, rw_ports)
 
         # Expect PREFER_RO iterate through all RO instances if there is at least one.
-        PREFER_RO_ports_result = set()
+        prefer_ro_ports_result = set()
         for i in range(len(self.servers)):
-            PREFER_RO_ports_result.add(get_port(self, tarantool.Mode.PREFER_RO))
+            prefer_ro_ports_result.add(get_port(self, tarantool.Mode.PREFER_RO))
 
-        self.assertSetEqual(PREFER_RO_ports_result, RO_ports)
+        self.assertSetEqual(prefer_ro_ports_result, ro_ports)
 
         # Setup cluster with no RW.
         self.set_cluster_ro([True, True, True, True, True])
 
         # Expect RW to fail if there are no RW.
-        def expect_RW_to_fail_if_there_are_no_RW():
+        def expect_rw_to_fail_if_there_are_no_rw():
             with self.assertRaises(PoolTolopogyError):
                 self.pool.eval('return box.cfg.listen', mode=tarantool.Mode.RW)
 
-        self.retry(func=expect_RW_to_fail_if_there_are_no_RW)
+        self.retry(func=expect_rw_to_fail_if_there_are_no_rw)
 
         # Expect PREFER_RW iterate through all instances if there are no RW.
-        def expect_PREFER_RW_iterate_through_all_instances_if_there_are_no_RW():
-            PREFER_RW_ports_result_all_ro = set()
+        def expect_prefer_rw_iterate_through_all_instances_if_there_are_no_rw():
+            prefer_rw_ports_result_all_ro = set()
             for i in range(len(self.servers)):
-                PREFER_RW_ports_result_all_ro.add(get_port(self, tarantool.Mode.PREFER_RW))
+                prefer_rw_ports_result_all_ro.add(get_port(self, tarantool.Mode.PREFER_RW))
 
-            self.assertSetEqual(PREFER_RW_ports_result_all_ro, all_ports)
+            self.assertSetEqual(prefer_rw_ports_result_all_ro, all_ports)
 
-        self.retry(func=expect_PREFER_RW_iterate_through_all_instances_if_there_are_no_RW)
+        self.retry(func=expect_prefer_rw_iterate_through_all_instances_if_there_are_no_rw)
 
         # Setup cluster with no RO.
         self.set_cluster_ro([False, False, False, False, False])
 
         # Expect RO to fail if there are no RO.
-        def expect_RO_to_fail_if_there_are_no_RO():
+        def expect_ro_to_fail_if_there_are_no_ro():
             with self.assertRaises(PoolTolopogyError):
                 self.pool.eval('return box.cfg.listen', mode=tarantool.Mode.RO)
 
-        self.retry(func=expect_RO_to_fail_if_there_are_no_RO)
+        self.retry(func=expect_ro_to_fail_if_there_are_no_ro)
 
         # Expect PREFER_RO iterate through all instances if there are no RO.
-        def expect_PREFER_RO_iterate_through_all_instances_if_there_are_no_RO():
-            PREFER_RO_ports_result_all_rw = set()
+        def expect_prefer_ro_iterate_through_all_instances_if_there_are_no_ro():
+            prefer_ro_ports_result_all_rw = set()
             for i in range(len(self.servers)):
-                PREFER_RO_ports_result_all_rw.add(get_port(self, tarantool.Mode.PREFER_RO))
+                prefer_ro_ports_result_all_rw.add(get_port(self, tarantool.Mode.PREFER_RO))
 
-            self.assertSetEqual(PREFER_RO_ports_result_all_rw, all_ports)
+            self.assertSetEqual(prefer_ro_ports_result_all_rw, all_ports)
 
-        self.retry(func=expect_PREFER_RO_iterate_through_all_instances_if_there_are_no_RO)
+        self.retry(func=expect_prefer_ro_iterate_through_all_instances_if_there_are_no_ro)
 
     def test_02_exception_raise(self):
         self.set_cluster_ro([False, False, True, False, True])
@@ -509,12 +509,12 @@ class TestSuite_Pool(unittest.TestCase):
         self.servers[0].stop()
         self.set_ro(self.servers[1], False)
 
-        def expect_RW_request_execute_on_new_master():
+        def expect_rw_request_execute_on_new_master():
             self.assertSequenceEqual(
                 self.pool.eval('return box.cfg.listen', mode=tarantool.Mode.RW),
                 [ str(self.addrs[1]['port']) ])
 
-        self.retry(func=expect_RW_request_execute_on_new_master)
+        self.retry(func=expect_rw_request_execute_on_new_master)
 
     def test_14_cluster_with_instances_dead_in_runtime_is_ok(self):
         warnings.simplefilter('ignore', category=ClusterConnectWarning)
@@ -544,10 +544,10 @@ class TestSuite_Pool(unittest.TestCase):
 
         self.servers[0].start()
 
-        def ping_RW():
+        def ping_rw():
             self.pool.ping(mode=tarantool.Mode.RW)
 
-        self.retry(func=ping_RW)
+        self.retry(func=ping_rw)
 
     def test_16_is_closed(self):
         self.set_cluster_ro([False, False, True, False, True])

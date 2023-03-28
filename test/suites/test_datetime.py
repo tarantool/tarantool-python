@@ -13,7 +13,7 @@ from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
 from tarantool.error import MsgpackError, MsgpackWarning
 
-class TestSuite_Datetime(unittest.TestCase):
+class TestSuiteDatetime(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' DATETIME EXT TYPE '.center(70, '='), file=sys.stderr)
@@ -65,39 +65,39 @@ class TestSuite_Datetime(unittest.TestCase):
         self.adm("box.space['test']:truncate()")
 
 
-    def test_Datetime_class_API(self):
-        dt = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
-                                nsec=308543321, tzoffset=180)
+    def test_datetime_class_api(self):
+        datetime = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                      nsec=308543321, tzoffset=180)
 
-        self.assertEqual(dt.year, 2022)
-        self.assertEqual(dt.month, 8)
-        self.assertEqual(dt.day, 31)
-        self.assertEqual(dt.hour, 18)
-        self.assertEqual(dt.minute, 7)
-        self.assertEqual(dt.sec, 54)
-        self.assertEqual(dt.nsec, 308543321)
+        self.assertEqual(datetime.year, 2022)
+        self.assertEqual(datetime.month, 8)
+        self.assertEqual(datetime.day, 31)
+        self.assertEqual(datetime.hour, 18)
+        self.assertEqual(datetime.minute, 7)
+        self.assertEqual(datetime.sec, 54)
+        self.assertEqual(datetime.nsec, 308543321)
         # Both Tarantool and pandas prone to precision loss for timestamp() floats
-        self.assertEqual(dt.timestamp, 1661958474.308543)
-        self.assertEqual(dt.tzoffset, 180)
-        self.assertEqual(dt.tz, '')
-        self.assertEqual(dt.value, 1661958474308543321)
+        self.assertEqual(datetime.timestamp, 1661958474.308543)
+        self.assertEqual(datetime.tzoffset, 180)
+        self.assertEqual(datetime.tz, '')
+        self.assertEqual(datetime.value, 1661958474308543321)
 
-    def test_Datetime_class_API_wth_tz(self):
-        dt = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
-                                nsec=308543321, tzoffset=123, tz='Europe/Moscow')
+    def test_datetime_class_api_wth_tz(self):
+        datetime = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                      nsec=308543321, tzoffset=123, tz='Europe/Moscow')
 
-        self.assertEqual(dt.year, 2022)
-        self.assertEqual(dt.month, 8)
-        self.assertEqual(dt.day, 31)
-        self.assertEqual(dt.hour, 18)
-        self.assertEqual(dt.minute, 7)
-        self.assertEqual(dt.sec, 54)
-        self.assertEqual(dt.nsec, 308543321)
+        self.assertEqual(datetime.year, 2022)
+        self.assertEqual(datetime.month, 8)
+        self.assertEqual(datetime.day, 31)
+        self.assertEqual(datetime.hour, 18)
+        self.assertEqual(datetime.minute, 7)
+        self.assertEqual(datetime.sec, 54)
+        self.assertEqual(datetime.nsec, 308543321)
         # Both Tarantool and pandas prone to precision loss for timestamp() floats
-        self.assertEqual(dt.timestamp, 1661958474.308543)
-        self.assertEqual(dt.tzoffset, 180)
-        self.assertEqual(dt.tz, 'Europe/Moscow')
-        self.assertEqual(dt.value, 1661958474308543321)
+        self.assertEqual(datetime.timestamp, 1661958474.308543)
+        self.assertEqual(datetime.tzoffset, 180)
+        self.assertEqual(datetime.tz, 'Europe/Moscow')
+        self.assertEqual(datetime.value, 1661958474308543321)
 
 
     datetime_class_invalid_init_cases = {
@@ -139,7 +139,7 @@ class TestSuite_Datetime(unittest.TestCase):
         },
     }
 
-    def test_Datetime_class_invalid_init(self):
+    def test_datetime_class_invalid_init(self):
         for name in self.datetime_class_invalid_init_cases.keys():
             with self.subTest(msg=name):
                 case = self.datetime_class_invalid_init_cases[name]

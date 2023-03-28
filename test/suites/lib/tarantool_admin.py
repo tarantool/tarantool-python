@@ -32,7 +32,7 @@ class TarantoolAdmin(object):
         self.connect()
         return self
 
-    def __exit__(self, type, value, tb):
+    def __exit__(self, type, value, traceback):
         self.disconnect()
 
     def __call__(self, command):

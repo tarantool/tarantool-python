@@ -18,7 +18,7 @@ def is_test_pure_install():
     return False
 
 
-class TestSuite_Package(unittest.TestCase):
+class TestSuitePackage(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' PACKAGE '.center(70, '='), file=sys.stderr)

@@ -18,7 +18,7 @@ def create_server():
 @unittest.skipIf(sys.platform.startswith("win"),
                  "Crud tests on windows platform are not supported: " +
                  "complexity of the vshard replicaset configuration")
-class TestSuite_Crud(unittest.TestCase):
+class TestSuiteCrud(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
@@ -699,21 +699,21 @@ class TestSuite_Crud(unittest.TestCase):
                 _ = testing_function(
                     *case['error']['input']['args'],
                 )
-        except DatabaseError as e:
+        except DatabaseError as exc:
             for regexp_case in case['error']['output']['str']:
-                if hasattr(e, 'extra_info_error'):
+                if hasattr(exc, 'extra_info_error'):
                     # Case for non-batch operations.
-                    self.assertNotEqual(re.search(regexp_case, e.extra_info_error.str), None)
-                if hasattr(e, 'errors_list'):
+                    self.assertNotEqual(re.search(regexp_case, exc.extra_info_error.str), None)
+                if hasattr(exc, 'errors_list'):
                     # Case for *_many() operations.
                     err_sum = str()
-                    for err in e.errors_list:
+                    for err in exc.errors_list:
                         err_sum = err_sum + err.str
                     self.assertNotEqual(re.search(regexp_case, err_sum), None)
-            if hasattr(e, 'success_list'):
+            if hasattr(exc, 'success_list'):
                 # Case for *_many() operations.
                 if 'res_rows' in case['error']['output']:
-                    self.assertEqual(e.success_list.rows, case['error']['output']['res_rows'])
+                    self.assertEqual(exc.success_list.rows, case['error']['output']['res_rows'])
 
     def test_crud_module_via_connection(self):
         for case_name in self.crud_test_cases.keys():

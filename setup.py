@@ -47,25 +47,25 @@ except ImportError:
 # Test runner
 # python setup.py test
 try:
-    from test.setup_command import test
-    cmdclass["test"] = test
+    from test.setup_command import Test
+    cmdclass["test"] = Test
 except ImportError:
     pass
 
 
 def read(*parts):
     filename = os.path.join(os.path.dirname(__file__), *parts)
-    with codecs.open(filename, encoding='utf-8') as fp:
-        return fp.read()
+    with codecs.open(filename, encoding='utf-8') as file:
+        return file.read()
 
-def get_dependencies(file):
+def get_dependencies(filename):
     root = os.path.dirname(os.path.realpath(__file__))
-    requirements = os.path.join(root, file)
+    requirements = os.path.join(root, filename)
     result = []
     if os.path.isfile(requirements):
-        with open(requirements) as f:
-            return f.read().splitlines()
-    raise RuntimeError("Unable to get dependencies from file " + file)
+        with open(requirements) as file:
+            return file.read().splitlines()
+    raise RuntimeError("Unable to get dependencies from file " + filename)
 
 def find_version(*file_paths):
     version_file = read(*file_paths)

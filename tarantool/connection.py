@@ -8,9 +8,9 @@ import errno
 import socket
 try:
     import ssl
-    is_ssl_supported = True
+    IS_SSL_SUPPORTED = True
 except ImportError:
-    is_ssl_supported = False
+    IS_SSL_SUPPORTED = False
 import sys
 import abc
 
@@ -108,6 +108,9 @@ from tarantool.crud import (
     call_crud,
 )
 from typing import Union
+
+WWSAEWOULDBLOCK = 10035
+ER_UNKNOWN_REQUEST_TYPE = 48
 
 # Based on https://realpython.com/python-interface/
 class ConnectionInterface(metaclass=abc.ABCMeta):
@@ -862,9 +865,9 @@ class Connection(ConnectionInterface):
                 (self.host, self.port), timeout=self.connection_timeout)
             self._socket.settimeout(self.socket_timeout)
             self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        except socket.error as e:
+        except socket.error as exc:
             self.connected = False
-            raise NetworkError(e)
+            raise NetworkError(exc)
 
     def connect_unix(self):
         """
@@ -885,9 +888,9 @@ class Connection(ConnectionInterface):
             self._socket.settimeout(self.connection_timeout)
             self._socket.connect(self.port)
             self._socket.settimeout(self.socket_timeout)
-        except socket.error as e:
+        except socket.error as exc:
             self.connected = False
-            raise NetworkError(e)
+            raise NetworkError(exc)
 
     def wrap_socket_ssl(self):
         """
@@ -898,7 +901,7 @@ class Connection(ConnectionInterface):
         :meta private:
         """
 
-        if not is_ssl_supported:
+        if not IS_SSL_SUPPORTED:
             raise SslError("Your version of Python doesn't support SSL")
 
         ver = sys.version_info
@@ -939,10 +942,10 @@ class Connection(ConnectionInterface):
                 context.set_ciphers(self.ssl_ciphers)
 
             self._socket = context.wrap_socket(self._socket)
-        except SslError as e:
-            raise e
-        except Exception as e:
-            raise SslError(e)
+        except SslError as exc:
+            raise exc
+        except Exception as exc:
+            raise SslError(exc)
 
     def _ssl_load_cert_chain(self, context):
         """
@@ -967,8 +970,8 @@ class Connection(ConnectionInterface):
                                         keyfile=self.ssl_key_file,
                                         password=self.ssl_password)
                 return
-            except Exception as e:
-                exc_list.append(e)
+            except Exception as exc:
+                exc_list.append(exc)
 
 
         if self.ssl_password_file is not None:
@@ -979,8 +982,8 @@ class Connection(ConnectionInterface):
                                                 keyfile=self.ssl_key_file,
                                                 password=line.rstrip())
                         return
-                    except Exception as e:
-                        exc_list.append(e)
+                    except Exception as exc:
+                        exc_list.append(exc)
 
 
         try:
@@ -993,8 +996,8 @@ class Connection(ConnectionInterface):
                                     password=password_raise_error)
 
             return
-        except Exception as e:
-            exc_list.append(e)
+        except Exception as exc:
+            exc_list.append(exc)
 
         raise SslError(exc_list)
 
@@ -1042,11 +1045,11 @@ class Connection(ConnectionInterface):
                 self.load_schema()
             else:
                 self.schema = None
-        except SslError as e:
-            raise e
-        except Exception as e:
+        except SslError as exc:
+            raise exc
+        except Exception as exc:
             self.connected = False
-            raise NetworkError(e)
+            raise NetworkError(exc)
 
     def _recv(self, to_read):
         """
@@ -1135,9 +1138,9 @@ class Connection(ConnectionInterface):
                 self._socket.sendall(bytes(request))
                 response = request.response_class(self, self._read_response())
                 break
-            except SchemaReloadException as e:
+            except SchemaReloadException as exc:
                 if self.schema is not None:
-                    self.update_schema(e.schema_version)
+                    self.update_schema(exc.schema_version)
                 continue
 
         while response._code == IPROTO_CHUNK:
@@ -1166,8 +1169,8 @@ class Connection(ConnectionInterface):
             buf = ctypes.create_string_buffer(2)
             try:
                 sock_fd = self._socket.fileno()
-            except socket.error as e:
-                if e.errno == errno.EBADF:
+            except socket.error as exc:
+                if exc.errno == errno.EBADF:
                     return errno.ECONNRESET
             else:
                 if os.name == 'nt':
@@ -1184,8 +1187,6 @@ class Connection(ConnectionInterface):
                     err = ctypes.get_last_error()
                     self._socket.setblocking(True)
 
-
-                WWSAEWOULDBLOCK = 10035
                 if (retbytes < 0) and (err == errno.EAGAIN or
                                        err == errno.EWOULDBLOCK or
                                        err == WWSAEWOULDBLOCK):
@@ -1537,11 +1538,11 @@ class Connection(ConnectionInterface):
 
     def _ops_process(self, space, update_ops):
         new_ops = []
-        for op in update_ops:
-            if isinstance(op[1], str):
-                op = list(op)
-                op[1] = self.schema.get_field(space, op[1])['id']
-            new_ops.append(op)
+        for operation in update_ops:
+            if isinstance(operation[1], str):
+                operation = list(operation)
+                operation[1] = self.schema.get_field(space, operation[1])['id']
+            new_ops.append(operation)
         return new_ops
 
     def join(self, server_uuid):
@@ -1857,13 +1858,13 @@ class Connection(ConnectionInterface):
         """
 
         request = RequestPing(self)
-        t0 = time.time()
+        start_time = time.time()
         self._send_request(request)
-        t1 = time.time()
+        finish_time = time.time()
 
         if notime:
             return "Success"
-        return t1 - t0
+        return finish_time - start_time
 
     def select(self, space_name, key=None, *, offset=0, limit=0xffffffff, index=0, iterator=None, on_push=None, on_push_ctx=None):
         """
@@ -2140,7 +2141,6 @@ class Connection(ConnectionInterface):
             server_features = response.features
             server_auth_type = response.auth_type
         except DatabaseError as exc:
-            ER_UNKNOWN_REQUEST_TYPE = 48
             if exc.code == ER_UNKNOWN_REQUEST_TYPE:
                 server_protocol_version = None
                 server_features = []

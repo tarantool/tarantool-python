@@ -9,10 +9,10 @@ from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
-from .lib.skip import skip_or_run_UUID_test
+from .lib.skip import skip_or_run_uuid_test
 from tarantool.error import MsgpackError, MsgpackWarning
 
-class TestSuite_UUID(unittest.TestCase):
+class TestSuiteUUID(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' UUID EXT TYPE '.center(70, '='), file=sys.stderr)
@@ -90,7 +90,7 @@ class TestSuite_UUID(unittest.TestCase):
                 self.assertEqual(unpacker_ext_hook(2, case['msgpack']),
                                  case['python'])
 
-    @skip_or_run_UUID_test
+    @skip_or_run_uuid_test
     def test_tarantool_decode(self):
         for name in self.cases.keys():
             with self.subTest(msg=name):
@@ -109,7 +109,7 @@ class TestSuite_UUID(unittest.TestCase):
                 self.assertEqual(packer_default(case['python']),
                                  msgpack.ExtType(code=2, data=case['msgpack']))
 
-    @skip_or_run_UUID_test
+    @skip_or_run_uuid_test
     def test_tarantool_encode(self):
         for name in self.cases.keys():
             with self.subTest(msg=name):
@@ -133,7 +133,7 @@ class TestSuite_UUID(unittest.TestCase):
                 self.assertSequenceEqual(self.con.eval(lua_eval), [True])
 
 
-    @skip_or_run_UUID_test
+    @skip_or_run_uuid_test
     def test_primary_key(self):
         data = [uuid.UUID('ae28d4f6-076c-49dd-8227-7f9fae9592d0'), 'content']
 

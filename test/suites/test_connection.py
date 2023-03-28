@@ -10,7 +10,7 @@ import tarantool.msgpack_ext.decimal as ext_decimal
 from .lib.skip import skip_or_run_decimal_test, skip_or_run_varbinary_test
 from .lib.tarantool_server import TarantoolServer
 
-class TestSuite_Connection(unittest.TestCase):
+class TestSuiteConnection(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' CONNECTION '.center(70, '='), file=sys.stderr)

@@ -74,7 +74,7 @@ def push_callback(data, on_push_ctx=[]):
     on_push_ctx.append(data)
 
 
-class TestSuite_Push(unittest.TestCase):
+class TestSuitePush(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):

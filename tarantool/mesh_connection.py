@@ -88,17 +88,17 @@ def parse_uri(uri):
     except ValueError:
         return parse_error(uri, 'port should be a number')
 
-    for k, v in default_addr_opts.items():
-        result[k] = v
+    for key, val in default_addr_opts.items():
+        result[key] = val
 
     if opts_str != "":
         for opt_str in opts_str.split('&'):
             opt = opt_str.split('=')
             if len(opt) != 2:
                 continue
-            for k in default_addr_opts:
-                if k == opt[0]:
-                    result[k] = opt[1]
+            for key in default_addr_opts:
+                if key == opt[0]:
+                    result[key] = opt[1]
 
     return result, None
 
@@ -128,12 +128,12 @@ def prepare_address(address):
         return format_error(address, 'port is not set or None')
 
     result = {}
-    for k, v in address.items():
-        result[k] = v
+    for key, val in address.items():
+        result[key] = val
     # Set default values.
-    for k, v in default_addr_opts.items():
-        if k not in result:
-            result[k] = v
+    for key, val in default_addr_opts.items():
+        if key not in result:
+            result[key] = val
 
     if isinstance(result['port'], int):
         # Looks like an inet address.
@@ -527,8 +527,8 @@ class MeshConnection(Connection):
                 super(MeshConnection, self)._opt_reconnect()
                 last_error = None
                 break
-            except NetworkError as e:
-                last_error = e
+            except NetworkError as exc:
+                last_error = exc
                 addr = self.strategy.getnext()
                 update_connection(self, addr)
 
@@ -558,8 +558,8 @@ class MeshConnection(Connection):
                               self.call_16)
         try:
             resp = self._send_request_wo_reconnect(request)
-        except DatabaseError as e:
-            msg = 'got "%s" error, skipped address updates' % str(e)
+        except DatabaseError as exc:
+            msg = 'got "%s" error, skipped address updates' % str(exc)
             warn(msg, ClusterDiscoveryWarning)
             return
 

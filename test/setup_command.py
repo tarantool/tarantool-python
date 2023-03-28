@@ -8,7 +8,7 @@ from distutils.errors import DistutilsError
 
 from glob import glob
 
-class test(setuptools.Command):
+class Test(setuptools.Command):
     user_options = []
     description = 'Run tests'
 

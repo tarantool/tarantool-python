@@ -34,7 +34,7 @@ class MethodCallCounter:
         return self._call_count
 
 
-class TestSuite_Schema_Abstract(unittest.TestCase):
+class TestSuiteSchemaAbstract(unittest.TestCase):
     # Define 'encoding' field in a concrete class.
 
     @classmethod
@@ -393,8 +393,8 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
             (self.unicode_space_id, self.unicode_index_name_literal),
             (self.unicode_space_id, self.unicode_index_id),
         )
-        for s, i in cases:
-            index = self.sch.get_index(s, i)
+        for space, index_id in cases:
+            index = self.sch.get_index(space, index_id)
             self.verify_unicode_index(index)
 
         # Verify that no schema fetches occurs.
@@ -483,9 +483,9 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
                         else:
                             _ = testing_function(
                                 *self.testing_methods['unavailable'][method_case]['input'])
-                    except NotSupportedError as e:
-                        self.assertEqual(e.message, 'This method is not available in ' +
-                                                    'connection opened with fetch_schema=False')
+                    except NotSupportedError as exc:
+                        self.assertEqual(exc.message, 'This method is not available in ' +
+                                                      'connection opened with fetch_schema=False')
             # Testing the schemaless connection with methods
             # that should be available.
             for method_case in self.testing_methods['available'].keys():
@@ -608,9 +608,9 @@ class TestSuite_Schema_Abstract(unittest.TestCase):
         self.srv.clean()
 
 
-class TestSuite_Schema_UnicodeConnection(TestSuite_Schema_Abstract):
+class TestSuiteSchemaUnicodeConnection(TestSuiteSchemaAbstract):
     encoding = 'utf-8'
 
 
-class TestSuite_Schema_BinaryConnection(TestSuite_Schema_Abstract):
+class TestSuiteSchemaBinaryConnection(TestSuiteSchemaAbstract):
     encoding = None

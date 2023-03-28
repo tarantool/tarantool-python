@@ -127,8 +127,8 @@ def decode(data, unpacker):
             if field_name == 'adjust':
                 try:
                     value = Adjust(value)
-                except ValueError as e:
-                    raise MsgpackError(e)
+                except ValueError as exc:
+                    raise MsgpackError(exc)
 
             kwargs[id_map[field_id]] = value
 

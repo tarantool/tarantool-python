@@ -517,8 +517,8 @@ class Datetime():
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            setattr(result, k, deepcopy(v, memo))
+        for key, val in self.__dict__.items():
+            setattr(result, key, deepcopy(val, memo))
         return result
 
     @property

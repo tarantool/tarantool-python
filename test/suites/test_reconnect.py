@@ -5,7 +5,7 @@ import tarantool
 from .lib.tarantool_server import TarantoolServer
 
 
-class TestSuite_Reconnect(unittest.TestCase):
+class TestSuiteReconnect(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' RECONNECT '.center(70, '='), file=sys.stderr)

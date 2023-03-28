@@ -6,7 +6,7 @@ from tarantool.error import DatabaseError
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_error_extra_info_test
 
-class TestSuite_Request(unittest.TestCase):
+class TestSuiteRequest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         print(' DML '.center(70, '='), file=sys.stderr)
