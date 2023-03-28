@@ -3,10 +3,19 @@ Python DB API implementation, refer to `PEP-249`_.
 
 .. _PEP-249: http://www.python.org/dev/peps/pep-0249/
 """
-# pylint: disable=fixme
+# pylint: disable=fixme,unused-import
 
 from tarantool.connection import Connection as BaseConnection
-from tarantool.error import *
+from tarantool.error import (
+    Error,
+    InterfaceError,
+    DatabaseError,
+    OperationalError,
+    IntegrityError,
+    InternalError,
+    ProgrammingError,
+    NotSupportedError,
+)
 
 Warning = Warning # pylint: disable=redefined-builtin,self-assigning-variable
 
