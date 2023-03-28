@@ -6,11 +6,8 @@ This module tests work with datetime interval type.
 import re
 import sys
 import unittest
-import warnings
 
 import msgpack
-import pandas
-import pytz
 
 import tarantool
 from tarantool.error import MsgpackError

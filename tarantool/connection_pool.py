@@ -19,8 +19,6 @@ from tarantool.const import (
     POOL_INSTANCE_RECONNECT_MAX_ATTEMPTS,
     POOL_REFRESH_DELAY,
     SOCKET_TIMEOUT,
-    DEFAULT_SSL_PASSWORD,
-    DEFAULT_SSL_PASSWORD_FILE,
 )
 from tarantool.error import (
     ClusterConnectWarning,

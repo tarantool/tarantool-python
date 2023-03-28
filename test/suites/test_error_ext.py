@@ -5,8 +5,6 @@ This module tests work with extended error type.
 
 import sys
 import unittest
-import uuid
-import warnings
 import pkg_resources
 
 import msgpack

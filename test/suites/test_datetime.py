@@ -6,13 +6,11 @@ This module tests work with datetime type.
 import sys
 import re
 import unittest
-import warnings
 
 import msgpack
-import pandas
 
 import tarantool
-from tarantool.error import MsgpackError, MsgpackWarning
+from tarantool.error import MsgpackError
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 

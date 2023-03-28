@@ -6,12 +6,10 @@ This module tests work with UUID type.
 import sys
 import unittest
 import uuid
-import warnings
 
 import msgpack
 
 import tarantool
-from tarantool.error import MsgpackError, MsgpackWarning
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 

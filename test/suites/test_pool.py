@@ -13,7 +13,6 @@ import tarantool
 from tarantool.error import (
     ClusterConnectWarning,
     DatabaseError,
-    NetworkError,
     NetworkWarning,
     PoolTolopogyError,
     PoolTolopogyWarning,

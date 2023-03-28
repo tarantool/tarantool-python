@@ -3,11 +3,8 @@
 This module describes class implementing `python setup.py test`.
 """
 
-import os
-import sys
 import unittest
 from distutils.errors import DistutilsError
-from glob import glob
 
 import setuptools
 
