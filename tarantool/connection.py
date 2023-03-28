@@ -18,6 +18,7 @@ import abc
 import ctypes
 import ctypes.util
 from ctypes import c_ssize_t
+from typing import Union
 
 import msgpack
 
@@ -108,7 +109,6 @@ from tarantool.crud import (
     CrudError,
     call_crud,
 )
-from typing import Union
 
 WWSAEWOULDBLOCK = 10035
 ER_UNKNOWN_REQUEST_TYPE = 48

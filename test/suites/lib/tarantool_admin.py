@@ -1,7 +1,8 @@
 import socket
-import yaml
 import re
+
 import pkg_resources
+import yaml
 
 
 class TarantoolAdmin(object):

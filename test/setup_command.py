@@ -3,10 +3,10 @@
 import os
 import sys
 import unittest
-import setuptools
 from distutils.errors import DistutilsError
-
 from glob import glob
+
+import setuptools
 
 class Test(setuptools.Command):
     user_options = []

@@ -1,11 +1,12 @@
 import sys
 import unittest
-import tarantool
 import pkg_resources
+
+import tarantool
+from tarantool.error import NotSupportedError
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_constraints_test
-from tarantool.error import NotSupportedError
 
 
 # FIXME: I'm quite sure that there is a simpler way to count

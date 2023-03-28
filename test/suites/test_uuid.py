@@ -1,16 +1,17 @@
 import sys
 import unittest
 import uuid
-import msgpack
 import warnings
-import tarantool
 
+import msgpack
+
+import tarantool
+from tarantool.error import MsgpackError, MsgpackWarning
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_uuid_test
-from tarantool.error import MsgpackError, MsgpackWarning
 
 class TestSuiteUUID(unittest.TestCase):
     @classmethod
