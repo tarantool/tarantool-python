@@ -1,7 +1,7 @@
 """
 This module tests work with datetime interval type.
 """
-# pylint: disable=missing-class-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring
 
 import re
 import sys

@@ -1,7 +1,7 @@
 """
 This module tests package features.
 """
-# pylint: disable=missing-class-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring
 
 import os
 import sys
