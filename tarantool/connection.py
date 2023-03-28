@@ -6,6 +6,7 @@ This module provides API for interaction with a Tarantool server.
 import os
 import time
 import errno
+from enum import Enum
 import socket
 try:
     import ssl
@@ -453,6 +454,33 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
         raise NotImplementedError
 
+
+class JoinState(Enum):
+    """
+    Current replication join state. See `join protocol`_ for more info.
+
+    .. _join protocol: https://www.tarantool.io/en/doc/latest/dev_guide/internals/iproto/replication/#box-protocol-join
+    """
+
+    HANDSHAKE = 1
+    """
+    Sent the join request.
+    """
+
+    INITIAL = 2
+    """
+    Received inital vclock.
+    """
+
+    FINAL = 3
+    """
+    Received current vclock.
+    """
+
+    DONE = 4
+    """
+    No more messages expected.
+    """
 
 class Connection(ConnectionInterface):
     """
@@ -1521,20 +1549,21 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.SslError`
         """
 
-        class JoinState:
-            Handshake, Initial, Final, Done = range(4)
-
         request = RequestJoin(self, server_uuid)
         self._socket.sendall(bytes(request))
-        state = JoinState.Handshake
+        state = JoinState.HANDSHAKE
         while True:
             resp = Response(self, self._read_response())
             yield resp
             if resp.code >= REQUEST_TYPE_ERROR:
                 return
             elif resp.code == REQUEST_TYPE_OK:
-                state = state + 1
-                if state == JoinState.Done:
+                if state == JoinState.HANDSHAKE:
+                    state = JoinState.INITIAL
+                elif state == JoinState.INITIAL:
+                    state = JoinState.FINAL
+                elif state == JoinState.FINAL:
+                    state = JoinState.DONE
                     return
 
     def _ops_process(self, space, update_ops):
