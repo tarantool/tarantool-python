@@ -3,13 +3,11 @@ Request types definitions. For internal use only, there is no API to
 send pre-build request objects.
 """
 
-import sys
 import hashlib
 from collections.abc import Sequence, Mapping
 
 import msgpack
 
-from tarantool.error import DatabaseError
 from tarantool.const import (
     IPROTO_REQUEST_TYPE,
     IPROTO_SYNC,

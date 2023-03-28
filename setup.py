@@ -5,7 +5,6 @@ Package setup commands.
 
 import codecs
 import os
-import re
 
 try:
     from setuptools import setup, find_packages

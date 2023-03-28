@@ -3,9 +3,8 @@ This module provides untility functions for the package.
 """
 
 from base64 import decodebytes as base64_decode
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import typing
-import sys
 import uuid
 
 ENCODING_DEFAULT = "utf-8"

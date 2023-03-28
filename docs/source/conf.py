@@ -12,7 +12,6 @@ serve to show the default.
 """
 # pylint: disable=invalid-name
 
-import sys, os
 import tarantool
 
 # If extensions (or modules to document with autodoc) are in another directory,

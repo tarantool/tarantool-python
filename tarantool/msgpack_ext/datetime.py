@@ -40,7 +40,6 @@ preference and the ``tzoffset`` value is ignored.
 
 from tarantool.msgpack_ext.types.datetime import (
     NSEC_IN_SEC,
-    SEC_IN_MIN,
     Datetime,
 )
 import tarantool.msgpack_ext.types.timezones as tt_timezones
