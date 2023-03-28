@@ -74,7 +74,7 @@ def create_server():
 
 
 # Callback for on_push arg (for testing purposes).
-def push_callback(data, on_push_ctx=[]):
+def push_callback(data, on_push_ctx):
     data[0][1] = data[0][1] + 1
     on_push_ctx.append(data)
 
