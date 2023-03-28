@@ -144,6 +144,8 @@ class TestSuiteDatetime(unittest.TestCase):
     }
 
     def test_datetime_class_invalid_init(self):
+        # pylint: disable=cell-var-from-loop
+
         for name, case in self.datetime_class_invalid_init_cases.items():
             with self.subTest(msg=name):
                 self.assertRaisesRegex(

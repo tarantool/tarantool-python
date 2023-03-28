@@ -300,6 +300,8 @@ class TestSuiteDecimal(unittest.TestCase):
     }
 
     def test_msgpack_encode_error(self):
+        # pylint: disable=cell-var-from-loop
+
         for name, case in self.error_cases.items():
             with self.subTest(msg=name):
                 msg = 'Decimal cannot be encoded: Tarantool decimal ' + \
@@ -310,6 +312,8 @@ class TestSuiteDecimal(unittest.TestCase):
 
     @skip_or_run_decimal_test
     def test_tarantool_encode_error(self):
+        # pylint: disable=cell-var-from-loop
+
         for name, case in self.error_cases.items():
             with self.subTest(msg=name):
                 msg = 'Decimal cannot be encoded: Tarantool decimal ' + \
@@ -377,6 +381,8 @@ class TestSuiteDecimal(unittest.TestCase):
     }
 
     def test_msgpack_encode_with_precision_loss(self):
+        # pylint: disable=cell-var-from-loop
+
         for name, case in self.precision_loss_cases.items():
             with self.subTest(msg=name):
                 msg = 'Decimal encoded with loss of precision: ' + \
@@ -393,6 +399,8 @@ class TestSuiteDecimal(unittest.TestCase):
 
     @skip_or_run_decimal_test
     def test_tarantool_encode_with_precision_loss(self):
+        # pylint: disable=cell-var-from-loop
+
         for name, case in self.precision_loss_cases.items():
             with self.subTest(msg=name):
                 msg = 'Decimal encoded with loss of precision: ' + \
