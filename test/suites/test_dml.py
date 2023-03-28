@@ -1,6 +1,7 @@
 """
 This module tests basic data operations.
 """
+# pylint: disable=missing-class-docstring
 
 import sys
 import unittest

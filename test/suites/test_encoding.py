@@ -1,6 +1,7 @@
 """
 This module tests various type encoding cases.
 """
+# pylint: disable=missing-class-docstring
 
 import sys
 import unittest

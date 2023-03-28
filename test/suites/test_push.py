@@ -1,6 +1,7 @@
 """
 This module tests work with IPROTO pushed messages.
 """
+# pylint: disable=missing-class-docstring
 
 import sys
 import unittest

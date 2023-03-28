@@ -1,6 +1,7 @@
 """
 This module tests compatibility with DBAPI standards.
 """
+# pylint: disable=missing-class-docstring
 
 import sys
 import unittest
