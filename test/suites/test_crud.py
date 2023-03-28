@@ -41,7 +41,7 @@ class TestSuiteCrud(unittest.TestCase):
                                                      fetch_schema=False)
         # Time for vshard group configuration.
         time.sleep(1)
-        if self.conn.eval('return ROCKS_IMPORT_FAIL').data[0] == True:
+        if self.conn.eval('return ROCKS_IMPORT_FAIL').data[0] is True:
             raise unittest.SkipTest('The crud/vshard modules are not detected, ' +
                                     'installation via rocks install is required ' +
                                     'for CRUD testing purposes. You can use ' +
