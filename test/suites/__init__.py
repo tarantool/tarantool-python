@@ -1,9 +1,6 @@
 import os
 import unittest
 
-__tmp = os.getcwd()
-os.chdir(os.path.abspath(os.path.dirname(__file__)))
-
 from .test_schema import TestSuiteSchemaUnicodeConnection
 from .test_schema import TestSuiteSchemaBinaryConnection
 from .test_dml import TestSuiteRequest
@@ -40,6 +37,8 @@ def load_tests(loader, tests, pattern):
         suite.addTests(loader.loadTestsFromTestCase(testc))
     return suite
 
+__tmp = os.getcwd()
+os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
 os.chdir(__tmp)
 

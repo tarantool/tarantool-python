@@ -1,9 +1,8 @@
+from base64 import decodebytes as base64_decode
 import sys
 import uuid
 
 ENCODING_DEFAULT = "utf-8"
-
-from base64 import decodebytes as base64_decode
 
 def strxor(rhs, lhs):
     """
