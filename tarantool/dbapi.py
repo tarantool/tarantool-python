@@ -50,6 +50,11 @@ class Cursor:
 
     @property
     def rows(self):
+        """
+        Returns the current count of rows in cursor.
+
+        :type: :obj:`int`
+        """
         return self._rows
 
     @property

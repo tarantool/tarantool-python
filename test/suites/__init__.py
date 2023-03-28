@@ -36,6 +36,10 @@ test_cases = (TestSuiteSchemaUnicodeConnection,
               TestSuiteConnection, TestSuiteCrud,)
 
 def load_tests(loader, tests, pattern):
+    """
+    Add suites to test run.
+    """
+
     suite = unittest.TestSuite()
     for testc in test_cases:
         suite.addTests(loader.loadTestsFromTestCase(testc))

@@ -22,18 +22,30 @@ class TarantoolAdmin(object):
         self._tnt_version = None
 
     def connect(self):
+        """
+        Connect to running Tarantool server.
+        """
+
         self.socket = socket.create_connection((self.host, self.port))
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         self.is_connected = True
         self.socket.recv(256)  # skip greeting
 
     def disconnect(self):
+        """
+        Disconnect from the Tarantool server.
+        """
+
         if self.is_connected:
             self.socket.close()
             self.socket = None
             self.is_connected = False
 
     def reconnect(self):
+        """
+        Reconnect to the running Tarantool server.
+        """
+
         self.disconnect()
         self.connect()
 
@@ -48,6 +60,10 @@ class TarantoolAdmin(object):
         return self.execute(command)
 
     def execute(self, command):
+        """
+        Evaluate some Lua code on the Tarantool server.
+        """
+
         if not command:
             return
 
@@ -77,6 +93,10 @@ class TarantoolAdmin(object):
 
     @property
     def tnt_version(self):
+        """
+        Connected Tarantool server version.
+        """
+
         if self._tnt_version is not None:
             return self._tnt_version
 

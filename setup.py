@@ -26,6 +26,10 @@ class BuildPyCommand(build_py):
     """
 
     def run(self):
+        """
+        Run the command.
+        """
+
         # Import here to allow to run commands
         # like `python setup.py test` without setuptools_scm.
         # pylint: disable=import-outside-toplevel,import-error
@@ -61,11 +65,19 @@ except ImportError:
 
 
 def read(*parts):
+    """
+    Read the file.
+    """
+
     filename = os.path.join(os.path.dirname(__file__), *parts)
     with codecs.open(filename, encoding='utf-8') as file:
         return file.read()
 
 def get_dependencies(filename):
+    """
+    Get package dependencies from the `requirements.txt`.
+    """
+
     root = os.path.dirname(os.path.realpath(__file__))
     requirements = os.path.join(root, filename)
     result = []
@@ -74,13 +86,6 @@ def get_dependencies(filename):
             return file.read().splitlines()
     raise RuntimeError("Unable to get dependencies from file " + filename)
 
-def find_version(*file_paths):
-    version_file = read(*file_paths)
-    version_match = re.search(r"""^__version__\s*=\s*(['"])(.+)\1""",
-                              version_file, re.M)
-    if version_match:
-        return version_match.group(2)
-    raise RuntimeError("Unable to find version string.")
 
 packages = [item for item in find_packages('.') if item.startswith('tarantool')]
 

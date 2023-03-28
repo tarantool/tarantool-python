@@ -20,15 +20,23 @@ class Test(setuptools.Command):
     description = 'Run tests'
 
     def initialize_options(self):
+        """
+        Do nothing. setuptools requires to override this abstract
+        method.
+        """
         pass
 
     def finalize_options(self):
+        """
+        Do nothing. setuptools requires to override this abstract
+        method.
+        """
         pass
 
     def run(self):
-        '''
+        """
         Find all tests in test/tarantool/ and run them
-        '''
+        """
 
         tests = unittest.defaultTestLoader.discover('test', pattern='suites')
         test_runner = unittest.TextTestRunner(verbosity=2)

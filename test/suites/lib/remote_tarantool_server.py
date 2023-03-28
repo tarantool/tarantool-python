@@ -20,6 +20,9 @@ BINARY_PORT = 3301
 
 
 def get_random_string():
+    """
+    :type: :obj:`str`
+    """
     return ''.join(random.choice(string.ascii_lowercase) for _ in range(16))
 
 
@@ -48,6 +51,10 @@ class RemoteTarantoolServer(object):
         self.admin.execute('box.cfg{listen = box.NULL}')
 
     def acquire_lock(self):
+        """
+        Acquire lock on the remote server so no concurrent tests would run.
+        """
+
         deadline = time.time() + AWAIT_TIME
         while True:
             res = self.admin.execute(f'return acquire_lock("{ self.whoami}")')
@@ -63,6 +70,11 @@ class RemoteTarantoolServer(object):
         self.lock_is_acquired = True
 
     def touch_lock(self):
+        """
+        Refresh locked state on the remote server so no concurrent
+        tests would run.
+        """
+
         assert self.lock_is_acquired
         res = self.admin.execute(f'return touch_lock("{self.whoami}")')
         ok = res[0]
@@ -71,6 +83,11 @@ class RemoteTarantoolServer(object):
             raise RuntimeError(f'can not update "{self.whoami}" lock: {str(err)}')
 
     def release_lock(self):
+        """
+        Release loack so another test suite can run on the remote
+        server.
+        """
+
         res = self.admin.execute(f'return release_lock("{self.whoami}")')
         ok = res[0]
         err = res[1] if not ok else None
@@ -79,18 +96,33 @@ class RemoteTarantoolServer(object):
         self.lock_is_acquired = False
 
     def start(self):
+        """
+        Initialize the work with the remote server.
+        """
+
         if not self.lock_is_acquired:
             self.acquire_lock()
         self.admin.execute(f'box.cfg{{listen = "0.0.0.0:{self.args["primary"]}"}}')
 
     def stop(self):
+        """
+        Finish the work with the remote server.
+        """
+
         self.admin.execute('box.cfg{listen = box.NULL}')
         self.release_lock()
 
     def is_started(self):
+        """
+        Check if we still work with the remote server.
+        """
+
         return self.lock_is_acquired
 
     def clean(self):
+        """
+        Do nothing.
+        """
         pass
 
     def __del__(self):
