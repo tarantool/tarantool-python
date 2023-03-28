@@ -8,6 +8,8 @@ from .lib.skip import skip_or_run_varbinary_test, skip_or_run_error_extra_info_t
 from .lib.tarantool_server import TarantoolServer
 
 class TestSuiteEncoding(unittest.TestCase):
+    # pylint: disable=invalid-name
+
     @classmethod
     def setUpClass(self):
         print(' ENCODING '.center(70, '='), file=sys.stderr)
