@@ -382,8 +382,6 @@ class TarantoolServer(object):
         RemoteTarantoolServer.
         """
 
-        pass
-
     def is_started(self):
         """
         Is Tarantool server has need started.

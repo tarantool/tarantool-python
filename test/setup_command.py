@@ -24,14 +24,12 @@ class Test(setuptools.Command):
         Do nothing. setuptools requires to override this abstract
         method.
         """
-        pass
 
     def finalize_options(self):
         """
         Do nothing. setuptools requires to override this abstract
         method.
         """
-        pass
 
     def run(self):
         """
