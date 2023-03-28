@@ -53,6 +53,14 @@ class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
         cls.srv.stop()
         cls.srv.clean()
 
+    def help_nextset_setUp(self, cur):
+        # pylint: disable=unused-argument
+        pass
+
+    def help_nextset_tearDown(self, cur):
+        # pylint: disable=unused-argument
+        pass
+
     def test_rowcount(self):
         con = self._connect()
         try:
