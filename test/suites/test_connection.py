@@ -54,6 +54,7 @@ class TestSuiteConnection(unittest.TestCase):
                 parts = {2, 'varbinary'},
                 unique = true})
         """)
+        cls.con = None
 
     def setUp(self):
         # prevent a remote tarantool from clean our session

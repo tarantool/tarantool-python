@@ -84,6 +84,7 @@ class TestSuitePool(unittest.TestCase):
         # Create five servers and extract helpful fields for tests.
         self.servers = []
         self.addrs = []
+        self.pool = None
         self.servers_count = 5
         for i in range(self.servers_count):
             srv = create_server(i)

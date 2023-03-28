@@ -126,7 +126,7 @@ class TarantoolServer(object):
         Get Tarantool binary used to start the server.
         """
 
-        if not hasattr(self, '_binary'):
+        if self._binary is None:
             self._binary = self.find_exe()
         return self._binary
 
@@ -160,7 +160,7 @@ class TarantoolServer(object):
         Get server log file descriptor.
         """
 
-        if not hasattr(self, '_log_des'):
+        if self._log_des is None:
             self._log_des = open(self.logfile_path, 'a')
         return self._log_des
 
@@ -170,11 +170,12 @@ class TarantoolServer(object):
         Set server log file descriptor.
         """
 
-        if not hasattr(self, '_log_des'):
+        if self._log_des is None:
             return
         if not self._log_des.closed:
             self._log_des.close()
-        delattr(self, '_log_des')
+
+        self._log_des = None
 
     def __new__(cls,
                 transport=None,
@@ -229,6 +230,8 @@ class TarantoolServer(object):
         self.ssl_password = ssl_password
         self.ssl_password_file = ssl_password_file
         self.auth_type = auth_type
+        self._binary = None
+        self._log_des = None
 
     def find_exe(self):
         """

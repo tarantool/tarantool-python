@@ -209,6 +209,7 @@ class RoundRobinStrategy(object):
             :paramref:`~tarantool.ConnectionPool.params.addrs`.
         :type addrs: :obj:`list` of :obj:`dict`
         """
+        self.pos = None
         self.update(addrs)
 
     def update(self, new_addrs):

@@ -837,6 +837,9 @@ class Connection(ConnectionInterface):
         self._unpacker_factory_impl = unpacker_factory
         self._client_auth_type = auth_type
         self._server_auth_type = None
+        self.version_id = None
+        self.uuid = None
+        self._salt = None
 
         if connect_now:
             self.connect()
