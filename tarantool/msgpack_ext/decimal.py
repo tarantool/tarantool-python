@@ -326,7 +326,7 @@ def add_str_digit(digit, digits_reverted, scale):
     :meta private:
     """
 
-    if not (0 <= digit <= 9):
+    if not 0 <= digit <= 9:
         raise MsgpackError('Unexpected MP_DECIMAL digit nibble')
 
     if len(digits_reverted) == scale:

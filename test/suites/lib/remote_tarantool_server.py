@@ -26,7 +26,7 @@ class RemoteTarantoolServer(object):
         self.args['primary'] = BINARY_PORT
         self.args['admin'] = os.environ['REMOTE_TARANTOOL_CONSOLE_PORT']
 
-        assert(self.args['primary'] != self.args['admin'])
+        assert self.args['primary'] != self.args['admin']
 
         # a name to using for a lock
         self.whoami = get_random_string()
@@ -54,7 +54,7 @@ class RemoteTarantoolServer(object):
         self.lock_is_acquired = True
 
     def touch_lock(self):
-        assert(self.lock_is_acquired)
+        assert self.lock_is_acquired
         res = self.admin.execute(f'return touch_lock("{self.whoami}")')
         ok = res[0]
         err = res[1] if not ok else None
