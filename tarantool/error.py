@@ -380,6 +380,7 @@ def warn(message, warning_class):
     :param warning_class: Warning class.
     :type warning_class: :class:`~tarantool.error.Warning`
     """
+    # pylint: disable=protected-access
 
     frame = sys._getframe(2)
     module_name = frame.f_globals.get("__name__")
