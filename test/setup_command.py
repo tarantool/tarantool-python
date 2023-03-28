@@ -12,6 +12,10 @@ from glob import glob
 import setuptools
 
 class Test(setuptools.Command):
+    """
+    Class implementing `python setup.py test`.
+    """
+
     user_options = []
     description = 'Run tests'
 

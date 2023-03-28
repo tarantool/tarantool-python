@@ -10,6 +10,10 @@ import yaml
 
 
 class TarantoolAdmin(object):
+    """
+    Class to setup running Tarantool server.
+    """
+
     def __init__(self, host, port):
         self.host = host
         self.port = port
