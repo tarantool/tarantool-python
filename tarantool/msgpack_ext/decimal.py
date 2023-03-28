@@ -244,8 +244,7 @@ def encode(obj, _):
     bytes_reverted = bytearray()
 
     scale = 0
-    for i in range(len(str_repr)):
-        str_digit = str_repr[i]
+    for i, str_digit in enumerate(str_repr):
         if str_digit == '.':
             scale = len(str_repr) - i - 1
             break

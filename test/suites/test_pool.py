@@ -57,8 +57,8 @@ class TestSuitePool(unittest.TestCase):
     def set_cluster_ro(self, read_only_list):
         assert len(self.servers) == len(read_only_list)
 
-        for i in range(len(self.servers)):
-            self.set_ro(self.servers[i], read_only_list[i])
+        for i, server in enumerate(self.servers):
+            self.set_ro(server, read_only_list[i])
 
     def retry(self, func, count=5, timeout=0.5):
         for i in range(count):
