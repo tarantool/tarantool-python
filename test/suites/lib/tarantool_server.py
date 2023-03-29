@@ -55,7 +55,7 @@ class TarantoolServer():
     """
     Class to start up a new Tarantool server.
     """
-    # pylint: disable=too-many-instance-attributes,too-many-arguments
+    # pylint: disable=too-many-instance-attributes,too-many-arguments,duplicate-code
 
     default_tarantool = {
             "bin":     "tarantool",
