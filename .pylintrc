@@ -2,3 +2,7 @@
 
 # Good variable names which should always be accepted, separated by a comma
 good-names=i,j,k,ex,Run,_,ok,t,tz
+
+[FORMAT]
+# Allow links in docstings, allow tables
+ignore-long-lines=^(?:\s*(# )?(?:\.\.\s.+?:)?\s*<?https?://\S+>?)|(\s\+.+\+)|(\s\|.+\|)$
