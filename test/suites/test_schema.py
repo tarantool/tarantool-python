@@ -94,15 +94,9 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                                                                       fetch_schema=False)
         cls.sch = cls.con.schema
 
-        # The relevant test cases mainly target Python 2, where
-        # a user may want to pass a string literal as a space or
-        # an index name and don't bother whether all symbols in it
-        # are ASCII.
         cls.unicode_space_name_literal = '∞'
         cls.unicode_index_name_literal = '→'
 
-        cls.unicode_space_name_u = u'∞'
-        cls.unicode_index_name_u = u'→'
         cls.unicode_space_id, cls.unicode_index_id = cls.srv.admin("""
             do
                 local space = box.schema.create_space('\\xe2\\x88\\x9e')
@@ -164,13 +158,13 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
 
     def verify_unicode_space(self, space):
         self.assertEqual(space.sid, self.unicode_space_id)
-        self.assertEqual(space.name, self.unicode_space_name_u)
+        self.assertEqual(space.name, self.unicode_space_name_literal)
         self.assertEqual(space.arity, 1)
 
     def verify_unicode_index(self, index):
-        self.assertEqual(index.space.name, self.unicode_space_name_u)
+        self.assertEqual(index.space.name, self.unicode_space_name_literal)
         self.assertEqual(index.iid, self.unicode_index_id)
-        self.assertEqual(index.name, self.unicode_index_name_u)
+        self.assertEqual(index.name, self.unicode_index_name_literal)
         self.assertEqual(len(index.parts), 1)
 
     def test_01_space_bad(self):
