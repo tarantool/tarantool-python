@@ -115,8 +115,9 @@ def packer_factory(conn):
     # We need configured packer to work with error extention
     # type payload, but module do not provide access to self
     # inside extension type packers.
-    packer_no_ext = msgpack.Packer(**packer_kwargs)
-    default = lambda obj: packer_default(obj, packer_no_ext)
+    def default(obj):
+        packer_no_ext = msgpack.Packer(**packer_kwargs)
+        return packer_default(obj, packer_no_ext)
     packer_kwargs['default'] = default
 
     return msgpack.Packer(**packer_kwargs)
