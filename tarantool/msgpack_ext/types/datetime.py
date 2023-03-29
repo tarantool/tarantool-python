@@ -1,6 +1,7 @@
 """
 Tarantool `datetime`_ extension type implementation module.
 """
+# pylint: disable=line-too-long
 
 from copy import deepcopy
 
