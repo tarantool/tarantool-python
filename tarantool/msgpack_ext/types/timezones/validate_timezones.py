@@ -14,4 +14,4 @@ for timezone in timezoneToIndex.keys():
         continue
 
     if not timezone in timezoneAbbrevInfo:
-        raise Exception(f'Unknown Tarantool timezone {timezone}')
+        raise KeyError(f'Unknown Tarantool timezone {timezone}')
