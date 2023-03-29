@@ -7,7 +7,7 @@ This module provides API for interaction with the `crud`_ module.
 from tarantool.error import DatabaseError, ER_NO_SUCH_PROC, ER_ACCESS_DENIED
 
 
-class CrudResponse(object):
+class CrudResponse():
     """
     Contains response fields from the `crud`_ module that correspond
     to the Lua implementation.

@@ -9,7 +9,7 @@ import pkg_resources
 import yaml
 
 
-class TarantoolAdmin(object):
+class TarantoolAdmin():
     """
     Class to setup running Tarantool server.
     """

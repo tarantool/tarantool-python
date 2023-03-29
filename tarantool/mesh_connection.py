@@ -199,7 +199,7 @@ def update_connection(conn, address):
     conn.auth_type = address['auth_type']
 
 
-class RoundRobinStrategy(object):
+class RoundRobinStrategy():
     """
     Defines strategy to choose next pool server after fail.
     """

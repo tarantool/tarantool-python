@@ -51,7 +51,7 @@ def find_port(port=None):
     return find_port(3300)
 
 
-class TarantoolServer(object):
+class TarantoolServer():
     """
     Class to start up a new Tarantool server.
     """
