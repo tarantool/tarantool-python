@@ -295,7 +295,7 @@ class Connection(BaseConnection):
         :raise: :class:`~tarantool.Connection` exceptions
         """
 
-        super(Connection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._set_autocommit(kwargs.get('autocommit', True))
 
     def _set_autocommit(self, autocommit):
@@ -354,7 +354,7 @@ class Connection(BaseConnection):
         """
 
         self._check_not_closed("The closed connector can not be closed again.")
-        super(Connection, self).close()
+        super().close()
 
     def commit(self):
         """

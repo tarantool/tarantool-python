@@ -203,7 +203,7 @@ class SchemaError(DatabaseError):
         :param value: Error value.
         """
 
-        super(SchemaError, self).__init__(0, value)
+        super().__init__(0, value)
         self.value = value
 
     def __str__(self):
@@ -224,7 +224,7 @@ class SchemaReloadException(DatabaseError):
         :type schema_version: :obj:`int`
         """
 
-        super(SchemaReloadException, self).__init__(109, message)
+        super().__init__(109, message)
         self.schema_version = schema_version
 
     def __str__(self):
@@ -251,13 +251,12 @@ class NetworkError(DatabaseError):
         if orig_exception:
             if isinstance(orig_exception, socket.timeout):
                 self.message = "Socket timeout"
-                super(NetworkError, self).__init__(0, self.message)
+                super().__init__(0, self.message)
             elif isinstance(orig_exception, socket.error):
                 self.message = os.strerror(orig_exception.errno)
-                super(NetworkError, self).__init__(
-                    orig_exception.errno, self.message)
+                super().__init__(orig_exception.errno, self.message)
             else:
-                super(NetworkError, self).__init__(orig_exception, *args, **kwargs)
+                super().__init__(orig_exception, *args, **kwargs)
 
 
 class NetworkWarning(UserWarning):
@@ -284,9 +283,9 @@ class SslError(DatabaseError):
             self.errno = orig_exception.errno
         if orig_exception:
             if IS_SSL_SUPPORTED and isinstance(orig_exception, ssl.SSLError):
-                super(SslError, self).__init__(orig_exception, *args)
+                super().__init__(orig_exception, *args)
             else:
-                super(SslError, self).__init__(orig_exception, *args)
+                super().__init__(orig_exception, *args)
 
 
 class ClusterDiscoveryWarning(UserWarning):
@@ -329,7 +328,7 @@ class CrudModuleError(DatabaseError):
         :type args: :obj:`tuple`
         """
 
-        super(CrudModuleError, self).__init__(0, error.err)
+        super().__init__(0, error.err)
         # Sets tarantool.crud.CrudError object.
         self.extra_info_error = error
 
@@ -351,7 +350,7 @@ class CrudModuleManyError(DatabaseError):
         """
 
         exc_msg = "Got multiple errors, see errors_list and success_list"
-        super(CrudModuleManyError, self).__init__(0, exc_msg)
+        super().__init__(0, exc_msg)
         # Sets list of tarantool.crud.CrudResult objects.
         self.success_list = success
         # Sets list of tarantool.crud.CrudError objects.

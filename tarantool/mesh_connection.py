@@ -480,7 +480,7 @@ class MeshConnection(Connection):
         self.cluster_discovery_delay = cluster_discovery_delay
         self.last_nodes_refresh = 0
 
-        super(MeshConnection, self).__init__(
+        super().__init__(
             host=addr['host'],
             port=addr['port'],
             user=user,
@@ -514,7 +514,7 @@ class MeshConnection(Connection):
             :exc:`~tarantool.error.NetworkError`,
             :class:`~tarantool.Connection.connect` exceptions
         """
-        super(MeshConnection, self).connect()
+        super().connect()
         if self.connected and self.cluster_discovery_function:
             self._opt_refresh_instances()
 
@@ -530,7 +530,7 @@ class MeshConnection(Connection):
         last_error = None
         for _ in range(len(self.strategy.addrs)):
             try:
-                super(MeshConnection, self)._opt_reconnect()
+                super()._opt_reconnect()
                 last_error = None
                 break
             except NetworkError as exc:
@@ -632,4 +632,4 @@ class MeshConnection(Connection):
         """
 
         self._opt_refresh_instances()
-        return super(MeshConnection, self)._send_request(request, on_push, on_push_ctx)
+        return super()._send_request(request, on_push, on_push_ctx)
