@@ -240,7 +240,7 @@ class Schema():
             raise SchemaError(
                 'Some strange output from server: \n' + str(space_row)
             )
-        elif len(space_row) == 0 or not len(space_row[0]):
+        elif len(space_row) == 0 or not space_row[0]:
             # We can't find space with this name or id
             temp_name = 'name' if isinstance(space, str) else 'id'
             errmsg = f"There's no space with {temp_name} '{space}'"
@@ -352,7 +352,7 @@ class Schema():
             raise SchemaError(
                 'Some strange output from server: \n' + str(index_row)
             )
-        elif len(index_row) == 0 or not len(index_row[0]):
+        elif len(index_row) == 0 or not index_row[0]:
             # We can't find index with this name or id
             temp_name = 'name' if isinstance(index, str) else 'id'
             errmsg = (f"There's no index with {temp_name} '{index}'"
