@@ -24,7 +24,7 @@ def fetch_tarantool_version(self):
 
         try:
             self.tnt_version = srv.admin.tnt_version
-        except:
+        except AttributeError:
             self.__class__.tnt_version = srv.admin.tnt_version
 
 def skip_or_run_test_tarantool_impl(self, required_tt_version, msg):
