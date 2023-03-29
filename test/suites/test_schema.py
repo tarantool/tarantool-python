@@ -131,6 +131,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
             box.space.constr_tester_2:create_index('I1', { parts = {'id'} })
             box.space.constr_tester_2:create_index('I2', { parts = {'table1_id'} })
             """)
+        cls.encoding = None
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
