@@ -300,10 +300,10 @@ def get_str_sign(nibble):
     :meta private:
     """
 
-    if nibble == 0x0a or nibble == 0x0c or nibble == 0x0e or nibble == 0x0f:
+    if nibble in (0x0a, 0x0c, 0x0e, 0x0f):
         return '+'
 
-    if nibble == 0x0b or nibble == 0x0d:
+    if nibble in (0x0b, 0x0d):
         return '-'
 
     raise MsgpackError('Unexpected MP_DECIMAL sign nibble')

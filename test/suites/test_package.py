@@ -19,7 +19,7 @@ def is_test_pure_install():
     env = os.getenv("TEST_PURE_INSTALL")
     if env:
         env = env.upper()
-        return env == "1" or env == "TRUE"
+        return env in ("1", "TRUE")
     return False
 
 

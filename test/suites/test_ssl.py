@@ -29,7 +29,7 @@ def is_test_ssl():
     env = os.getenv("TEST_TNT_SSL")
     if env:
         env = env.upper()
-        return env == "1" or env == "TRUE"
+        return env in ("1", "TRUE")
     return False
 
 
