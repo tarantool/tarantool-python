@@ -1196,7 +1196,8 @@ class Connection(ConnectionInterface):
 
         # **Bug in Python: timeout is an internal Python construction (???).
         if not self._socket:
-            return self.connect()
+            self.connect()
+            return
 
         def check():  # Check that connection is alive
             buf = ctypes.create_string_buffer(2)
@@ -1205,6 +1206,7 @@ class Connection(ConnectionInterface):
             except socket.error as exc:
                 if exc.errno == errno.EBADF:
                     return errno.ECONNRESET
+                return exc.errno
             else:
                 if os.name == 'nt':
                     flag = socket.MSG_PEEK

@@ -319,6 +319,8 @@ class RoundRobinStrategy(StrategyInterface):
         elif mode == Mode.PREFER_RW:
             return self._getnext_by_mode(self.rw_iter, self.ro_iter)
 
+        raise ValueError(f"Unexpected mode {mode}")
+
 
 @dataclass
 class PoolTask():
