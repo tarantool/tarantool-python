@@ -897,7 +897,7 @@ class Connection(ConnectionInterface):
             self._socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         except socket.error as exc:
             self.connected = False
-            raise NetworkError(exc)
+            raise NetworkError(exc) from exc
 
     def connect_unix(self):
         """
@@ -920,7 +920,7 @@ class Connection(ConnectionInterface):
             self._socket.settimeout(self.socket_timeout)
         except socket.error as exc:
             self.connected = False
-            raise NetworkError(exc)
+            raise NetworkError(exc) from exc
 
     def wrap_socket_ssl(self):
         """
@@ -975,7 +975,7 @@ class Connection(ConnectionInterface):
         except SslError as exc:
             raise exc
         except Exception as exc:
-            raise SslError(exc)
+            raise SslError(exc) from exc
 
     def _ssl_load_cert_chain(self, context):
         """
@@ -1079,7 +1079,7 @@ class Connection(ConnectionInterface):
             raise exc
         except Exception as exc:
             self.connected = False
-            raise NetworkError(exc)
+            raise NetworkError(exc) from exc
 
     def _recv(self, to_read):
         """
@@ -1098,19 +1098,19 @@ class Connection(ConnectionInterface):
         while to_read > 0:
             try:
                 tmp = self._socket.recv(to_read)
-            except OverflowError:
+            except OverflowError as exc:
                 self._socket.close()
                 err = socket.error(
                     errno.ECONNRESET,
                     "Packet too large. Closing connection to server"
                 )
-                raise NetworkError(err)
-            except socket.error:
+                raise NetworkError(err) from exc
+            except socket.error as exc:
                 err = socket.error(
                     errno.ECONNRESET,
                     "Lost connection to server during query"
                 )
-                raise NetworkError(err)
+                raise NetworkError(err) from exc
             else:
                 if len(tmp) == 0:
                     err = socket.error(

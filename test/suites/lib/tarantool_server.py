@@ -148,8 +148,8 @@ class TarantoolServer(object):
 
         try:
             int(port)
-        except ValueError:
-            raise ValueError(f"Bad port number: '{port}'")
+        except ValueError as exc:
+            raise ValueError(f"Bad port number: '{port}'") from exc
         if hasattr(self, 'admin'):
             del self.admin
         self.admin = TarantoolAdmin('0.0.0.0', port)

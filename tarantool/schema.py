@@ -98,7 +98,7 @@ class SchemaIndex(object):
             parts_raw = to_unicode_recursive(index_row[5], MAX_RECURSION_DEPTH)
         except RecursionError as exc:
             errmsg = 'Unexpected index parts structure: ' + str(exc)
-            raise SchemaError(errmsg)
+            raise SchemaError(errmsg) from exc
         if isinstance(parts_raw, (list, tuple)):
             for val in parts_raw:
                 if isinstance(val, dict):
@@ -155,7 +155,7 @@ class SchemaSpace(object):
             format_raw = to_unicode_recursive(space_row[6], MAX_RECURSION_DEPTH)
         except RecursionError as exc:
             errmsg = 'Unexpected space format structure: ' + str(exc)
-            raise SchemaError(errmsg)
+            raise SchemaError(errmsg) from exc
         for part_id, part in enumerate(format_raw):
             part['id'] = part_id
             self.format[part['name']] = part
@@ -436,10 +436,10 @@ class Schema(object):
         _space = self.get_space(space)
         try:
             return _space.format[field]
-        except:
+        except KeyError as exc:
             kind = 'name' if isinstance(field, str) else 'id'
             errmsg = f"There's no field with {kind} '{field}' in space '{_space.name}'"
-            raise SchemaError(errmsg)
+            raise SchemaError(errmsg) from exc
 
         return field
 
