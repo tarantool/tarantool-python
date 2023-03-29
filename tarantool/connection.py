@@ -1114,15 +1114,15 @@ class Connection(ConnectionInterface):
                     "Lost connection to server during query"
                 )
                 raise NetworkError(err) from exc
-            else:
-                if len(tmp) == 0:
-                    err = socket.error(
-                        errno.ECONNRESET,
-                        "Lost connection to server during query"
-                    )
-                    raise NetworkError(err)
-                to_read -= len(tmp)
-                buf += tmp
+
+            if len(tmp) == 0:
+                err = socket.error(
+                    errno.ECONNRESET,
+                    "Lost connection to server during query"
+                )
+                raise NetworkError(err)
+            to_read -= len(tmp)
+            buf += tmp
         return buf
 
     def _read_response(self):
