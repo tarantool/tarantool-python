@@ -163,7 +163,7 @@ class TarantoolServer():
         # pylint: disable=consider-using-with
 
         if self._log_des is None:
-            self._log_des = open(self.logfile_path, 'a')
+            self._log_des = open(self.logfile_path, 'a', encoding='utf-8')
         return self._log_des
 
     @log_des.deleter

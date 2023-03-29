@@ -1008,7 +1008,7 @@ class Connection(ConnectionInterface):
 
 
         if self.ssl_password_file is not None:
-            with open(self.ssl_password_file) as file:
+            with open(self.ssl_password_file, encoding=self.encoding) as file:
                 for line in file:
                     try:
                         context.load_cert_chain(certfile=self.ssl_cert_file,
