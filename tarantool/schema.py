@@ -70,7 +70,7 @@ def to_unicode_recursive(value, max_depth):
             res[key] = val
         return res
 
-    if isinstance(value, list) or isinstance(value, tuple):
+    if isinstance(value, (list, tuple)):
         res = []
         for item in value:
             item = to_unicode_recursive(item, max_depth - 1)
