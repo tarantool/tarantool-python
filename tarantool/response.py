@@ -78,8 +78,9 @@ def unpacker_factory(conn):
     # We need configured unpacker to work with error extention
     # type payload, but module do not provide access to self
     # inside extension type unpackers.
-    unpacker_no_ext = msgpack.Unpacker(**unpacker_kwargs)
-    ext_hook = lambda code, data: unpacker_ext_hook(code, data, unpacker_no_ext)
+    def ext_hook(code, data):
+        unpacker_no_ext = msgpack.Unpacker(**unpacker_kwargs)
+        return unpacker_ext_hook(code, data, unpacker_no_ext)
     unpacker_kwargs['ext_hook'] = ext_hook
 
     return msgpack.Unpacker(**unpacker_kwargs)
