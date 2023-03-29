@@ -1,7 +1,7 @@
 """
 This module tests basic data operations.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring,protected-access,fixme
+# pylint: disable=missing-class-docstring,missing-function-docstring,protected-access,fixme,too-many-public-methods
 
 import sys
 import unittest
