@@ -482,25 +482,25 @@ class TestSuiteDatetime(unittest.TestCase):
         },
     }
 
-    def test_python_datetime_addition(self):
+    def test_python_interval_addition(self):
         for name, case in self.interval_arithmetic_cases.items():
             with self.subTest(msg=name):
                 self.assertEqual(case['arg_1'] + case['arg_2'], case['res_add'])
 
-    def test_python_datetime_subtraction(self):
+    def test_python_interval_subtraction(self):
         for name, case in self.interval_arithmetic_cases.items():
             with self.subTest(msg=name):
                 self.assertEqual(case['arg_1'] - case['arg_2'], case['res_sub'])
 
     @skip_or_run_datetime_test
-    def test_tarantool_datetime_addition(self):
+    def test_tarantool_interval_addition(self):
         for name, case in self.interval_arithmetic_cases.items():
             with self.subTest(msg=name):
                 self.assertSequenceEqual(self.con.call('add', case['arg_1'], case['arg_2']),
                                          [case['res_add']])
 
     @skip_or_run_datetime_test
-    def test_tarantool_datetime_subtraction(self):
+    def test_tarantool_interval_subtraction(self):
         for name, case in self.interval_arithmetic_cases.items():
             with self.subTest(msg=name):
                 self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
