@@ -1,7 +1,7 @@
 """
 This module tests work with datetime type.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring,too-many-public-methods
+# pylint: disable=missing-class-docstring,missing-function-docstring,too-many-public-methods,too-many-function-args
 
 import sys
 import re
