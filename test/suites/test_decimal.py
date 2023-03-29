@@ -367,13 +367,15 @@ class TestSuiteDecimal(unittest.TestCase):
             'tarantool': "decimal.new('-99999999999999999999999999999999999999')",
         },
         'decimal_limit_break_tail_9': {
-            'python': decimal.Decimal('99999999999999999999999999999999999999.1111111111111111111111111'),
+            'python': decimal.Decimal('99999999999999999999999999999999999999.11111111111111'
+                                      '11111111111'),
             'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9c'),
             'tarantool': "decimal.new('99999999999999999999999999999999999999')",
         },
         'decimal_limit_break_tail_10': {
-            'python': decimal.Decimal('-99999999999999999999999999999999999999.1111111111111111111111111'),
+            'python': decimal.Decimal('-99999999999999999999999999999999999999.11111111111111'
+                                      '11111111111'),
             'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9d'),
             'tarantool': "decimal.new('-99999999999999999999999999999999999999')",

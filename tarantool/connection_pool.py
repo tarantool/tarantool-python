@@ -553,14 +553,16 @@ class ConnectionPool(ConnectionInterface):
             try:
                 conn.connect()
             except NetworkError as exc:
-                msg = f"Failed to connect to {unit.addr['host']}:{unit.addr['port']}, reason: {repr(exc)}"
+                msg = (f"Failed to connect to {unit.addr['host']}:{unit.addr['port']}, "
+                       f"reason: {repr(exc)}")
                 warn(msg, ClusterConnectWarning)
                 return InstanceState(Status.UNHEALTHY)
 
         try:
             resp = conn.call('box.info')
         except NetworkError as exc:
-            msg = f"Failed to get box.info for {unit.addr['host']}:{unit.addr['port']}, reason: {repr(exc)}"
+            msg = (f"Failed to get box.info for {unit.addr['host']}:{unit.addr['port']}, "
+                   f"reason: {repr(exc)}")
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 
@@ -813,7 +815,8 @@ class ConnectionPool(ConnectionInterface):
         .. _replace: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/replace/
         """
 
-        return self._send(mode, 'replace', space_name, values, on_push=on_push, on_push_ctx=on_push_ctx)
+        return self._send(mode, 'replace', space_name, values,
+                          on_push=on_push, on_push_ctx=on_push_ctx)
 
     def insert(self, space_name, values, *, mode=Mode.RW, on_push=None, on_push_ctx=None):
         """
@@ -842,7 +845,8 @@ class ConnectionPool(ConnectionInterface):
         .. _insert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/insert/
         """
 
-        return self._send(mode, 'insert', space_name, values, on_push=on_push, on_push_ctx=on_push_ctx)
+        return self._send(mode, 'insert', space_name, values,
+                          on_push=on_push, on_push_ctx=on_push_ctx)
 
     def delete(self, space_name, key, *, index=0, mode=Mode.RW, on_push=None, on_push_ctx=None):
         """
@@ -874,9 +878,11 @@ class ConnectionPool(ConnectionInterface):
         .. _delete: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/delete/
         """
 
-        return self._send(mode, 'delete', space_name, key, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
+        return self._send(mode, 'delete', space_name, key, index=index,
+                          on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def upsert(self, space_name, tuple_value, op_list, *, index=0, mode=Mode.RW, on_push=None, on_push_ctx=None):
+    def upsert(self, space_name, tuple_value, op_list, *, index=0, mode=Mode.RW,
+               on_push=None, on_push_ctx=None):
         """
         Execute an UPSERT request on the pool server: `upsert`_ a tuple to
         the space. Refer to :meth:`~tarantool.Connection.upsert`.
@@ -912,7 +918,8 @@ class ConnectionPool(ConnectionInterface):
         return self._send(mode, 'upsert', space_name, tuple_value,
             op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
 
-    def update(self, space_name, key, op_list, *, index=0, mode=Mode.RW, on_push=None, on_push_ctx=None):
+    def update(self, space_name, key, op_list, *, index=0, mode=Mode.RW,
+               on_push=None, on_push_ctx=None):
         """
         Execute an UPDATE request on the pool server: `update`_ a tuple
         in the space. Refer to :meth:`~tarantool.Connection.update`.

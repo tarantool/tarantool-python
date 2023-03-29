@@ -114,7 +114,8 @@ class TestSuitePool(unittest.TestCase):
 
     def test_01_roundrobin(self):
         self.set_cluster_ro([False, False, True, False, True])
-        rw_ports = set([str(self.addrs[0]['port']), str(self.addrs[1]['port']), str(self.addrs[3]['port'])])
+        rw_ports = set([str(self.addrs[0]['port']), str(self.addrs[1]['port']),
+                        str(self.addrs[3]['port'])])
         ro_ports = set([str(self.addrs[2]['port']), str(self.addrs[4]['port'])])
         all_ports = set()
         for addr in self.addrs:

@@ -1503,11 +1503,13 @@ class Connection(ConnectionInterface):
                 auth_type = AUTH_TYPE_CHAP_SHA1
             else:
                 if self._server_auth_type not in AUTH_TYPES:
-                    raise ConfigurationError(f'Unknown server authentication type {self._server_auth_type}')
+                    raise ConfigurationError('Unknown server authentication type ' +
+                                             str(self._server_auth_type))
                 auth_type = self._server_auth_type
         else:
             if self._client_auth_type not in AUTH_TYPES:
-                raise ConfigurationError(f'Unknown client authentication type {self._client_auth_type}')
+                raise ConfigurationError('Unknown client authentication type ' +
+                                         str(self._client_auth_type))
             auth_type = self._client_auth_type
 
         if auth_type == AUTH_TYPE_PAP_SHA256 and self.transport != SSL_TRANSPORT:
@@ -1900,7 +1902,8 @@ class Connection(ConnectionInterface):
             return "Success"
         return finish_time - start_time
 
-    def select(self, space_name, key=None, *, offset=0, limit=0xffffffff, index=0, iterator=None, on_push=None, on_push_ctx=None):
+    def select(self, space_name, key=None, *, offset=0, limit=0xffffffff, index=0, iterator=None,
+               on_push=None, on_push_ctx=None):
         """
         Execute a SELECT request: `select`_ a tuple from the space.
 
@@ -2199,7 +2202,8 @@ class Connection(ConnectionInterface):
     def _unpacker_factory(self):
         return self._unpacker_factory_impl(self)
 
-    def crud_insert(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_insert(self, space_name: str, values: Union[tuple, list],
+                    opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
@@ -2232,7 +2236,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_insert_object(self, space_name: str, values: dict, opts: Optional[dict]=None) -> CrudResult:
+    def crud_insert_object(self, space_name: str, values: dict,
+                           opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts object row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
@@ -2265,7 +2270,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_insert_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_insert_many(self, space_name: str, values: Union[tuple, list],
+                         opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts batch rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
@@ -2305,7 +2311,8 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_insert_object_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_insert_object_many(self, space_name: str, values: Union[tuple, list],
+                                opts: Optional[dict]=None) -> CrudResult:
         """
         Inserts batch object rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
@@ -2377,7 +2384,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_update(self, space_name: str, key: int, operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
+    def crud_update(self, space_name: str, key: int, operations: Optional[list]=None,
+                    opts: Optional[dict]=None) -> CrudResult:
         """
         Updates row through the
         `crud <https://github.com/tarantool/crud#update>`__.
@@ -2447,7 +2455,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_replace(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_replace(self, space_name: str, values: Union[tuple, list],
+                     opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
@@ -2480,7 +2489,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_replace_object(self, space_name: str, values: dict, opts: Optional[dict]=None) -> CrudResult:
+    def crud_replace_object(self, space_name: str, values: dict,
+                            opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces object row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
@@ -2513,7 +2523,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_replace_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_replace_many(self, space_name: str, values: Union[tuple, list],
+                          opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces batch rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
@@ -2553,7 +2564,8 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_replace_object_many(self, space_name: str, values: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_replace_object_many(self, space_name: str, values: Union[tuple, list],
+                                 opts: Optional[dict]=None) -> CrudResult:
         """
         Replaces batch object rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
@@ -2593,7 +2605,8 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_upsert(self, space_name: str, values: Union[tuple, list], operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
+    def crud_upsert(self, space_name: str, values: Union[tuple, list],
+                    operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
@@ -2632,7 +2645,9 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_upsert_object(self, space_name: str, values: dict, operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
+    def crud_upsert_object(self, space_name: str, values: dict,
+                           operations: Optional[list]=None,
+                           opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts object row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
@@ -2671,7 +2686,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_upsert_many(self, space_name: str, values_operation: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_upsert_many(self, space_name: str, values_operation: Union[tuple, list],
+                         opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts batch rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
@@ -2711,7 +2727,8 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_upsert_object_many(self, space_name: str, values_operation: Union[tuple, list], opts: Optional[dict]=None) -> CrudResult:
+    def crud_upsert_object_many(self, space_name: str, values_operation: Union[tuple, list],
+                                opts: Optional[dict]=None) -> CrudResult:
         """
         Upserts batch object rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
@@ -2751,7 +2768,8 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_select(self, space_name: str, conditions: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
+    def crud_select(self, space_name: str, conditions: Optional[list]=None,
+                    opts: Optional[dict]=None) -> CrudResult:
         """
         Selects rows through the
         `crud <https://github.com/tarantool/crud#select>`__.
@@ -2939,7 +2957,8 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_count(self, space_name: str, conditions: Optional[list]=None, opts: Optional[dict]=None) -> int:
+    def crud_count(self, space_name: str, conditions: Optional[list]=None,
+                   opts: Optional[dict]=None) -> int:
         """
         Gets rows count through the
         `crud <https://github.com/tarantool/crud#count>`__.

@@ -86,7 +86,8 @@ class TestSuiteCrud(unittest.TestCase):
             },
             'error': {
                 'input': {
-                    'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Logan'}, {'timeout': 10}],
+                    'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Logan'},
+                             {'timeout': 10}],
                 },
                 'output': {
                     'str': [
@@ -266,7 +267,10 @@ class TestSuiteCrud(unittest.TestCase):
         'crud_replace_object': {
             'success': {
                 'input': {
-                    'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Eliza'}, {'timeout': 10}],
+                    'args': [
+                        'tester', {'id': 2, 'bucket_id': 100, 'name': 'Eliza'},
+                        {'timeout': 10}
+                    ],
                 },
                 'output': {
                     'rows': [[2, 100, 'Eliza']],
@@ -374,7 +378,8 @@ class TestSuiteCrud(unittest.TestCase):
         'crud_upsert': {
             'success': {
                 'input': {
-                    'args': ['tester', [2, 100, 'Cephus'], [['+', 'bucket_id', 1]], {'timeout': 10}],
+                    'args': ['tester', [2, 100, 'Cephus'], [['+', 'bucket_id', 1]],
+                             {'timeout': 10}],
                 },
                 'output': {
                     'rows': [],
@@ -455,10 +460,22 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': [
                         'tester',
                         [
-                            [{'id': 2, 'bucket_id': 100, 'name': 'Cephus'}, [['+', 'bucket_id', 1]]],
-                            [{'id': 3, 'bucket_id': 100, 'name': 'Esau'}, [['+', 'bucket_id', 1]]],
-                            [{'id': 4, 'bucket_id': 100, 'name': 'Haman'}, [['+', 'bucket_id', 1]]],
-                            [{'id': 5, 'bucket_id': 100, 'name': 'Gershon'}, [['+', 'bucket_id', 1]]],
+                            [
+                                {'id': 2, 'bucket_id': 100, 'name': 'Cephus'},
+                                [['+', 'bucket_id', 1]]
+                            ],
+                            [
+                                {'id': 3, 'bucket_id': 100, 'name': 'Esau'},
+                                [['+', 'bucket_id', 1]]
+                            ],
+                            [
+                                {'id': 4, 'bucket_id': 100, 'name': 'Haman'},
+                                [['+', 'bucket_id', 1]]
+                            ],
+                            [
+                                {'id': 5, 'bucket_id': 100, 'name': 'Gershon'},
+                                [['+', 'bucket_id', 1]]
+                            ],
                         ],
                         {'timeout': 10},
                     ],
@@ -470,10 +487,22 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': [
                         'tester',
                         [
-                            [{'id': 3, 'bucket_id': 100, 'name': 'Ephron'}, [['+', 'bucket_id', 1]]],
-                            [{'id': 4, 'bucket_id': 100, 'name': 'Ethan'}, [['+', 'bucket_id', 1]]],
-                            [{'id': 7, 'bucket_id': 100, 'name': 0}, [['+', 'bucket_id', 1]]],
-                            [{'id': 8, 'bucket_id': 100, 'name': 0}, [['+', 'bucket_id', 1]]],
+                            [
+                                {'id': 3, 'bucket_id': 100, 'name': 'Ephron'},
+                                [['+', 'bucket_id', 1]]
+                            ],
+                            [
+                                {'id': 4, 'bucket_id': 100, 'name': 'Ethan'},
+                                [['+', 'bucket_id', 1]]
+                            ],
+                            [
+                                {'id': 7, 'bucket_id': 100, 'name': 0},
+                                [['+', 'bucket_id', 1]]
+                            ],
+                            [
+                                {'id': 8, 'bucket_id': 100, 'name': 0},
+                                [['+', 'bucket_id', 1]]
+                            ],
                         ],
                         {'timeout': 10},
                     ],

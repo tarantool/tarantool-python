@@ -131,7 +131,8 @@ class TestSuiteErrorExt(unittest.TestCase):
                 type='AccessDeniedError',
                 file='/__w/sdk/sdk/tarantool-2.10/tarantool/src/box/func.c',
                 line=535,
-                message="Execute access to function 'forbidden_function' is denied for user 'no_grants'",
+                message=("Execute access to function 'forbidden_function' is denied "
+                         "for user 'no_grants'"),
                 errno=0,
                 errcode=42,
                 fields={
@@ -171,7 +172,8 @@ class TestSuiteErrorExt(unittest.TestCase):
                 type=b'AccessDeniedError',
                 file=b'/__w/sdk/sdk/tarantool-2.10/tarantool/src/box/func.c',
                 line=535,
-                message=b"Execute access to function 'forbidden_function' is denied for user 'no_grants'",
+                message=(b"Execute access to function 'forbidden_function' is denied "
+                         b"for user 'no_grants'"),
                 errno=0,
                 errcode=42,
                 fields={

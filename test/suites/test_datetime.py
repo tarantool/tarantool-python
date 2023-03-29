@@ -279,7 +279,8 @@ class TestSuiteDatetime(unittest.TestCase):
             'python': tarantool.Datetime(timestamp=1661958474, nsec=308543321,
                                          tz='Europe/Moscow', timestamp_since_utc_epoch=True),
             'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\xb3\x03'),
-            'tarantool': r"datetime.new({timestamp=1661969274, nsec=308543321, tz='Europe/Moscow'})",
+            'tarantool': r"datetime.new({timestamp=1661969274, nsec=308543321, " +
+                         r"tz='Europe/Moscow'})",
         },
     }
 
