@@ -77,6 +77,7 @@ class SchemaIndex():
     """
     Contains schema for a space index.
     """
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, index_row, space):
         """
@@ -130,6 +131,7 @@ class SchemaSpace():
     """
     Contains schema for a space.
     """
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, space_row, schema):
         """
@@ -175,6 +177,7 @@ class Schema():
     """
     Contains Tarantool server spaces schema.
     """
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, con):
         """

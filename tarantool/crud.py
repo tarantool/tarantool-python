@@ -14,6 +14,7 @@ class CrudResponse():
 
     .. _crud: https://github.com/tarantool/crud/
     """
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, response):
         """
@@ -33,14 +34,14 @@ class CrudResponse():
             raise RuntimeError('Unable to decode response to object due to unknown type')
 
 
-class CrudResult(CrudResponse):
+class CrudResult(CrudResponse): # pylint: disable=too-few-public-methods
     """
     Contains result's fields from result variable
     of crud module operation.
     """
 
 
-class CrudError(CrudResponse):
+class CrudError(CrudResponse): # pylint: disable=too-few-public-methods
     """
     Contains error's fields from error variable
     of crud module operation.
