@@ -638,7 +638,7 @@ class ConnectionPool(ConnectionInterface):
                 method = getattr(Connection, task.method_name)
                 try:
                     resp = method(unit.conn, *task.args, **task.kwargs)
-                except Exception as exc:
+                except Exception as exc: # pylint: disable=broad-exception-caught
                     unit.output_queue.put(exc)
                 else:
                     unit.output_queue.put(resp)

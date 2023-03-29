@@ -1000,7 +1000,7 @@ class Connection(ConnectionInterface):
                                         keyfile=self.ssl_key_file,
                                         password=self.ssl_password)
                 return
-            except Exception as exc:
+            except Exception as exc: # pylint: disable=broad-exception-caught
                 exc_list.append(exc)
 
 
@@ -1012,7 +1012,7 @@ class Connection(ConnectionInterface):
                                                 keyfile=self.ssl_key_file,
                                                 password=line.rstrip())
                         return
-                    except Exception as exc:
+                    except Exception as exc: # pylint: disable=broad-exception-caught
                         exc_list.append(exc)
 
 
@@ -1026,7 +1026,7 @@ class Connection(ConnectionInterface):
                                     password=password_raise_error)
 
             return
-        except Exception as exc:
+        except Exception as exc: # pylint: disable=broad-exception-caught
             exc_list.append(exc)
 
         raise SslError(exc_list)
