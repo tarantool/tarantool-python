@@ -1222,9 +1222,7 @@ class Connection(ConnectionInterface):
                     err = ctypes.get_last_error()
                     self._socket.setblocking(True)
 
-                if (retbytes < 0) and (err == errno.EAGAIN or
-                                       err == errno.EWOULDBLOCK or
-                                       err == WWSAEWOULDBLOCK):
+                if (retbytes < 0) and err in (errno.EAGAIN, errno.EWOULDBLOCK, WWSAEWOULDBLOCK):
                     ctypes.set_errno(0)
                     return errno.EAGAIN
                 else:
