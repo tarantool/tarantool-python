@@ -213,6 +213,7 @@ class RoundRobinStrategy():
         :type addrs: :obj:`list` of :obj:`dict`
         """
         self.pos = None
+        self.addrs = []
         self.update(addrs)
 
     def update(self, new_addrs):
@@ -234,7 +235,7 @@ class RoundRobinStrategy():
         new_addrs = new_addrs_unique
 
         # Save a current address if any.
-        if 'pos' in self.__dict__ and 'addrs' in self.__dict__:
+        if self.pos is not None:
             current_addr = self.addrs[self.pos]
         else:
             current_addr = None
