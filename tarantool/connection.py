@@ -2298,7 +2298,7 @@ class Connection(ConnectionInterface):
             res = CrudResult(crud_resp[0])
 
         if crud_resp[1] is not None:
-            errs = list()
+            errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
             raise CrudModuleManyError(res, errs)
@@ -2338,7 +2338,7 @@ class Connection(ConnectionInterface):
             res = CrudResult(crud_resp[0])
 
         if crud_resp[1] is not None:
-            errs = list()
+            errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
             raise CrudModuleManyError(res, errs)
@@ -2546,7 +2546,7 @@ class Connection(ConnectionInterface):
             res = CrudResult(crud_resp[0])
 
         if crud_resp[1] is not None:
-            errs = list()
+            errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
             raise CrudModuleManyError(res, errs)
@@ -2586,7 +2586,7 @@ class Connection(ConnectionInterface):
             res = CrudResult(crud_resp[0])
 
         if crud_resp[1] is not None:
-            errs = list()
+            errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
             raise CrudModuleManyError(res, errs)
@@ -2704,7 +2704,7 @@ class Connection(ConnectionInterface):
             res = CrudResult(crud_resp[0])
 
         if crud_resp[1] is not None:
-            errs = list()
+            errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
             raise CrudModuleManyError(res, errs)
@@ -2744,7 +2744,7 @@ class Connection(ConnectionInterface):
             res = CrudResult(crud_resp[0])
 
         if crud_resp[1] is not None:
-            errs = list()
+            errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
             raise CrudModuleManyError(res, errs)
