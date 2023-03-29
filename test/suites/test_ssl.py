@@ -34,6 +34,8 @@ def is_test_ssl():
 
 
 class SslTestCase:
+    # pylint: disable=too-few-public-methods
+
     def __init__(self,
                  name="",
                  ok=False,
