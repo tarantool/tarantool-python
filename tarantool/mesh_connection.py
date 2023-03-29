@@ -267,6 +267,7 @@ class MeshConnection(Connection):
     """
     Represents a connection to a cluster of Tarantool servers.
     """
+    # pylint: disable=duplicate-code
 
     def __init__(self, host=None, port=None,
                  user=None,
