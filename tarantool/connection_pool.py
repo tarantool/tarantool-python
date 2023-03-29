@@ -270,6 +270,27 @@ class RoundRobinStrategy(StrategyInterface):
 
         self.rebuild_needed = True
 
+    def _getnext_by_mode(self, *iters, err_msg="Can't find healthy instance in pool"):
+        """
+        Get server from prioritized list of iterators.
+
+        :param iters: list of iterators
+        :type iters: :obj:`list`
+
+        :param err_msg: Error message to raise in case of error.
+        :type err_msg: :obj:`str`
+
+        :rtype: :class:`~tarantool.connection_pool.PoolUnit`
+
+        :raise: :exc:`~tarantool.error.PoolTolopogyError`
+
+        :meta private:
+        """
+        for itr in iters:
+            if itr is not None:
+                return next(itr)
+        raise PoolTolopogyError(err_msg)
+
     def getnext(self, mode):
         """
         Get server based on the request mode.
@@ -286,34 +307,17 @@ class RoundRobinStrategy(StrategyInterface):
             self.build()
 
         if mode == Mode.ANY:
-            if self.any_iter is not None:
-                return next(self.any_iter)
-            else:
-                raise PoolTolopogyError("Can't find healthy instance in pool")
+            return self._getnext_by_mode(self.any_iter)
         elif mode == Mode.RW:
-            if self.rw_iter is not None:
-                return next(self.rw_iter)
-            else:
-                raise PoolTolopogyError("Can't find healthy rw instance in pool")
+            return self._getnext_by_mode(self.rw_iter,
+                                         err_msg="Can't find healthy rw instance in pool")
         elif mode == Mode.RO:
-            if self.ro_iter is not None:
-                return next(self.ro_iter)
-            else:
-                raise PoolTolopogyError("Can't find healthy ro instance in pool")
+            return self._getnext_by_mode(self.ro_iter,
+                                         err_msg="Can't find healthy ro instance in pool")
         elif mode == Mode.PREFER_RO:
-            if self.ro_iter is not None:
-                return next(self.ro_iter)
-            elif self.rw_iter is not None:
-                return next(self.rw_iter)
-            else:
-                raise PoolTolopogyError("Can't find healthy instance in pool")
+            return self._getnext_by_mode(self.ro_iter, self.rw_iter)
         elif mode == Mode.PREFER_RW:
-            if self.rw_iter is not None:
-                return next(self.rw_iter)
-            elif self.ro_iter is not None:
-                return next(self.ro_iter)
-            else:
-                raise PoolTolopogyError("Can't find healthy instance in pool")
+            return self._getnext_by_mode(self.rw_iter, self.ro_iter)
 
 
 @dataclass
