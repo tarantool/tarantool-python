@@ -6,12 +6,8 @@ Package setup commands.
 import codecs
 import os
 
-try:
-    from setuptools import setup, find_packages
-    from setuptools.command.build_py import build_py
-except ImportError:
-    from distutils.core import setup, find_packages
-    from distutils.command.build_py import build_py
+from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
 
 # Extra commands for documentation management
 cmdclass = {}

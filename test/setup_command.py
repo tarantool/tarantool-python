@@ -4,9 +4,14 @@ This module describes class implementing `python setup.py test`.
 """
 
 import unittest
-from distutils.errors import DistutilsError
 
 import setuptools
+
+try:
+    from setuptools.errors import BaseError
+except ModuleNotFoundError:
+    # pylint: disable=deprecated-module
+    from distutils.errors import DistutilsError as BaseError
 
 class Test(setuptools.Command):
     """
@@ -37,4 +42,4 @@ class Test(setuptools.Command):
         test_runner = unittest.TextTestRunner(verbosity=2)
         result = test_runner.run(tests)
         if not result.wasSuccessful():
-            raise DistutilsError('There are failed tests')
+            raise BaseError('There are failed tests')
