@@ -73,7 +73,7 @@ def to_unicode_recursive(value, max_depth):
     return to_unicode(value)
 
 
-class SchemaIndex(object):
+class SchemaIndex():
     """
     Contains schema for a space index.
     """
@@ -126,7 +126,7 @@ class SchemaIndex(object):
             del self.space.indexes[self.name]
 
 
-class SchemaSpace(object):
+class SchemaSpace():
     """
     Contains schema for a space.
     """
@@ -171,7 +171,7 @@ class SchemaSpace(object):
             del self.schema[self.name]
 
 
-class Schema(object):
+class Schema():
     """
     Contains Tarantool server spaces schema.
     """

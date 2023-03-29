@@ -122,7 +122,7 @@ def packer_factory(conn):
     return msgpack.Packer(**packer_kwargs)
 
 
-class Request(object):
+class Request():
     """
     Represents a single request to the server in compliance with the
     Tarantool protocol. Responsible for data encapsulation and building

@@ -26,7 +26,7 @@ def get_random_string():
     return ''.join(random.choice(string.ascii_lowercase) for _ in range(16))
 
 
-class RemoteTarantoolServer(object):
+class RemoteTarantoolServer():
     """
     Class to work with remote Tarantool server.
     """

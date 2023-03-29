@@ -4,7 +4,7 @@ a Tarantool server space.
 """
 
 
-class Space(object):
+class Space():
     """
     Object-oriented wrapper for accessing a particular space.
     Encapsulates the identifier of the space and provides a more
