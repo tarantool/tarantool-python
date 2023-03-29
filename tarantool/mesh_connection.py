@@ -118,6 +118,7 @@ def prepare_address(address):
     :rtype: first value: :obj:`dict` or ``None``,
         second value: ``None`` or :obj:`str`
     """
+    # pylint: disable=too-many-return-statements
 
     def format_error(address, err):
         return None, f'Address {str(address)}: {err}'
