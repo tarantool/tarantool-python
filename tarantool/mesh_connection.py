@@ -59,6 +59,7 @@ def parse_uri(uri):
     :rtype: first value: :obj:`dict` or ``None``,
         second value: ``None`` or :obj:`str`
     """
+    # pylint: disable=too-many-branches
 
     # TODO: Support Unix sockets.
     def parse_error(uri, msg):
@@ -118,7 +119,7 @@ def prepare_address(address):
     :rtype: first value: :obj:`dict` or ``None``,
         second value: ``None`` or :obj:`str`
     """
-    # pylint: disable=too-many-return-statements
+    # pylint: disable=too-many-return-statements,too-many-branches
 
     def format_error(address, err):
         return None, f'Address {str(address)}: {err}'

@@ -261,6 +261,7 @@ class Datetime():
 
         .. _datetime.new(): https://www.tarantool.io/en/doc/latest/reference/reference_lua/datetime/new/
         """
+        # pylint: disable=too-many-branches
 
         tzinfo = None
         if tz != '':
