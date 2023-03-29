@@ -456,7 +456,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
 
     def _run_test_schema_fetch_disable(self, con, mode=None):
         # Enable SQL test case for tarantool 2.* and higher.
-        if int(self.srv.admin.tnt_version.__str__()[0]) > 1:
+        if int(str(self.srv.admin.tnt_version)[0]) > 1:
             self.testing_methods['available']['execute'] = {
                 'input': ['SELECT * FROM "tester"'],
                 'output': [[1, None]],
