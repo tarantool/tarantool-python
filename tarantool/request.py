@@ -71,7 +71,7 @@ def packer_factory(conn):
     :rtype: :class:`msgpack.Packer`
     """
 
-    packer_kwargs = dict()
+    packer_kwargs = {}
 
     # use_bin_type=True is default since msgpack-1.0.0.
     #

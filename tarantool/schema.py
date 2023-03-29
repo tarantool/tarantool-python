@@ -63,7 +63,7 @@ def to_unicode_recursive(value, max_depth):
         raise RecursionError('Max recursion depth is reached')
 
     if isinstance(value, dict):
-        res = dict()
+        res = {}
         for key, val in value.items():
             key = to_unicode_recursive(key, max_depth - 1)
             val = to_unicode_recursive(val, max_depth - 1)
@@ -161,7 +161,7 @@ class SchemaSpace():
         self.schema[self.sid] = self
         if self.name:
             self.schema[self.name] = self
-        self.format = dict()
+        self.format = {}
         try:
             format_raw = to_unicode_recursive(space_row[6], MAX_RECURSION_DEPTH)
         except RecursionError as exc:

@@ -43,7 +43,7 @@ def unpacker_factory(conn):
     :rtype: :class:`msgpack.Unpacker`
     """
 
-    unpacker_kwargs = dict()
+    unpacker_kwargs = {}
 
     # Decode MsgPack arrays into Python lists by default (not tuples).
     # Can be configured in the Connection init
