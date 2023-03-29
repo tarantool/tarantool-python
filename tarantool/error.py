@@ -186,8 +186,8 @@ if sys.platform == "win32":
         message = os_strerror_orig(code)
         if not message.startswith("Unknown"):
             return message
-        else:
-            return _code2str.get(code, f"Unknown error {code}")
+
+        return _code2str.get(code, f"Unknown error {code}")
 
     os.strerror = os_strerror_patched
     del os_strerror_patched

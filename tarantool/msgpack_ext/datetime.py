@@ -169,9 +169,9 @@ def decode(data, _):
         tz = tt_timezones.indexToTimezone[tzindex]
         return Datetime(timestamp=seconds, nsec=nsec, tz=tz,
                         timestamp_since_utc_epoch=True)
-    elif tzoffset != 0:
+    if tzoffset != 0:
         return Datetime(timestamp=seconds, nsec=nsec, tzoffset=tzoffset,
                         timestamp_since_utc_epoch=True)
-    else:
-        return Datetime(timestamp=seconds, nsec=nsec,
-                        timestamp_since_utc_epoch=True)
+
+    return Datetime(timestamp=seconds, nsec=nsec,
+                    timestamp_since_utc_epoch=True)

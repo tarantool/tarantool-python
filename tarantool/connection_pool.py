@@ -308,15 +308,15 @@ class RoundRobinStrategy(StrategyInterface):
 
         if mode == Mode.ANY:
             return self._getnext_by_mode(self.any_iter)
-        elif mode == Mode.RW:
+        if mode == Mode.RW:
             return self._getnext_by_mode(self.rw_iter,
                                          err_msg="Can't find healthy rw instance in pool")
-        elif mode == Mode.RO:
+        if mode == Mode.RO:
             return self._getnext_by_mode(self.ro_iter,
                                          err_msg="Can't find healthy ro instance in pool")
-        elif mode == Mode.PREFER_RO:
+        if mode == Mode.PREFER_RO:
             return self._getnext_by_mode(self.ro_iter, self.rw_iter)
-        elif mode == Mode.PREFER_RW:
+        if mode == Mode.PREFER_RW:
             return self._getnext_by_mode(self.rw_iter, self.ro_iter)
 
         raise ValueError(f"Unexpected mode {mode}")

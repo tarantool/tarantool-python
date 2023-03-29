@@ -45,7 +45,7 @@ def wrap_key(*args, first=True, select=False):
     if len(args) == 1:
         if isinstance(args[0], (list, tuple)) and first:
             return wrap_key(*args[0], first=False, select=select)
-        elif args[0] is None and select:
+        if args[0] is None and select:
             return []
 
     return list(args)

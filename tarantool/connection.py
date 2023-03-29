@@ -1207,26 +1207,26 @@ class Connection(ConnectionInterface):
                 if exc.errno == errno.EBADF:
                     return errno.ECONNRESET
                 return exc.errno
+
+            if os.name == 'nt':
+                flag = socket.MSG_PEEK
+                self._socket.setblocking(False)
             else:
-                if os.name == 'nt':
-                    flag = socket.MSG_PEEK
-                    self._socket.setblocking(False)
-                else:
-                    flag = socket.MSG_DONTWAIT | socket.MSG_PEEK
-                retbytes = self._sys_recv(sock_fd, buf, 1, flag)
+                flag = socket.MSG_DONTWAIT | socket.MSG_PEEK
+            retbytes = self._sys_recv(sock_fd, buf, 1, flag)
 
-                err = 0
-                if os.name!= 'nt':
-                    err = ctypes.get_errno()
-                else:
-                    err = ctypes.get_last_error()
-                    self._socket.setblocking(True)
+            err = 0
+            if os.name!= 'nt':
+                err = ctypes.get_errno()
+            else:
+                err = ctypes.get_last_error()
+                self._socket.setblocking(True)
 
-                if (retbytes < 0) and err in (errno.EAGAIN, errno.EWOULDBLOCK, WWSAEWOULDBLOCK):
-                    ctypes.set_errno(0)
-                    return errno.EAGAIN
-                else:
-                    return errno.ECONNRESET
+            if (retbytes < 0) and err in (errno.EAGAIN, errno.EWOULDBLOCK, WWSAEWOULDBLOCK):
+                ctypes.set_errno(0)
+                return errno.EAGAIN
+
+            return errno.ECONNRESET
 
         last_errno = check()
         if self.connected and last_errno == errno.EAGAIN:
@@ -1561,7 +1561,7 @@ class Connection(ConnectionInterface):
             yield resp
             if resp.code >= REQUEST_TYPE_ERROR:
                 return
-            elif resp.code == REQUEST_TYPE_OK:
+            if resp.code == REQUEST_TYPE_OK:
                 if state == JoinState.HANDSHAKE:
                     state = JoinState.INITIAL
                 elif state == JoinState.INITIAL:

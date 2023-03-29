@@ -480,10 +480,10 @@ class Datetime():
                 sec = self_dt.second - other_dt.second,
                 nsec = self_nsec - other_nsec,
             )
-        elif isinstance(other, Interval):
+        if isinstance(other, Interval):
             return self._interval_operation(other, sign=-1)
-        else:
-            raise TypeError(f"unsupported operand type(s) for -: '{type(self)}' and '{type(other)}'")
+
+        raise TypeError(f"unsupported operand type(s) for -: '{type(self)}' and '{type(other)}'")
 
     def __eq__(self, other):
         """
@@ -498,10 +498,9 @@ class Datetime():
 
         if isinstance(other, Datetime):
             return self._datetime == other._datetime
-        elif isinstance(other, pandas.Timestamp):
+        if isinstance(other, pandas.Timestamp):
             return self._datetime == other
-        else:
-            return False
+        return False
 
     def __str__(self):
         return self._datetime.__str__()
