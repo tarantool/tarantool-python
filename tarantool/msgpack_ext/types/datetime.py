@@ -423,7 +423,8 @@ class Datetime():
         """
 
         if not isinstance(other, Interval):
-            raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+            raise TypeError("unsupported operand type(s) for +: "
+                            f"'{type(self)}' and '{type(other)}'")
 
         return self._interval_operation(other, sign=1)
 

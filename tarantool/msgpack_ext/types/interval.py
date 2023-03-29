@@ -120,7 +120,8 @@ class Interval():
         """
 
         if not isinstance(other, Interval):
-            raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+            raise TypeError("unsupported operand type(s) for +: "
+                            f"'{type(self)}' and '{type(other)}'")
 
         # Tarantool saves adjust of the first argument
         #
@@ -168,7 +169,8 @@ class Interval():
         """
 
         if not isinstance(other, Interval):
-            raise TypeError(f"unsupported operand type(s) for -: '{type(self)}' and '{type(other)}'")
+            raise TypeError("unsupported operand type(s) for -: "
+                            f"'{type(self)}' and '{type(other)}'")
 
         # Tarantool saves adjust of the first argument
         #

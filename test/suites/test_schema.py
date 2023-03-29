@@ -84,14 +84,18 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
         if not sys.platform.startswith("win"):
             # Schema fetch disable tests via mesh and pool connection
             # are not supported on windows platform.
-            cls.mesh_con_schema_disable = tarantool.MeshConnection(host=cls.srv.host,
-                                                                   port=cls.srv.args['primary'],
-                                                                   fetch_schema=False,
-                                                                   user='test', password='test')
-            cls.pool_con_schema_disable = tarantool.ConnectionPool([{'host':cls.srv.host,
-                                                                     'port':cls.srv.args['primary']}],
-                                                                      user='test', password='test',
-                                                                      fetch_schema=False)
+            cls.mesh_con_schema_disable = tarantool.MeshConnection(
+                host=cls.srv.host,
+                port=cls.srv.args['primary'],
+                fetch_schema=False,
+                user='test', password='test')
+            cls.pool_con_schema_disable = tarantool.ConnectionPool(
+                [{
+                    'host':cls.srv.host,
+                    'port':cls.srv.args['primary']
+                }],
+                user='test', password='test',
+                fetch_schema=False)
         cls.sch = cls.con.schema
 
         cls.unicode_space_name_literal = '∞'
