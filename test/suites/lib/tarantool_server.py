@@ -160,6 +160,7 @@ class TarantoolServer():
         """
         Get server log file descriptor.
         """
+        # pylint: disable=consider-using-with
 
         if self._log_des is None:
             self._log_des = open(self.logfile_path, 'a')
@@ -204,6 +205,8 @@ class TarantoolServer():
                  ssl_password_file=None,
                  create_unix_socket=False,
                  auth_type=None):
+        # pylint: disable=consider-using-with
+
         os.popen('ulimit -c unlimited').close()
 
         if create_unix_socket:
@@ -332,6 +335,7 @@ class TarantoolServer():
         * Wait unitl Tarantool\\Box
           started                   --DONE(wait_until_started)
         """
+        # pylint: disable=consider-using-with
 
         self.generate_configuration()
         if self.script:
