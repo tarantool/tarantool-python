@@ -65,7 +65,7 @@ class TarantoolAdmin():
         """
 
         if not command:
-            return
+            return None
 
         if not self.is_connected:
             self.connect()
