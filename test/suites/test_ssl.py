@@ -34,7 +34,7 @@ def is_test_ssl():
 
 
 class SslTestCase:
-    # pylint: disable=too-few-public-methods,too-many-instance-attributes
+    # pylint: disable=too-few-public-methods,too-many-instance-attributes,too-many-arguments
 
     def __init__(self,
                  name="",
