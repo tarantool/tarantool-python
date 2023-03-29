@@ -467,7 +467,7 @@ class ConnectionPool(ConnectionInterface):
         .. _box.info.status:
         .. _box.info: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-locals
 
         if not isinstance(addrs, list) or len(addrs) == 0:
             raise ConfigurationError("addrs must be non-empty list")

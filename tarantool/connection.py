@@ -788,7 +788,7 @@ class Connection(ConnectionInterface):
         .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
         .. _mp_array: https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-locals
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
             raise ConfigurationError("msgpack>=1.0.0 only supports None and " +
