@@ -141,4 +141,4 @@ def greeting_decode(greeting_buf):
         return result
     except Exception as exc:
         print('exx', exc)
-        raise ValueError("Invalid greeting: " + str(greeting_buf))
+        raise ValueError("Invalid greeting: " + str(greeting_buf)) from exc

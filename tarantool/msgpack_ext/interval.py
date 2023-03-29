@@ -127,7 +127,7 @@ def decode(data, unpacker):
                 try:
                     value = Adjust(value)
                 except ValueError as exc:
-                    raise MsgpackError(exc)
+                    raise MsgpackError(exc) from exc
 
             kwargs[id_map[field_id]] = value
 
