@@ -7,7 +7,16 @@ from tarantool.error import (
     SchemaError,
     DatabaseError
 )
-import tarantool.const as const
+from tarantool.const import (
+    INDEX_SPACE_NAME,
+    INDEX_INDEX_NAME,
+    INDEX_SPACE_PRIMARY,
+    INDEX_INDEX_PRIMARY,
+    SPACE_VSPACE,
+    SPACE_VINDEX,
+    SPACE_SPACE,
+    SPACE_INDEX
+)
 
 MAX_RECURSION_DEPTH = 32
 """
@@ -257,9 +266,9 @@ class Schema():
 
         _index = None
         if isinstance(space, str):
-            _index = const.INDEX_SPACE_NAME
+            _index = INDEX_SPACE_NAME
         else:
-            _index = const.INDEX_SPACE_PRIMARY
+            _index = INDEX_SPACE_PRIMARY
 
         if space is None:
             space = ()
@@ -267,7 +276,7 @@ class Schema():
         space_row = None
         try:
             # Try to fetch from '_vspace'
-            space_row = self.con.select(const.SPACE_VSPACE, space,
+            space_row = self.con.select(SPACE_VSPACE, space,
                                         index=_index)
         except DatabaseError as exc:
             # if space can't be found, then user is using old version of
@@ -276,7 +285,7 @@ class Schema():
                 raise
         if space_row is None:
             # Try to fetch from '_space'
-            space_row = self.con.select(const.SPACE_SPACE, space, index=_index)
+            space_row = self.con.select(SPACE_SPACE, space, index=_index)
 
         return space_row
 
@@ -386,9 +395,9 @@ class Schema():
 
         _index = None
         if isinstance(index, str):
-            _index = const.INDEX_INDEX_NAME
+            _index = INDEX_INDEX_NAME
         else:
-            _index = const.INDEX_INDEX_PRIMARY
+            _index = INDEX_INDEX_PRIMARY
 
         _key_tuple = None
         if space is None and index is None:
@@ -403,7 +412,7 @@ class Schema():
         index_row = None
         try:
             # Try to fetch from '_vindex'
-            index_row = self.con.select(const.SPACE_VINDEX, _key_tuple,
+            index_row = self.con.select(SPACE_VINDEX, _key_tuple,
                                         index=_index)
         except DatabaseError as exc:
             # if space can't be found, then user is using old version of
@@ -412,7 +421,7 @@ class Schema():
                 raise
         if index_row is None:
             # Try to fetch from '_index'
-            index_row = self.con.select(const.SPACE_INDEX, _key_tuple,
+            index_row = self.con.select(SPACE_INDEX, _key_tuple,
                                         index=_index)
 
         return index_row
