@@ -69,7 +69,7 @@ class TestSuitePool(unittest.TestCase):
         for i in range(count):
             try:
                 func()
-            except Exception as exc:
+            except Exception as exc: # pylint: disable=broad-exception-caught
                 if i + 1 == count:
                     raise exc
 
