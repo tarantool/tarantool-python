@@ -32,9 +32,10 @@ class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
         cls.srv.start()
         cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])
         cls.driver = dbapi
-        cls.connect_kw_args = dict(
-            host=cls.srv.host,
-            port=cls.srv.args['primary'])
+        cls.connect_kw_args = {
+            "host": cls.srv.host,
+            "port": cls.srv.args['primary']
+        }
 
     @skip_or_run_sql_test
     def setUp(self):
