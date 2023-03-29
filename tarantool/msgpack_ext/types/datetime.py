@@ -276,6 +276,7 @@ class Datetime():
         # The logic is same as in Tarantool, refer to datetime API.
         # https://www.tarantool.io/en/doc/latest/reference/reference_lua/datetime/new/
         if timestamp is not None:
+            # pylint: disable=too-many-boolean-expressions
             if ((year is not None) or (month is not None) or \
                     (day is not None) or (hour is not None) or \
                     (minute is not None) or (sec is not None)):
