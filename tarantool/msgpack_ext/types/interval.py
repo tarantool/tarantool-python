@@ -57,6 +57,7 @@ class Interval():
 
     .. _datetime.interval: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/#the-interval-type
     """
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, *, year=0, month=0, week=0,
                  day=0, hour=0, minute=0, sec=0,
