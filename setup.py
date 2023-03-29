@@ -37,7 +37,7 @@ class BuildPyCommand(build_py):
 
         package_dir = self.get_package_dir('tarantool')
         version_file = os.path.join(package_dir, 'version.py')
-        with open(version_file, 'w') as file:
+        with open(version_file, 'w', encoding='utf-8') as file:
             file.write(f"__version__ = '{version}'")
 
         return super().run()
@@ -80,7 +80,7 @@ def get_dependencies(filename):
     root = os.path.dirname(os.path.realpath(__file__))
     requirements = os.path.join(root, filename)
     if os.path.isfile(requirements):
-        with open(requirements) as file:
+        with open(requirements, encoding='utf-8') as file:
             return file.read().splitlines()
     raise RuntimeError("Unable to get dependencies from file " + filename)
 
