@@ -1,7 +1,7 @@
 """
 This module tests connection through SSL.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring,too-many-branches
 
 import os
 import sys
