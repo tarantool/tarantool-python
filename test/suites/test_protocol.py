@@ -1,7 +1,7 @@
 """
 This module tests connection authentication.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring,protected-access
+# pylint: disable=missing-class-docstring,missing-function-docstring,protected-access,duplicate-code
 
 import sys
 import unittest

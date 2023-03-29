@@ -1,7 +1,7 @@
 """
 This module tests work with extended error type.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring,protected-access,line-too-long
+# pylint: disable=missing-class-docstring,missing-function-docstring,protected-access,line-too-long,duplicate-code
 
 import sys
 import unittest

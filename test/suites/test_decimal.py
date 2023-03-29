@@ -1,7 +1,7 @@
 """
 This module tests work with decimal type.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring,duplicate-code
 
 import sys
 import unittest
