@@ -216,7 +216,7 @@ class RequestInsert(Request):
         :raise: :exc:`~AssertionError`
         """
 
-        super(RequestInsert, self).__init__(conn)
+        super().__init__(conn)
         assert isinstance(values, (tuple, list))
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
@@ -273,7 +273,7 @@ class RequestAuthenticate(Request):
         """
         # pylint: disable=too-many-arguments
 
-        super(RequestAuthenticate, self).__init__(conn)
+        super().__init__(conn)
 
         if auth_type == AUTH_TYPE_CHAP_SHA1:
             hash1 = sha1((password,))
@@ -332,7 +332,7 @@ class RequestReplace(Request):
         :raise: :exc:`~AssertionError`
         """
 
-        super(RequestReplace, self).__init__(conn)
+        super().__init__(conn)
         assert isinstance(values, (tuple, list))
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
@@ -365,7 +365,7 @@ class RequestDelete(Request):
         :raise: :exc:`~AssertionError`
         """
 
-        super(RequestDelete, self).__init__(conn)
+        super().__init__(conn)
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
                                     IPROTO_INDEX_ID: index_no,
@@ -409,7 +409,7 @@ class RequestSelect(Request):
         """
         # pylint: disable=too-many-arguments
 
-        super(RequestSelect, self).__init__(conn)
+        super().__init__(conn)
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
                                     IPROTO_INDEX_ID: index_no,
                                     IPROTO_OFFSET: offset,
@@ -450,7 +450,7 @@ class RequestUpdate(Request):
         """
         # pylint: disable=too-many-arguments
 
-        super(RequestUpdate, self).__init__(conn)
+        super().__init__(conn)
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
                                     IPROTO_INDEX_ID: index_no,
@@ -487,7 +487,7 @@ class RequestCall(Request):
 
         if call_16:
             self.request_type = REQUEST_TYPE_CALL16
-        super(RequestCall, self).__init__(conn)
+        super().__init__(conn)
         assert isinstance(args, (list, tuple))
 
         request_body = self._dumps({IPROTO_FUNCTION_NAME: name,
@@ -517,7 +517,7 @@ class RequestEval(Request):
         :raise: :exc:`~AssertionError`
         """
 
-        super(RequestEval, self).__init__(conn)
+        super().__init__(conn)
         assert isinstance(args, (list, tuple))
 
         request_body = self._dumps({IPROTO_EXPR: name,
@@ -539,7 +539,7 @@ class RequestPing(Request):
         :type conn: :class:`~tarantool.Connection`
         """
 
-        super(RequestPing, self).__init__(conn)
+        super().__init__(conn)
         self._body = b''
 
 
@@ -573,7 +573,7 @@ class RequestUpsert(Request):
         """
         # pylint: disable=too-many-arguments
 
-        super(RequestUpsert, self).__init__(conn)
+        super().__init__(conn)
 
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
                                     IPROTO_INDEX_ID: index_no,
@@ -599,7 +599,7 @@ class RequestJoin(Request):
         :type server_uuid: :obj:`str`
         """
 
-        super(RequestJoin, self).__init__(conn)
+        super().__init__(conn)
         request_body = self._dumps({IPROTO_SERVER_UUID: server_uuid})
         self._body = request_body
 
@@ -628,7 +628,7 @@ class RequestSubscribe(Request):
         :raise: :exc:`~AssertionError`
         """
 
-        super(RequestSubscribe, self).__init__(conn)
+        super().__init__(conn)
         assert isinstance(vclock, dict)
 
         request_body = self._dumps({
@@ -655,7 +655,7 @@ class RequestOK(Request):
         :type sync: :obj:`int`
         """
 
-        super(RequestOK, self).__init__(conn)
+        super().__init__(conn)
         request_body = self._dumps({IPROTO_REQUEST_TYPE: self.request_type,
                                     IPROTO_SYNC: sync})
         self._body = request_body
@@ -682,7 +682,7 @@ class RequestExecute(Request):
         :raise: :exc:`~TypeError`
         """
 
-        super(RequestExecute, self).__init__(conn)
+        super().__init__(conn)
         if isinstance(args, Mapping):
             args = [{f":{name}": value} for name, value in args.items()]
         elif not isinstance(args, Sequence):
@@ -715,7 +715,7 @@ class RequestProtocolVersion(Request):
         :type features: :obj:`list`
         """
 
-        super(RequestProtocolVersion, self).__init__(conn)
+        super().__init__(conn)
 
         request_body = self._dumps({IPROTO_VERSION: protocol_version,
                                     IPROTO_FEATURES: features})
