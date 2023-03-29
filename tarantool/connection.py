@@ -122,6 +122,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
     Lua code on server, make simple data manipulations and execute SQL
     queries.
     """
+    # pylint: disable=too-many-public-methods
 
     @classmethod
     def __subclasshook__(cls, subclass):
@@ -488,7 +489,7 @@ class Connection(ConnectionInterface):
     check its status, call procedures and evaluate Lua code on server,
     make simple data manipulations and execute SQL queries.
     """
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes,too-many-public-methods
 
     # DBAPI Extension: supply exceptions as attributes on the connection
     Error = Error
