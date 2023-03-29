@@ -312,7 +312,7 @@ class TarantoolServer(object):
                     elif ans in ('loading',):
                         continue
                     else:
-                        raise Exception(f"Strange output for `box.info.status`: {ans}")
+                        raise ValueError(f"Strange output for `box.info.status`: {ans}")
             except socket.error as exc:
                 if exc.errno == errno.ECONNREFUSED:
                     time.sleep(0.1)

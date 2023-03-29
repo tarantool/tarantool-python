@@ -116,7 +116,7 @@ def greeting_decode(greeting_buf):
     try:
         (product, _, tail) = greeting_buf[0:63].decode().partition(' ')
         if product.startswith("Tarantool "):
-            raise Exception()
+            raise ValueError()
         # Parse a version string - 1.6.6-83-gc6b2129 or 1.6.7
         (version, _, tail) = tail.partition(' ')
         version = version.split('-')[0].split('.')
@@ -136,9 +136,9 @@ def greeting_decode(greeting_buf):
             # Tarantool < 1.6.7 doesn't add "(Binary)" to greeting
             result.protocol = "Binary"
         elif len(tail.strip()) != 0:
-            raise Exception("x")  # Unsupported greeting
+            raise ValueError("x")  # Unsupported greeting
         result.salt = base64_decode(greeting_buf[64:])[:20]
         return result
-    except Exception as exc:
+    except ValueError as exc:
         print('exx', exc)
         raise ValueError("Invalid greeting: " + str(greeting_buf)) from exc
