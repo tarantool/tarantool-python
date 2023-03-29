@@ -159,7 +159,8 @@ def prepare_address(address):
 
         # Looks okay.
         return result, None
-    elif isinstance(result['port'], str):
+
+    if isinstance(result['port'], str):
         # Looks like a unix address.
 
         # Expect no host.

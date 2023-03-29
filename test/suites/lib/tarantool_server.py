@@ -310,10 +310,10 @@ class TarantoolServer():
                     if ans in ('running', 'hot_standby', 'orphan') or ans.startswith('replica'):
                         temp.disconnect()
                         return True
-                    elif ans in ('loading',):
+                    if ans in ('loading',):
                         continue
-                    else:
-                        raise ValueError(f"Strange output for `box.info.status`: {ans}")
+
+                    raise ValueError(f"Strange output for `box.info.status`: {ans}")
             except socket.error as exc:
                 if exc.errno == errno.ECONNREFUSED:
                     time.sleep(0.1)
