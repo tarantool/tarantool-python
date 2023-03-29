@@ -92,6 +92,7 @@ class Response(Sequence):
     received list of tuples) and parsing of binary packets received from
     the server.
     """
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, conn, response):
         """

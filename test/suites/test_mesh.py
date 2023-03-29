@@ -34,6 +34,8 @@ def create_server(_id):
 @unittest.skipIf(sys.platform.startswith("win"),
                  'Mesh tests on windows platform are not supported')
 class TestSuiteMesh(unittest.TestCase):
+    # pylint: disable=too-many-instance-attributes
+
     def define_cluster_function(self, func_name, servers):
         addresses = [(srv.host, srv.args['primary']) for srv in servers]
         addresses_lua = ",".join(f"'{address[0]}:{address[1]}'" for address in addresses)

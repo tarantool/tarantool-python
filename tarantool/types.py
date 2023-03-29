@@ -13,6 +13,7 @@ class BoxError():
 
     .. _box.error: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_error/error/
     """
+    # pylint: disable=too-many-instance-attributes
 
     type: typing.Union[str, bytes]
     """
