@@ -6,11 +6,6 @@ Python DB API compatible exceptions, see `PEP-249`_.
 
 import os
 import socket
-try:
-    import ssl
-    IS_SSL_SUPPORTED = True
-except ImportError:
-    IS_SSL_SUPPORTED = False
 import sys
 import warnings
 
@@ -236,27 +231,35 @@ class NetworkError(DatabaseError):
     Error related to network.
     """
 
-    def __init__(self, orig_exception=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
-        :param orig_exception: Exception to wrap.
-        :type orig_exception: optional
+        :param args: Exception arguments. If the first argument is
+           a socket exception, it is wrapped.
+        :type args: :obj:`tuple`, optional
 
-        :param args: Wrapped exception arguments.
-        :type args: :obj:`tuple`
+        :param kwargs: Exception to wrap.
+        :type args: :obj:`dict`, optional
         """
 
         self.errno = 0
-        if hasattr(orig_exception, 'errno'):
-            self.errno = orig_exception.errno
-        if orig_exception:
+
+        if len(args) > 0:
+            orig_exception = args[0]
+
+            if hasattr(orig_exception, 'errno'):
+                self.errno = orig_exception.errno
+
             if isinstance(orig_exception, socket.timeout):
                 self.message = "Socket timeout"
                 super().__init__(0, self.message)
-            elif isinstance(orig_exception, socket.error):
+                return
+
+            if isinstance(orig_exception, socket.error):
                 self.message = os.strerror(orig_exception.errno)
                 super().__init__(orig_exception.errno, self.message)
-            else:
-                super().__init__(orig_exception, *args, **kwargs)
+                return
+
+        super().__init__(*args, **kwargs)
 
 
 class NetworkWarning(UserWarning):
@@ -269,23 +272,25 @@ class SslError(DatabaseError):
     Error related to SSL.
     """
 
-    def __init__(self, orig_exception=None, *args):
+    def __init__(self, *args, **kwargs):
         """
-        :param orig_exception: Exception to wrap.
-        :type orig_exception: optional
+        :param args: Exception arguments. If the first argument is
+           a socket exception, it is wrapped.
+        :type args: :obj:`tuple`, optional
 
-        :param args: Wrapped exception arguments.
-        :type args: :obj:`tuple`
+        :param kwargs: Exception to wrap.
+        :type args: :obj:`dict`, optional
         """
 
         self.errno = 0
-        if hasattr(orig_exception, 'errno'):
-            self.errno = orig_exception.errno
-        if orig_exception:
-            if IS_SSL_SUPPORTED and isinstance(orig_exception, ssl.SSLError):
-                super().__init__(orig_exception, *args)
-            else:
-                super().__init__(orig_exception, *args)
+
+        if len(args) > 0:
+            orig_exception = args[0]
+
+            if hasattr(orig_exception, 'errno'):
+                self.errno = orig_exception.errno
+
+        super().__init__(*args, **kwargs)
 
 
 class ClusterDiscoveryWarning(UserWarning):
