@@ -913,6 +913,7 @@ class Connection(ConnectionInterface):
 
         :meta private:
         """
+        # pylint: disable=no-member
 
         try:
             # If old socket already exists - close it and re-create
@@ -1193,6 +1194,7 @@ class Connection(ConnectionInterface):
 
         :meta private:
         """
+        # pylint: disable=no-member
 
         # **Bug in Python: timeout is an internal Python construction (???).
         if not self._socket:
