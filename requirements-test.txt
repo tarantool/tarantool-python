@@ -3,3 +3,4 @@ pyyaml==6.0
 importlib-metadata >= 1.0 ; python_version < '3.8'
 pylint
 flake8
+codespell
