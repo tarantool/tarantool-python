@@ -15,6 +15,7 @@ import tarantool.msgpack_ext.decimal as ext_decimal
 from .lib.skip import skip_or_run_decimal_test, skip_or_run_varbinary_test
 from .lib.tarantool_server import TarantoolServer
 
+
 class TestSuiteConnection(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -104,7 +105,6 @@ class TestSuiteConnection(unittest.TestCase):
             if msgpack.version >= (1, 0, 0):
                 return msgpack.Unpacker(ext_hook=my_ext_type_decoder, strict_map_key=False)
             return msgpack.Unpacker(ext_hook=my_ext_type_decoder)
-
 
         self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
                                         user='test', password='test',

@@ -112,6 +112,7 @@ from tarantool.crud import (
 WWSAEWOULDBLOCK = 10035
 ER_UNKNOWN_REQUEST_TYPE = 48
 
+
 # Based on https://realpython.com/python-interface/
 class ConnectionInterface(metaclass=abc.ABCMeta):
     """
@@ -126,33 +127,33 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        return (hasattr(subclass, 'close') and
-                callable(subclass.close) and
-                hasattr(subclass, 'is_closed') and
-                callable(subclass.is_closed) and
-                hasattr(subclass, 'connect') and
-                callable(subclass.connect) and
-                hasattr(subclass, 'call') and
-                callable(subclass.call) and
-                hasattr(subclass, 'eval') and
-                callable(subclass.eval) and
-                hasattr(subclass, 'replace') and
-                callable(subclass.replace) and
-                hasattr(subclass, 'insert') and
-                callable(subclass.insert) and
-                hasattr(subclass, 'delete') and
-                callable(subclass.delete) and
-                hasattr(subclass, 'upsert') and
-                callable(subclass.upsert) and
-                hasattr(subclass, 'update') and
-                callable(subclass.update) and
-                hasattr(subclass, 'ping') and
-                callable(subclass.ping) and
-                hasattr(subclass, 'select') and
-                callable(subclass.select) and
-                hasattr(subclass, 'execute') and
-                callable(subclass.execute) or
-                NotImplemented)
+        return (hasattr(subclass, 'close')
+                and callable(subclass.close)
+                and hasattr(subclass, 'is_closed')
+                and callable(subclass.is_closed)
+                and hasattr(subclass, 'connect')
+                and callable(subclass.connect)
+                and hasattr(subclass, 'call')
+                and callable(subclass.call)
+                and hasattr(subclass, 'eval')
+                and callable(subclass.eval)
+                and hasattr(subclass, 'replace')
+                and callable(subclass.replace)
+                and hasattr(subclass, 'insert')
+                and callable(subclass.insert)
+                and hasattr(subclass, 'delete')
+                and callable(subclass.delete)
+                and hasattr(subclass, 'upsert')
+                and callable(subclass.upsert)
+                and hasattr(subclass, 'update')
+                and callable(subclass.update)
+                and hasattr(subclass, 'ping')
+                and callable(subclass.ping)
+                and hasattr(subclass, 'select')
+                and callable(subclass.select)
+                and hasattr(subclass, 'execute')
+                and callable(subclass.execute)
+                or NotImplemented)
 
     @abc.abstractmethod
     def close(self):
@@ -481,6 +482,7 @@ class JoinState(Enum):
     No more messages expected.
     """
 
+
 class Connection(ConnectionInterface):
     """
     Represents a connection to the Tarantool server.
@@ -791,8 +793,8 @@ class Connection(ConnectionInterface):
         # pylint: disable=too-many-arguments,too-many-locals
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
-            raise ConfigurationError("msgpack>=1.0.0 only supports None and " +
-                                     "'utf-8' encoding option values")
+            raise ConfigurationError("msgpack>=1.0.0 only supports None and "
+                                     + "'utf-8' encoding option values")
 
         if os.name == 'nt':
             libc = ctypes.WinDLL(
@@ -939,12 +941,12 @@ class Connection(ConnectionInterface):
 
         ver = sys.version_info
         if ver[0] < 3 or (ver[0] == 3 and ver[1] < 5):
-            raise SslError("SSL transport is supported only since " +
+            raise SslError("SSL transport is supported only since "
                            "python 3.5")
 
         if ((self.ssl_cert_file is None and self.ssl_key_file is not None)
            or (self.ssl_cert_file is not None and self.ssl_key_file is None)):
-            raise SslError("Both ssl_cert_file and ssl_key_file should be " +
+            raise SslError("Both ssl_cert_file and ssl_key_file should be "
                            "configured or unconfigured")
 
         try:
@@ -1003,9 +1005,8 @@ class Connection(ConnectionInterface):
                                         keyfile=self.ssl_key_file,
                                         password=self.ssl_password)
                 return
-            except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
+            except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
                 exc_list.append(exc)
-
 
         if self.ssl_password_file is not None:
             with open(self.ssl_password_file, encoding=self.encoding) as file:
@@ -1015,21 +1016,20 @@ class Connection(ConnectionInterface):
                                                 keyfile=self.ssl_key_file,
                                                 password=line.rstrip())
                         return
-                    except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
+                    except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
                         exc_list.append(exc)
-
 
         try:
             def password_raise_error():
-                raise SslError("Password prompt for decrypting the private " +
-                               "key is unsupported, use ssl_password or " +
+                raise SslError("Password prompt for decrypting the private "
+                               "key is unsupported, use ssl_password or "
                                "ssl_password_file")
             context.load_cert_chain(certfile=self.ssl_cert_file,
                                     keyfile=self.ssl_key_file,
                                     password=password_raise_error)
 
             return
-        except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
+        except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
             exc_list.append(exc)
 
         raise SslError(exc_list)
@@ -1216,7 +1216,7 @@ class Connection(ConnectionInterface):
             retbytes = self._sys_recv(sock_fd, buf, 1, flag)
 
             err = 0
-            if os.name!= 'nt':
+            if os.name != 'nt':
                 err = ctypes.get_errno()
             else:
                 err = ctypes.get_last_error()
@@ -1335,7 +1335,7 @@ class Connection(ConnectionInterface):
         :raise: :exc:`~tarantool.error.NotSupportedError`
         """
         if self.schema is None:
-            raise NotSupportedError('This method is not available in ' +
+            raise NotSupportedError('This method is not available in '
                                     'connection opened with fetch_schema=False')
 
     def call(self, func_name, *args, on_push=None, on_push_ctx=None):
@@ -1477,11 +1477,12 @@ class Connection(ConnectionInterface):
         if not self._socket:
             return self._opt_reconnect()
 
-        request = RequestAuthenticate(self,
-                              salt=self._salt,
-                              user=self.user,
-                              password=self.password,
-                              auth_type=self._get_auth_type())
+        request = RequestAuthenticate(
+            self,
+            salt=self._salt,
+            user=self.user,
+            password=self.password,
+            auth_type=self._get_auth_type())
         auth_response = self._send_request_wo_reconnect(request)
         if auth_response.return_code == 0 and self.schema is not None:
             self.flush_schema()
@@ -1503,13 +1504,13 @@ class Connection(ConnectionInterface):
                 auth_type = AUTH_TYPE_CHAP_SHA1
             else:
                 if self._server_auth_type not in AUTH_TYPES:
-                    raise ConfigurationError('Unknown server authentication type ' +
-                                             str(self._server_auth_type))
+                    raise ConfigurationError('Unknown server authentication type '
+                                             + str(self._server_auth_type))
                 auth_type = self._server_auth_type
         else:
             if self._client_auth_type not in AUTH_TYPES:
-                raise ConfigurationError('Unknown client authentication type ' +
-                                         str(self._client_auth_type))
+                raise ConfigurationError('Unknown client authentication type '
+                                         + str(self._client_auth_type))
             auth_type = self._client_auth_type
 
         if auth_type == AUTH_TYPE_PAP_SHA256 and self.transport != SSL_TRANSPORT:
@@ -2054,8 +2055,8 @@ class Connection(ConnectionInterface):
 
         if iterator is None:
             iterator = ITERATOR_EQ
-            if key is None or (isinstance(key, (list, tuple)) and
-                               len(key) == 0):
+            if key is None or (isinstance(key, (list, tuple))
+                               and len(key) == 0):
                 iterator = ITERATOR_ALL
 
         # Perform smart type checking (scalar / list of scalars / list of
@@ -2203,7 +2204,7 @@ class Connection(ConnectionInterface):
         return self._unpacker_factory_impl(self)
 
     def crud_insert(self, space_name: str, values: Union[tuple, list],
-                    opts: Optional[dict]=None) -> CrudResult:
+                    opts: Optional[dict] = None) -> CrudResult:
         """
         Inserts row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
@@ -2237,7 +2238,7 @@ class Connection(ConnectionInterface):
         return CrudResult(crud_resp[0])
 
     def crud_insert_object(self, space_name: str, values: dict,
-                           opts: Optional[dict]=None) -> CrudResult:
+                           opts: Optional[dict] = None) -> CrudResult:
         """
         Inserts object row through the
         `crud <https://github.com/tarantool/crud#insert>`__.
@@ -2271,7 +2272,7 @@ class Connection(ConnectionInterface):
         return CrudResult(crud_resp[0])
 
     def crud_insert_many(self, space_name: str, values: Union[tuple, list],
-                         opts: Optional[dict]=None) -> CrudResult:
+                         opts: Optional[dict] = None) -> CrudResult:
         """
         Inserts batch rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
@@ -2312,7 +2313,7 @@ class Connection(ConnectionInterface):
         return res
 
     def crud_insert_object_many(self, space_name: str, values: Union[tuple, list],
-                                opts: Optional[dict]=None) -> CrudResult:
+                                opts: Optional[dict] = None) -> CrudResult:
         """
         Inserts batch object rows through the
         `crud <https://github.com/tarantool/crud#insert-many>`__.
@@ -2352,7 +2353,7 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_get(self, space_name: str, key: int, opts: Optional[dict]=None) -> CrudResult:
+    def crud_get(self, space_name: str, key: int, opts: Optional[dict] = None) -> CrudResult:
         """
         Gets row through the
         `crud <https://github.com/tarantool/crud#get>`__.
@@ -2384,8 +2385,8 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_update(self, space_name: str, key: int, operations: Optional[list]=None,
-                    opts: Optional[dict]=None) -> CrudResult:
+    def crud_update(self, space_name: str, key: int, operations: Optional[list] = None,
+                    opts: Optional[dict] = None) -> CrudResult:
         """
         Updates row through the
         `crud <https://github.com/tarantool/crud#update>`__.
@@ -2423,7 +2424,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_delete(self, space_name: str, key: int, opts: Optional[dict]=None) -> CrudResult:
+    def crud_delete(self, space_name: str, key: int, opts: Optional[dict] = None) -> CrudResult:
         """
         Deletes row through the
         `crud <https://github.com/tarantool/crud#delete>`__.
@@ -2456,7 +2457,7 @@ class Connection(ConnectionInterface):
         return CrudResult(crud_resp[0])
 
     def crud_replace(self, space_name: str, values: Union[tuple, list],
-                     opts: Optional[dict]=None) -> CrudResult:
+                     opts: Optional[dict] = None) -> CrudResult:
         """
         Replaces row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
@@ -2490,7 +2491,7 @@ class Connection(ConnectionInterface):
         return CrudResult(crud_resp[0])
 
     def crud_replace_object(self, space_name: str, values: dict,
-                            opts: Optional[dict]=None) -> CrudResult:
+                            opts: Optional[dict] = None) -> CrudResult:
         """
         Replaces object row through the
         `crud <https://github.com/tarantool/crud#replace>`__.
@@ -2524,7 +2525,7 @@ class Connection(ConnectionInterface):
         return CrudResult(crud_resp[0])
 
     def crud_replace_many(self, space_name: str, values: Union[tuple, list],
-                          opts: Optional[dict]=None) -> CrudResult:
+                          opts: Optional[dict] = None) -> CrudResult:
         """
         Replaces batch rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
@@ -2565,7 +2566,7 @@ class Connection(ConnectionInterface):
         return res
 
     def crud_replace_object_many(self, space_name: str, values: Union[tuple, list],
-                                 opts: Optional[dict]=None) -> CrudResult:
+                                 opts: Optional[dict] = None) -> CrudResult:
         """
         Replaces batch object rows through the
         `crud <https://github.com/tarantool/crud#replace-many>`__.
@@ -2606,7 +2607,7 @@ class Connection(ConnectionInterface):
         return res
 
     def crud_upsert(self, space_name: str, values: Union[tuple, list],
-                    operations: Optional[list]=None, opts: Optional[dict]=None) -> CrudResult:
+                    operations: Optional[list] = None, opts: Optional[dict] = None) -> CrudResult:
         """
         Upserts row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
@@ -2646,8 +2647,8 @@ class Connection(ConnectionInterface):
         return CrudResult(crud_resp[0])
 
     def crud_upsert_object(self, space_name: str, values: dict,
-                           operations: Optional[list]=None,
-                           opts: Optional[dict]=None) -> CrudResult:
+                           operations: Optional[list] = None,
+                           opts: Optional[dict] = None) -> CrudResult:
         """
         Upserts object row through the
         `crud <https://github.com/tarantool/crud#upsert>`__.
@@ -2687,7 +2688,7 @@ class Connection(ConnectionInterface):
         return CrudResult(crud_resp[0])
 
     def crud_upsert_many(self, space_name: str, values_operation: Union[tuple, list],
-                         opts: Optional[dict]=None) -> CrudResult:
+                         opts: Optional[dict] = None) -> CrudResult:
         """
         Upserts batch rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
@@ -2728,7 +2729,7 @@ class Connection(ConnectionInterface):
         return res
 
     def crud_upsert_object_many(self, space_name: str, values_operation: Union[tuple, list],
-                                opts: Optional[dict]=None) -> CrudResult:
+                                opts: Optional[dict] = None) -> CrudResult:
         """
         Upserts batch object rows through the
         `crud <https://github.com/tarantool/crud#upsert-many>`__.
@@ -2768,8 +2769,8 @@ class Connection(ConnectionInterface):
 
         return res
 
-    def crud_select(self, space_name: str, conditions: Optional[list]=None,
-                    opts: Optional[dict]=None) -> CrudResult:
+    def crud_select(self, space_name: str, conditions: Optional[list] = None,
+                    opts: Optional[dict] = None) -> CrudResult:
         """
         Selects rows through the
         `crud <https://github.com/tarantool/crud#select>`__.
@@ -2804,7 +2805,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_min(self, space_name: str, index_name: str, opts: Optional[dict]=None) -> CrudResult:
+    def crud_min(self, space_name: str, index_name: str, opts: Optional[dict] = None) -> CrudResult:
         """
         Gets rows with minimum value in the specified index through
         the `crud <https://github.com/tarantool/crud#min-and-max>`__.
@@ -2836,7 +2837,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_max(self, space_name: str, index_name: str, opts: Optional[dict]=None) -> CrudResult:
+    def crud_max(self, space_name: str, index_name: str, opts: Optional[dict] = None) -> CrudResult:
         """
         Gets rows with maximum value in the specified index through
         the `crud <https://github.com/tarantool/crud#min-and-max>`__.
@@ -2868,7 +2869,7 @@ class Connection(ConnectionInterface):
 
         return CrudResult(crud_resp[0])
 
-    def crud_truncate(self, space_name: str, opts: Optional[dict]=None) -> bool:
+    def crud_truncate(self, space_name: str, opts: Optional[dict] = None) -> bool:
         """
         Truncate rows through
         the `crud <https://github.com/tarantool/crud#truncate>`__.
@@ -2899,7 +2900,7 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_len(self, space_name: str, opts: Optional[dict]=None) -> int:
+    def crud_len(self, space_name: str, opts: Optional[dict] = None) -> int:
         """
         Gets the number of tuples in the space through
         the `crud <https://github.com/tarantool/crud#len>`__.
@@ -2930,7 +2931,7 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_storage_info(self, opts: Optional[dict]=None) -> dict:
+    def crud_storage_info(self, opts: Optional[dict] = None) -> dict:
         """
         Gets storages status through the
         `crud <https://github.com/tarantool/crud#storage-info>`__.
@@ -2957,8 +2958,8 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_count(self, space_name: str, conditions: Optional[list]=None,
-                   opts: Optional[dict]=None) -> int:
+    def crud_count(self, space_name: str, conditions: Optional[list] = None,
+                   opts: Optional[dict] = None) -> int:
         """
         Gets rows count through the
         `crud <https://github.com/tarantool/crud#count>`__.
@@ -2993,7 +2994,7 @@ class Connection(ConnectionInterface):
 
         return crud_resp[0]
 
-    def crud_stats(self, space_name: str=None) -> CrudResult:
+    def crud_stats(self, space_name: str = None) -> CrudResult:
         """
         Gets statistics from the
         `crud <https://github.com/tarantool/crud#statistics>`__.

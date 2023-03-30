@@ -61,6 +61,7 @@ from tarantool.utils import (
 
 from tarantool.msgpack_ext.packer import default as packer_default
 
+
 def packer_factory(conn):
     """
     Build packer to pack request.
@@ -225,6 +226,7 @@ class RequestInsert(Request):
 
         self._body = request_body
 
+
 def sha1(values):
     """
     Compute hash.
@@ -245,6 +247,7 @@ def sha1(values):
             else:
                 sha.update(i.encode())
     return sha.digest()
+
 
 class RequestAuthenticate(Request):
     """
@@ -695,6 +698,7 @@ class RequestExecute(Request):
 
         self._body = request_body
         self.response_class = ResponseExecute
+
 
 class RequestProtocolVersion(Request):
     """

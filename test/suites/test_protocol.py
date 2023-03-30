@@ -20,6 +20,7 @@ from tarantool.utils import greeting_decode, version_id
 
 from .lib.tarantool_server import TarantoolServer
 
+
 class TestSuiteProtocol(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

@@ -111,6 +111,7 @@ class ConfigurationError(Error):
     Error of initialization with a user-provided configuration.
     """
 
+
 class MsgpackError(Error):
     """
     Error with encoding or decoding of `MP_EXT`_ types.
@@ -118,10 +119,12 @@ class MsgpackError(Error):
     .. _MP_EXT: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/
     """
 
+
 class MsgpackWarning(UserWarning):
     """
     Warning with encoding or decoding of `MP_EXT`_ types.
     """
+
 
 # Monkey patch os.strerror for win32
 if sys.platform == "win32":
@@ -267,6 +270,7 @@ class NetworkWarning(UserWarning):
     Warning related to network.
     """
 
+
 class SslError(DatabaseError):
     """
     Error related to SSL.
@@ -298,16 +302,19 @@ class ClusterDiscoveryWarning(UserWarning):
     Warning related to cluster discovery.
     """
 
+
 class ClusterConnectWarning(UserWarning):
     """
     Warning related to cluster pool connection.
     """
+
 
 class PoolTolopogyWarning(UserWarning):
     """
     Warning related to unsatisfying `box.info.ro`_ state of
     pool instances.
     """
+
 
 class PoolTolopogyError(DatabaseError):
     """
@@ -316,6 +323,7 @@ class PoolTolopogyError(DatabaseError):
 
     .. _box.info.ro: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
     """
+
 
 class CrudModuleError(DatabaseError):
     """

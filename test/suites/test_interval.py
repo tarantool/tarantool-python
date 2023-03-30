@@ -17,6 +17,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
 
+
 class TestSuiteInterval(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -99,7 +100,7 @@ class TestSuiteInterval(unittest.TestCase):
         'datetime': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2, sec=3000),
             'msgpack': (b'\x07\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x08\x01'),
-            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, " +
+            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000})",
         },
         'nanoseconds': {
@@ -110,36 +111,36 @@ class TestSuiteInterval(unittest.TestCase):
         'datetime_with_nanoseconds': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
                                          sec=3000, nsec=10000000),
-            'msgpack': (b'\x08\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce' +
+            'msgpack': (b'\x08\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce'
                         b'\x00\x98\x96\x80\x08\x01'),
-            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, " +
+            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000})",
         },
         'datetime_none_adjust': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
                                          sec=3000, nsec=10000000,
                                          adjust=tarantool.IntervalAdjust.NONE),
-            'msgpack': (b'\x08\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce' +
+            'msgpack': (b'\x08\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce'
                         b'\x00\x98\x96\x80\x08\x01'),
-            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, " +
+            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000, adjust='none'})",
         },
         'datetime_excess_adjust': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
                                          sec=3000, nsec=10000000,
                                          adjust=tarantool.IntervalAdjust.EXCESS),
-            'msgpack': (b'\x07\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce' +
+            'msgpack': (b'\x07\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce'
                         b'\x00\x98\x96\x80'),
-            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, " +
+            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000, adjust='excess'})",
         },
         'datetime_last_adjust': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
                                          sec=3000, nsec=10000000,
                                          adjust=tarantool.IntervalAdjust.LAST),
-            'msgpack': (b'\x08\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce' +
+            'msgpack': (b'\x08\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x07\xce'
                         b'\x00\x98\x96\x80\x08\x02'),
-            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, " +
+            'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000, adjust='last'})",
         },
         'all_zeroes': {
@@ -152,12 +153,13 @@ class TestSuiteInterval(unittest.TestCase):
     def test_msgpack_decode(self):
         for name, case in self.cases.items():
             with self.subTest(msg=name):
-                self.assertEqual(unpacker_ext_hook(
-                                    6,
-                                    case['msgpack'],
-                                    self.con._unpacker_factory(),
-                                 ),
-                                 case['python'])
+                self.assertEqual(
+                    unpacker_ext_hook(
+                        6,
+                        case['msgpack'],
+                        self.con._unpacker_factory(),
+                    ),
+                    case['python'])
 
     @skip_or_run_datetime_test
     def test_tarantool_decode(self):
@@ -182,7 +184,7 @@ class TestSuiteInterval(unittest.TestCase):
 
                 lua_eval = f"""
                     local interval = {case['tarantool']}
-                   
+
                     local tuple = box.space['test']:get('{name}')
                     assert(tuple ~= nil)
 
@@ -196,7 +198,6 @@ class TestSuiteInterval(unittest.TestCase):
 
                 self.assertSequenceEqual(self.adm(lua_eval), [True])
 
-
     def test_unknown_field_decode(self):
         case = b'\x01\x09\xce\x00\x98\x96\x80'
         self.assertRaisesRegex(
@@ -208,7 +209,6 @@ class TestSuiteInterval(unittest.TestCase):
         self.assertRaisesRegex(
             MsgpackError, '3 is not a valid Adjust',
             lambda: unpacker_ext_hook(6, case, self.con._unpacker_factory()))
-
 
     arithmetic_cases = {
         'year': {
@@ -237,9 +237,9 @@ class TestSuiteInterval(unittest.TestCase):
         },
         'datetime_with_nsec': {
             'arg_1': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
-                                           sec=3000, nsec=10000000),
+                                        sec=3000, nsec=10000000),
             'arg_2': tarantool.Interval(year=2, month=1, day=31, hour=-3, minute=0,
-                                           sec=1000, nsec=9876543),
+                                        sec=1000, nsec=9876543),
             'res_add': tarantool.Interval(year=3, month=3, day=34, hour=-2, minute=2,
                                           sec=4000, nsec=19876543),
             'res_sub': tarantool.Interval(year=-1, month=1, day=-28, hour=4, minute=2,
@@ -290,7 +290,6 @@ class TestSuiteInterval(unittest.TestCase):
             with self.subTest(msg=name):
                 self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
                                          [case['res_sub']])
-
 
     @classmethod
     def tearDownClass(cls):

@@ -33,6 +33,7 @@ from tarantool.schema import to_unicode
 
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
+
 def unpacker_factory(conn):
     """
     Build unpacker to unpack request response.
@@ -67,7 +68,7 @@ def unpacker_factory(conn):
 
     # encoding option is not supported since msgpack-1.0.0,
     # but it is handled in the Connection constructor.
-    assert(msgpack.version < (1, 0, 0) or conn.encoding in (None, 'utf-8'))
+    assert msgpack.version < (1, 0, 0) or conn.encoding in (None, 'utf-8')
 
     # strict_map_key=True is default since msgpack-1.0.0.
     #
@@ -130,8 +131,8 @@ class Response(Sequence):
             self._return_code = 0
             self._schema_version = header.get(IPROTO_SCHEMA_ID, None)
             self._data = self._body.get(IPROTO_DATA, None)
-            if (not isinstance(self._data, (list, tuple)) and
-                    self._data is not None):
+            if (not isinstance(self._data, (list, tuple))
+                    and self._data is not None):
                 self._data = [self._data]
             # # Backward-compatibility
             # if isinstance(self._data, (list, tuple)):
@@ -303,7 +304,7 @@ class Response(Sequence):
                     'code': self.strerror[0],
                     'reason': self.return_message
                 }
-            }, sort_keys = True, indent = 4, separators=(', ', ': '))
+            }, sort_keys=True, indent=4, separators=(', ', ': '))
         output = []
         for tpl in self._data or ():
             output.extend(("- ", repr(tpl), "\n"))

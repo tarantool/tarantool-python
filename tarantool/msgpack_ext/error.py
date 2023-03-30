@@ -16,6 +16,7 @@ EXT_ID = 3
 `error`_ type id.
 """
 
+
 def encode(obj, packer):
     """
     Encode an error object.
@@ -32,6 +33,7 @@ def encode(obj, packer):
 
     err_map = encode_box_error(obj)
     return packer.pack(err_map)
+
 
 def decode(data, unpacker):
     """

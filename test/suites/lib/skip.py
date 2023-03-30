@@ -7,6 +7,7 @@ import sys
 
 import pkg_resources
 
+
 def fetch_tarantool_version(self):
     """
     Helper to fetch current Tarantool version.
@@ -26,6 +27,7 @@ def fetch_tarantool_version(self):
             self.tnt_version = srv.admin.tnt_version
         except AttributeError:
             self.__class__.tnt_version = srv.admin.tnt_version
+
 
 def skip_or_run_test_tarantool_impl(self, required_tt_version, msg):
     """
@@ -63,6 +65,7 @@ def skip_or_run_test_tarantool(func, required_tt_version, msg):
             func(self, *args, **kwargs)
 
     return wrapper
+
 
 def skip_or_run_test_tarantool_call(self, required_tt_version, msg):
     """
@@ -173,7 +176,8 @@ def skip_or_run_decimal_test(func):
     """
 
     return skip_or_run_test_pcall_require(func, 'decimal',
-                                      'does not support decimal type')
+                                          'does not support decimal type')
+
 
 def skip_or_run_uuid_test(func):
     """
@@ -187,6 +191,7 @@ def skip_or_run_uuid_test(func):
     return skip_or_run_test_tarantool(func, '2.4.1',
                                       'does not support UUID type')
 
+
 def skip_or_run_datetime_test(func):
     """
     Decorator to skip or run datetime-related tests depending on
@@ -197,7 +202,8 @@ def skip_or_run_datetime_test(func):
     """
 
     return skip_or_run_test_pcall_require(func, 'datetime',
-                                      'does not support datetime type')
+                                          'does not support datetime type')
+
 
 def skip_or_run_error_extra_info_test(func):
     """
@@ -210,6 +216,7 @@ def skip_or_run_error_extra_info_test(func):
 
     return skip_or_run_test_tarantool(func, '2.4.1',
                                       'does not provide extra error info')
+
 
 def skip_or_run_error_ext_type_test(func):
     """
@@ -224,6 +231,7 @@ def skip_or_run_error_ext_type_test(func):
 
     return skip_or_run_test_tarantool(func, '2.10.0',
                                       'does not support error extension type')
+
 
 def skip_or_run_ssl_password_test_call(self):
     """
@@ -240,6 +248,7 @@ def skip_or_run_ssl_password_test_call(self):
     return skip_or_run_test_tarantool_call(self, '2.11.0',
                                            'does not support SSL passwords')
 
+
 def skip_or_run_auth_type_test_call(self):
     """
     Function to skip or run tests related to configuring
@@ -255,6 +264,7 @@ def skip_or_run_auth_type_test_call(self):
 
     return skip_or_run_test_tarantool_call(self, '2.11.0',
                                            'does not support auth type')
+
 
 def skip_or_run_constraints_test(func):
     """

@@ -26,9 +26,11 @@ class MethodCallCounter:
         self._obj = obj
         self._method_name = method_name
         self._saved_method = getattr(obj, method_name)
+
         def wrapper(_, *args, **kwargs):
             self._call_count += 1
             return self._saved_method(*args, **kwargs)
+
         bound_wrapper = wrapper.__get__(obj.__class__, obj)
         setattr(obj, method_name, bound_wrapper)
 
@@ -51,8 +53,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
         cls.srv = TarantoolServer()
         cls.srv.script = 'test/suites/box.lua'
         cls.srv.start()
-        cls.srv.admin("box.schema.user.create('test', {password = 'test', " +
-              "if_not_exists = true})")
+        cls.srv.admin("box.schema.user.create('test', {password = 'test', if_not_exists = true})")
         cls.srv.admin("box.schema.user.grant('test', 'read,write,execute', 'universe')")
 
         # Create server_function and tester space (for fetch_schema opt testing purposes).
@@ -91,8 +92,8 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                 user='test', password='test')
             cls.pool_con_schema_disable = tarantool.ConnectionPool(
                 [{
-                    'host':cls.srv.host,
-                    'port':cls.srv.args['primary']
+                    'host': cls.srv.host,
+                    'port': cls.srv.args['primary']
                 }],
                 user='test', password='test',
                 fetch_schema=False)
@@ -173,31 +174,23 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
         self.assertEqual(len(index.parts), 1)
 
     def test_01_space_bad(self):
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no space.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no space.*'):
             self.sch.get_space(0)
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no space.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no space.*'):
             self.sch.get_space(0)
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no space.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no space.*'):
             self.sch.get_space('bad_name')
 
     def test_02_index_bad(self):
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no space.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no space.*'):
             self.sch.get_index(0, 'primary')
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no space.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no space.*'):
             self.sch.get_index('bad_space', 'primary')
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no index.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no index.*'):
             self.sch.get_index(280, 'bad_index')
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no index.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no index.*'):
             self.sch.get_index(280, 'bad_index')
-        with self.assertRaisesRegex(tarantool.SchemaError,
-                'There\'s no index.*'):
+        with self.assertRaisesRegex(tarantool.SchemaError, 'There\'s no index.*'):
             self.sch.get_index(280, 3)
 
     def test_03_01_space_name__(self):
@@ -417,7 +410,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                 'input': ['tester', (1, None)],
                 'output': [[1, None]],
             },
-             'delete': {
+            'delete': {
                 'input': ['tester', 1],
                 'output': [[1, None]],
             },
@@ -489,7 +482,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                         _ = testing_function(
                             *self.testing_methods['unavailable'][method_case]['input'])
                 except NotSupportedError as exc:
-                    self.assertEqual(exc.message, 'This method is not available in ' +
+                    self.assertEqual(exc.message, 'This method is not available in '
                                                   'connection opened with fetch_schema=False')
         # Testing the schemaless connection with methods
         # that should be available.
@@ -565,12 +558,14 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
     def test_08_schema_fetch_disable_via_connection(self):
         self._run_test_schema_fetch_disable(self.con_schema_disable)
 
-    @unittest.skipIf(sys.platform.startswith("win"),
+    @unittest.skipIf(
+        sys.platform.startswith("win"),
         'Schema fetch disable tests via mesh connection on windows platform are not supported')
     def test_08_schema_fetch_disable_via_mesh_connection(self):
         self._run_test_schema_fetch_disable(self.mesh_con_schema_disable)
 
-    @unittest.skipIf(sys.platform.startswith("win"),
+    @unittest.skipIf(
+        sys.platform.startswith("win"),
         'Schema fetch disable tests via connection pool on windows platform are not supported')
     def test_08_schema_fetch_disable_via_connection_pool(self):
         self._run_test_schema_fetch_disable(self.pool_con_schema_disable,

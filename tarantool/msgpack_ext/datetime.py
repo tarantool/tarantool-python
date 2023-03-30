@@ -53,10 +53,10 @@ EXT_ID = 4
 
 BYTEORDER = 'little'
 
-SECONDS_SIZE_BYTES  = 8
-NSEC_SIZE_BYTES     = 4
+SECONDS_SIZE_BYTES = 8
+NSEC_SIZE_BYTES = 4
 TZOFFSET_SIZE_BYTES = 2
-TZINDEX_SIZE_BYTES  = 2
+TZINDEX_SIZE_BYTES = 2
 
 
 def get_int_as_bytes(data, size):
@@ -76,6 +76,7 @@ def get_int_as_bytes(data, size):
     """
 
     return data.to_bytes(size, byteorder=BYTEORDER, signed=True)
+
 
 def encode(obj, _):
     """
@@ -133,6 +134,7 @@ def get_bytes_as_int(data, cursor, size):
     part = data[cursor:cursor + size]
     return int.from_bytes(part, BYTEORDER, signed=True), cursor + size
 
+
 def decode(data, _):
     """
     Decode a datetime object.
@@ -151,11 +153,11 @@ def decode(data, _):
     seconds, cursor = get_bytes_as_int(data, cursor, SECONDS_SIZE_BYTES)
 
     data_len = len(data)
-    if data_len == (SECONDS_SIZE_BYTES + NSEC_SIZE_BYTES + \
-                    TZOFFSET_SIZE_BYTES + TZINDEX_SIZE_BYTES):
-        nsec, cursor     = get_bytes_as_int(data, cursor, NSEC_SIZE_BYTES)
+    if data_len == (SECONDS_SIZE_BYTES + NSEC_SIZE_BYTES
+                    + TZOFFSET_SIZE_BYTES + TZINDEX_SIZE_BYTES):
+        nsec, cursor = get_bytes_as_int(data, cursor, NSEC_SIZE_BYTES)
         tzoffset, cursor = get_bytes_as_int(data, cursor, TZOFFSET_SIZE_BYTES)
-        tzindex, cursor  = get_bytes_as_int(data, cursor, TZINDEX_SIZE_BYTES)
+        tzindex, cursor = get_bytes_as_int(data, cursor, TZINDEX_SIZE_BYTES)
     elif data_len == SECONDS_SIZE_BYTES:
         nsec = 0
         tzoffset = 0

@@ -9,6 +9,7 @@ import uuid
 
 ENCODING_DEFAULT = "utf-8"
 
+
 def strxor(rhs, lhs):
     """
     XOR two strings.
@@ -23,6 +24,7 @@ def strxor(rhs, lhs):
     """
 
     return bytes([x ^ y for x, y in zip(rhs, lhs)])
+
 
 def wrap_key(*args, first=True, select=False):
     """
@@ -69,6 +71,7 @@ def version_id(major, minor, patch):
 
     return (((major << 8) | minor) << 8) | patch
 
+
 @dataclass
 class Greeting():
     """
@@ -94,6 +97,7 @@ class Greeting():
     """
     :type: :obj:`str`, optional
     """
+
 
 def greeting_decode(greeting_buf):
     """

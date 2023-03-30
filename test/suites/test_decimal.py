@@ -17,6 +17,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_decimal_test
 
+
 class TestSuiteDecimal(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -57,7 +58,6 @@ class TestSuiteDecimal(unittest.TestCase):
             self.srv.touch_lock()
 
         self.adm("box.space['test']:truncate()")
-
 
     valid_cases = {
         'simple_decimal_1': {
@@ -162,13 +162,13 @@ class TestSuiteDecimal(unittest.TestCase):
         },
         'decimal_limits_1': {
             'python': decimal.Decimal('11111111111111111111111111111111111111'),
-            'msgpack': (b'\x00\x01\x11\x11\x11\x11\x11\x11\x11\x11\x11' +
+            'msgpack': (b'\x00\x01\x11\x11\x11\x11\x11\x11\x11\x11\x11'
                         b'\x11\x11\x11\x11\x11\x11\x11\x11\x11\x1c'),
             'tarantool': "decimal.new('11111111111111111111111111111111111111')",
         },
         'decimal_limits_2': {
             'python': decimal.Decimal('-11111111111111111111111111111111111111'),
-            'msgpack': (b'\x00\x01\x11\x11\x11\x11\x11\x11\x11\x11\x11' +
+            'msgpack': (b'\x00\x01\x11\x11\x11\x11\x11\x11\x11\x11\x11'
                         b'\x11\x11\x11\x11\x11\x11\x11\x11\x11\x1d'),
             'tarantool': "decimal.new('-11111111111111111111111111111111111111')",
         },
@@ -204,25 +204,25 @@ class TestSuiteDecimal(unittest.TestCase):
         },
         'decimal_limits_9': {
             'python': decimal.Decimal('99999999999999999999999999999999999999'),
-            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
+            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99'
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9c'),
             'tarantool': "decimal.new('99999999999999999999999999999999999999')",
         },
         'decimal_limits_10': {
             'python': decimal.Decimal('-99999999999999999999999999999999999999'),
-            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
+            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99'
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9d'),
             'tarantool': "decimal.new('-99999999999999999999999999999999999999')",
         },
         'decimal_limits_11': {
             'python': decimal.Decimal('1234567891234567890.0987654321987654321'),
-            'msgpack': (b'\x13\x01\x23\x45\x67\x89\x12\x34\x56\x78\x90' +
+            'msgpack': (b'\x13\x01\x23\x45\x67\x89\x12\x34\x56\x78\x90'
                         b'\x09\x87\x65\x43\x21\x98\x76\x54\x32\x1c'),
             'tarantool': "decimal.new('1234567891234567890.0987654321987654321')",
         },
         'decimal_limits_12': {
             'python': decimal.Decimal('-1234567891234567890.0987654321987654321'),
-            'msgpack': (b'\x13\x01\x23\x45\x67\x89\x12\x34\x56\x78\x90' +
+            'msgpack': (b'\x13\x01\x23\x45\x67\x89\x12\x34\x56\x78\x90'
                         b'\x09\x87\x65\x43\x21\x98\x76\x54\x32\x1d'),
             'tarantool': "decimal.new('-1234567891234567890.0987654321987654321')",
         },
@@ -270,7 +270,6 @@ class TestSuiteDecimal(unittest.TestCase):
                 """
 
                 self.assertSequenceEqual(self.con.eval(lua_eval), [True])
-
 
     error_cases = {
         'decimal_limit_break_head_1': {
@@ -322,7 +321,6 @@ class TestSuiteDecimal(unittest.TestCase):
                     MsgpackError, msg,
                     lambda: self.con.insert('test', [name, case['python']]))
 
-
     precision_loss_cases = {
         'decimal_limit_break_tail_1': {
             'python': decimal.Decimal('1.00000000000000000000000000000000000001'),
@@ -356,27 +354,27 @@ class TestSuiteDecimal(unittest.TestCase):
         },
         'decimal_limit_break_tail_7': {
             'python': decimal.Decimal('99999999999999999999999999999999999999.1'),
-            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
+            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99'
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9c'),
             'tarantool': "decimal.new('99999999999999999999999999999999999999')",
         },
         'decimal_limit_break_tail_8': {
             'python': decimal.Decimal('-99999999999999999999999999999999999999.1'),
-            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
+            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99'
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9d'),
             'tarantool': "decimal.new('-99999999999999999999999999999999999999')",
         },
         'decimal_limit_break_tail_9': {
             'python': decimal.Decimal('99999999999999999999999999999999999999.11111111111111'
                                       '11111111111'),
-            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
+            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99'
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9c'),
             'tarantool': "decimal.new('99999999999999999999999999999999999999')",
         },
         'decimal_limit_break_tail_10': {
             'python': decimal.Decimal('-99999999999999999999999999999999999999.11111111111111'
                                       '11111111111'),
-            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99' +
+            'msgpack': (b'\x00\x09\x99\x99\x99\x99\x99\x99\x99\x99\x99'
                         b'\x99\x99\x99\x99\x99\x99\x99\x99\x99\x9d'),
             'tarantool': "decimal.new('-99999999999999999999999999999999999999')",
         },
@@ -393,11 +391,10 @@ class TestSuiteDecimal(unittest.TestCase):
                 self.assertWarnsRegex(
                     MsgpackWarning, msg,
                     lambda: self.assertEqual(
-                                packer_default(case['python']),
-                                msgpack.ExtType(code=1, data=case['msgpack'])
-                            )
+                        packer_default(case['python']),
+                        msgpack.ExtType(code=1, data=case['msgpack'])
                     )
-
+                )
 
     @skip_or_run_decimal_test
     def test_tarantool_encode_with_precision_loss(self):
@@ -427,14 +424,12 @@ class TestSuiteDecimal(unittest.TestCase):
 
                 self.assertSequenceEqual(self.con.eval(lua_eval), [True])
 
-
     @skip_or_run_decimal_test
     def test_primary_key(self):
         data = [decimal.Decimal('0'), 'content']
 
         self.assertSequenceEqual(self.con.insert('test_pk', data), [data])
         self.assertSequenceEqual(self.con.select('test_pk', data[0]), [data])
-
 
     @classmethod
     def tearDownClass(cls):

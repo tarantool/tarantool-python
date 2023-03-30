@@ -13,6 +13,7 @@ from setuptools.command.build_py import build_py
 cmdclass = {}
 command_options = {}
 
+
 class BuildPyCommand(build_py):
     """
     Build the package
@@ -37,6 +38,7 @@ class BuildPyCommand(build_py):
             file.write(f"__version__ = '{version}'")
 
         return super().run()
+
 
 cmdclass["build_py"] = BuildPyCommand
 
@@ -67,6 +69,7 @@ def read(*parts):
     filename = os.path.join(os.path.dirname(__file__), *parts)
     with codecs.open(filename, encoding='utf-8') as file:
         return file.read()
+
 
 def get_dependencies(filename):
     """

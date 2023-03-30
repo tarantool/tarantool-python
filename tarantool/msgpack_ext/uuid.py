@@ -20,6 +20,7 @@ EXT_ID = 2
 `uuid`_ type id.
 """
 
+
 def encode(obj, _):
     """
     Encode an UUID object.
@@ -32,6 +33,7 @@ def encode(obj, _):
     """
 
     return obj.bytes
+
 
 def decode(data, _):
     """

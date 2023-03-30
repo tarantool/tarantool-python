@@ -13,6 +13,7 @@ except ModuleNotFoundError:
     # pylint: disable=deprecated-module
     from distutils.errors import DistutilsError as BaseError
 
+
 class Test(setuptools.Command):
     """
     Class implementing `python setup.py test`.

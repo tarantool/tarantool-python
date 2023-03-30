@@ -22,7 +22,7 @@ def create_server(_id):
     srv = TarantoolServer()
     srv.script = 'test/suites/box.lua'
     srv.start()
-    srv.admin("box.schema.user.create('test', {password = 'test', " +
+    srv.admin("box.schema.user.create('test', {password = 'test', "
               "if_not_exists = true})")
     srv.admin("box.schema.user.grant('test', 'execute', 'universe')")
 

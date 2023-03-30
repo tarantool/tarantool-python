@@ -67,25 +67,29 @@ class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
         try:
             cur = con.cursor()
             self.executeDDL1(cur)
-            dbapi20._failUnless(self,cur.rowcount in (-1, 1),
+            dbapi20._failUnless(
+                self, cur.rowcount in (-1, 1),
                 'cursor.rowcount should be -1 or 1 after executing no-result '
                 'statements' + str(cur.rowcount)
-                )
+            )
             cur.execute(f"{self.insert} into {self.table_prefix}booze values ('Victoria Bitter')")
-            dbapi20._failUnless(self,cur.rowcount == 1,
+            dbapi20._failUnless(
+                self, cur.rowcount == 1,
                 'cursor.rowcount should == number or rows inserted, or '
                 'set to -1 after executing an insert statement'
-                )
+            )
             cur.execute(f"select name from {self.table_prefix}booze")
-            dbapi20._failUnless(self,cur.rowcount == -1,
+            dbapi20._failUnless(
+                self, cur.rowcount == -1,
                 'cursor.rowcount should == number of rows returned, or '
                 'set to -1 after executing a select statement'
-                )
+            )
             self.executeDDL2(cur)
-            dbapi20._failUnless(self,cur.rowcount in (-1, 1),
+            dbapi20._failUnless(
+                self, cur.rowcount in (-1, 1),
                 'cursor.rowcount should be -1 or 1 after executing no-result '
                 'statements'
-                )
+            )
         finally:
             con.close()
 

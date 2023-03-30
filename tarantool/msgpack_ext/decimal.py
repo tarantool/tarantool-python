@@ -65,6 +65,7 @@ EXT_ID = 1
 
 TARANTOOL_DECIMAL_MAX_DIGITS = 38
 
+
 def get_mp_sign(sign):
     """
     Parse decimal sign to a nibble.
@@ -88,6 +89,7 @@ def get_mp_sign(sign):
 
     raise RuntimeError
 
+
 def add_mp_digit(digit, bytes_reverted, digit_count):
     """
     Append decimal digit to a binary data array.
@@ -108,6 +110,7 @@ def add_mp_digit(digit, bytes_reverted, digit_count):
         bytes_reverted[-1] = bytes_reverted[-1] | (digit << 4)
     else:
         bytes_reverted.append(digit)
+
 
 def check_valid_tarantool_decimal(str_repr, scale, first_digit_ind):
     """
@@ -183,20 +186,20 @@ def check_valid_tarantool_decimal(str_repr, scale, first_digit_ind):
         return True
 
     if (digit_count - scale) > TARANTOOL_DECIMAL_MAX_DIGITS:
-        raise MsgpackError('Decimal cannot be encoded: Tarantool decimal ' + \
+        raise MsgpackError('Decimal cannot be encoded: Tarantool decimal '
                            'supports a maximum of 38 digits.')
 
     starts_with_zero = str_repr[first_digit_ind] == '0'
 
-    if (    (digit_count > TARANTOOL_DECIMAL_MAX_DIGITS + 1) or \
-            (digit_count == TARANTOOL_DECIMAL_MAX_DIGITS + 1 \
-            and not starts_with_zero)):
-        warn('Decimal encoded with loss of precision: ' + \
+    if (digit_count > TARANTOOL_DECIMAL_MAX_DIGITS + 1) or \
+            (digit_count == TARANTOOL_DECIMAL_MAX_DIGITS + 1 and not starts_with_zero):
+        warn('Decimal encoded with loss of precision: '
              'Tarantool decimal supports a maximum of 38 digits.',
              MsgpackWarning)
         return False
 
     return True
+
 
 def strip_decimal_str(str_repr, scale, first_digit_ind):
     """
@@ -224,6 +227,7 @@ def strip_decimal_str(str_repr, scale, first_digit_ind):
     str_repr = str_repr.rstrip('.')
     # Do not strips zeroes before the decimal point
     return str_repr
+
 
 def encode(obj, _):
     """
@@ -308,6 +312,7 @@ def get_str_sign(nibble):
 
     raise MsgpackError('Unexpected MP_DECIMAL sign nibble')
 
+
 def add_str_digit(digit, digits_reverted, scale):
     """
     Append decimal digit to a binary data array.
@@ -333,6 +338,7 @@ def add_str_digit(digit, digits_reverted, scale):
         digits_reverted.append('.')
 
     digits_reverted.append(str(digit))
+
 
 def decode(data, _):
     """
