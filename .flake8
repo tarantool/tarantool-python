@@ -1,0 +1,3 @@
+[flake8]
+# Use pylint for lines length check
+ignore=E501
