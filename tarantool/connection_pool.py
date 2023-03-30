@@ -370,7 +370,7 @@ class ConnectionPool(ConnectionInterface):
         >>> resp
         - ['AAAA', 'Alpha']
     """
-    # pylint: disable=too-many-public-methods,duplicate-code,no-self-use
+    # pylint: disable=too-many-public-methods,duplicate-code,bad-option-value,no-self-use,super-init-not-called,bad-option-value
 
     def __init__(self,
                  addrs,
@@ -648,7 +648,7 @@ class ConnectionPool(ConnectionInterface):
                 method = getattr(Connection, task.method_name)
                 try:
                     resp = method(unit.conn, *task.args, **task.kwargs)
-                except Exception as exc: # pylint: disable=broad-exception-caught
+                except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
                     unit.output_queue.put(exc)
                 else:
                     unit.output_queue.put(resp)

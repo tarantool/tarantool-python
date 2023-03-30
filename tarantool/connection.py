@@ -489,7 +489,7 @@ class Connection(ConnectionInterface):
     check its status, call procedures and evaluate Lua code on server,
     make simple data manipulations and execute SQL queries.
     """
-    # pylint: disable=too-many-instance-attributes,too-many-public-methods,no-self-use
+    # pylint: disable=too-many-instance-attributes,too-many-public-methods,bad-option-value,no-self-use
 
     # DBAPI Extension: supply exceptions as attributes on the connection
     Error = Error
@@ -1003,7 +1003,7 @@ class Connection(ConnectionInterface):
                                         keyfile=self.ssl_key_file,
                                         password=self.ssl_password)
                 return
-            except Exception as exc: # pylint: disable=broad-exception-caught
+            except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
                 exc_list.append(exc)
 
 
@@ -1015,7 +1015,7 @@ class Connection(ConnectionInterface):
                                                 keyfile=self.ssl_key_file,
                                                 password=line.rstrip())
                         return
-                    except Exception as exc: # pylint: disable=broad-exception-caught
+                    except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
                         exc_list.append(exc)
 
 
@@ -1029,7 +1029,7 @@ class Connection(ConnectionInterface):
                                     password=password_raise_error)
 
             return
-        except Exception as exc: # pylint: disable=broad-exception-caught
+        except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
             exc_list.append(exc)
 
         raise SslError(exc_list)
