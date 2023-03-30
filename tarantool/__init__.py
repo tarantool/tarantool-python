@@ -3,8 +3,6 @@ This package provides API for interaction with a Tarantool server.
 """
 # pylint: disable=too-many-arguments
 
-import sys
-
 from tarantool.connection import Connection
 from tarantool.mesh_connection import MeshConnection
 from tarantool.const import (
