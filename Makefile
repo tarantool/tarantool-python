@@ -13,7 +13,7 @@ lint:
 
 
 .PHONY: test
-test:
+test: lint
 	python3 setup.py test
 
 .PHONY: test-pure-install
