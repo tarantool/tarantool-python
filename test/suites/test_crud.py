@@ -670,10 +670,10 @@ class TestSuiteCrud(unittest.TestCase):
                 *case['success']['input']['args'],
             )
         if 'rows' in case['success']['output']:
-            # Case for crud responce as tarantool.crud.CrudResult obj.
+            # Case for crud response as tarantool.crud.CrudResult obj.
             self.assertEqual(resp.rows, case['success']['output']['rows'])
         if 'scalar' in case['success']['output']:
-            # Case for scalar value as crud responce, not tarantool.crud.CrudResult obj.
+            # Case for scalar value as crud response, not tarantool.crud.CrudResult obj.
             self.assertEqual(resp, case['success']['output']['scalar'])
         if 'operations' in case['success']['output']:
             # Case for statistics testing.

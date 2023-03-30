@@ -333,7 +333,7 @@ class TarantoolServer():
         * (MAYBE) Copy init.lua     --INSIDE
         * Concatenate arguments and
           start Tarantool\\Box       --DONE(prepare_args)
-        * Wait unitl Tarantool\\Box
+        * Wait until Tarantool\\Box
           started                   --DONE(wait_until_started)
         """
         # pylint: disable=consider-using-with

@@ -1,0 +1,3 @@
+[codespell]
+skip = tarantool/msgpack_ext/types/timezones/timezones.py
+ignore-words-list = ans,gost

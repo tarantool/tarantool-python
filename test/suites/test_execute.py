@@ -1,5 +1,5 @@
 """
-This module tests API fo execute SQL on a server.
+This module tests API for running SQL on a server.
 """
 # pylint: disable=missing-class-docstring,missing-function-docstring,duplicate-code
 

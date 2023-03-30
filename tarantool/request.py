@@ -113,7 +113,7 @@ def packer_factory(conn):
     else:
         packer_kwargs['use_bin_type'] = True
 
-    # We need configured packer to work with error extention
+    # We need configured packer to work with error extension
     # type payload, but module do not provide access to self
     # inside extension type packers.
     def default(obj):
