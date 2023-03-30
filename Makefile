@@ -7,6 +7,7 @@ PYTHON_FILES=tarantool test setup.py docs/source/conf.py
 .PHONY: lint
 lint:
 	python3 -m pylint --recursive=y $(PYTHON_FILES)
+	python3 -m flake8 $(PYTHON_FILES)
 
 
 .PHONY: test
