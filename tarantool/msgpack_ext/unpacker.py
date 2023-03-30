@@ -3,6 +3,7 @@ Tarantool `extension`_ types decoding support.
 
 .. _extension: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/
 """
+# pylint: disable=duplicate-code
 
 import tarantool.msgpack_ext.decimal as ext_decimal
 import tarantool.msgpack_ext.uuid as ext_uuid

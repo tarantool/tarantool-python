@@ -1,7 +1,7 @@
 """
 This module provides API for interaction with Tarantool servers cluster.
 """
-# pylint: disable=fixme
+# pylint: disable=fixme,duplicate-code
 
 import time
 
@@ -267,7 +267,6 @@ class MeshConnection(Connection):
     """
     Represents a connection to a cluster of Tarantool servers.
     """
-    # pylint: disable=duplicate-code
 
     def __init__(self, host=None, port=None,
                  user=None,

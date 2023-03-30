@@ -1,7 +1,7 @@
 """
 This module provides API for interaction with Tarantool servers cluster.
 """
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,duplicate-code
 
 import abc
 import itertools
@@ -167,6 +167,7 @@ class StrategyInterface(metaclass=abc.ABCMeta):
     """
     Defines strategy to choose a pool server based on a request mode.
     """
+    # pylint: disable=bad-option-value,super-init-not-called
 
     @classmethod
     def __subclasshook__(cls, subclass):
@@ -210,6 +211,7 @@ class RoundRobinStrategy(StrategyInterface):
     """
     Simple round-robin pool servers rotation.
     """
+    # pylint: disable=bad-option-value,no-self-use,super-init-not-called
 
     def __init__(self, pool):
         """
@@ -372,7 +374,7 @@ class ConnectionPool(ConnectionInterface):
         >>> resp
         - ['AAAA', 'Alpha']
     """
-    # pylint: disable=too-many-public-methods,duplicate-code,bad-option-value,no-self-use,super-init-not-called,bad-option-value
+    # pylint: disable=too-many-public-methods,duplicate-code,bad-option-value,no-self-use
 
     def __init__(self,
                  addrs,
@@ -652,7 +654,7 @@ class ConnectionPool(ConnectionInterface):
                 method = getattr(Connection, task.method_name)
                 try:
                     resp = method(unit.conn, *task.args, **task.kwargs)
-                except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
+                except Exception as exc:  # pylint: disable=bad-option-value,broad-exception-caught,broad-except
                     unit.output_queue.put(exc)
                 else:
                     unit.output_queue.put(resp)

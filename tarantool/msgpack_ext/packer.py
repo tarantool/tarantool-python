@@ -3,6 +3,7 @@ Tarantool `extension`_ types encoding support.
 
 .. _extension: https://www.tarantool.io/en/doc/latest/dev_guide/internals/msgpack_extensions/
 """
+# pylint: disable=duplicate-code
 
 from decimal import Decimal
 from uuid import UUID
