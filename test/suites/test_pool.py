@@ -566,7 +566,7 @@ class TestSuitePool(unittest.TestCase):
         self.assertEqual(self.pool.is_closed(), True)
 
     def tearDown(self):
-        if hasattr(self, 'pool'):
+        if self.pool:
             self.pool.close()
 
         for srv in self.servers:

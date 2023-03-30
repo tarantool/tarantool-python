@@ -157,7 +157,7 @@ class TestSuiteConnection(unittest.TestCase):
         self.assertIsInstance(resp[0], tuple)
 
     def tearDown(self):
-        if hasattr(self, 'con'):
+        if self.con:
             self.con.close()
 
     @classmethod
