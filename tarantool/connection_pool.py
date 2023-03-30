@@ -569,7 +569,8 @@ class ConnectionPool(ConnectionInterface):
         try:
             read_only = resp.data[0]['ro']
         except (IndexError, KeyError) as exc:
-            msg = f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
+            msg = (f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
+                   f"reason: {repr(exc)}")
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 
@@ -581,7 +582,8 @@ class ConnectionPool(ConnectionInterface):
                 warn(msg, PoolTolopogyWarning)
                 return InstanceState(Status.UNHEALTHY)
         except (IndexError, KeyError) as exc:
-            msg = f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
+            msg = (f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
+                   f"reason: {repr(exc)}")
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
 
