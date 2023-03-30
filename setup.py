@@ -2,6 +2,7 @@
 """
 Package setup commands.
 """
+# pylint: disable=bad-option-value,too-many-ancestors
 
 import codecs
 import os

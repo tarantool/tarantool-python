@@ -1,7 +1,7 @@
 """
 This module provides API for interaction with a Tarantool server.
 """
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,duplicate-code
 
 import os
 import time
@@ -1005,7 +1005,7 @@ class Connection(ConnectionInterface):
                                         keyfile=self.ssl_key_file,
                                         password=self.ssl_password)
                 return
-            except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
+            except Exception as exc:  # pylint: disable=bad-option-value,broad-exception-caught,broad-except
                 exc_list.append(exc)
 
         if self.ssl_password_file is not None:
@@ -1016,7 +1016,7 @@ class Connection(ConnectionInterface):
                                                 keyfile=self.ssl_key_file,
                                                 password=line.rstrip())
                         return
-                    except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
+                    except Exception as exc:  # pylint: disable=bad-option-value,broad-exception-caught,broad-except
                         exc_list.append(exc)
 
         try:
@@ -1029,7 +1029,7 @@ class Connection(ConnectionInterface):
                                     password=password_raise_error)
 
             return
-        except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
+        except Exception as exc:  # pylint: disable=bad-option-value,broad-exception-caught,broad-except
             exc_list.append(exc)
 
         raise SslError(exc_list)

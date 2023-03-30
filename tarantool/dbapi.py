@@ -3,7 +3,7 @@ Python DB API implementation, refer to `PEP-249`_.
 
 .. _PEP-249: http://www.python.org/dev/peps/pep-0249/
 """
-# pylint: disable=fixme,unused-import
+# pylint: disable=fixme,unused-import,bad-option-value,no-self-use
 # flake8: noqa: F401
 
 from tarantool.connection import Connection as BaseConnection

@@ -74,7 +74,7 @@ class TestSuiteEncoding(unittest.TestCase):
     def assertNotRaises(self, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
-        except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
+        except Exception as exc:  # pylint: disable=bad-option-value,broad-exception-caught,broad-except
             self.fail(f'Function raised Exception: {repr(exc)}')
 
     def setUp(self):
