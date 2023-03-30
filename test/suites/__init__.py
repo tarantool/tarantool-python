@@ -32,8 +32,8 @@ test_cases = (TestSuiteSchemaUnicodeConnection,
               TestSuiteMesh, TestSuiteExecute, TestSuiteDBAPI,
               TestSuiteEncoding, TestSuitePool, TestSuiteSsl,
               TestSuiteDecimal, TestSuiteUUID, TestSuiteDatetime,
-              TestSuiteInterval, TestSuiteErrorExt, TestSuitePush,
-              TestSuiteConnection, TestSuiteCrud,)
+              TestSuiteInterval, TestSuitePackage, TestSuiteErrorExt,
+              TestSuitePush, TestSuiteConnection, TestSuiteCrud,)
 
 
 def load_tests(loader, tests, pattern):
