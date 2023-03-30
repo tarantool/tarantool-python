@@ -9,7 +9,7 @@ import setuptools
 
 try:
     from setuptools.errors import BaseError
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     # pylint: disable=deprecated-module
     from distutils.errors import DistutilsError as BaseError
 
