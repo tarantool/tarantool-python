@@ -2,7 +2,7 @@
 This module tests work with a cluster of Tarantool servers through
 ConnectionPool.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring,too-many-public-methods,duplicate-code,no-self-use
+# pylint: disable=missing-class-docstring,missing-function-docstring,too-many-public-methods,duplicate-code,bad-option-value,no-self-use
 
 import sys
 import time
@@ -69,7 +69,7 @@ class TestSuitePool(unittest.TestCase):
         for i in range(count):
             try:
                 func()
-            except Exception as exc: # pylint: disable=broad-exception-caught
+            except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
                 if i + 1 == count:
                     raise exc
 

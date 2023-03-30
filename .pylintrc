@@ -1,3 +1,7 @@
+[MAIN]
+# Enable backward compatibility with pylint for pylint down to Python 3.6 one
+ignore=bad-option-value
+
 [BASIC]
 
 # Good variable names which should always be accepted, separated by a comma
