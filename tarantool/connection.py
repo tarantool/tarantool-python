@@ -489,7 +489,7 @@ class Connection(ConnectionInterface):
     check its status, call procedures and evaluate Lua code on server,
     make simple data manipulations and execute SQL queries.
     """
-    # pylint: disable=too-many-instance-attributes,too-many-public-methods
+    # pylint: disable=too-many-instance-attributes,too-many-public-methods,no-self-use
 
     # DBAPI Extension: supply exceptions as attributes on the connection
     Error = Error
