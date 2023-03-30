@@ -4,10 +4,12 @@ install:
 
 
 PYTHON_FILES=tarantool test setup.py docs/source/conf.py
+TEXT_FILES=README.rst docs/source/*.rst
 .PHONY: lint
 lint:
 	python3 -m pylint --recursive=y $(PYTHON_FILES)
 	python3 -m flake8 $(PYTHON_FILES)
+	codespell $(PYTHON_FILES) $(TEXT_FILES)
 
 
 .PHONY: test
