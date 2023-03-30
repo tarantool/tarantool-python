@@ -96,10 +96,10 @@ def skip_or_run_test_pcall_require(func, required_tt_module, msg):
 
         srv = None
 
-        if hasattr(self, 'servers'):
+        if hasattr(self, 'servers') and self.servers:
             srv = self.servers[0]
 
-        if hasattr(self, 'srv'):
+        if hasattr(self, 'srv') and self.srv:
             srv = self.srv
 
         assert srv is not None
