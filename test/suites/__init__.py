@@ -35,6 +35,7 @@ test_cases = (TestSuiteSchemaUnicodeConnection,
               TestSuiteInterval, TestSuiteErrorExt, TestSuitePush,
               TestSuiteConnection, TestSuiteCrud,)
 
+
 def load_tests(loader, tests, pattern):
     """
     Add suites to test run.
@@ -46,10 +47,11 @@ def load_tests(loader, tests, pattern):
         suite.addTests(loader.loadTestsFromTestCase(testc))
     return suite
 
+
 __tmp = os.getcwd()
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
 os.chdir(__tmp)
 
 # Workaround to disable unittest output truncating
-__import__('sys').modules['unittest.util']._MAX_LENGTH = 99999 # pylint: disable=protected-access
+__import__('sys').modules['unittest.util']._MAX_LENGTH = 99999  # pylint: disable=protected-access

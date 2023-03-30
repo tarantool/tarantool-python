@@ -29,7 +29,6 @@ class TestSuitePackage(unittest.TestCase):
         print(' PACKAGE '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
 
-
     def test_version(self):
         if is_test_pure_install():
             self.assertEqual(tarantool.__version__, metadata.version('tarantool'))

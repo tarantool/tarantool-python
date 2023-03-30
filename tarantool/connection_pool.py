@@ -161,6 +161,7 @@ class PoolUnit():
     :type: :obj:`bool`
     """
 
+
 # Based on https://realpython.com/python-interface/
 class StrategyInterface(metaclass=abc.ABCMeta):
     """
@@ -169,13 +170,13 @@ class StrategyInterface(metaclass=abc.ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        return (hasattr(subclass, '__init__') and
-                callable(subclass.__init__) and
-                hasattr(subclass, 'update') and
-                callable(subclass.update) and
-                hasattr(subclass, 'getnext') and
-                callable(subclass.getnext) or
-                NotImplemented)
+        return (hasattr(subclass, '__init__')
+                and callable(subclass.__init__)
+                and hasattr(subclass, 'update')
+                and callable(subclass.update)
+                and hasattr(subclass, 'getnext')
+                and callable(subclass.getnext)
+                or NotImplemented)
 
     @abc.abstractmethod
     def __init__(self, pool):
@@ -203,6 +204,7 @@ class StrategyInterface(metaclass=abc.ABCMeta):
         """
 
         raise NotImplementedError
+
 
 class RoundRobinStrategy(StrategyInterface):
     """
@@ -500,7 +502,7 @@ class ConnectionPool(ConnectionInterface):
                     socket_timeout=socket_timeout,
                     reconnect_max_attempts=reconnect_max_attempts,
                     reconnect_delay=reconnect_delay,
-                    connect_now=False, # Connect in ConnectionPool.connect()
+                    connect_now=False,  # Connect in ConnectionPool.connect()
                     encoding=encoding,
                     call_16=call_16,
                     connection_timeout=connection_timeout,
@@ -650,7 +652,7 @@ class ConnectionPool(ConnectionInterface):
                 method = getattr(Connection, task.method_name)
                 try:
                     resp = method(unit.conn, *task.args, **task.kwargs)
-                except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
+                except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
                     unit.output_queue.put(exc)
                 else:
                     unit.output_queue.put(resp)
@@ -918,7 +920,7 @@ class ConnectionPool(ConnectionInterface):
         """
 
         return self._send(mode, 'upsert', space_name, tuple_value,
-            op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
+                          op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
 
     def update(self, space_name, key, op_list, *, index=0, mode=Mode.RW,
                on_push=None, on_push_ctx=None):
@@ -955,7 +957,7 @@ class ConnectionPool(ConnectionInterface):
         """
 
         return self._send(mode, 'update', space_name, key,
-            op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
+                          op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
 
     def ping(self, notime=False, *, mode=None):
         """

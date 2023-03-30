@@ -12,6 +12,7 @@ from tarantool.error import DatabaseError
 from .lib.skip import skip_or_run_varbinary_test, skip_or_run_error_extra_info_test
 from .lib.tarantool_server import TarantoolServer
 
+
 class TestSuiteEncoding(unittest.TestCase):
     # pylint: disable=invalid-name
 
@@ -29,7 +30,7 @@ class TestSuiteEncoding(unittest.TestCase):
         """)
 
         args = [cls.srv.host, cls.srv.args['primary']]
-        kwargs = { 'user': 'test', 'password': 'test' }
+        kwargs = {'user': 'test', 'password': 'test'}
         cls.con_encoding_utf8 = tarantool.Connection(*args, encoding='utf-8', **kwargs)
         cls.con_encoding_none = tarantool.Connection(*args, encoding=None, **kwargs)
         cls.conns = [cls.con_encoding_utf8, cls.con_encoding_none]
@@ -73,7 +74,7 @@ class TestSuiteEncoding(unittest.TestCase):
     def assertNotRaises(self, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
-        except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
+        except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
             self.fail(f'Function raised Exception: {repr(exc)}')
 
     def setUp(self):
@@ -112,7 +113,7 @@ class TestSuiteEncoding(unittest.TestCase):
 
         self.assertNotRaises(self.con_encoding_utf8.insert, space, [data_id, data])
 
-        resp = self.con_encoding_utf8.select(space, [ data ], index='varbin')
+        resp = self.con_encoding_utf8.select(space, [data], index='varbin')
         self.assertSequenceEqual(resp, [[data_id, data]])
 
     @skip_or_run_varbinary_test

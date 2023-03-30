@@ -51,6 +51,7 @@ EXT_ID = 6
 `datetime.interval`_ type id.
 """
 
+
 def encode(obj, _):
     """
     Encode an interval object.
@@ -78,6 +79,7 @@ def encode(obj, _):
     buf = msgpack.packb(count) + buf
 
     return buf
+
 
 def decode(data, unpacker):
     """

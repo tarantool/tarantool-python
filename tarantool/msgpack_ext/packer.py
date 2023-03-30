@@ -19,12 +19,13 @@ import tarantool.msgpack_ext.datetime as ext_datetime
 import tarantool.msgpack_ext.interval as ext_interval
 
 encoders = [
-    {'type': Decimal,  'ext': ext_decimal },
-    {'type': UUID,     'ext': ext_uuid    },
-    {'type': BoxError, 'ext': ext_error   },
+    {'type': Decimal, 'ext': ext_decimal},
+    {'type': UUID, 'ext': ext_uuid},
+    {'type': BoxError, 'ext': ext_error},
     {'type': Datetime, 'ext': ext_datetime},
     {'type': Interval, 'ext': ext_interval},
 ]
+
 
 def default(obj, packer=None):
     """

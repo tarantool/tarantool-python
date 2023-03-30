@@ -5,6 +5,7 @@ Additional Tarantool type definitions.
 import typing
 from dataclasses import dataclass
 
+
 @dataclass
 class BoxError():
     """
@@ -77,6 +78,7 @@ MP_ERROR_ERRNO = 0x04
 MP_ERROR_ERRCODE = 0x05
 MP_ERROR_FIELDS = 0x06
 
+
 def decode_box_error(err_map):
     """
     Decode MessagePack map received from Tarantool to `box.error`_
@@ -101,12 +103,13 @@ def decode_box_error(err_map):
             message=item[MP_ERROR_MESSAGE],
             errno=item[MP_ERROR_ERRNO],
             errcode=item[MP_ERROR_ERRCODE],
-            fields=item.get(MP_ERROR_FIELDS), # omitted if empty
+            fields=item.get(MP_ERROR_FIELDS),  # omitted if empty
             prev=prev,
         )
         prev = err
 
     return prev
+
 
 def encode_box_error(err):
     """
@@ -132,7 +135,7 @@ def encode_box_error(err):
             MP_ERROR_ERRCODE: err.errcode,
         }
 
-        if err.fields is not None: # omitted if empty
+        if err.fields is not None:  # omitted if empty
             dict_item[MP_ERROR_FIELDS] = err.fields
 
         stack.append(dict_item)

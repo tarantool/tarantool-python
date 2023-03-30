@@ -16,6 +16,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_uuid_test
 
+
 class TestSuiteUUID(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -56,7 +57,6 @@ class TestSuiteUUID(unittest.TestCase):
             self.srv.touch_lock()
 
         self.adm("box.space['test']:truncate()")
-
 
     cases = {
         'uuid_1': {
@@ -128,14 +128,12 @@ class TestSuiteUUID(unittest.TestCase):
 
                 self.assertSequenceEqual(self.con.eval(lua_eval), [True])
 
-
     @skip_or_run_uuid_test
     def test_primary_key(self):
         data = [uuid.UUID('ae28d4f6-076c-49dd-8227-7f9fae9592d0'), 'content']
 
         self.assertSequenceEqual(self.con.insert('test_pk', data), [data])
         self.assertSequenceEqual(self.con.select('test_pk', data[0]), [data])
-
 
     @classmethod
     def tearDownClass(cls):

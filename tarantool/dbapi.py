@@ -17,7 +17,7 @@ from tarantool.error import (
     NotSupportedError,
 )
 
-Warning = Warning # pylint: disable=redefined-builtin,self-assigning-variable
+Warning = Warning  # pylint: disable=redefined-builtin,self-assigning-variable
 
 # pylint: disable=invalid-name
 paramstyle = 'named'

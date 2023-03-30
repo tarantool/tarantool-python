@@ -21,6 +21,7 @@ from tarantool.const import (
 from .tarantool_admin import TarantoolAdmin
 from .remote_tarantool_server import RemoteTarantoolServer
 
+
 def check_port(port, rais=True):
     """
     Check if port is free.
@@ -58,14 +59,14 @@ class TarantoolServer():
     # pylint: disable=too-many-instance-attributes,too-many-arguments,duplicate-code
 
     default_tarantool = {
-            "bin":     "tarantool",
-            "logfile": "tarantool.log",
-            "init":    "init.lua"}
+        "bin": "tarantool",
+        "logfile": "tarantool.log",
+        "init": "init.lua"}
 
     default_cfg = {
-            "custom_proc_title": "\"tarantool-python testing\"",
-            "memtx_memory":      0.5 * 1024**3,  # 0.5 GiB
-            "pid_file":          "\"box.pid\""}
+        "custom_proc_title": "\"tarantool-python testing\"",
+        "memtx_memory": 0.5 * 1024**3,  # 0.5 GiB
+        "pid_file": "\"box.pid\""}
 
     @property
     def logfile_path(self):
@@ -343,9 +344,9 @@ class TarantoolServer():
             os.chmod(self.script_dst, 0o777)
         args = self.prepare_args()
         self.process = subprocess.Popen(args,
-                cwd=self.vardir,
-                stdout=self.log_des,
-                stderr=self.log_des)
+                                        cwd=self.vardir,
+                                        stdout=self.log_des,
+                                        stderr=self.log_des)
         self.wait_until_started()
 
     def stop(self):

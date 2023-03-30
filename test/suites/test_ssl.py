@@ -76,6 +76,7 @@ class SslTestCase:
         self.client_password_file = client_password_file
         self.client_auth_type = client_auth_type
 
+
 @unittest.skipIf(not is_test_ssl(), "TEST_TNT_SSL is not set.")
 class TestSuiteSsl(unittest.TestCase):
     @classmethod
@@ -87,7 +88,7 @@ class TestSuiteSsl(unittest.TestCase):
         test_data_dir = os.path.join(test_suites_dir, "..", "data")
         cls.cert_file = os.path.join(test_data_dir, "localhost.crt")
         cls.invalidhost_cert_file = os.path.join(test_data_dir,
-                                                  "invalidhost.crt")
+                                                 "invalidhost.crt")
         cls.key_file = os.path.join(test_data_dir, "localhost.key")
         cls.key_enc_file = os.path.join(test_data_dir, "localhost.enc.key")
         cls.ca_file = os.path.join(test_data_dir, "ca.crt")
@@ -457,13 +458,13 @@ class TestSuiteSsl(unittest.TestCase):
         for t in testcases:
             with self.subTest(msg=t.name):
                 if t.server_password is not None \
-                or t.server_password_file is not None \
-                or t.client_password is not None \
-                or t.server_password_file is not None:
+                        or t.server_password_file is not None \
+                        or t.client_password is not None \
+                        or t.server_password_file is not None:
                     skip_or_run_ssl_password_test_call(self)
 
                 if t.server_auth_type is not None \
-                or t.client_auth_type is not None:
+                        or t.client_auth_type is not None:
                     skip_or_run_auth_type_test_call(self)
 
                 srv = TarantoolServer(
@@ -574,13 +575,13 @@ class TestSuiteSsl(unittest.TestCase):
             cnt = 5
             with self.subTest(msg=t.name):
                 if t.server_password is not None \
-                or t.server_password_file is not None \
-                or t.client_password is not None \
-                or t.server_password_file is not None:
+                        or t.server_password_file is not None \
+                        or t.client_password is not None \
+                        or t.server_password_file is not None:
                     skip_or_run_ssl_password_test_call(self)
 
                 if t.server_auth_type is not None \
-                or t.client_auth_type is not None:
+                        or t.client_auth_type is not None:
                     skip_or_run_auth_type_test_call(self)
 
                 addrs = []
@@ -699,13 +700,13 @@ class TestSuiteSsl(unittest.TestCase):
             cnt = 5
             with self.subTest(msg=t.name):
                 if t.server_password is not None \
-                or t.server_password_file is not None \
-                or t.client_password is not None \
-                or t.server_password_file is not None:
+                        or t.server_password_file is not None \
+                        or t.client_password is not None \
+                        or t.server_password_file is not None:
                     skip_or_run_ssl_password_test_call(self)
 
                 if t.server_auth_type is not None \
-                or t.client_auth_type is not None:
+                        or t.client_auth_type is not None:
                     skip_or_run_auth_type_test_call(self)
 
                 addrs = []

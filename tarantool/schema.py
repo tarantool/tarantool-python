@@ -24,6 +24,7 @@ Max possible known schema depth is 4 if foreign keys are used (since
 Tarantool 2.10), but there are no restrictions in protocol.
 """
 
+
 def to_unicode(string):
     """
     Decode :obj:`bytes` to unicode :obj:`str`.
@@ -170,7 +171,7 @@ class SchemaSpace():
         for part_id, part in enumerate(format_raw):
             part['id'] = part_id
             self.format[part['name']] = part
-            self.format[part_id     ] = part
+            self.format[part_id] = part
 
     def flush(self):
         """

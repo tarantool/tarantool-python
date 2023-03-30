@@ -17,6 +17,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
 
+
 class TestSuiteDatetime(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -68,7 +69,6 @@ class TestSuiteDatetime(unittest.TestCase):
 
         self.adm("box.space['test']:truncate()")
 
-
     def test_datetime_class_api(self):
         datetime = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                       nsec=308543321, tzoffset=180)
@@ -102,7 +102,6 @@ class TestSuiteDatetime(unittest.TestCase):
         self.assertEqual(datetime.tzoffset, 180)
         self.assertEqual(datetime.tz, 'Europe/Moscow')
         self.assertEqual(datetime.value, 1661958474308543321)
-
 
     datetime_class_invalid_init_cases = {
         'positional_year': {
@@ -152,7 +151,6 @@ class TestSuiteDatetime(unittest.TestCase):
                     case['type'], re.escape(case['msg']),
                     lambda: tarantool.Datetime(*case['args'], **case['kwargs']))
 
-
     integration_cases = {
         'date': {
             'python': tarantool.Datetime(year=2022, month=8, day=31),
@@ -183,14 +181,14 @@ class TestSuiteDatetime(unittest.TestCase):
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543000),
             'msgpack': (b'\x7a\xa3\x0f\x63\x00\x00\x00\x00\x18\xfe\x63\x12\x00\x00\x00\x00'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543000})",
         },
         'datetime_with_nanoseconds': {
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543321),
             'msgpack': (b'\x7a\xa3\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\x00\x00\x00\x00'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543321})",
         },
         'date_before_1970_with_nanoseconds': {
@@ -212,14 +210,14 @@ class TestSuiteDatetime(unittest.TestCase):
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543321, tzoffset=180),
             'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\x00\x00'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543321, tzoffset=180})",
         },
         'datetime_with_negative_offset': {
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543321, tzoffset=-60),
             'msgpack': (b'\x8a\xb1\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xc4\xff\x00\x00'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543321, tzoffset=-60})",
         },
         'timestamp_with_positive_offset': {
@@ -246,7 +244,7 @@ class TestSuiteDatetime(unittest.TestCase):
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543321, tz='Europe/Moscow'),
             'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\xb3\x03'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543321, tz='Europe/Moscow'})",
         },
         'datetime_with_tz_winter_time': {
@@ -258,28 +256,28 @@ class TestSuiteDatetime(unittest.TestCase):
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543321, tz='Europe/Moscow', tzoffset=123),
             'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\xb3\x03'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543321, tz='Europe/Moscow', tzoffset=123})",
         },
         'datetime_with_abbrev_tz': {
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543321, tz='MSK'),
             'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\xee\x00'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543321, tz='MSK'})",
         },
         'datetime_with_abbrev_tz_and_zero_offset': {
             'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
                                          nsec=308543321, tz='AZODT'),
             'msgpack': (b'\x7a\xa3\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\x00\x00\x12\x02'),
-            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, " +
+            'tarantool': r"datetime.new({year=2022, month=8, day=31, hour=18, min=7, sec=54, "
                          r"nsec=308543321, tz='AZODT'})",
         },
         'timestamp_since_utc_epoch': {
             'python': tarantool.Datetime(timestamp=1661958474, nsec=308543321,
                                          tz='Europe/Moscow', timestamp_since_utc_epoch=True),
             'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\xb3\x03'),
-            'tarantool': r"datetime.new({timestamp=1661969274, nsec=308543321, " +
+            'tarantool': r"datetime.new({timestamp=1661969274, nsec=308543321, "
                          r"tz='Europe/Moscow'})",
         },
     }
@@ -313,7 +311,7 @@ class TestSuiteDatetime(unittest.TestCase):
 
                 lua_eval = f"""
                     local dt = {case['tarantool']}
-                   
+
                     local tuple = box.space['test']:get('{name}')
                     assert(tuple ~= nil)
 
@@ -338,7 +336,6 @@ class TestSuiteDatetime(unittest.TestCase):
         self.assertRaisesRegex(
             ValueError, 'Failed to create datetime with ambiguous timezone "AET"',
             lambda: unpacker_ext_hook(4, case))
-
 
     datetime_subtraction_cases = {
         'date': {
@@ -379,7 +376,6 @@ class TestSuiteDatetime(unittest.TestCase):
                 self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
                                          [case['res']])
 
-
     datetime_subtraction_different_timezones_case = {
         'arg_1': tarantool.Datetime(year=2001, month=2, day=3, tz='UTC'),
         'arg_2': tarantool.Datetime(year=2001, month=2, day=3, tz='MSK'),
@@ -397,8 +393,7 @@ class TestSuiteDatetime(unittest.TestCase):
         case = self.datetime_subtraction_different_timezones_case
 
         self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
-                                         [case['res']])
-
+                                 [case['res']])
 
     interval_arithmetic_cases = {
         'year': {
@@ -435,9 +430,9 @@ class TestSuiteDatetime(unittest.TestCase):
             'arg_1': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43),
             'arg_2': tarantool.Interval(nsec=10000023),
             'res_add': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43,
-                                      nsec=10000023),
+                                          nsec=10000023),
             'res_sub': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=42,
-                                      nsec=989999977),
+                                          nsec=989999977),
         },
         'zero': {
             'arg_1': tarantool.Datetime(year=2008, month=2, day=3, hour=3, minute=36, sec=43),
@@ -507,7 +502,6 @@ class TestSuiteDatetime(unittest.TestCase):
                 self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
                                          [case['res_sub']])
 
-
     datetime_addition_winter_time_switch_case = {
         'arg_1': tarantool.Datetime(year=2008, month=1, day=1, hour=12, tz='Europe/Moscow'),
         'arg_2': tarantool.Interval(month=6),
@@ -526,7 +520,6 @@ class TestSuiteDatetime(unittest.TestCase):
 
         self.assertSequenceEqual(self.con.call('add', case['arg_1'], case['arg_2']),
                                  [case['res']])
-
 
     @skip_or_run_datetime_test
     def test_primary_key(self):

@@ -13,7 +13,7 @@ def create_server():
     srv = TarantoolServer()
     srv.script = 'test/suites/box.lua'
     srv.start()
-    srv.admin("box.schema.user.create('test', {password = 'test', " +
+    srv.admin("box.schema.user.create('test', {password = 'test', "
               "if_not_exists = true})")
     srv.admin("box.schema.user.grant('test', 'read,write,execute', 'universe')")
 
@@ -94,8 +94,8 @@ class TestSuitePush(unittest.TestCase):
         # Open connection, connection pool and mesh connection to instance.
         self.conn = tarantool.Connection(host=self.host, port=self.port,
                                          user='test', password='test')
-        self.conn_pool = tarantool.ConnectionPool([{'host':self.host, 'port':self.port}],
-                                                     user='test', password='test')
+        self.conn_pool = tarantool.ConnectionPool([{'host': self.host, 'port': self.port}],
+                                                  user='test', password='test')
         self.mesh_conn = tarantool.MeshConnection(host=self.host, port=self.port,
                                                   user='test', password='test')
 

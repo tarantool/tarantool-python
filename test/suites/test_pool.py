@@ -26,19 +26,19 @@ def create_server(_id):
     srv = TarantoolServer()
     srv.script = 'test/suites/box.lua'
     srv.start()
-    srv.admin("box.schema.user.create('test', {password = 'test', " +
+    srv.admin("box.schema.user.create('test', {password = 'test', "
               "if_not_exists = true})")
     srv.admin("box.schema.user.grant('test', 'execute', 'universe')")
     srv.admin("box.schema.space.create('test')")
     srv.admin(r"box.space.test:format({"
-             +r" { name = 'pk', type = 'string' }," +
-              r" { name = 'id', type = 'number', is_nullable = true }" +
+              r" { name = 'pk', type = 'string' },"
+              r" { name = 'id', type = 'number', is_nullable = true }"
               r"})")
-    srv.admin(r"box.space.test:create_index('pk'," +
-              r"{ unique = true," +
+    srv.admin(r"box.space.test:create_index('pk',"
+              r"{ unique = true,"
               r"  parts = {{field = 1, type = 'string'}}})")
-    srv.admin(r"box.space.test:create_index('id'," +
-              r"{ unique = true," +
+    srv.admin(r"box.space.test:create_index('id',"
+              r"{ unique = true,"
               r"  parts = {{field = 2, type = 'number', is_nullable=true}}})")
     srv.admin("box.schema.user.grant('test', 'read,write', 'space', 'test')")
     srv.admin("json = require('json')")
@@ -69,7 +69,7 @@ class TestSuitePool(unittest.TestCase):
         for i in range(count):
             try:
                 func()
-            except Exception as exc: # pylint: disable=broad-exception-caught,broad-except
+            except Exception as exc:  # pylint: disable=broad-exception-caught,broad-except
                 if i + 1 == count:
                     raise exc
 
@@ -229,8 +229,7 @@ class TestSuitePool(unittest.TestCase):
             self.pool.insert('test', ['test_03_insert_1', 1]),
             [['test_03_insert_1', 1]])
         self.assertSequenceEqual(
-            self.pool.insert('test', ['test_03_insert_2', 2],
-                mode=tarantool.Mode.RW),
+            self.pool.insert('test', ['test_03_insert_2', 2], mode=tarantool.Mode.RW),
             [['test_03_insert_2', 2]])
 
         conn_2 = tarantool.connect(
@@ -301,8 +300,9 @@ class TestSuitePool(unittest.TestCase):
                 [['test_05_upsert', 3]])
 
             self.assertSequenceEqual(
-                self.pool.upsert('test', ['test_05_upsert', 3],
-                    [('+', 1, 1)], mode=tarantool.Mode.RW), [])
+                self.pool.upsert('test', ['test_05_upsert', 3], [('+', 1, 1)],
+                                 mode=tarantool.Mode.RW),
+                [])
             self.assertSequenceEqual(
                 conn_1.select('test', 'test_05_upsert'),
                 [['test_05_upsert', 4]])
@@ -334,8 +334,8 @@ class TestSuitePool(unittest.TestCase):
                 [['test_06_update_1', 4]])
 
             self.assertSequenceEqual(
-                self.pool.update('test', ('test_06_update_2',),
-                    [('=', 1, 10)], mode=tarantool.Mode.RW),
+                self.pool.update('test', ('test_06_update_2',), [('=', 1, 10)],
+                                 mode=tarantool.Mode.RW),
                 [['test_06_update_2', 10]])
             self.assertSequenceEqual(
                 conn_4.select('test', 'test_06_update_2'),
@@ -361,7 +361,7 @@ class TestSuitePool(unittest.TestCase):
 
             self.assertSequenceEqual(
                 self.pool.replace('test', ['test_07_replace', 4],
-                    mode=tarantool.Mode.RW),
+                                  mode=tarantool.Mode.RW),
                 [['test_07_replace', 4]])
             self.assertSequenceEqual(
                 conn_4.select('test', 'test_07_replace'),
@@ -401,22 +401,17 @@ class TestSuitePool(unittest.TestCase):
             self.pool.select('test', 'test_08_select'),
             [['test_08_select', 3]])
         self.assertSequenceEqual(
-            self.pool.select('test', ['test_08_select'],
-                mode=tarantool.Mode.ANY),
+            self.pool.select('test', ['test_08_select'], mode=tarantool.Mode.ANY),
             [['test_08_select', 3]])
         self.assertSequenceEqual(
-            self.pool.select('test', 3, index='id',
-                mode=tarantool.Mode.RO),
+            self.pool.select('test', 3, index='id', mode=tarantool.Mode.RO),
             [['test_08_select', 3]])
         self.assertSequenceEqual(
-            self.pool.select('test', [3], index='id',
-                mode=tarantool.Mode.PREFER_RW),
+            self.pool.select('test', [3], index='id', mode=tarantool.Mode.PREFER_RW),
             [['test_08_select', 3]])
 
     def test_09_ping(self):
-        self.pool = tarantool.ConnectionPool(addrs=self.addrs,
-            user='test',
-            password='test')
+        self.pool = tarantool.ConnectionPool(addrs=self.addrs, user='test', password='test')
 
         with self.assertRaisesRegex(ValueError, "Please, specify 'mode' keyword argument"):
             self.pool.ping()
@@ -480,7 +475,7 @@ class TestSuitePool(unittest.TestCase):
 
         resp = self.pool.execute(
             'insert into "test" values (:pk, :id)',
-            { 'pk': 'test_12_execute_2', 'id': 2},
+            {'pk': 'test_12_execute_2', 'id': 2},
             mode=tarantool.Mode.RW)
         self.assertEqual(resp.affected_row_count, 1)
         self.assertEqual(resp.data, None)
@@ -519,7 +514,7 @@ class TestSuitePool(unittest.TestCase):
         def expect_rw_request_execute_on_new_master():
             self.assertSequenceEqual(
                 self.pool.eval('return box.cfg.listen', mode=tarantool.Mode.RW),
-                [ str(self.addrs[1]['port']) ])
+                [str(self.addrs[1]['port'])])
 
         self.retry(func=expect_rw_request_execute_on_new_master)
 

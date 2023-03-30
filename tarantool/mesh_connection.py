@@ -155,7 +155,7 @@ def prepare_address(address):
                                 'port must be an int for an inet result')
         if result['port'] < 1 or result['port'] > 65535:
             return format_error(result, 'port must be in range [1, 65535] '
-                                         'for an inet result')
+                                        'for an inet result')
 
         # Looks okay.
         return result, None

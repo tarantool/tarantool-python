@@ -13,6 +13,7 @@ from tarantool.error import DatabaseError
 
 from .lib.tarantool_server import TarantoolServer
 
+
 def create_server():
     srv = TarantoolServer()
     srv.script = 'test/suites/crud_server.lua'
@@ -22,7 +23,7 @@ def create_server():
 
 
 @unittest.skipIf(sys.platform.startswith("win"),
-                 "Crud tests on windows platform are not supported: " +
+                 "Crud tests on windows platform are not supported: "
                  "complexity of the vshard replicaset configuration")
 class TestSuiteCrud(unittest.TestCase):
 
@@ -41,17 +42,17 @@ class TestSuiteCrud(unittest.TestCase):
         self.conn = tarantool.Connection(host=self.host, port=self.port,
                                          user='guest', password='', fetch_schema=False)
         self.conn_mesh = tarantool.MeshConnection(host=self.host, port=self.port,
-                                         user='guest', password='', fetch_schema=False)
-        self.conn_pool = tarantool.ConnectionPool([{'host':self.host, 'port':self.port}],
-                                                     user='guest', password='',
-                                                     fetch_schema=False)
+                                                  user='guest', password='', fetch_schema=False)
+        self.conn_pool = tarantool.ConnectionPool([{'host': self.host, 'port': self.port}],
+                                                  user='guest', password='',
+                                                  fetch_schema=False)
         # Time for vshard group configuration.
         time.sleep(1)
         if self.conn.eval('return ROCKS_IMPORT_FAIL').data[0] is True:
-            raise unittest.SkipTest('The crud/vshard modules are not detected, ' +
-                                    'installation via rocks install is required ' +
-                                    'for CRUD testing purposes. You can use ' +
-                                    '<tarantoolctl rocks install crud> or ' +
+            raise unittest.SkipTest('The crud/vshard modules are not detected, '
+                                    'installation via rocks install is required '
+                                    'for CRUD testing purposes. You can use '
+                                    '<tarantoolctl rocks install crud> or '
                                     '<tt rocks install crud> to install modules')
 
     crud_test_cases = {
@@ -69,9 +70,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['tester', [1, 100, 'Bob'], {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'Duplicate key exists',
-                        ],
+                    'str': [r'Duplicate key exists'],
                 },
             },
         },
@@ -90,9 +89,7 @@ class TestSuiteCrud(unittest.TestCase):
                              {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'Duplicate key exists',
-                        ],
+                    'str': [r'Duplicate key exists'],
                 },
             },
         },
@@ -112,11 +109,11 @@ class TestSuiteCrud(unittest.TestCase):
                 },
                 'output': {
                     'rows': [
-                                [3, 100, 'Jacob'],
-                                [4, 100, 'Wyatt'],
-                                [5, 100, 'David'],
-                                [6, 100, 'Leo'],
-                            ],
+                        [3, 100, 'Jacob'],
+                        [4, 100, 'Wyatt'],
+                        [5, 100, 'David'],
+                        [6, 100, 'Leo'],
+                    ],
                 },
             },
             'error': {
@@ -133,9 +130,7 @@ class TestSuiteCrud(unittest.TestCase):
                     ],
                 },
                 'output': {
-                    'str': [
-                            r'Duplicate key exists',
-                        ],
+                    'str': [r'Duplicate key exists'],
                     'res_rows': [[7, 100, 'Grayson'], [8, 100, 'Ezra']]
                 },
             },
@@ -156,11 +151,11 @@ class TestSuiteCrud(unittest.TestCase):
                 },
                 'output': {
                     'rows': [
-                                [9, 100, 'Sharar'],
-                                [10, 100, 'Thaddeus'],
-                                [11, 100, 'Tobit'],
-                                [12, 100, 'Zeb'],
-                            ],
+                        [9, 100, 'Sharar'],
+                        [10, 100, 'Thaddeus'],
+                        [11, 100, 'Tobit'],
+                        [12, 100, 'Zeb'],
+                    ],
                 },
             },
             'error': {
@@ -177,9 +172,7 @@ class TestSuiteCrud(unittest.TestCase):
                     ],
                 },
                 'output': {
-                    'str': [
-                            r'Duplicate key exists',
-                        ],
+                    'str': [r'Duplicate key exists'],
                     'res_rows': [[13, 100, 'Uzzi'], [14, 100, 'Zimiri']]
                 },
             },
@@ -198,9 +191,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['no-such-space-name', [1, 100, 'Bob'], {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'GetError: Space "no-such-space-name" doesn\'t exist',
-                        ],
+                    'str': [r'GetError: Space "no-such-space-name" doesn\'t exist'],
                 },
             },
         },
@@ -218,9 +209,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['tester', 1, [['+', 'age', 1]], {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r"UpdateError",
-                        ],
+                    'str': [r"UpdateError"],
                 },
             },
         },
@@ -238,9 +227,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['no-such-space-name', 1, {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'DeleteError: Space "no-such-space-name" doesn\'t exist',
-                        ],
+                    'str': [r'DeleteError: Space "no-such-space-name" doesn\'t exist'],
                 },
             },
         },
@@ -258,9 +245,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['tester', [1, 100, 0], {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'expected string',
-                        ],
+                    'str': [r'expected string'],
                 },
             },
         },
@@ -281,9 +266,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 0}, {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'expected string',
-                        ],
+                    'str': [r'expected string'],
                 },
             },
         },
@@ -303,11 +286,11 @@ class TestSuiteCrud(unittest.TestCase):
                 },
                 'output': {
                     'rows': [
-                                [2, 100, 'Cephus'],
-                                [3, 100, 'Esau'],
-                                [4, 100, 'Haman'],
-                                [5, 100, 'Gershon'],
-                            ],
+                        [2, 100, 'Cephus'],
+                        [3, 100, 'Esau'],
+                        [4, 100, 'Haman'],
+                        [5, 100, 'Gershon'],
+                    ],
                 },
             },
             'error': {
@@ -324,9 +307,7 @@ class TestSuiteCrud(unittest.TestCase):
                     ],
                 },
                 'output': {
-                    'str': [
-                            r'expected string',
-                        ],
+                    'str': [r'expected string'],
                     'res_rows': [[3, 100, 'Ephron'], [4, 100, 'Ethan']]
                 },
             },
@@ -347,11 +328,11 @@ class TestSuiteCrud(unittest.TestCase):
                 },
                 'output': {
                     'rows': [
-                                [2, 100, 'Cephus'],
-                                [3, 100, 'Esau'],
-                                [4, 100, 'Haman'],
-                                [5, 100, 'Gershon'],
-                            ],
+                        [2, 100, 'Cephus'],
+                        [3, 100, 'Esau'],
+                        [4, 100, 'Haman'],
+                        [5, 100, 'Gershon'],
+                    ],
                 },
             },
             'error': {
@@ -368,9 +349,7 @@ class TestSuiteCrud(unittest.TestCase):
                     ],
                 },
                 'output': {
-                    'str': [
-                            r'expected string',
-                        ],
+                    'str': [r'expected string'],
                     'res_rows': [[3, 100, 'Ephron'], [4, 100, 'Ethan']]
                 },
             },
@@ -390,9 +369,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['tester', [2, 100, 'Cephus'], [['+', 'age', 1]], {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r"UpsertError",
-                        ],
+                    'str': [r"UpsertError"],
                 },
             },
         },
@@ -400,7 +377,7 @@ class TestSuiteCrud(unittest.TestCase):
             'success': {
                 'input': {
                     'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Cephus'},
-                        [['+', 'bucket_id', 1]], {'timeout': 10}],
+                             [['+', 'bucket_id', 1]], {'timeout': 10}],
                 },
                 'output': {
                     'rows': [],
@@ -409,12 +386,10 @@ class TestSuiteCrud(unittest.TestCase):
             'error': {
                 'input': {
                     'args': ['tester', {'id': 2, 'bucket_id': 100, 'name': 'Cephus'},
-                        [['+', 'age', 1]], {'timeout': 10}],
+                             [['+', 'age', 1]], {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r"UpsertError",
-                        ],
+                    'str': [r"UpsertError"],
                 },
             },
         },
@@ -448,9 +423,7 @@ class TestSuiteCrud(unittest.TestCase):
                     ],
                 },
                 'output': {
-                    'str': [
-                            r'expected string',
-                        ],
+                    'str': [r'expected string'],
                 },
             },
         },
@@ -508,9 +481,7 @@ class TestSuiteCrud(unittest.TestCase):
                     ],
                 },
                 'output': {
-                    'str': [
-                            r'expected string',
-                        ],
+                    'str': [r'expected string'],
                 },
             },
         },
@@ -528,9 +499,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['no-such-space-name'],
                 },
                 'output': {
-                    'str': [
-                            r'SelectError: Space "no-such-space-name" doesn\'t exist',
-                        ],
+                    'str': [r'SelectError: Space "no-such-space-name" doesn\'t exist'],
                 },
             },
         },
@@ -548,9 +517,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['tester', 'no-idx'],
                 },
                 'output': {
-                    'str': [
-                            r'BorderError: Index "no-idx" of space "tester" doesn\'t exist',
-                        ],
+                    'str': [r'BorderError: Index "no-idx" of space "tester" doesn\'t exist'],
                 },
             },
         },
@@ -568,9 +535,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['tester', 'no-idx', {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'BorderError: Index "no-idx" of space "tester" doesn\'t exist',
-                        ],
+                    'str': [r'BorderError: Index "no-idx" of space "tester" doesn\'t exist'],
                 },
             },
         },
@@ -588,9 +553,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['no-such-space-name', {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'LenError: Space "no-such-space-name" doesn\'t exist',
-                        ],
+                    'str': [r'LenError: Space "no-such-space-name" doesn\'t exist'],
                 },
             },
         },
@@ -608,9 +571,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['no-such-space-name', [['==', 'bucket_id', 100]], {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'CountError: Space "no-such-space-name" doesn\'t exist',
-                        ],
+                    'str': [r'CountError: Space "no-such-space-name" doesn\'t exist'],
                 },
             },
         },
@@ -646,7 +607,7 @@ class TestSuiteCrud(unittest.TestCase):
             },
             'error': {
                 'input': {
-                    'args': [[],[]],
+                    'args': [[], []],
                 },
                 'output': {
                     'str': [],
@@ -667,9 +628,7 @@ class TestSuiteCrud(unittest.TestCase):
                     'args': ['no-such-space-name', {'timeout': 10}],
                 },
                 'output': {
-                    'str': [
-                            r'"no-such-space-name" doesn\'t exist',
-                        ],
+                    'str': [r'"no-such-space-name" doesn\'t exist'],
                 },
             },
         },
@@ -680,13 +639,13 @@ class TestSuiteCrud(unittest.TestCase):
                 },
                 'output': {
                     'operations': [
-                            'insert', 'replace',
-                            'upsert', 'len',
-                            'delete', 'get',
-                            'select', 'borders',
-                            'update', 'count',
-                            'truncate',
-                        ],
+                        'insert', 'replace',
+                        'upsert', 'len',
+                        'delete', 'get',
+                        'select', 'borders',
+                        'update', 'count',
+                        'truncate',
+                    ],
                 },
             },
             'error': {
@@ -719,9 +678,9 @@ class TestSuiteCrud(unittest.TestCase):
         if 'operations' in case['success']['output']:
             # Case for statistics testing.
             for operation in case['success']['output']['operations']:
-                self.assertEqual(operation in resp.__dict__, True,
-                    'Problem with finding a field with a statistic about operation '
-                        + operation)
+                self.assertEqual(
+                    operation in resp.__dict__, True,
+                    'Problem with finding a field with a statistic about operation ' + operation)
 
     def _exception_operation_with_crud(self, testing_function, case, mode=None):
         try:

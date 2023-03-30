@@ -16,6 +16,7 @@ id_map = {
     8: 'adjust',
 }
 
+
 # https://github.com/tarantool/c-dt/blob/cec6acebb54d9e73ea0b99c63898732abd7683a6/dt_arithmetic.h#L34
 class Adjust(Enum):
     """
@@ -37,6 +38,7 @@ class Adjust(Enum):
     """
     Mode when day snaps to the end of month, if it happens.
     """
+
 
 class Interval():
     """
@@ -141,14 +143,14 @@ class Interval():
         # ...
 
         return Interval(
-            year = self.year + other.year,
-            month = self.month + other.month,
-            day = self.day + other.day,
-            hour = self.hour + other.hour,
-            minute = self.minute + other.minute,
-            sec = self.sec + other.sec,
-            nsec = self.nsec + other.nsec,
-            adjust = self.adjust,
+            year=self.year + other.year,
+            month=self.month + other.month,
+            day=self.day + other.day,
+            hour=self.hour + other.hour,
+            minute=self.minute + other.minute,
+            sec=self.sec + other.sec,
+            nsec=self.nsec + other.nsec,
+            adjust=self.adjust,
         )
 
     def __sub__(self, other):
@@ -190,14 +192,14 @@ class Interval():
         # ...
 
         return Interval(
-            year = self.year - other.year,
-            month = self.month - other.month,
-            day = self.day - other.day,
-            hour = self.hour - other.hour,
-            minute = self.minute - other.minute,
-            sec = self.sec - other.sec,
-            nsec = self.nsec - other.nsec,
-            adjust = self.adjust,
+            year=self.year - other.year,
+            month=self.month - other.month,
+            day=self.day - other.day,
+            hour=self.hour - other.hour,
+            minute=self.minute - other.minute,
+            sec=self.sec - other.sec,
+            nsec=self.nsec - other.nsec,
+            adjust=self.adjust,
         )
 
     def __eq__(self, other):
