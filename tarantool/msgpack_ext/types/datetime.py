@@ -211,7 +211,7 @@ class Datetime():
         :type tz: :obj:`str`, optional
 
         :param timestamp_since_utc_epoch: Parameter to set timestamp
-            convertion behavior for timezone-aware datetimes.
+            conversion behavior for timezone-aware datetimes.
 
             If ``False`` (default), behaves similar to Tarantool
             `datetime.new()`_:
@@ -232,7 +232,7 @@ class Datetime():
 
             Thus, if ``False``, datetime is computed from timestamp
             since epoch and then timezone is applied without any
-            convertion. In that case,
+            conversion. In that case,
             :attr:`~tarantool.Datetime.timestamp` won't be equal to
             initialization
             :paramref:`~tarantool.Datetime.params.timestamp` for all

@@ -83,7 +83,7 @@ def skip_or_run_test_tarantool_call(self, required_tt_version, msg):
 def skip_or_run_test_pcall_require(func, required_tt_module, msg):
     """
     Decorator to skip or run tests depending on tarantool
-    module requre success or fail.
+    module require success or fail.
 
     Also, it can be used with the 'setUp' method for skipping
     the whole test suite.

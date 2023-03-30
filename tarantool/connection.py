@@ -469,7 +469,7 @@ class JoinState(Enum):
 
     INITIAL = 2
     """
-    Received inital vclock.
+    Received initial vclock.
     """
 
     FINAL = 3

@@ -76,7 +76,7 @@ def unpacker_factory(conn):
     if msgpack.version >= (1, 0, 0):
         unpacker_kwargs['strict_map_key'] = False
 
-    # We need configured unpacker to work with error extention
+    # We need configured unpacker to work with error extension
     # type payload, but module do not provide access to self
     # inside extension type unpackers.
     def ext_hook(code, data):
