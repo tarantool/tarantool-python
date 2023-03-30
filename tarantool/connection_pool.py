@@ -370,7 +370,7 @@ class ConnectionPool(ConnectionInterface):
         >>> resp
         - ['AAAA', 'Alpha']
     """
-    # pylint: disable=too-many-public-methods,duplicate-code
+    # pylint: disable=too-many-public-methods,duplicate-code,no-self-use
 
     def __init__(self,
                  addrs,

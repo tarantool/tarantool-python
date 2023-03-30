@@ -17,6 +17,7 @@ class Test(setuptools.Command):
     """
     Class implementing `python setup.py test`.
     """
+    # pylint: disable=no-self-use
 
     user_options = []
     description = 'Run tests'

@@ -2,7 +2,7 @@
 This module tests work with a cluster of Tarantool servers through
 ConnectionPool.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring,too-many-public-methods,duplicate-code
+# pylint: disable=missing-class-docstring,missing-function-docstring,too-many-public-methods,duplicate-code,no-self-use
 
 import sys
 import time
