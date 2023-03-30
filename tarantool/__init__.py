@@ -142,4 +142,4 @@ def connectmesh(addrs=({'host': 'localhost', 'port': 3301},), user=None,
 __all__ = ['connect', 'Connection', 'connectmesh', 'MeshConnection', 'Schema',
            'Error', 'DatabaseError', 'NetworkError', 'NetworkWarning',
            'SchemaError', 'dbapi', 'Datetime', 'Interval', 'IntervalAdjust',
-           'ConnectionPool', 'Mode', 'BoxError',]
+           'ConnectionPool', 'Mode', 'BoxError']
