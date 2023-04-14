@@ -3,9 +3,11 @@ Tarantool `datetime`_ extension type implementation module.
 """
 # pylint: disable=line-too-long
 
+from calendar import monthrange
 from copy import deepcopy
+from datetime import datetime, timedelta
+import sys
 
-import pandas
 import pytz
 
 import tarantool.msgpack_ext.types.timezones as tt_timezones
@@ -16,16 +18,17 @@ NSEC_IN_SEC = 1000000000
 NSEC_IN_MKSEC = 1000
 SEC_IN_MIN = 60
 MONTH_IN_YEAR = 12
+_EPOCH = datetime(1970, 1, 1, tzinfo=pytz.utc)
 
 
-def compute_offset(timestamp):
+def compute_offset(_datetime):
     """
     Compute timezone offset. Offset is computed each time and not stored
     since it could depend on current datetime value. It is expected that
     timestamp offset is not ``None``.
 
-    :param timestamp: Timestamp data.
-    :type timestamp: :class:`pandas.Timestamp`
+    :param _datetime: Datetime date.
+    :type _datetime: :class:`datetime.datetime`
 
     :return: Timezone offset, in minutes.
     :rtype: :obj:`int`
@@ -33,7 +36,7 @@ def compute_offset(timestamp):
     :meta private:
     """
 
-    utc_offset = timestamp.tzinfo.utcoffset(timestamp)
+    utc_offset = _datetime.tzinfo.utcoffset(_datetime)
 
     # `None` offset is a valid utcoffset implementation,
     # but it seems that pytz timezones never return `None`:
@@ -75,10 +78,28 @@ def get_python_tzinfo(tz):
     return pytz.FixedOffset(tt_tzinfo['offset'])
 
 
+def month_last_day(year, month):
+    """
+    Get the number of the last day in month.
+
+    :param year: Calendar year.
+    :type year: :obj:`int`
+
+    :param month: Calendar month.
+    :type month: :obj:`int`
+
+    :rtype: :obj:`int`
+
+    :meta private:
+    """
+
+    return monthrange(year, month)[1]
+
+
 class Datetime():
     """
     Class representing Tarantool `datetime`_ info. Internals are based
-    on :class:`pandas.Timestamp`.
+    on :class:`datetime.datetime`.
 
     You can create :class:`~tarantool.Datetime` objects by using the
     same API as in Tarantool:
@@ -164,43 +185,39 @@ class Datetime():
         :type timestamp: :obj:`float` or :obj:`int`, optional
 
         :param year: Datetime year value. Must be a valid
-            :class:`pandas.Timestamp` ``year`` parameter.
+            :class:`datetime.datetime` ``year`` parameter.
             Must be provided unless the object is built with
             :paramref:`~tarantool.Datetime.params.data` or
             :paramref:`~tarantool.Datetime.params.timestamp`.
         :type year: :obj:`int`, optional
 
         :param month: Datetime month value. Must be a valid
-            :class:`pandas.Timestamp` ``month`` parameter.
+            :class:`datetime.datetime` ``month`` parameter.
             Must be provided unless the object is built with
             :paramref:`~tarantool.Datetime.params.data` or
             :paramref:`~tarantool.Datetime.params.timestamp`.
         :type month: :obj:`int`, optional
 
         :param day: Datetime day value. Must be a valid
-            :class:`pandas.Timestamp` ``day`` parameter.
+            :class:`datetime.datetime` ``day`` parameter.
             Must be provided unless the object is built with
             :paramref:`~tarantool.Datetime.params.data` or
             :paramref:`~tarantool.Datetime.params.timestamp`.
         :type day: :obj:`int`, optional
 
         :param hour: Datetime hour value. Must be a valid
-            :class:`pandas.Timestamp` ``hour`` parameter.
+            :class:`datetime.datetime` ``hour`` parameter.
         :type hour: :obj:`int`, optional
 
         :param minute: Datetime minute value. Must be a valid
-            :class:`pandas.Timestamp` ``minute`` parameter.
+            :class:`datetime.datetime` ``minute`` parameter.
         :type minute: :obj:`int`, optional
 
         :param sec: Datetime seconds value. Must be a valid
-            :class:`pandas.Timestamp` ``second`` parameter.
+            :class:`datetime.datetime` ``second`` parameter.
         :type sec: :obj:`int`, optional
 
-        :param nsec: Datetime nanoseconds value. Quotient of a division
-            by 1000 (nanoseconds in microseconds) must be a valid
-            :class:`pandas.Timestamp` ``microsecond`` parameter,
-            remainder of a division by 1000 must be a valid
-            :class:`pandas.Timestamp` ``nanosecond`` parameter.
+        :param nsec: Datetime nanoseconds value.
         :type sec: :obj:`int`, optional
 
         :param tzoffset: Timezone offset. Ignored, if provided together
@@ -238,7 +255,7 @@ class Datetime():
             :paramref:`~tarantool.Datetime.params.timestamp` for all
             timezones with non-zero offset.
 
-            If ``True``, behaves similar to :class:`pandas.Timestamp`:
+            If ``True``, behaves similar to :class:`datetime.datetime`:
 
             .. code-block:: python
 
@@ -261,11 +278,11 @@ class Datetime():
         :type timestamp_since_utc_epoch: :obj:`bool`, optional
 
         :raise: :exc:`ValueError`, :exc:`~tarantool.error.MsgpackError`,
-            :class:`pandas.Timestamp` exceptions
+            :class:`datetime.datetime` exceptions
 
         .. _datetime.new(): https://www.tarantool.io/en/doc/latest/reference/reference_lua/datetime/new/
         """
-        # pylint: disable=too-many-branches,too-many-locals
+        # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 
         tzinfo = None
         if tz != '':
@@ -291,36 +308,85 @@ class Datetime():
                 if not isinstance(timestamp, int):
                     raise ValueError('timestamp must be int if nsec provided')
 
-                total_nsec = timestamp * NSEC_IN_SEC + nsec
-                datetime = pandas.to_datetime(total_nsec, unit='ns')
-            else:
-                datetime = pandas.to_datetime(timestamp, unit='s')
+                # Tarantool may send negative nanoseconds or nanoseconds bigger
+                # than 999999999. datetime.datetime doesn't process overflows.
+                if (nsec >= NSEC_IN_SEC) or (nsec < 0):
+                    timestamp += nsec // NSEC_IN_SEC
+                    nsec = nsec % NSEC_IN_SEC
 
-            if not timestamp_since_utc_epoch:
-                self._datetime = datetime.tz_localize(tzinfo)
+            if (sys.platform.startswith("win")) and (timestamp < 0):
+                # Fails to create a datetime from negative timestamp on Windows.
+                _datetime = _EPOCH + timedelta(seconds=timestamp)
             else:
-                self._datetime = datetime.tz_localize(pytz.UTC).tz_convert(tzinfo)
-        else:
+                # Timezone-naive datetime objects are treated by many datetime methods
+                # as local times, so we represent time in UTC explicitly if not provided.
+                _datetime = datetime.fromtimestamp(timestamp, pytz.UTC)
+
             if nsec is not None:
-                microsecond = nsec // NSEC_IN_MKSEC
-                nanosecond = nsec % NSEC_IN_MKSEC
+                _datetime = _datetime.replace(microsecond=nsec // NSEC_IN_MKSEC)
+                _datetime_nsec = nsec % NSEC_IN_MKSEC
             else:
-                microsecond = 0
-                nanosecond = 0
+                _datetime_nsec = 0
 
-            self._datetime = pandas.Timestamp(
-                year=year, month=month, day=day,
-                hour=hour, minute=minute, second=sec,
-                microsecond=microsecond,
-                nanosecond=nanosecond).tz_localize(tzinfo)
+            if tzinfo is not None:
+                if not timestamp_since_utc_epoch:
+                    # It seems that there is no way to get expected behavior without
+                    # this hack. Localizing a timezone-naive datetime built
+                    # from the timestamp fails since it uses local timezone to mess up
+                    # the underlying timestamp. On the other hand, you cannot localize
+                    # a timezone-aware datetime, even UTC one. Replaces don't work since
+                    # they are broken for pytz + datetime, see
+                    # https://pythonhosted.org/pytz/
+                    _datetime = datetime.combine(_datetime.date(), _datetime.time())
+                    _datetime = tzinfo.localize(_datetime)
+                else:
+                    _datetime = _datetime.astimezone(tzinfo)
 
-    def _interval_operation(self, other, sign=1):
+            self._datetime = _datetime
+            self._datetime_nsec = _datetime_nsec
+        else:
+            # datetime does not support None as defaults,
+            # we support them for backward compatibility.
+            if hour is None:
+                hour = 0
+
+            if minute is None:
+                minute = 0
+
+            if sec is None:
+                sec = 0
+
+            overflow = None
+            if nsec is None:
+                nsec = 0
+            else:
+                # Tarantool may send negative nanoseconds or nanoseconds bigger
+                # than 999999999. datetime.datetime doesn't process overflows.
+                if (nsec >= NSEC_IN_SEC) or (nsec < 0):
+                    overflow = timedelta(seconds=nsec // NSEC_IN_SEC)
+                    nsec = nsec % NSEC_IN_SEC
+
+            _datetime = datetime(year=year, month=month, day=day,
+                                 hour=hour, minute=minute, second=sec,
+                                 microsecond=nsec // NSEC_IN_MKSEC)
+            if overflow is not None:
+                _datetime = _datetime + overflow
+            # tzinfo as argument on the datetime not works as expected, see
+            # https://pythonhosted.org/pytz/
+            # Timezone-naive datetime objects are treated by many datetime methods
+            # as local times, so we represent time in UTC explicitly if not provided.
+            if tzinfo is None:
+                tzinfo = pytz.UTC
+            self._datetime = tzinfo.localize(_datetime)
+            self._datetime_nsec = nsec % NSEC_IN_MKSEC
+
+    def _interval_operation(self, interval, sign=1):
         """
         Implementation of :class:`~tarantool.Interval` addition and
         subtraction.
 
-        :param other: Interval to add or subtract.
-        :type other: :class:`~tarantool.Interval`
+        :param interval: Interval to add or subtract.
+        :type interval: :class:`~tarantool.Interval`
 
         :param sign: Right operand multiplier: ``1`` for addition,
             ``-1`` for subtractiom.
@@ -331,37 +397,45 @@ class Datetime():
         :meta private:
         """
 
-        self_dt = self._datetime
+        old_dt = self._datetime
+        new_dt = old_dt
+
+        new_year = old_dt.year + sign * interval.year
+        new_month = old_dt.month + sign * interval.month
+        if (new_month < 1) or (new_month - 1 > MONTH_IN_YEAR):
+            new_year += (new_month - 1) // MONTH_IN_YEAR
+            new_month = (new_month - 1) % MONTH_IN_YEAR + 1
+
+        new_month_last_day = month_last_day(new_year, new_month)
+        old_month_last_day = month_last_day(old_dt.year, old_dt.month)
 
         # https://github.com/tarantool/tarantool/wiki/Datetime-Internals#date-adjustions-and-leap-years
-        months = other.year * MONTH_IN_YEAR + other.month
+        if (interval.adjust == Adjust.NONE) and (new_month_last_day < new_dt.day):
+            new_dt = new_dt.replace(year=new_year, month=new_month, day=new_month_last_day)
+        elif (interval.adjust == Adjust.EXCESS) and (new_month_last_day < new_dt.day):
+            new_dt = new_dt.replace(year=new_year, month=new_month, day=new_month_last_day) + \
+                timedelta(days=new_dt.day - new_month_last_day)
+        elif (interval.adjust == Adjust.LAST) and (old_dt.day == old_month_last_day):
+            new_dt = new_dt.replace(year=new_year, month=new_month, day=new_month_last_day)
+        else:
+            new_dt = new_dt.replace(year=new_year, month=new_month)
 
-        res = self_dt + pandas.DateOffset(months=sign * months)
+        nsec = self._datetime_nsec + sign * interval.nsec
+        new_dt = new_dt + timedelta(weeks=sign * interval.week,
+                                    days=sign * interval.day,
+                                    hours=sign * interval.hour,
+                                    minutes=sign * interval.minute,
+                                    seconds=sign * interval.sec,
+                                    microseconds=nsec // NSEC_IN_MKSEC)
+        new_nsec = nsec % NSEC_IN_MKSEC
 
-        # pandas.DateOffset works exactly like Adjust.NONE
-        if other.adjust == Adjust.EXCESS:
-            if self_dt.day > res.day:
-                res = res + pandas.DateOffset(days=self_dt.day - res.day)
-        elif other.adjust == Adjust.LAST:
-            if self_dt.is_month_end:
-                # day replaces days
-                res = res.replace(day=res.days_in_month)
-
-        res = res + pandas.Timedelta(weeks=sign * other.week,
-                                     days=sign * other.day,
-                                     hours=sign * other.hour,
-                                     minutes=sign * other.minute,
-                                     seconds=sign * other.sec,
-                                     microseconds=sign * (other.nsec // NSEC_IN_MKSEC),
-                                     nanoseconds=sign * (other.nsec % NSEC_IN_MKSEC))
-
-        if res.tzinfo is not None:
-            tzoffset = compute_offset(res)
+        if new_dt.tzinfo is not None:
+            tzoffset = compute_offset(new_dt)
         else:
             tzoffset = 0
-        return Datetime(year=res.year, month=res.month, day=res.day,
-                        hour=res.hour, minute=res.minute, sec=res.second,
-                        nsec=res.nanosecond + res.microsecond * NSEC_IN_MKSEC,
+        return Datetime(year=new_dt.year, month=new_dt.month, day=new_dt.day,
+                        hour=new_dt.hour, minute=new_dt.minute, sec=new_dt.second,
+                        nsec=new_nsec + new_dt.microsecond * NSEC_IN_MKSEC,
                         tzoffset=tzoffset, tz=self.tz)
 
     def __add__(self, other):
@@ -471,10 +545,10 @@ class Datetime():
             # for possible updates.
 
             if self_dt.tzinfo != other_dt.tzinfo:
-                other_dt = other_dt.tz_convert(self_dt.tzinfo)
+                other_dt = other_dt.astimezone(self_dt.tzinfo)
 
-            self_nsec = self_dt.microsecond * NSEC_IN_MKSEC + self_dt.nanosecond
-            other_nsec = other_dt.microsecond * NSEC_IN_MKSEC + other_dt.nanosecond
+            self_nsec = self_dt.microsecond * NSEC_IN_MKSEC + self._datetime_nsec
+            other_nsec = other_dt.microsecond * NSEC_IN_MKSEC + other._datetime_nsec
 
             return Interval(
                 year=self_dt.year - other_dt.year,
@@ -495,23 +569,44 @@ class Datetime():
         Datetimes are equal when underlying datetime infos are equal.
 
         :param other: Second operand.
-        :type other: :class:`~tarantool.Datetime` or
-            :class:`~pandas.Timestamp`
+        :type other: :class:`~tarantool.Datetime`
 
         :rtype: :obj:`bool`
         """
 
         if isinstance(other, Datetime):
-            return self._datetime == other._datetime
-        if isinstance(other, pandas.Timestamp):
-            return self._datetime == other
+            return self.value == other.value
         return False
 
     def __str__(self):
-        return self._datetime.__str__()
+        # Based on pandas.Timestamp isofomat for backward compatibility.
+        # https://github.com/pandas-dev/pandas/blob/249d93e4abc59639983eb3e8fccac8382592d457/pandas/_libs/tslibs/timestamps.pyx#L1015-L1034
+        base = self._datetime.isoformat(sep='T', timespec='auto')
+
+        # Preserve explicit UTC and implicit UTC difference for backward compatibility.
+        implicit_utc = False
+        if (self._datetime.tzinfo == pytz.UTC) and (self._tz == ''):
+            implicit_utc = True
+            base = base[:-6]
+
+        if self._datetime_nsec == 0:
+            return base
+
+        if implicit_utc:
+            base1, base2 = base, ""
+        else:
+            base1, base2 = base[:-6], base[-6:]
+
+        if self._datetime.microsecond:
+            base1 += f"{self._datetime_nsec:03d}"
+        else:
+            base1 += f".{self._datetime_nsec:09d}"
+
+        return base1 + base2
 
     def __repr__(self):
-        return f'datetime: {self._datetime.__repr__()}, tz: "{self.tz}"'
+        return f'datetime: {self._datetime.__repr__()}, nsec: {self._datetime_nsec}, ' + \
+               f'tz: "{self.tz}"'
 
     def __copy__(self):
         cls = self.__class__
@@ -595,7 +690,7 @@ class Datetime():
         :rtype: :obj:`int`
         """
 
-        return self._datetime.value % NSEC_IN_SEC
+        return self._datetime.microsecond * NSEC_IN_MKSEC + self._datetime_nsec
 
     @property
     def timestamp(self):
@@ -605,7 +700,7 @@ class Datetime():
         :rtype: :obj:`float`
         """
 
-        return self._datetime.timestamp()
+        return self._datetime.timestamp() + self._datetime_nsec / NSEC_IN_SEC
 
     @property
     def tzoffset(self):
@@ -637,4 +732,7 @@ class Datetime():
         :rtype: :obj:`int`
         """
 
-        return self._datetime.value
+        # Python sources way to get ineteger time since epoch.
+        # https://github.com/python/cpython/blob/a6f95941a3d686707fb38e0f37758e666f25e180/Lib/datetime.py#L1879
+        seconds = (self._datetime - _EPOCH) // timedelta(0, 1)
+        return seconds * NSEC_IN_SEC + self.nsec

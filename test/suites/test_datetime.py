@@ -80,11 +80,12 @@ class TestSuiteDatetime(unittest.TestCase):
         self.assertEqual(datetime.minute, 7)
         self.assertEqual(datetime.sec, 54)
         self.assertEqual(datetime.nsec, 308543321)
-        # Both Tarantool and pandas prone to precision loss for timestamp() floats
-        self.assertEqual(datetime.timestamp, 1661958474.308543)
+        # Both Tarantool and python prone to precision loss for timestamp() floats
+        self.assertEqual(datetime.timestamp, 1661958474.3085432)
         self.assertEqual(datetime.tzoffset, 180)
         self.assertEqual(datetime.tz, '')
         self.assertEqual(datetime.value, 1661958474308543321)
+        self.assertEqual(str(datetime), '2022-08-31T18:07:54.308543321+03:00')
 
     def test_datetime_class_api_wth_tz(self):
         datetime = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
@@ -97,11 +98,12 @@ class TestSuiteDatetime(unittest.TestCase):
         self.assertEqual(datetime.minute, 7)
         self.assertEqual(datetime.sec, 54)
         self.assertEqual(datetime.nsec, 308543321)
-        # Both Tarantool and pandas prone to precision loss for timestamp() floats
-        self.assertEqual(datetime.timestamp, 1661958474.308543)
+        # Both Tarantool and python prone to precision loss for timestamp() floats
+        self.assertEqual(datetime.timestamp, 1661958474.3085432)
         self.assertEqual(datetime.tzoffset, 180)
         self.assertEqual(datetime.tz, 'Europe/Moscow')
         self.assertEqual(datetime.value, 1661958474308543321)
+        self.assertEqual(str(datetime), '2022-08-31T18:07:54.308543321+03:00')
 
     datetime_class_invalid_init_cases = {
         'positional_year': {
@@ -527,6 +529,98 @@ class TestSuiteDatetime(unittest.TestCase):
 
         self.assertSequenceEqual(self.con.insert('test_pk', data), [data])
         self.assertSequenceEqual(self.con.select('test_pk', data[0]), [data])
+
+    datetime_nsec_overflow_cases = {
+        'overflow_datetime': {
+            'arg_1': tarantool.Datetime(year=2008, month=1, day=1, nsec=1230000000),
+            'arg_2': tarantool.Datetime(year=2008, month=1, day=1, sec=1, nsec=230000000),
+        },
+        'underflow_datetime': {
+            'arg_1': tarantool.Datetime(year=2008, month=1, day=1, nsec=-123456789),
+            'arg_2': tarantool.Datetime(year=2007, month=12, day=31, hour=23, minute=59,
+                                        sec=59, nsec=876543211),
+        },
+        'overflow_timestamp': {
+            'arg_1': tarantool.Datetime(timestamp=1199145600, nsec=1230000000),
+            'arg_2': tarantool.Datetime(timestamp=1199145600 + 1, nsec=230000000),
+        },
+        'underflow_timestamp': {
+            'arg_1': tarantool.Datetime(timestamp=1199145600, nsec=-123456789),
+            'arg_2': tarantool.Datetime(timestamp=1199145600 - 1, nsec=876543211),
+        }
+    }
+
+    def test_python_datetime_nsec_overflow(self):
+        for name, case in self.datetime_nsec_overflow_cases.items():
+            with self.subTest(msg=name):
+                self.assertEqual(case['arg_1'], case['arg_2'])
+
+    datetime_str_format = {
+        'date': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31),
+            'str': '2022-08-31T00:00:00',
+        },
+        'date_before_1970': {
+            'python': tarantool.Datetime(year=1900, month=1, day=1),
+            'str': '1900-01-01T00:00:00',
+        },
+        'datetime_with_minutes': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7),
+            'str': '2022-08-31T18:07:00',
+        },
+        'datetime_with_seconds': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54),
+            'str': '2022-08-31T18:07:54',
+        },
+        'datetime_with_microseconds': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543000),
+            'str': '2022-08-31T18:07:54.308543',
+        },
+        'datetime_with_nanoseconds': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321),
+            'str': '2022-08-31T18:07:54.308543321',
+        },
+        'datetime_with_positive_offset': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321, tzoffset=180),
+            'str': '2022-08-31T18:07:54.308543321+03:00',
+        },
+        'datetime_with_negative_offset': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321, tzoffset=-60),
+            'str': '2022-08-31T18:07:54.308543321-01:00',
+        },
+        'date_with_utc_tz': {
+            'python': tarantool.Datetime(year=1970, month=1, day=1, tz='UTC'),
+            'str': '1970-01-01T00:00:00+00:00',
+        },
+        'date_with_tz': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, tz='Europe/Moscow'),
+            'str': '2022-08-31T00:00:00+03:00',
+        },
+        'datetime_with_tz': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321, tz='Europe/Moscow'),
+            'str': '2022-08-31T18:07:54.308543321+03:00',
+        },
+        'datetime_with_tz_and_offset': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321, tz='Europe/Moscow', tzoffset=123),
+            'str': '2022-08-31T18:07:54.308543321+03:00',
+        },
+        'datetime_with_abbrev_tz': {
+            'python': tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,
+                                         nsec=308543321, tz='MSK'),
+            'str': '2022-08-31T18:07:54.308543321+03:00',
+        },
+    }
+
+    def test_python_datetime_string(self):
+        for name, case in self.datetime_str_format.items():
+            with self.subTest(msg=name):
+                self.assertEqual(str(case['python']), case['str'])
 
     @classmethod
     def tearDownClass(cls):
