@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrate to built-in `Warning` instead of a custom one.
 - Migrate to built-in `RecursionError` instead of a custom one.
 - Collect full exception traceback.
+- Rework `tarantool.Datetime` implementation to use built-in
+  `datetime.datetime`. External changes are as follows. Some of them
+  are **breaking**.
+  - Package no longer depends on `pandas` (#290).
+  - `__repr__` has been changed.
+  - Input arguments are validated with `datetime.datetime` rules.
+  - Class is no longer expected to throw `pandas.Timestamp`
+    exceptions. `datetime.datetime` exceptions will
+    be thrown instead of them.
+  - Drop the support of `__eq__` operator for `pandas.Timestamp`.
 
 ## 0.12.1 - 2023-02-28
 

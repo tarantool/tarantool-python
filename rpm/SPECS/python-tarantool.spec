@@ -29,7 +29,6 @@ Python client library for Tarantool.}
 %package -n python3-%{srcname}
 
 Requires:       python3-msgpack
-Requires:       python3-pandas
 Requires:       python3-pytz
 
 Summary:        %{summary}

@@ -344,7 +344,6 @@ texinfo_documents = [
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
     'msgpack': ('https://msgpack-python.readthedocs.io/en/latest/', None),
-    'pandas': ('https://pandas.pydata.org/docs/', None),
     'pytz': ('https://pytz.sourceforge.net/', None),
 }
 
