@@ -20,12 +20,8 @@ from tarantool.const import (
     IPROTO_TUPLE,
     IPROTO_FUNCTION_NAME,
     IPROTO_ITERATOR,
-    IPROTO_SERVER_UUID,
-    IPROTO_CLUSTER_UUID,
-    IPROTO_VCLOCK,
     IPROTO_EXPR,
     IPROTO_OPS,
-    # IPROTO_INDEX_BASE,
     IPROTO_SCHEMA_ID,
     IPROTO_SQL_TEXT,
     IPROTO_SQL_BIND,
@@ -44,8 +40,6 @@ from tarantool.const import (
     REQUEST_TYPE_EXECUTE,
     REQUEST_TYPE_EVAL,
     REQUEST_TYPE_AUTHENTICATE,
-    REQUEST_TYPE_JOIN,
-    REQUEST_TYPE_SUBSCRIBE,
     REQUEST_TYPE_ID,
     AUTH_TYPE_CHAP_SHA1,
     AUTH_TYPE_PAP_SHA256,
@@ -584,62 +578,6 @@ class RequestUpsert(Request):
                                     IPROTO_TUPLE: tuple_value,
                                     IPROTO_OPS: op_list})
 
-        self._body = request_body
-
-
-class RequestJoin(Request):
-    """
-    Represents JOIN request.
-    """
-
-    request_type = REQUEST_TYPE_JOIN
-
-    def __init__(self, conn, server_uuid):
-        """
-        :param conn: Request sender.
-        :type conn: :class:`~tarantool.Connection`
-
-        :param server_uuid: UUID of connector "server".
-        :type server_uuid: :obj:`str`
-        """
-
-        super().__init__(conn)
-        request_body = self._dumps({IPROTO_SERVER_UUID: server_uuid})
-        self._body = request_body
-
-
-class RequestSubscribe(Request):
-    """
-    Represents SUBSCRIBE request.
-    """
-
-    request_type = REQUEST_TYPE_SUBSCRIBE
-
-    def __init__(self, conn, cluster_uuid, server_uuid, vclock):
-        """
-        :param conn: Request sender.
-        :type conn: :class:`~tarantool.Connection`
-
-        :param server_uuid: UUID of connector "server".
-        :type server_uuid: :obj:`str`
-
-        :param server_uuid: UUID of connector "server".
-        :type server_uuid: :obj:`str`
-
-        :param vclock: Connector "server" vclock.
-        :type vclock: :obj:`dict`
-
-        :raise: :exc:`~AssertionError`
-        """
-
-        super().__init__(conn)
-        assert isinstance(vclock, dict)
-
-        request_body = self._dumps({
-            IPROTO_CLUSTER_UUID: cluster_uuid,
-            IPROTO_SERVER_UUID: server_uuid,
-            IPROTO_VCLOCK: vclock
-        })
         self._body = request_body
 
 

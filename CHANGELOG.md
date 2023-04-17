@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     exceptions. `datetime.datetime` exceptions will
     be thrown instead of them.
   - Drop the support of `__eq__` operator for `pandas.Timestamp`.
+- **Breaking**: Remove `join` and `subscribe` connection methods.
 
 ## 0.12.1 - 2023-02-28
 

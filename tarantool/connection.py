@@ -25,21 +25,17 @@ import msgpack
 
 from tarantool.response import (
     unpacker_factory as default_unpacker_factory,
-    Response,
 )
 from tarantool.request import (
     packer_factory as default_packer_factory,
     Request,
-    # RequestOK,
     RequestCall,
     RequestDelete,
     RequestEval,
     RequestInsert,
-    RequestJoin,
     RequestReplace,
     RequestPing,
     RequestSelect,
-    RequestSubscribe,
     RequestUpdate,
     RequestUpsert,
     RequestAuthenticate,
@@ -60,8 +56,6 @@ from tarantool.const import (
     DEFAULT_SSL_CIPHERS,
     DEFAULT_SSL_PASSWORD,
     DEFAULT_SSL_PASSWORD_FILE,
-    REQUEST_TYPE_OK,
-    REQUEST_TYPE_ERROR,
     IPROTO_GREETING_SIZE,
     ITERATOR_EQ,
     ITERATOR_ALL,
@@ -1520,61 +1514,6 @@ class Connection(ConnectionInterface):
 
         return auth_type
 
-    def _join_v16(self, server_uuid):
-        """
-        Execute a JOIN request for Tarantool 1.6 and older.
-
-        :param server_uuid: UUID of Tarantool server to join.
-        :type server_uuid: :obj:`str`
-
-        :raise: :exc:`~AssertionError`,
-            :exc:`~tarantool.error.DatabaseError`,
-            :exc:`~tarantool.error.SchemaError`,
-            :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
-        """
-
-        request = RequestJoin(self, server_uuid)
-        self._socket.sendall(bytes(request))
-
-        while True:
-            resp = Response(self, self._read_response())
-            yield resp
-            if resp.code == REQUEST_TYPE_OK or resp.code >= REQUEST_TYPE_ERROR:
-                return
-        self.close()  # close connection after JOIN
-
-    def _join_v17(self, server_uuid):
-        """
-        Execute a JOIN request for Tarantool 1.7 and newer.
-
-        :param server_uuid: UUID of Tarantool server to join.
-        :type server_uuid: :obj:`str`
-
-        :raise: :exc:`~AssertionError`,
-            :exc:`~tarantool.error.DatabaseError`,
-            :exc:`~tarantool.error.SchemaError`,
-            :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
-        """
-
-        request = RequestJoin(self, server_uuid)
-        self._socket.sendall(bytes(request))
-        state = JoinState.HANDSHAKE
-        while True:
-            resp = Response(self, self._read_response())
-            yield resp
-            if resp.code >= REQUEST_TYPE_ERROR:
-                return
-            if resp.code == REQUEST_TYPE_OK:
-                if state == JoinState.HANDSHAKE:
-                    state = JoinState.INITIAL
-                elif state == JoinState.INITIAL:
-                    state = JoinState.FINAL
-                elif state == JoinState.FINAL:
-                    state = JoinState.DONE
-                    return
-
     def _ops_process(self, space, update_ops):
         new_ops = []
         for operation in update_ops:
@@ -1583,60 +1522,6 @@ class Connection(ConnectionInterface):
                 operation[1] = self.schema.get_field(space, operation[1])['id']
             new_ops.append(operation)
         return new_ops
-
-    def join(self, server_uuid):
-        """
-        Execute a JOIN request: `join`_ a replicaset.
-
-        :param server_uuid: UUID of connector "server".
-        :type server_uuid: :obj:`str`
-
-        :raise: :exc:`~AssertionError`,
-            :exc:`~tarantool.error.DatabaseError`,
-            :exc:`~tarantool.error.SchemaError`,
-            :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
-
-        .. _join: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/#iproto-join-0x41
-        """
-
-        self._opt_reconnect()
-        if self.version_id < version_id(1, 7, 0):
-            return self._join_v16(server_uuid)
-        return self._join_v17(server_uuid)
-
-    def subscribe(self, cluster_uuid, server_uuid, vclock=None):
-        """
-        Execute a SUBSCRIBE request: `subscribe`_ to a replicaset
-        updates. Connection is closed after subscribing.
-
-        :param cluster_uuid: UUID of replicaset cluster.
-        :type cluster_uuid: :obj:`str`
-
-        :param server_uuid: UUID of connector "server".
-        :type server_uuid: :obj:`str`
-
-        :param vclock: Connector "server" vclock.
-        :type vclock: :obj:`dict` or :obj:`None`, optional
-
-        :raise: :exc:`~AssertionError`,
-            :exc:`~tarantool.error.DatabaseError`,
-            :exc:`~tarantool.error.SchemaError`,
-            :exc:`~tarantool.error.NetworkError`,
-            :exc:`~tarantool.error.SslError`
-
-        .. _subscribe: https://www.tarantool.io/en/doc/latest/dev_guide/internals/box_protocol/#iproto-subscribe-0x42
-        """
-
-        vclock = vclock or {}
-        request = RequestSubscribe(self, cluster_uuid, server_uuid, vclock)
-        self._socket.sendall(bytes(request))
-        while True:
-            resp = Response(self, self._read_response())
-            yield resp
-            if resp.code >= REQUEST_TYPE_ERROR:
-                return
-        self.close()  # close connection after SUBSCRIBE
 
     def insert(self, space_name, values, *, on_push=None, on_push_ctx=None):
         """
