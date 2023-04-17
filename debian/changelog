@@ -1,3 +1,35 @@
+python3-tarantool (1.0.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces several minor behavior changes
+    to make API more consistent.
+
+    Starting from this release, connector no longer depends on `pandas`.
+
+    ## Breaking changes
+
+    - Allow only named `on_push` and `on_push_ctx` for `insert` and `replace`.
+    - `tarantool.Datetime` `__repr__` has been changed.
+    - `tarantool.Datetime` input arguments are validated with `datetime.datetime` rules.
+    - `tarantool.Datetime` is no longer expected to throw `pandas.Timestamp`
+      exceptions. `datetime.datetime` exceptions will be thrown instead of them.
+    - Drop the support of `__eq__` operator of `tarantool.Datetime` for `pandas.Timestamp`.
+    - Remove `join` and `subscribe` connection methods.
+
+    ## Changes
+
+    - Migrate to built-in `Warning` instead of a custom one.
+    - Migrate to built-in `RecursionError` instead of a custom one.
+    - Collect full exception traceback.
+    - Package no longer depends on `pandas` (#290).
+
+    ## Infrastructure
+
+    - Lint the code with `pylint`, `flake8` and `codespell`.
+
+ -- Georgy.moiseev <georgy.moiseev@tarantool.org>  Mon, 17 Apr 2023 13:00:00 +0300
+
 python3-tarantool (0.12.1-0) unstable; urgency=medium
 
     ## Overview
