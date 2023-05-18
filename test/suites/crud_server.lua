@@ -1,5 +1,13 @@
 #!/usr/bin/env tarantool
 
+local function replicaset_uuid()
+    if box.info().replicaset ~= nil and box.info().replicaset.uuid ~= nil then
+        return box.info().replicaset.uuid
+    end
+
+    return box.info().cluster.uuid
+end
+
 local function configure_crud_instance(primary_listen, crud, vshard)
     box.schema.create_space(
     'tester', {
@@ -30,7 +38,7 @@ local function configure_crud_instance(primary_listen, crud, vshard)
     local cfg = {
         bucket_count = 300,
         sharding = {
-            [box.info().cluster.uuid] = {
+            [replicaset_uuid()] = {
                 replicas = {
                     [box.info().uuid] = {
                         uri = uri,
