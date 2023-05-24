@@ -27,7 +27,9 @@ class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
     def setUpClass(cls):
         print(' DBAPI '.center(70, '='), file=sys.stderr)
         print('-' * 70, file=sys.stderr)
-        cls.srv = TarantoolServer()
+        # Select scans are not allowed with compat.sql_seq_scan_default = "new",
+        # but tests create cursors with fullscan.
+        cls.srv = TarantoolServer(sql_seq_scan_default="old")
         cls.srv.script = 'test/suites/box.lua'
         cls.srv.start()
         cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])

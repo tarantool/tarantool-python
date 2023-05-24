@@ -454,10 +454,21 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
     def _run_test_schema_fetch_disable(self, con, mode=None):
         # Enable SQL test case for tarantool 2.* and higher.
         if int(str(self.srv.admin.tnt_version)[0]) > 1:
-            self.testing_methods['available']['execute'] = {
-                'input': ['SELECT * FROM "tester"'],
-                'output': [[1, None]],
-            }
+            if self.srv.admin.tnt_version >= pkg_resources.parse_version('2.11.0'):
+                # SEQSCAN keyword is explicitly allowing to use seqscan
+                # https://github.com/tarantool/tarantool/commit/77648827326ad268ec0ffbcd620c2371b65ef2b4
+                # It was introduced in 2.11.0-rc1. If compat.sql_seq_scan_default
+                # set to "new" (default value since 3.0), returns error
+                # if trying to scan without keyword.
+                self.testing_methods['available']['execute'] = {
+                    'input': ['SELECT * FROM SEQSCAN "tester"'],
+                    'output': [[1, None]],
+                }
+            else:
+                self.testing_methods['available']['execute'] = {
+                    'input': ['SELECT * FROM "tester"'],
+                    'output': [[1, None]],
+                }
 
         # Testing the schemaless connection with methods
         # that should NOT be available.

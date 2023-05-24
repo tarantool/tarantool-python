@@ -189,7 +189,8 @@ class TarantoolServer():
                 ssl_password=None,
                 ssl_password_file=None,
                 create_unix_socket=False,
-                auth_type=None):
+                auth_type=None,
+                sql_seq_scan_default=None):
         # pylint: disable=unused-argument
 
         if os.name == 'nt':
@@ -205,7 +206,8 @@ class TarantoolServer():
                  ssl_password=None,
                  ssl_password_file=None,
                  create_unix_socket=False,
-                 auth_type=None):
+                 auth_type=None,
+                 sql_seq_scan_default=None):
         # pylint: disable=consider-using-with
 
         os.popen('ulimit -c unlimited').close()
@@ -235,6 +237,7 @@ class TarantoolServer():
         self.ssl_password = ssl_password
         self.ssl_password_file = ssl_password_file
         self.auth_type = auth_type
+        self.sql_seq_scan_default = sql_seq_scan_default
         self._binary = None
         self._log_des = None
 
@@ -289,6 +292,8 @@ class TarantoolServer():
             os.putenv("AUTH_TYPE", self.auth_type)
         else:
             os.putenv("AUTH_TYPE", "")
+        if self.sql_seq_scan_default is not None:
+            os.putenv("SQL_SEQ_SCAN_DEFAULT", self.sql_seq_scan_default)
 
     def prepare_args(self):
         """
