@@ -81,7 +81,7 @@ jobs:
       - name: Install tarantool
         uses: tarantool/setup-tarantool@v2
         with:
-          tarantool-version: '2.10'
+          tarantool-version: '2.11'
 
       - name: Download pip package artifacts
         uses: actions/download-artifact@v3
