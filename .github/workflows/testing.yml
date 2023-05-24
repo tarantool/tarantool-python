@@ -26,6 +26,7 @@ jobs:
           - '1.10'
           - '2.8'
           - '2.10'
+          - '2.11'
         python:
           - '3.6'
           - '3.7'
@@ -119,8 +120,8 @@ jobs:
             path: ''
           - bundle: 'bundle-2.10.0-1-gfa775b383-r486-linux-x86_64'
             path: ''
-          - bundle: 'sdk-gc64-2.11.0-entrypoint-113-g803baaffe-r529.linux.x86_64'
-            path: 'dev/linux/x86_64/master/'
+          - bundle: 'sdk-gc64-2.11.0-rc2-0-r557.linux.x86_64'
+            path: 'release/linux/x86_64/2.11/'
         python: ['3.6', '3.7', '3.8', '3.9', '3.10']
 
     steps:
@@ -169,7 +170,7 @@ jobs:
           make test
         env:
           TEST_TNT_SSL: ${{ matrix.tarantool.bundle == 'bundle-2.10.0-1-gfa775b383-r486-linux-x86_64' ||
-                            matrix.tarantool.bundle == 'sdk-gc64-2.11.0-entrypoint-113-g803baaffe-r529.linux.x86_64'}}
+                            matrix.tarantool.bundle == 'sdk-gc64-2.11.0-rc2-0-r557.linux.x86_64'}}
 
   run_tests_pip_branch_install_linux:
     # We want to run on external PRs, but not on our own internal
@@ -187,7 +188,7 @@ jobs:
 
       matrix:
         tarantool:
-          - '2.10'
+          - '2.11'
         python:
           - '3.6'
           - '3.7'
