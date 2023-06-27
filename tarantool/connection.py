@@ -20,6 +20,7 @@ import ctypes
 import ctypes.util
 from ctypes import c_ssize_t
 from typing import Optional, Union
+from copy import copy
 
 import msgpack
 
@@ -838,6 +839,10 @@ class Connection(ConnectionInterface):
         self.version_id = None
         self.uuid = None
         self._salt = None
+        self._client_protocol_version = CONNECTOR_IPROTO_VERSION
+        self._client_features = copy(CONNECTOR_FEATURES)
+        self._server_protocol_version = None
+        self._server_features = None
 
         if connect_now:
             self.connect()
@@ -1044,10 +1049,11 @@ class Connection(ConnectionInterface):
         if greeting.protocol != "Binary":
             raise NetworkError("Unsupported protocol: " + greeting.protocol)
         self.version_id = greeting.version_id
-        if self.version_id >= version_id(2, 10, 0):
-            self._check_features()
         self.uuid = greeting.uuid
         self._salt = greeting.salt
+
+        self._check_features()
+
         if self.user:
             self.authenticate(self.user, self.password)
 
@@ -2057,32 +2063,28 @@ class Connection(ConnectionInterface):
             :exc:`~tarantool.error.SslError`
         """
 
-        try:
-            request = RequestProtocolVersion(self,
-                                             CONNECTOR_IPROTO_VERSION,
-                                             CONNECTOR_FEATURES)
-            response = self._send_request(request)
-            server_protocol_version = response.protocol_version
-            server_features = response.features
-            server_auth_type = response.auth_type
-        except DatabaseError as exc:
-            if exc.code == ER_UNKNOWN_REQUEST_TYPE:
-                server_protocol_version = None
-                server_features = []
-                server_auth_type = None
-            else:
-                raise exc
+        if self.version_id >= version_id(2, 10, 0):
+            try:
+                request = RequestProtocolVersion(self,
+                                                 self._client_protocol_version,
+                                                 self._client_features)
+                response = self._send_request(request)
+                self._server_protocol_version = response.protocol_version
+                self._server_features = response.features
+                self._server_auth_type = response.auth_type
+            except DatabaseError as exc:
+                if exc.code != ER_UNKNOWN_REQUEST_TYPE:
+                    raise exc
 
-        if server_protocol_version is not None:
-            self._protocol_version = min(server_protocol_version,
-                                         CONNECTOR_IPROTO_VERSION)
+        if self._server_protocol_version is not None:
+            self._protocol_version = min(self._server_protocol_version,
+                                         self._client_protocol_version)
 
         # Intercept lists of features
-        features_list = [val for val in CONNECTOR_FEATURES if val in server_features]
-        for val in features_list:
-            self._features[val] = True
-
-        self._server_auth_type = server_auth_type
+        if self._server_features is not None:
+            features_list = [val for val in self._client_features if val in self._server_features]
+            for val in features_list:
+                self._features[val] = True
 
     def _packer_factory(self):
         return self._packer_factory_impl(self)
