@@ -277,3 +277,19 @@ def skip_or_run_constraints_test(func):
 
     return skip_or_run_test_tarantool(func, '2.10.0',
                                       'does not support schema constraints')
+
+
+def skip_or_run_iproto_basic_features_test(func):
+    """
+    Decorator to skip or run tests related to iproto ID requests,
+    protocol version and features.
+
+    Tarantool supports iproto ID requests only since 2.10.0 version.
+    Protocol version is 3 for Tarantool 2.10.0,
+    IPROTO_FEATURE_STREAMS, IPROTO_FEATURE_TRANSACTIONS
+    and IPROTO_FEATURE_ERROR_EXTENSION are supported in Tarantool 2.10.0.
+    See https://github.com/tarantool/tarantool/issues/6253
+    """
+
+    return skip_or_run_test_tarantool(func, '2.10.0',
+                                      'does not support iproto ID and iproto basic features')

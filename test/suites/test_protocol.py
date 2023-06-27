@@ -15,10 +15,15 @@ from tarantool.const import (
     IPROTO_FEATURE_TRANSACTIONS,
     IPROTO_FEATURE_ERROR_EXTENSION,
     IPROTO_FEATURE_WATCHERS,
+    IPROTO_FEATURE_PAGINATION,
+    IPROTO_FEATURE_SPACE_AND_INDEX_NAMES,
+    IPROTO_FEATURE_WATCH_ONCE,
 )
+from tarantool.error import NetworkError
 from tarantool.utils import greeting_decode, version_id
 
 from .lib.tarantool_server import TarantoolServer
+from .lib.skip import skip_or_run_iproto_basic_features_test
 
 
 class TestSuiteProtocol(unittest.TestCase):
@@ -91,6 +96,35 @@ class TestSuiteProtocol(unittest.TestCase):
         self.assertEqual(self.con._features[IPROTO_FEATURE_STREAMS], False)
         self.assertEqual(self.con._features[IPROTO_FEATURE_TRANSACTIONS], False)
         self.assertEqual(self.con._features[IPROTO_FEATURE_WATCHERS], False)
+        self.assertEqual(self.con._features[IPROTO_FEATURE_PAGINATION], False)
+        self.assertEqual(self.con._features[IPROTO_FEATURE_SPACE_AND_INDEX_NAMES], False)
+        self.assertEqual(self.con._features[IPROTO_FEATURE_WATCH_ONCE], False)
+
+    @skip_or_run_iproto_basic_features_test
+    def test_protocol_requirement(self):
+        try:
+            con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
+                                       required_protocol_version=3,
+                                       required_features=[IPROTO_FEATURE_STREAMS,
+                                                          IPROTO_FEATURE_TRANSACTIONS,
+                                                          IPROTO_FEATURE_ERROR_EXTENSION])
+            con.close()
+        except Exception as exc:  # pylint: disable=bad-option-value,broad-exception-caught,broad-except
+            self.fail(f'Connection create have raised Exception: {repr(exc)}')
+
+    def test_protocol_version_requirement_fail(self):
+        with self.assertRaisesRegex(NetworkError,  # ConfigurationError is wrapped in NetworkError
+                                    'protocol version 100500 is required'):
+            con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
+                                       required_protocol_version=100500)
+            con.close()
+
+    def test_protocol_features_requirement_fail(self):
+        with self.assertRaisesRegex(NetworkError,  # ConfigurationError is wrapped in NetworkError
+                                    'Server missing protocol features with id 100500, 500100'):
+            con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
+                                       required_features=[100500, 500100])
+            con.close()
 
     @classmethod
     def tearDownClass(cls):

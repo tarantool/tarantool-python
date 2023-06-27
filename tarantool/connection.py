@@ -66,6 +66,9 @@ from tarantool.const import (
     IPROTO_FEATURE_TRANSACTIONS,
     IPROTO_FEATURE_ERROR_EXTENSION,
     IPROTO_FEATURE_WATCHERS,
+    IPROTO_FEATURE_PAGINATION,
+    IPROTO_FEATURE_SPACE_AND_INDEX_NAMES,
+    IPROTO_FEATURE_WATCH_ONCE,
     IPROTO_CHUNK,
     AUTH_TYPE_CHAP_SHA1,
     AUTH_TYPE_PAP_SHA256,
@@ -608,7 +611,9 @@ class Connection(ConnectionInterface):
                  packer_factory=default_packer_factory,
                  unpacker_factory=default_unpacker_factory,
                  auth_type=None,
-                 fetch_schema=True):
+                 fetch_schema=True,
+                 required_protocol_version=None,
+                 required_features=None):
         """
         :param host: Server hostname or IP address. Use ``None`` for
             Unix sockets.
@@ -777,6 +782,14 @@ class Connection(ConnectionInterface):
             :meth:`~tarantool.Connection.space`.
         :type fetch_schema: :obj:`bool`, optional
 
+        :param required_protocol_version: Minimal protocol version that
+            should be supported by Tarantool server.
+        :type required_protocol_version: :obj:`int` or :obj:`None`, optional
+
+        :param required_features: List of protocol features that
+            should be supported by Tarantool server.
+        :type required_features: :obj:`list` or :obj:`None`, optional
+
         :raise: :exc:`~tarantool.error.ConfigurationError`,
             :meth:`~tarantool.Connection.connect` exceptions
 
@@ -785,7 +798,7 @@ class Connection(ConnectionInterface):
         .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
         .. _mp_array: https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family
         """
-        # pylint: disable=too-many-arguments,too-many-locals
+        # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
 
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
             raise ConfigurationError("msgpack>=1.0.0 only supports None and "
@@ -831,6 +844,9 @@ class Connection(ConnectionInterface):
             IPROTO_FEATURE_TRANSACTIONS: False,
             IPROTO_FEATURE_ERROR_EXTENSION: False,
             IPROTO_FEATURE_WATCHERS: False,
+            IPROTO_FEATURE_PAGINATION: False,
+            IPROTO_FEATURE_SPACE_AND_INDEX_NAMES: False,
+            IPROTO_FEATURE_WATCH_ONCE: False,
         }
         self._packer_factory_impl = packer_factory
         self._unpacker_factory_impl = unpacker_factory
@@ -843,6 +859,8 @@ class Connection(ConnectionInterface):
         self._client_features = copy(CONNECTOR_FEATURES)
         self._server_protocol_version = None
         self._server_features = None
+        self.required_protocol_version = required_protocol_version
+        self.required_features = copy(required_features)
 
         if connect_now:
             self.connect()
@@ -2075,6 +2093,25 @@ class Connection(ConnectionInterface):
             except DatabaseError as exc:
                 if exc.code != ER_UNKNOWN_REQUEST_TYPE:
                     raise exc
+
+        if self.required_protocol_version is not None:
+            if self._server_protocol_version is None or \
+                    self._server_protocol_version < self.required_protocol_version:
+                raise ConfigurationError('Server protocol version is '
+                                         f'{self._server_protocol_version}, '
+                                         f'protocol version {self.required_protocol_version} '
+                                         'is required')
+
+        if self.required_features is not None:
+            if self._server_features is None:
+                failed_features = self.required_features
+            else:
+                failed_features = [val for val in self.required_features
+                                   if val not in self._server_features]
+
+            if len(failed_features) > 0:
+                str_features = ', '.join([str(v) for v in failed_features])
+                raise ConfigurationError(f'Server missing protocol features with id {str_features}')
 
         if self._server_protocol_version is not None:
             self._protocol_version = min(self._server_protocol_version,
