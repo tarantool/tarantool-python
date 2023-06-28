@@ -532,18 +532,6 @@ class Datetime():
             self_dt = self._datetime
             other_dt = other._datetime
 
-            # Tarantool datetime subtraction ignores timezone info, but it is a bug:
-            #
-            # Tarantool 2.10.1-0-g482d91c66
-            #
-            # tarantool> datetime.new{tz='MSK'} - datetime.new{tz='UTC'}
-            # ---
-            # - +0 seconds
-            # ...
-            #
-            # Refer to https://github.com/tarantool/tarantool/issues/7698
-            # for possible updates.
-
             if self_dt.tzinfo != other_dt.tzinfo:
                 other_dt = other_dt.astimezone(self_dt.tzinfo)
 
