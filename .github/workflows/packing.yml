@@ -31,7 +31,7 @@ jobs:
       - name: Setup Python and basic packing tools
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install tools for packing and verification
         run: pip3 install wheel twine
@@ -73,7 +73,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Remove connector source code
         run: python3 .github/scripts/remove_source_code.py
@@ -128,7 +128,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Remove connector source code
         run: python3 .github/scripts/remove_source_code.py
@@ -196,7 +196,7 @@ jobs:
       - name: Setup Python and basic packing tools
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install tools for package publishing
         run: pip3 install twine
