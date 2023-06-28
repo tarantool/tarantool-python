@@ -205,6 +205,19 @@ def skip_or_run_datetime_test(func):
                                           'does not support datetime type')
 
 
+def skip_or_run_datetime_2_11_test(func):
+    """
+    Decorator to skip or run tests related to datetime module with
+    fixes introduced in 2.11 release.
+
+    See https://github.com/tarantool/tarantool/issues/7698 and
+    https://github.com/tarantool/tarantool/issues/7700
+    """
+
+    return skip_or_run_test_tarantool(func, '2.11.0',
+                                      'does not provide required datetime fixes')
+
+
 def skip_or_run_error_extra_info_test(func):
     """
     Decorator to skip or run tests related to extra error info

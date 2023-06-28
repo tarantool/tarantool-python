@@ -15,7 +15,7 @@ from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
-from .lib.skip import skip_or_run_datetime_test
+from .lib.skip import skip_or_run_datetime_test, skip_or_run_datetime_2_11_test
 
 
 class TestSuiteDatetime(unittest.TestCase):
@@ -381,21 +381,23 @@ class TestSuiteDatetime(unittest.TestCase):
     datetime_subtraction_different_timezones_case = {
         'arg_1': tarantool.Datetime(year=2001, month=2, day=3, tz='UTC'),
         'arg_2': tarantool.Datetime(year=2001, month=2, day=3, tz='MSK'),
-        'res': tarantool.Interval(day=1, hour=-21),
+        # Tarantool datetime comparison is naive, our tarantool.Interval comparison is naive too.
+        # So even though day=1, hour=-21 is the same as minute=180, test assertion fails.
+        'res_python': tarantool.Interval(day=1, hour=-21),
+        'res_tarantool': tarantool.Interval(minute=180),
     }
 
     def test_python_datetime_subtraction_different_timezones(self):
         case = self.datetime_subtraction_different_timezones_case
 
-        self.assertEqual(case['arg_1'] - case['arg_2'], case['res'])
+        self.assertEqual(case['arg_1'] - case['arg_2'], case['res_python'])
 
-    @skip_or_run_datetime_test
-    @unittest.skip('See https://github.com/tarantool/tarantool/issues/7698')
+    @skip_or_run_datetime_2_11_test
     def test_tarantool_datetime_subtraction_different_timezones(self):
         case = self.datetime_subtraction_different_timezones_case
 
         self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
-                                 [case['res']])
+                                 [case['res_tarantool']])
 
     interval_arithmetic_cases = {
         'year': {
@@ -515,8 +517,7 @@ class TestSuiteDatetime(unittest.TestCase):
 
         self.assertEqual(case['arg_1'] + case['arg_2'], case['res'])
 
-    @skip_or_run_datetime_test
-    @unittest.skip('See https://github.com/tarantool/tarantool/issues/7700')
+    @skip_or_run_datetime_2_11_test
     def test_tarantool_datetime_addition_winter_time_switch(self):
         case = self.datetime_addition_winter_time_switch_case
 
