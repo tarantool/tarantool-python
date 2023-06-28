@@ -33,6 +33,7 @@ jobs:
           - '3.8'
           - '3.9'
           - '3.10'
+          - '3.11'
         msgpack-deps:
           # latest msgpack will be installed as a part of requirements.txt
           - ''
@@ -42,17 +43,17 @@ jobs:
         # "This page is taking too long to load." error. Thus we use
         # pairwise testing.
         include:
-          - tarantool: '2.8'
-            python: '3.10'
+          - tarantool: '2.11'
+            python: '3.11'
             msgpack-deps: 'msgpack-python==0.4.0'
-          - tarantool: '2.8'
-            python: '3.10'
+          - tarantool: '2.11'
+            python: '3.11'
             msgpack-deps: 'msgpack==0.5.0'
-          - tarantool: '2.8'
-            python: '3.10'
+          - tarantool: '2.11'
+            python: '3.11'
             msgpack-deps: 'msgpack==0.6.2'
-          - tarantool: '2.8'
-            python: '3.10'
+          - tarantool: '2.11'
+            python: '3.11'
             msgpack-deps: 'msgpack==1.0.4'
 
     steps:
@@ -114,15 +115,15 @@ jobs:
       fail-fast: false
       matrix:
         tarantool:
-          - bundle: 'bundle-1.10.11-0-gf0b0e7ecf-r470'
-            path: ''
-          - bundle: 'bundle-2.8.3-21-g7d35cd2be-r470'
-            path: ''
-          - bundle: 'bundle-2.10.0-1-gfa775b383-r486-linux-x86_64'
-            path: ''
-          - bundle: 'sdk-gc64-2.11.0-rc2-0-r557.linux.x86_64'
+          - bundle: 'sdk-1.10.15-0-r563'
+            path: 'release/linux/x86_64/1.10/'
+          - bundle: 'sdk-2.8.4-0-r563'
+            path: 'release/linux/x86_64/2.8/'
+          - bundle: 'sdk-gc64-2.10.7-0-r563.linux.x86_64'
+            path: 'release/linux/x86_64/2.10/'
+          - bundle: 'sdk-gc64-2.11.0-0-r563.linux.x86_64'
             path: 'release/linux/x86_64/2.11/'
-        python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        python: ['3.6', '3.11']
 
     steps:
       - name: Clone the connector
@@ -169,8 +170,8 @@ jobs:
           source tarantool-enterprise/env.sh
           make test
         env:
-          TEST_TNT_SSL: ${{ matrix.tarantool.bundle == 'bundle-2.10.0-1-gfa775b383-r486-linux-x86_64' ||
-                            matrix.tarantool.bundle == 'sdk-gc64-2.11.0-rc2-0-r557.linux.x86_64'}}
+          TEST_TNT_SSL: ${{ matrix.tarantool.bundle == 'sdk-gc64-2.10.7-0-r563.linux.x86_64' ||
+                            matrix.tarantool.bundle == 'sdk-gc64-2.11.0-0-r563.linux.x86_64'}}
 
   run_tests_pip_branch_install_linux:
     # We want to run on external PRs, but not on our own internal
@@ -191,10 +192,7 @@ jobs:
           - '2.11'
         python:
           - '3.6'
-          - '3.7'
-          - '3.8'
-          - '3.9'
-          - '3.10'
+          - '3.11'
     steps:
       - name: Clone the connector repo
         uses: actions/checkout@v3
@@ -244,12 +242,10 @@ jobs:
       matrix:
         # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
-          - '1.10'
-          - '2.8'
-          - '2.10.0.g0a5ce0b9c-1'
+          - '2.11.0.g247a9a418-1'
         python:
           - '3.6'
-          - '3.10'
+          - '3.11'
 
     steps:
       - name: Clone the connector
@@ -271,15 +267,7 @@ jobs:
         with:
           distribution: Ubuntu-20.04
 
-      - name: Install tarantool ${{ matrix.tarantool }} for WSL (2.8 and older)
-        if: (matrix.tarantool == '1.10') || (matrix.tarantool == '2.8')
-        shell: wsl-bash_Ubuntu-20.04 {0}
-        run: |
-          curl -L https://tarantool.io/installer.sh | VER=${{ matrix.tarantool }} bash -s -- --type "release"
-          sudo apt install -y tarantool tarantool-dev
-
       - name: Install tarantool ${{ matrix.tarantool }} for WSL (2.10 and newer)
-        if: (matrix.tarantool != '1.10') && (matrix.tarantool != '2.8')
         shell: wsl-bash_Ubuntu-20.04 {0}
         run: |
           curl -L https://tarantool.io/release/2/installer.sh | bash -s
@@ -324,10 +312,10 @@ jobs:
       matrix:
         # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
-          - '2.10.0.g0a5ce0b9c-1'
+          - '2.11.0.g247a9a418-1'
         python:
           - '3.6'
-          - '3.10'
+          - '3.11'
     steps:
       - name: Clone the connector repo
         uses: actions/checkout@v3
