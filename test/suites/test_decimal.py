@@ -226,6 +226,39 @@ class TestSuiteDecimal(unittest.TestCase):
                         b'\x09\x87\x65\x43\x21\x98\x76\x54\x32\x1d'),
             'tarantool': "decimal.new('-1234567891234567890.0987654321987654321')",
         },
+        'decimal_exponent_1': {
+            'python': decimal.Decimal('1e33'),
+            'msgpack': (b'\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+                        b'\x00\x00\x00\x00\x00\x00\x00\x0c'),
+            'tarantool': "decimal.new('1e33')",
+        },
+        'decimal_exponent_2': {
+            'python': decimal.Decimal('1.2345e33'),
+            'msgpack': (b'\x00\x01\x23\x45\x00\x00\x00\x00\x00\x00\x00'
+                        b'\x00\x00\x00\x00\x00\x00\x00\x0c'),
+            'tarantool': "decimal.new('1.2345e33')",
+        },
+        'decimal_exponent_3': {
+            'python': decimal.Decimal('1.2345e2'),
+            'msgpack': (b'\x02\x12\x34\x5c'),
+            'tarantool': "decimal.new('1.2345e2')",
+        },
+        'decimal_exponent_4': {
+            'python': decimal.Decimal('1.2345e4'),
+            'msgpack': (b'\x00\x12\x34\x5c'),
+            'tarantool': "decimal.new('1.2345e4')",
+        },
+        'decimal_exponent_5': {
+            'python': decimal.Decimal('-1e33'),
+            'msgpack': (b'\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+                        b'\x00\x00\x00\x00\x00\x00\x00\x0d'),
+            'tarantool': "decimal.new('-1e33')",
+        },
+        'decimal_exponent_6': {
+            'python': decimal.Decimal('1e-33'),
+            'msgpack': (b'\x21\x1c'),
+            'tarantool': "decimal.new('1e-33')",
+        },
     }
 
     def test_msgpack_decode(self):
