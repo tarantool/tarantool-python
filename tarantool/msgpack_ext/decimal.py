@@ -56,6 +56,8 @@ The final nibble represents the number’s sign:
 
 from decimal import Decimal
 
+import msgpack
+
 from tarantool.error import MsgpackError, MsgpackWarning, warn
 
 EXT_ID = 1
@@ -353,7 +355,12 @@ def decode(data, _):
     :raise: :exc:`~tarantool.error.MsgpackError`
     """
 
-    scale = data[0]
+    # A decimal starts with mp_int or mp_uint followed by raw bytes.
+    unpacker = msgpack.Unpacker()
+    unpacker.feed(data)
+
+    scale = unpacker.unpack()
+    scale_size = unpacker.tell()
 
     sign = get_str_sign(data[-1] & 0x0f)
 
@@ -362,7 +369,7 @@ def decode(data, _):
 
     add_str_digit(data[-1] >> 4, digits_reverted, scale)
 
-    for i in range(len(data) - 2, 0, -1):
+    for i in range(len(data) - 2, scale_size - 1, -1):
         add_str_digit(data[i] & 0x0f, digits_reverted, scale)
         add_str_digit(data[i] >> 4, digits_reverted, scale)
 
@@ -372,6 +379,12 @@ def decode(data, _):
 
     digits_reverted.append(sign)
 
-    str_repr = ''.join(digits_reverted[::-1])
+    digits = digits_reverted[::-1]
+
+    # Add trailing zeroes in case of a negative scale
+    for i in range(0, -1 * scale):
+        add_str_digit(0, digits, scale)
+
+    str_repr = ''.join(digits)
 
     return Decimal(str_repr)
