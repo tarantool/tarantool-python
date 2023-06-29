@@ -45,9 +45,6 @@ jobs:
         include:
           - tarantool: '2.11'
             python: '3.11'
-            msgpack-deps: 'msgpack-python==0.4.0'
-          - tarantool: '2.11'
-            python: '3.11'
             msgpack-deps: 'msgpack==0.5.0'
           - tarantool: '2.11'
             python: '3.11'

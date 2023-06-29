@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Allow to require specific server protocol version and features (#267).
 
+### Changed
+- Drop `msgpack-python` support. Use `msgpack` instead.
+
 ### Fixed
 - Parsing of E-notation Tarantool decimals with positive exponent (PR #298).
 
