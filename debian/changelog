@@ -1,3 +1,23 @@
+python3-tarantool (1.1.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces API to request server protocol version and
+    feature, as well as introduce decimal bugfix.
+
+    ## Breaking changes
+
+    - Drop `msgpack-python` support. (Package not supported since 2019.)
+      Use `msgpack` instead.
+
+    ## Added
+    - Allow to require specific server protocol version and features (#267).
+
+    ## Fixed
+    - Parsing of E-notation Tarantool decimals with positive exponent (PR #298).
+
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Fri, 30 Jun 2023 10:00:00 +0300
+
 python3-tarantool (1.0.0-0) unstable; urgency=medium
 
     ## Overview
