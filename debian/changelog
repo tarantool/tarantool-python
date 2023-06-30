@@ -28,7 +28,7 @@ python3-tarantool (1.0.0-0) unstable; urgency=medium
 
     - Lint the code with `pylint`, `flake8` and `codespell`.
 
- -- Georgy.moiseev <georgy.moiseev@tarantool.org>  Mon, 17 Apr 2023 13:00:00 +0300
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Mon, 17 Apr 2023 13:00:00 +0300
 
 python3-tarantool (0.12.1-0) unstable; urgency=medium
 
