@@ -210,7 +210,7 @@ class TestSuiteRequest(unittest.TestCase):
             self.assertEqual(len(ans[0]), 1)
             self.assertIsInstance(ans[0][0], str)
 
-            self.assertSequenceEqual(con.call('box.tuple.new', [1, 2, 3, 'fld_1']),
+            self.assertSequenceEqual(con.call('box.tuple.new', [[1, 2, 3, 'fld_1']]),
                                      [[1, 2, 3, 'fld_1']])
             self.assertSequenceEqual(con.call('box.tuple.new', 'fld_1'), [['fld_1']])
         finally:
@@ -236,7 +236,7 @@ class TestSuiteRequest(unittest.TestCase):
         self.assertEqual(len(ans), 1)
         self.assertIsInstance(ans[0], str)
 
-        self.assertSequenceEqual(con.call('box.tuple.new', [1, 2, 3, 'fld_1']),
+        self.assertSequenceEqual(con.call('box.tuple.new', [[1, 2, 3, 'fld_1']]),
                                  [[1, 2, 3, 'fld_1']])
         self.assertSequenceEqual(con.call('box.tuple.new', 'fld_1'), [['fld_1']])
 
