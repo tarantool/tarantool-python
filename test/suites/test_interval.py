@@ -283,6 +283,28 @@ class TestSuiteInterval(unittest.TestCase):
             'res_add': tarantool.Interval(year=3, adjust=tarantool.IntervalAdjust.LAST),
             'res_sub': tarantool.Interval(year=1, adjust=tarantool.IntervalAdjust.LAST),
         },
+        'weeks': {
+            'arg_1': tarantool.Interval(week=2),
+            'arg_2': tarantool.Interval(week=1),
+            'res_add': tarantool.Interval(week=3),
+            'res_sub': tarantool.Interval(week=1),
+        },
+        'date_with_week': {
+            'arg_1': tarantool.Interval(year=1, month=2, week=3, day=4),
+            'arg_2': tarantool.Interval(year=4, month=3, week=2, day=1),
+            'res_add': tarantool.Interval(year=5, month=5, week=5, day=5),
+            'res_sub': tarantool.Interval(year=-3, month=-1, week=1, day=3),
+        },
+        'datetime_with_week': {
+            'arg_1': tarantool.Interval(year=1, month=2, week=3, day=4, hour=1, minute=2,
+                                        sec=3000, nsec=10000000),
+            'arg_2': tarantool.Interval(year=2, month=1, week=-1, day=31, hour=-3, minute=0,
+                                        sec=1000, nsec=9876543),
+            'res_add': tarantool.Interval(year=3, month=3, week=2, day=35, hour=-2, minute=2,
+                                          sec=4000, nsec=19876543),
+            'res_sub': tarantool.Interval(year=-1, month=1, week=4, day=-27, hour=4, minute=2,
+                                          sec=2000, nsec=123457),
+        },
     }
 
     def test_python_interval_addition(self):
