@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `tarantool.Interval` arithmetic with weeks
+- `tarantool.Interval` weeks display in `str()` and `repr()`
 
 ## 1.1.0 - 2023-06-30
 
