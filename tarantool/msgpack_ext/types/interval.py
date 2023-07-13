@@ -49,8 +49,8 @@ class Interval():
 
     .. code-block:: python
 
-        di = tarantool.Interval(year=-1, month=2, day=3,
-                                hour=4, minute=-5, sec=6,
+        di = tarantool.Interval(year=-1, month=2, week=-3,
+                                day=4, hour=5, minute=-6, sec=7,
                                 nsec=308543321,
                                 adjust=tarantool.IntervalAdjust.NONE)
 
