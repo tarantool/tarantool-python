@@ -148,6 +148,24 @@ class TestSuiteInterval(unittest.TestCase):
             'msgpack': (b'\x00'),
             'tarantool': r"datetime.interval.new({adjust='excess'})",
         },
+        'weeks': {
+            'python': tarantool.Interval(week=3),
+            'msgpack': (b'\x02\x02\x03\x08\x01'),
+            'tarantool': r"datetime.interval.new({week=3})",
+        },
+        'date_with_week': {
+            'python': tarantool.Interval(year=1, month=2, week=3, day=4),
+            'msgpack': (b'\x05\x00\x01\x01\x02\x02\x03\x03\x04\x08\x01'),
+            'tarantool': r"datetime.interval.new({year=1, month=2, week=3, day=4})",
+        },
+        'datetime_with_week': {
+            'python': tarantool.Interval(year=1, month=2, week=3, day=4, hour=1, minute=2,
+                                         sec=3000, nsec=10000000),
+            'msgpack': (b'\x09\x00\x01\x01\x02\x02\x03\x03\x04\x04\x01\x05\x02\x06\xcd\x0b\xb8'
+                        b'\x07\xce\x00\x98\x96\x80\x08\x01'),
+            'tarantool': r"datetime.interval.new({year=1, month=2, week=3, day=4, hour=1, "
+                         r"min=2, sec=3000, nsec=10000000})",
+        },
     }
 
     def test_msgpack_decode(self):
