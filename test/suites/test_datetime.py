@@ -480,6 +480,12 @@ class TestSuiteDatetime(unittest.TestCase):
             'res_add': tarantool.Datetime(year=2009, month=3, day=31),
             'res_sub': tarantool.Datetime(year=2009, month=1, day=31),
         },
+        'week': {
+            'arg_1': tarantool.Datetime(year=2008, month=2, day=3),
+            'arg_2': tarantool.Interval(week=1),
+            'res_add': tarantool.Datetime(year=2008, month=2, day=10),
+            'res_sub': tarantool.Datetime(year=2008, month=1, day=27),
+        },
     }
 
     def test_python_interval_addition(self):
