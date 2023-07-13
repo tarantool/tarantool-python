@@ -145,6 +145,7 @@ class Interval():
         return Interval(
             year=self.year + other.year,
             month=self.month + other.month,
+            week=self.week + other.week,
             day=self.day + other.day,
             hour=self.hour + other.hour,
             minute=self.minute + other.minute,
@@ -194,6 +195,7 @@ class Interval():
         return Interval(
             year=self.year - other.year,
             month=self.month - other.month,
+            week=self.week - other.week,
             day=self.day - other.day,
             hour=self.hour - other.hour,
             minute=self.minute - other.minute,
