@@ -71,42 +71,58 @@ class TestSuiteInterval(unittest.TestCase):
             'python': tarantool.Interval(year=1),
             'msgpack': (b'\x02\x00\x01\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1})",
+            'str': 'tarantool.Interval(year=1, month=0, week=0, day=0, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
         },
         'big_year': {
             'python': tarantool.Interval(year=1000),
             'msgpack': (b'\x02\x00\xcd\x03\xe8\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1000})",
+            'str': 'tarantool.Interval(year=1000, month=0, week=0, day=0, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
         },
         'date': {
             'python': tarantool.Interval(year=1, month=2, day=3),
             'msgpack': (b'\x04\x00\x01\x01\x02\x03\x03\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1, month=2, day=3})",
+            'str': 'tarantool.Interval(year=1, month=2, week=0, day=3, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
         },
         'big_month_date': {
             'python': tarantool.Interval(year=1, month=100000, day=3),
             'msgpack': (b'\x04\x00\x01\x01\xce\x00\x01\x86\xa0\x03\x03\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1, month=100000, day=3})",
+            'str': 'tarantool.Interval(year=1, month=100000, week=0, day=3, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
         },
         'time': {
             'python': tarantool.Interval(hour=1, minute=2, sec=3),
             'msgpack': (b'\x04\x04\x01\x05\x02\x06\x03\x08\x01'),
             'tarantool': r"datetime.interval.new({hour=1, min=2, sec=3})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=1, '
+                   'minute=2, sec=3, nsec=0, adjust=Adjust.NONE)',
         },
         'big_seconds_time': {
             'python': tarantool.Interval(hour=1, minute=2, sec=3000),
             'msgpack': (b'\x04\x04\x01\x05\x02\x06\xcd\x0b\xb8\x08\x01'),
             'tarantool': r"datetime.interval.new({hour=1, min=2, sec=3000})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=1, '
+                   'minute=2, sec=3000, nsec=0, adjust=Adjust.NONE)',
         },
         'datetime': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2, sec=3000),
             'msgpack': (b'\x07\x00\x01\x01\x02\x03\x03\x04\x01\x05\x02\x06\xcd\x0b\xb8\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000})",
+            'str': 'tarantool.Interval(year=1, month=2, week=0, day=3, hour=1, '
+                   'minute=2, sec=3000, nsec=0, adjust=Adjust.NONE)',
         },
         'nanoseconds': {
             'python': tarantool.Interval(nsec=10000000),
             'msgpack': (b'\x02\x07\xce\x00\x98\x96\x80\x08\x01'),
             'tarantool': r"datetime.interval.new({nsec=10000000})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   'minute=0, sec=0, nsec=10000000, adjust=Adjust.NONE)',
         },
         'datetime_with_nanoseconds': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
@@ -115,6 +131,8 @@ class TestSuiteInterval(unittest.TestCase):
                         b'\x00\x98\x96\x80\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000})",
+            'str': 'tarantool.Interval(year=1, month=2, week=0, day=3, hour=1, '
+                   'minute=2, sec=3000, nsec=10000000, adjust=Adjust.NONE)',
         },
         'datetime_none_adjust': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
@@ -124,6 +142,8 @@ class TestSuiteInterval(unittest.TestCase):
                         b'\x00\x98\x96\x80\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000, adjust='none'})",
+            'str': 'tarantool.Interval(year=1, month=2, week=0, day=3, hour=1, '
+                   'minute=2, sec=3000, nsec=10000000, adjust=Adjust.NONE)',
         },
         'datetime_excess_adjust': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
@@ -133,6 +153,8 @@ class TestSuiteInterval(unittest.TestCase):
                         b'\x00\x98\x96\x80'),
             'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000, adjust='excess'})",
+            'str': 'tarantool.Interval(year=1, month=2, week=0, day=3, hour=1, '
+                   'minute=2, sec=3000, nsec=10000000, adjust=Adjust.EXCESS)',
         },
         'datetime_last_adjust': {
             'python': tarantool.Interval(year=1, month=2, day=3, hour=1, minute=2,
@@ -142,21 +164,29 @@ class TestSuiteInterval(unittest.TestCase):
                         b'\x00\x98\x96\x80\x08\x02'),
             'tarantool': r"datetime.interval.new({year=1, month=2, day=3, hour=1, "
                          r"min=2, sec=3000, nsec=10000000, adjust='last'})",
+            'str': 'tarantool.Interval(year=1, month=2, week=0, day=3, hour=1, '
+                   'minute=2, sec=3000, nsec=10000000, adjust=Adjust.LAST)',
         },
         'all_zeroes': {
             'python': tarantool.Interval(adjust=tarantool.IntervalAdjust.EXCESS),
             'msgpack': (b'\x00'),
             'tarantool': r"datetime.interval.new({adjust='excess'})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.EXCESS)',
         },
         'weeks': {
             'python': tarantool.Interval(week=3),
             'msgpack': (b'\x02\x02\x03\x08\x01'),
             'tarantool': r"datetime.interval.new({week=3})",
+            'str': 'tarantool.Interval(year=0, month=0, week=3, day=0, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
         },
         'date_with_week': {
             'python': tarantool.Interval(year=1, month=2, week=3, day=4),
             'msgpack': (b'\x05\x00\x01\x01\x02\x02\x03\x03\x04\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1, month=2, week=3, day=4})",
+            'str': 'tarantool.Interval(year=1, month=2, week=3, day=4, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
         },
         'datetime_with_week': {
             'python': tarantool.Interval(year=1, month=2, week=3, day=4, hour=1, minute=2,
@@ -165,6 +195,8 @@ class TestSuiteInterval(unittest.TestCase):
                         b'\x07\xce\x00\x98\x96\x80\x08\x01'),
             'tarantool': r"datetime.interval.new({year=1, month=2, week=3, day=4, hour=1, "
                          r"min=2, sec=3000, nsec=10000000})",
+            'str': 'tarantool.Interval(year=1, month=2, week=3, day=4, hour=1, '
+                   'minute=2, sec=3000, nsec=10000000, adjust=Adjust.NONE)',
         },
     }
 
@@ -215,6 +247,12 @@ class TestSuiteInterval(unittest.TestCase):
                 """
 
                 self.assertSequenceEqual(self.adm(lua_eval), [True])
+
+    def test_class_string(self):
+        for name, case in self.cases.items():
+            with self.subTest(msg=name):
+                self.assertEqual(str(case['python']), case['str'])
+                self.assertEqual(repr(case['python']), case['str'])
 
     def test_unknown_field_decode(self):
         case = b'\x01\x09\xce\x00\x98\x96\x80'

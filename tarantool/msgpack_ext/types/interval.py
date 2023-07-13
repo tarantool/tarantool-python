@@ -233,8 +233,8 @@ class Interval():
         return True
 
     def __repr__(self):
-        return f'tarantool.Interval(year={self.year}, month={self.month}, day={self.day}, ' + \
-               f'hour={self.hour}, minute={self.minute}, sec={self.sec}, ' + \
+        return f'tarantool.Interval(year={self.year}, month={self.month}, week={self.week}, ' + \
+               f'day={self.day}, hour={self.hour}, minute={self.minute}, sec={self.sec}, ' + \
                f'nsec={self.nsec}, adjust={self.adjust})'
 
     __str__ = __repr__
