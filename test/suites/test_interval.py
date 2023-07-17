@@ -13,6 +13,16 @@ import tarantool
 from tarantool.error import MsgpackError
 from tarantool.msgpack_ext.packer import default as packer_default
 from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
+from tarantool.msgpack_ext.types.interval import (
+    MAX_YEAR_RANGE,
+    MAX_MONTH_RANGE,
+    MAX_WEEK_RANGE,
+    MAX_DAY_RANGE,
+    MAX_HOUR_RANGE,
+    MAX_MIN_RANGE,
+    MAX_SEC_RANGE,
+    MAX_NSEC_RANGE,
+)
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
@@ -198,6 +208,262 @@ class TestSuiteInterval(unittest.TestCase):
             'str': 'tarantool.Interval(year=1, month=2, week=3, day=4, hour=1, '
                    'minute=2, sec=3000, nsec=10000000, adjust=Adjust.NONE)',
         },
+        'min_year_interval': {
+            'python': tarantool.Interval(year=-int(MAX_YEAR_RANGE)),
+            'msgpack': (b'\x02\x00\xd2\xff\x4c\x91\x8b\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{year=-{int(MAX_YEAR_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{year=-{int(MAX_YEAR_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({year=1})",
+            'str': f'tarantool.Interval(year=-{int(MAX_YEAR_RANGE)}, month=0, week=0, day=0, '
+                   'hour=0, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'max_year_interval': {
+            'python': tarantool.Interval(year=int(MAX_YEAR_RANGE)),
+            'msgpack': (b'\x02\x00\xce\x00\xb3\x6e\x75\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{year={int(MAX_YEAR_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{year={int(MAX_YEAR_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({year=1})",
+            'str': f'tarantool.Interval(year={int(MAX_YEAR_RANGE)}, month=0, week=0, day=0, '
+                   'hour=0, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'min_month_interval': {
+            'python': tarantool.Interval(month=-int(MAX_MONTH_RANGE)),
+            'msgpack': (b'\x02\x01\xd2\xf7\x96\xd2\x84\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{month=-{int(MAX_MONTH_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{month=-{int(MAX_MONTH_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({month=1})",
+            'str': f'tarantool.Interval(year=0, month=-{int(MAX_MONTH_RANGE)}, week=0, day=0, '
+                   'hour=0, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'max_month_interval': {
+            'python': tarantool.Interval(month=int(MAX_MONTH_RANGE)),
+            'msgpack': (b'\x02\x01\xce\x08\x69\x2d\x7c\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{month={int(MAX_MONTH_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{month={int(MAX_MONTH_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({month=1})",
+            'str': f'tarantool.Interval(year=0, month={int(MAX_MONTH_RANGE)}, week=0, day=0, '
+                   'hour=0, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'min_week_interval': {
+            'python': tarantool.Interval(week=-int(MAX_WEEK_RANGE)),
+            'msgpack': (b'\x02\x02\xd2\xdb\x6d\x85\xa8\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{week=-{int(MAX_WEEK_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{week=-{int(MAX_WEEK_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({week=1})",
+            'str': f'tarantool.Interval(year=0, month=0, week=-{int(MAX_WEEK_RANGE)}, day=0, '
+                   'hour=0, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'max_week_interval': {
+            'python': tarantool.Interval(week=int(MAX_WEEK_RANGE)),
+            'msgpack': (b'\x02\x02\xce\x24\x92\x7a\x58\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{week={int(MAX_WEEK_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{week={int(MAX_WEEK_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({week=1})",
+            'str': f'tarantool.Interval(year=0, month=0, week={int(MAX_WEEK_RANGE)}, day=0, '
+                   'hour=0, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'min_day_interval': {
+            'python': tarantool.Interval(day=-int(MAX_DAY_RANGE)),
+            'msgpack': (b'\x02\x03\xd3\xff\xff\xff\xfe\xff\xfe\xa7\x92\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{day=-{int(MAX_DAY_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{day=-{int(MAX_DAY_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({day=1})",
+            'str': f'tarantool.Interval(year=0, month=0, week=0, day=-{int(MAX_DAY_RANGE)}, '
+                   'hour=0, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'max_day_interval': {
+            'python': tarantool.Interval(day=int(MAX_DAY_RANGE)),
+            'msgpack': (b'\x02\x03\xcf\x00\x00\x00\x01\x00\x01\x58\x6e\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{day={int(MAX_DAY_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{day={int(MAX_DAY_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({day=1})",
+            'str': f'tarantool.Interval(year=0, month=0, week=0, day={int(MAX_DAY_RANGE)}, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'min_int32_day_interval': {
+            'python': tarantool.Interval(day=-2147483648),
+            'msgpack': (b'\x02\x03\xd2\x80\x00\x00\x00\x08\x01'),
+            'tarantool': r"datetime.interval.new({day=-2147483648})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=-2147483648, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'max_int32_day_interval': {
+            'python': tarantool.Interval(day=2147483647),
+            'msgpack': (b'\x02\x03\xce\x7f\xff\xff\xff\x08\x01'),
+            'tarantool': r"datetime.interval.new({day=2147483647})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=2147483647, hour=0, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'min_hour_interval': {
+            'python': tarantool.Interval(hour=-int(MAX_HOUR_RANGE)),
+            'msgpack': (b'\x02\x04\xd3\xff\xff\xff\xe7\xff\xdf\xb5\xaa\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{hour=-{int(MAX_HOUR_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{hour=-{int(MAX_HOUR_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({hour=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, '
+                   f'hour=-{int(MAX_HOUR_RANGE)}, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'max_hour_interval': {
+            'python': tarantool.Interval(hour=int(MAX_HOUR_RANGE)),
+            'msgpack': (b'\x02\x04\xcf\x00\x00\x00\x18\x00\x20\x4a\x56\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{hour={int(MAX_HOUR_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{hour={int(MAX_HOUR_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({hour=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, '
+                   f'hour={int(MAX_HOUR_RANGE)}, minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'min_int32_hour_interval': {
+            'python': tarantool.Interval(hour=-2147483648),
+            'msgpack': (b'\x02\x04\xd2\x80\x00\x00\x00\x08\x01'),
+            'tarantool': r"datetime.interval.new({hour=-2147483648})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=-2147483648, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'max_int32_hour_interval': {
+            'python': tarantool.Interval(hour=2147483647),
+            'msgpack': (b'\x02\x04\xce\x7f\xff\xff\xff\x08\x01'),
+            'tarantool': r"datetime.interval.new({hour=2147483647})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=2147483647, '
+                   'minute=0, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'min_minute_interval': {
+            'python': tarantool.Interval(minute=-int(MAX_MIN_RANGE)),
+            'msgpack': (b'\x02\x05\xd3\xff\xff\xfa\x5f\xf8\x6e\x93\xd8\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{min=-{int(MAX_MIN_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{min=-{int(MAX_MIN_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({min=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   f'minute=-{int(MAX_MIN_RANGE)}, sec=0, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'max_minute_interval': {
+            'python': tarantool.Interval(minute=int(MAX_MIN_RANGE)),
+            'msgpack': (b'\x02\x05\xcf\x00\x00\x05\xa0\x07\x91\x6c\x28\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{min={int(MAX_MIN_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{min={int(MAX_MIN_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({min=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   f'minute={int(MAX_MIN_RANGE)}, sec=0, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'min_int32_minute_interval': {
+            'python': tarantool.Interval(minute=-2147483648),
+            'msgpack': (b'\x02\x05\xd2\x80\x00\x00\x00\x08\x01'),
+            'tarantool': r"datetime.interval.new({min=-2147483648})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   'minute=-2147483648, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'max_int32_minute_interval': {
+            'python': tarantool.Interval(minute=2147483647),
+            'msgpack': (b'\x02\x05\xce\x7f\xff\xff\xff\x08\x01'),
+            'tarantool': r"datetime.interval.new({min=2147483647})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   'minute=2147483647, sec=0, nsec=0, adjust=Adjust.NONE)',
+        },
+        'min_sec_interval': {
+            'python': tarantool.Interval(sec=-int(MAX_SEC_RANGE)),
+            'msgpack': (b'\x02\x06\xd3\xff\xfe\xae\x7e\x39\xea\xa6\xa0\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{sec=-{int(MAX_SEC_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{sec=-{int(MAX_SEC_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({sec=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   f'minute=0, sec=-{int(MAX_SEC_RANGE)}, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'max_sec_interval': {
+            'python': tarantool.Interval(sec=int(MAX_SEC_RANGE)),
+            'msgpack': (b'\x02\x06\xcf\x00\x01\x51\x81\xc6\x15\x59\x60\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{sec={int(MAX_SEC_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{sec={int(MAX_SEC_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({sec=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   f'minute=0, sec={int(MAX_SEC_RANGE)}, nsec=0, adjust=Adjust.NONE)',
+            'tarantool_8887_issue': True,
+        },
+        'min_int32_sec_interval': {
+            'python': tarantool.Interval(sec=-2147483648),
+            'msgpack': (b'\x02\x06\xd2\x80\x00\x00\x00\x08\x01'),
+            'tarantool': r"datetime.interval.new({sec=-2147483648})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   'minute=0, sec=-2147483648, nsec=0, adjust=Adjust.NONE)',
+        },
+        'max_int32_sec_interval': {
+            'python': tarantool.Interval(sec=2147483647),
+            'msgpack': (b'\x02\x06\xce\x7f\xff\xff\xff\x08\x01'),
+            'tarantool': r"datetime.interval.new({sec=2147483647})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   'minute=0, sec=2147483647, nsec=0, adjust=Adjust.NONE)',
+        },
+        'min_nsec_interval': {
+            'python': tarantool.Interval(nsec=-int(MAX_NSEC_RANGE)),
+            'msgpack': (b'\x02\x07\xd2\x80\x00\x00\x01\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{nsec=-{int(MAX_NSEC_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{nsec=-{int(MAX_NSEC_RANGE)} + 1}}) - "
+                         r"datetime.interval.new({nsec=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   f'minute=0, sec=0, nsec=-{int(MAX_NSEC_RANGE)}, adjust=Adjust.NONE)',
+        },
+        'max_nsec_interval': {
+            'python': tarantool.Interval(nsec=int(MAX_NSEC_RANGE)),
+            'msgpack': (b'\x02\x07\xce\x7f\xff\xff\xff\x08\x01'),
+            # Reason why Tarantool datetime is so weird here:
+            # https://github.com/tarantool/tarantool/issues/8878
+            # Replace with f"datetime.interval.new({{nsec={int(MAX_NSEC_RANGE)}}})
+            # after fix.
+            'tarantool': f"datetime.interval.new({{nsec={int(MAX_NSEC_RANGE)} - 1}}) + "
+                         r"datetime.interval.new({nsec=1})",
+            'str': 'tarantool.Interval(year=0, month=0, week=0, day=0, hour=0, '
+                   f'minute=0, sec=0, nsec={int(MAX_NSEC_RANGE)}, adjust=Adjust.NONE)',
+        },
     }
 
     def test_msgpack_decode(self):
@@ -215,6 +481,9 @@ class TestSuiteInterval(unittest.TestCase):
     def test_tarantool_decode(self):
         for name, case in self.cases.items():
             with self.subTest(msg=name):
+                if ('tarantool_8887_issue' in case) and (case['tarantool_8887_issue'] is True):
+                    self.skipTest('See https://github.com/tarantool/tarantool/issues/8887')
+
                 self.adm(f"box.space['test']:replace{{'{name}', {case['tarantool']}, 'field'}}")
 
                 self.assertSequenceEqual(self.con.select('test', name),
@@ -230,6 +499,9 @@ class TestSuiteInterval(unittest.TestCase):
     def test_tarantool_encode(self):
         for name, case in self.cases.items():
             with self.subTest(msg=name):
+                if ('tarantool_8887_issue' in case) and (case['tarantool_8887_issue'] is True):
+                    self.skipTest('See https://github.com/tarantool/tarantool/issues/8887')
+
                 self.con.insert('test', [name, case['python'], 'field'])
 
                 lua_eval = f"""
@@ -265,6 +537,87 @@ class TestSuiteInterval(unittest.TestCase):
         self.assertRaisesRegex(
             MsgpackError, '3 is not a valid Adjust',
             lambda: unpacker_ext_hook(6, case, self.con._unpacker_factory()))
+
+    out_of_range_cases = {
+        'year_too_small': {
+            'kwargs': {'year': -int(MAX_YEAR_RANGE + 1)},
+            'range': MAX_YEAR_RANGE,
+        },
+        'year_too_large': {
+            'kwargs': {'year': int(MAX_YEAR_RANGE + 1)},
+            'range': MAX_YEAR_RANGE,
+        },
+        'month_too_small': {
+            'kwargs': {'month': -int(MAX_MONTH_RANGE + 1)},
+            'range': MAX_MONTH_RANGE,
+        },
+        'month_too_big': {
+            'kwargs': {'month': int(MAX_MONTH_RANGE + 1)},
+            'range': MAX_MONTH_RANGE,
+        },
+        'week_too_small': {
+            'kwargs': {'week': -int(MAX_WEEK_RANGE + 1)},
+            'range': MAX_WEEK_RANGE,
+        },
+        'week_too_big': {
+            'kwargs': {'week': int(MAX_WEEK_RANGE + 1)},
+            'range': MAX_WEEK_RANGE,
+        },
+        'day_too_small': {
+            'kwargs': {'day': -int(MAX_DAY_RANGE + 1)},
+            'range': MAX_DAY_RANGE,
+        },
+        'day_too_big': {
+            'kwargs': {'day': int(MAX_DAY_RANGE + 1)},
+            'range': MAX_DAY_RANGE,
+        },
+        'hour_too_small': {
+            'kwargs': {'hour': -int(MAX_HOUR_RANGE + 1)},
+            'range': MAX_HOUR_RANGE,
+        },
+        'hour_too_big': {
+            'kwargs': {'hour': int(MAX_HOUR_RANGE + 1)},
+            'range': MAX_HOUR_RANGE,
+        },
+        'minute_too_small': {
+            'kwargs': {'minute': -int(MAX_MIN_RANGE + 1)},
+            'range': MAX_MIN_RANGE,
+        },
+        'minute_too_big': {
+            'kwargs': {'minute': int(MAX_MIN_RANGE + 1)},
+            'range': MAX_MIN_RANGE,
+        },
+        'sec_too_small': {
+            'kwargs': {'sec': -int(MAX_SEC_RANGE + 1)},
+            'range': MAX_SEC_RANGE,
+        },
+        'sec_too_big': {
+            'kwargs': {'sec': int(MAX_SEC_RANGE + 1)},
+            'range': MAX_SEC_RANGE,
+        },
+        'nsec_too_small': {
+            'kwargs': {'nsec': -int(MAX_NSEC_RANGE + 1)},
+            'range': MAX_NSEC_RANGE,
+        },
+        'nsec_too_big': {
+            'kwargs': {'nsec': int(MAX_NSEC_RANGE + 1)},
+            'range': MAX_NSEC_RANGE,
+        },
+    }
+
+    def test_out_of_range(self):
+        # pylint: disable=cell-var-from-loop
+
+        for name, case in self.out_of_range_cases.items():
+            with self.subTest(msg=name):
+                name = next(iter(case['kwargs']))
+                val = case['kwargs'][name]
+                self.assertRaisesRegex(
+                    ValueError, re.escape(
+                        f"value {val} of {name} is out of "
+                        f"allowed range [{-case['range']}, {case['range']}]"
+                    ),
+                    lambda: tarantool.Interval(**case['kwargs']))
 
     arithmetic_cases = {
         'year': {
@@ -368,6 +721,22 @@ class TestSuiteInterval(unittest.TestCase):
             with self.subTest(msg=name):
                 self.assertSequenceEqual(self.con.call('sub', case['arg_1'], case['arg_2']),
                                          [case['res_sub']])
+
+    def test_addition_overflow(self):
+        self.assertRaisesRegex(
+            ValueError, re.escape(
+                f"value {int(MAX_YEAR_RANGE) + 1} of year is out of "
+                f"allowed range [{-MAX_YEAR_RANGE}, {MAX_YEAR_RANGE}]"
+            ),
+            lambda: tarantool.Interval(year=int(MAX_YEAR_RANGE)) + tarantool.Interval(year=1))
+
+    def test_subtraction_overflow(self):
+        self.assertRaisesRegex(
+            ValueError, re.escape(
+                f"value {-int(MAX_YEAR_RANGE) - 1} of year is out of "
+                f"allowed range [{-MAX_YEAR_RANGE}, {MAX_YEAR_RANGE}]"
+            ),
+            lambda: tarantool.Interval(year=-int(MAX_YEAR_RANGE)) - tarantool.Interval(year=1))
 
     @classmethod
     def tearDownClass(cls):
