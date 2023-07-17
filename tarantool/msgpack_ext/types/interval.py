@@ -16,6 +16,60 @@ id_map = {
     8: 'adjust',
 }
 
+# https://github.com/tarantool/tarantool/blob/ff57f990f359f6d7866c1947174d8ba0e97b1ea6/src/lua/datetime.lua#L112-L146
+SECS_PER_DAY = 86400
+
+MIN_DATE_YEAR = -5879610
+MIN_DATE_MONTH = 6
+MIN_DATE_DAY = 22
+MAX_DATE_YEAR = 5879611
+MAX_DATE_MONTH = 7
+MAX_DATE_DAY = 11
+
+AVERAGE_DAYS_YEAR = 365.25
+AVERAGE_WEEK_YEAR = AVERAGE_DAYS_YEAR / 7
+INT_MAX = 2147483647
+MAX_YEAR_RANGE = MAX_DATE_YEAR - MIN_DATE_YEAR
+MAX_MONTH_RANGE = MAX_YEAR_RANGE * 12
+MAX_WEEK_RANGE = MAX_YEAR_RANGE * AVERAGE_WEEK_YEAR
+MAX_DAY_RANGE = MAX_YEAR_RANGE * AVERAGE_DAYS_YEAR
+MAX_HOUR_RANGE = MAX_DAY_RANGE * 24
+MAX_MIN_RANGE = MAX_HOUR_RANGE * 60
+MAX_SEC_RANGE = MAX_DAY_RANGE * SECS_PER_DAY
+MAX_NSEC_RANGE = INT_MAX
+
+max_val = {
+    'year': MAX_YEAR_RANGE,
+    'month': MAX_MONTH_RANGE,
+    'week': MAX_WEEK_RANGE,
+    'day': MAX_DAY_RANGE,
+    'hour': MAX_HOUR_RANGE,
+    'minute': MAX_MIN_RANGE,
+    'sec': MAX_SEC_RANGE,
+    'nsec': MAX_NSEC_RANGE,
+}
+
+
+def verify_range(intv):
+    """
+    Check allowed values. Approach is the same as in tarantool/tarantool.
+
+    :param intv: Raw interval to verify.
+    :type intv: :class:`~tarantool.Interval`
+
+    :raise: :exc:`ValueError`
+
+    :meta private:
+    """
+
+    for field_name, range_max in max_val.items():
+        val = getattr(intv, field_name)
+        # Tarantool implementation has a bug
+        # https://github.com/tarantool/tarantool/issues/8878
+        if (val > range_max) or (val < -range_max):
+            raise ValueError(f"value {val} of {field_name} is out of "
+                             f"allowed range [{-range_max}, {range_max}]")
+
 
 # https://github.com/tarantool/c-dt/blob/cec6acebb54d9e73ea0b99c63898732abd7683a6/dt_arithmetic.h#L34
 class Adjust(Enum):
@@ -92,6 +146,8 @@ class Interval():
         :param adjust: Interval adjustment rule. Refer to
             :meth:`~tarantool.Datetime.__add__`.
         :type adjust: :class:`~tarantool.IntervalAdjust`, optional
+
+        :raise: :exc:`ValueError`
         """
 
         self.year = year
@@ -103,6 +159,8 @@ class Interval():
         self.sec = sec
         self.nsec = nsec
         self.adjust = adjust
+
+        verify_range(self)
 
     def __add__(self, other):
         """

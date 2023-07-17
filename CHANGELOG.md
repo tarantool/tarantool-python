@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+- Validate `tarantool.Interval` limits with the same rules as in Tarantool.
+
 ### Fixed
 - `tarantool.Interval` arithmetic with weeks
 - `tarantool.Interval` weeks display in `str()` and `repr()`
