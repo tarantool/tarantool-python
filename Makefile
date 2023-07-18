@@ -4,7 +4,7 @@ install:
 
 
 PYTHON_FILES=tarantool test setup.py docs/source/conf.py
-TEXT_FILES=README.rst docs/source/*.rst
+TEXT_FILES=README.rst CHANGELOG.md docs/source/*.rst
 .PHONY: lint
 lint:
 	python3 -m pylint --recursive=y $(PYTHON_FILES)
