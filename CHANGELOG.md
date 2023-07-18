@@ -207,7 +207,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support pandas way to build datetime from timestamp (PR #252).
 
   `timestamp_since_utc_epoch` is a parameter to set timestamp
-  convertion behavior for timezone-aware datetimes.
+  conversion behavior for timezone-aware datetimes.
 
   If ``False`` (default), behaves similar to Tarantool `datetime.new()`:
 
@@ -227,7 +227,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Thus, if ``False``, datetime is computed from timestamp
   since epoch and then timezone is applied without any
-  convertion. In that case, `dt.timestamp` won't be equal to
+  conversion. In that case, `dt.timestamp` won't be equal to
   initialization `timestamp` for all timezones with non-zero offset.
 
   If ``True``, behaves similar to `pandas.Timestamp`:
