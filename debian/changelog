@@ -1,3 +1,22 @@
+python3-tarantool (1.1.1-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces various datetime interval fixes and quality of life
+    improvements.
+
+    ## Breaking changes
+    - Forbid to create datetime intervals out of Tarantool limits (PR #302).
+
+    ## Changed
+    - Validate `tarantool.Interval` limits with the same rules as in Tarantool (PR #302).
+
+    ## Fixed
+    - `tarantool.Interval` arithmetic with weeks (PR #302).
+    - `tarantool.Interval` weeks display in `str()` and `repr()` (PR #302).
+
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Wed, 19 Jul 2023 18:00:00 +0300
+
 python3-tarantool (1.1.0-0) unstable; urgency=medium
 
     ## Overview
