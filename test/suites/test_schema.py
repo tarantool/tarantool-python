@@ -1,7 +1,7 @@
 """
 This module tests space and index schema fetch.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring,fixme,too-many-public-methods,too-many-branches,too-many-statements
+# pylint: disable=missing-class-docstring,missing-function-docstring,fixme,too-many-public-methods,too-many-branches,too-many-statements,duplicate-code
 
 import sys
 import unittest
@@ -12,6 +12,7 @@ from tarantool.error import NotSupportedError
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_constraints_test
+from .utils import assert_admin_success
 
 
 # FIXME: I'm quite sure that there is a simpler way to count
@@ -54,29 +55,35 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
         cls.srv = TarantoolServer()
         cls.srv.script = 'test/suites/box.lua'
         cls.srv.start()
-        cls.srv.admin("box.schema.user.create('test', {password = 'test', if_not_exists = true})")
-        cls.srv.admin("box.schema.user.grant('test', 'read,write,execute', 'universe')")
+        resp = cls.srv.admin("""
+            box.schema.user.create('test', {password = 'test', if_not_exists = true})
+            box.schema.user.grant('test', 'read,write,execute', 'universe',
+                                  nil, {if_not_exists = true})
 
-        # Create server_function and tester space (for fetch_schema opt testing purposes).
-        cls.srv.admin("function server_function() return 2+2 end")
-        cls.srv.admin("""
-        box.schema.create_space(
-            'tester', {
-            format = {
-                {name = 'id', type = 'unsigned'},
-                {name = 'name', type = 'string', is_nullable = true},
-            }
-        })
+            function server_function() return 2+2 end
+
+            box.schema.create_space(
+                'tester', {
+                format = {
+                    {name = 'id', type = 'unsigned'},
+                    {name = 'name', type = 'string', is_nullable = true},
+                },
+                if_not_exists = true,
+            })
+
+            box.space.tester:create_index(
+                'primary_index', {
+                parts = {
+                    {field = 1, type = 'unsigned'},
+                },
+                if_not_exists = true,
+            })
+
+            box.space.tester:insert({1, null})
+
+            return true
         """)
-        cls.srv.admin("""
-        box.space.tester:create_index(
-            'primary_index', {
-            parts = {
-                {field = 1, type = 'unsigned'},
-            }
-        })
-        """)
-        cls.srv.admin("box.space.tester:insert({1, null})")
+        assert_admin_success(resp)
 
         cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'],
                                        encoding=cls.encoding, user='test', password='test')
@@ -112,31 +119,34 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
         """)
 
         if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
-            cls.srv.admin("""
-            box.schema.create_space(
-                'constr_tester_1', {
-                format = {
-                    { name = 'id', type = 'unsigned' },
-                    { name = 'payload', type = 'number' },
-                }
-            })
-            box.space.constr_tester_1:create_index('I1', { parts = {'id'} })
+            resp = cls.srv.admin("""
+                box.schema.create_space(
+                    'constr_tester_1', {
+                    format = {
+                        { name = 'id', type = 'unsigned' },
+                        { name = 'payload', type = 'number' },
+                    }
+                })
+                box.space.constr_tester_1:create_index('I1', { parts = {'id'} })
 
-            box.space.constr_tester_1:replace({1, 999})
+                box.space.constr_tester_1:replace({1, 999})
 
-            box.schema.create_space(
-                'constr_tester_2', {
-                format = {
-                    { name = 'id', type = 'unsigned' },
-                    { name = 'table1_id', type = 'unsigned',
-                      foreign_key = { fk_video = { space = 'constr_tester_1', field = 'id' } },
-                    },
-                    { name = 'payload', type = 'number' },
-                }
-            })
-            box.space.constr_tester_2:create_index('I1', { parts = {'id'} })
-            box.space.constr_tester_2:create_index('I2', { parts = {'table1_id'} })
+                box.schema.create_space(
+                    'constr_tester_2', {
+                    format = {
+                        { name = 'id', type = 'unsigned' },
+                        { name = 'table1_id', type = 'unsigned',
+                          foreign_key = { fk_video = { space = 'constr_tester_1', field = 'id' } },
+                        },
+                        { name = 'payload', type = 'number' },
+                    }
+                })
+                box.space.constr_tester_2:create_index('I1', { parts = {'id'} })
+                box.space.constr_tester_2:create_index('I2', { parts = {'table1_id'} })
+
+                return true
             """)
+            assert_admin_success(resp)
 
     def setUp(self):
         # prevent a remote tarantool from clean our session
@@ -603,10 +613,13 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
         # We need to drop spaces with foreign keys with predetermined order,
         # otherwise remote server clean() will fail to clean up resources.
         if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
-            cls.srv.admin("""
-            box.space.constr_tester_2:drop()
-            box.space.constr_tester_1:drop()
+            resp = cls.srv.admin("""
+                box.space.constr_tester_2:drop()
+                box.space.constr_tester_1:drop()
+
+                return true
             """)
+            assert_admin_success(resp)
 
         cls.con.close()
         cls.con_schema_disable.close()

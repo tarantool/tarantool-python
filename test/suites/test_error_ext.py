@@ -15,6 +15,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_error_ext_type_test
+from .utils import assert_admin_success
 
 
 class TestSuiteErrorExt(unittest.TestCase):
@@ -27,18 +28,23 @@ class TestSuiteErrorExt(unittest.TestCase):
         cls.srv.start()
 
         cls.adm = cls.srv.admin
-        cls.adm(r"""
-            box.schema.space.create('test')
+        resp = cls.adm("""
+            box.schema.space.create('test', {if_not_exists = true})
             box.space['test']:create_index('primary', {
                 type = 'tree',
                 parts = {1, 'string'},
-                unique = true})
+                unique = true,
+                if_not_exists = true})
 
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
-            box.schema.user.grant('test', 'read,write,execute,create', 'universe')
+            box.schema.user.grant('test', 'read,write,execute,create', 'universe',
+                                  nil, {if_not_exists = true})
 
             box.schema.user.create('no_grants', {if_not_exists = true})
+
+            return true
         """)
+        assert_admin_success(resp)
 
         cls.conn_encoding_utf8 = tarantool.Connection(
             cls.srv.host, cls.srv.args['primary'],
@@ -78,7 +84,11 @@ class TestSuiteErrorExt(unittest.TestCase):
         if self.srv.is_started():
             self.srv.touch_lock()
 
-        self.adm("box.space['test']:truncate()")
+        resp = self.adm("""
+            box.space['test']:truncate()
+            return true
+        """)
+        assert_admin_success(resp)
 
     # msgpack data for different encodings are actually the same,
     # but sometimes python msgpack module use different string

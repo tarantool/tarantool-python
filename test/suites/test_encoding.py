@@ -1,16 +1,18 @@
 """
 This module tests various type encoding cases.
 """
-# pylint: disable=missing-class-docstring,missing-function-docstring
+# pylint: disable=missing-class-docstring,missing-function-docstring,duplicate-code
 
 import sys
 import unittest
+import pkg_resources
 
 import tarantool
 from tarantool.error import DatabaseError
 
 from .lib.skip import skip_or_run_varbinary_test, skip_or_run_error_extra_info_test
 from .lib.tarantool_server import TarantoolServer
+from .utils import assert_admin_success
 
 
 class TestSuiteEncoding(unittest.TestCase):
@@ -24,10 +26,14 @@ class TestSuiteEncoding(unittest.TestCase):
         cls.srv.script = 'test/suites/box.lua'
         cls.srv.start()
 
-        cls.srv.admin("""
-            box.schema.user.create('test', { password = 'test' })
-            box.schema.user.grant('test', 'execute,read,write', 'universe')
+        resp = cls.srv.admin("""
+            box.schema.user.create('test', { password = 'test', if_not_exists = true })
+            box.schema.user.grant('test', 'execute,read,write', 'universe',
+                                  nil, {if_not_exists = true})
+
+            return true
         """)
+        assert_admin_success(resp)
 
         args = [cls.srv.host, cls.srv.args['primary']]
         kwargs = {'user': 'test', 'password': 'test'}
@@ -35,41 +41,47 @@ class TestSuiteEncoding(unittest.TestCase):
         cls.con_encoding_none = tarantool.Connection(*args, encoding=None, **kwargs)
         cls.conns = [cls.con_encoding_utf8, cls.con_encoding_none]
 
-        cls.srv.admin("box.schema.create_space('space_str')")
-        cls.srv.admin("""
+        resp = cls.srv.admin("""
+            box.schema.create_space('space_str', {if_not_exists = true})
             box.space['space_str']:create_index('primary', {
                 type = 'tree',
                 parts = {1, 'str'},
-                unique = true})
-        """.replace('\n', ' '))
+                unique = true,
+                if_not_exists = true})
 
-        cls.srv.admin("box.schema.create_space('space_varbin')")
-        cls.srv.admin(r"""
-            box.space['space_varbin']:format({
-                {
-                    'id',
-                    type = 'number',
-                    is_nullable = false
-                },
-                {
-                    'varbin',
-                    type = 'varbinary',
-                    is_nullable = false,
-                }
-            })
-        """.replace('\n', ' '))
-        cls.srv.admin("""
-            box.space['space_varbin']:create_index('id', {
-                type = 'tree',
-                parts = {1, 'number'},
-                unique = true})
-        """.replace('\n', ' '))
-        cls.srv.admin("""
-            box.space['space_varbin']:create_index('varbin', {
-                type = 'tree',
-                parts = {2, 'varbinary'},
-                unique = true})
-        """.replace('\n', ' '))
+            return true
+        """)
+        assert_admin_success(resp)
+
+        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.2.1'):
+            resp = cls.srv.admin("""
+                box.schema.create_space('space_varbin', {if_not_exists = true})
+                box.space['space_varbin']:format({
+                    {
+                        'id',
+                        type = 'number',
+                        is_nullable = false
+                    },
+                    {
+                        'varbin',
+                        type = 'varbinary',
+                        is_nullable = false,
+                    }
+                })
+                box.space['space_varbin']:create_index('id', {
+                    type = 'tree',
+                    parts = {1, 'number'},
+                    unique = true,
+                    if_not_exists = true})
+                box.space['space_varbin']:create_index('varbin', {
+                    type = 'tree',
+                    parts = {2, 'varbinary'},
+                    unique = true,
+                    if_not_exists = true})
+
+                    return true
+            """)
+            assert_admin_success(resp)
 
     def assertNotRaises(self, func, *args, **kwargs):
         try:

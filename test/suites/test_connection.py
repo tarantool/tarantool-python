@@ -5,8 +5,9 @@ This module tests basic connection behavior.
 
 import sys
 import unittest
-
 import decimal
+
+import pkg_resources
 import msgpack
 
 import tarantool
@@ -14,6 +15,7 @@ import tarantool.msgpack_ext.decimal as ext_decimal
 
 from .lib.skip import skip_or_run_decimal_test, skip_or_run_varbinary_test
 from .lib.tarantool_server import TarantoolServer
+from .utils import assert_admin_success
 
 
 class TestSuiteConnection(unittest.TestCase):
@@ -26,35 +28,48 @@ class TestSuiteConnection(unittest.TestCase):
         cls.srv.start()
 
         cls.adm = cls.srv.admin
-        cls.adm(r"""
+        resp = cls.adm("""
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
-            box.schema.user.grant('test', 'read,write,execute', 'universe')
+            box.schema.user.grant('test', 'read,write,execute', 'universe',
+                                  nil, {if_not_exists = true})
 
-            box.schema.create_space('space_varbin')
-
-            box.space['space_varbin']:format({
-                {
-                    'id',
-                    type = 'number',
-                    is_nullable = false
-                },
-                {
-                    'varbin',
-                    type = 'varbinary',
-                    is_nullable = false,
-                }
-            })
-
-            box.space['space_varbin']:create_index('id', {
-                type = 'tree',
-                parts = {1, 'number'},
-                unique = true})
-
-            box.space['space_varbin']:create_index('varbin', {
-                type = 'tree',
-                parts = {2, 'varbinary'},
-                unique = true})
+            return true
         """)
+        assert_admin_success(resp)
+
+        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.2.1'):
+            resp = cls.adm("""
+                box.schema.create_space('space_varbin', {if_not_exists = true})
+
+                box.space['space_varbin']:format({
+                    {
+                        'id',
+                        type = 'number',
+                        is_nullable = false
+                    },
+                    {
+                        'varbin',
+                        type = 'varbinary',
+                        is_nullable = false,
+                    }
+                })
+
+                box.space['space_varbin']:create_index('id', {
+                    type = 'tree',
+                    parts = {1, 'number'},
+                    unique = true,
+                    if_not_exists = true})
+
+                box.space['space_varbin']:create_index('varbin', {
+                    type = 'tree',
+                    parts = {2, 'varbinary'},
+                    unique = true,
+                    if_not_exists = true})
+
+                return true
+            """)
+            assert_admin_success(resp)
+
         cls.con = None
 
     def setUp(self):

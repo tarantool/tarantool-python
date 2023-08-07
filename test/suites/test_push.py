@@ -7,68 +7,58 @@ import sys
 import unittest
 import tarantool
 from .lib.tarantool_server import TarantoolServer
+from .utils import assert_admin_success
 
 
 def create_server():
     srv = TarantoolServer()
     srv.script = 'test/suites/box.lua'
     srv.start()
-    srv.admin("box.schema.user.create('test', {password = 'test', "
-              "if_not_exists = true})")
-    srv.admin("box.schema.user.grant('test', 'read,write,execute', 'universe')")
+    resp = srv.admin("""
+        box.schema.user.create('test', {password = 'test', if_not_exists = true})
+        box.schema.user.grant('test', 'read,write,execute', 'universe',
+                              nil, {if_not_exists = true})
 
-    # Create server_function (for testing purposes).
-    srv.admin("""
-    function server_function()
-        x = {0,0}
-        while x[1] < 3 do
-            x[1] = x[1] + 1
-            box.session.push(x)
+        function server_function()
+            x = {0,0}
+            while x[1] < 3 do
+                x[1] = x[1] + 1
+                box.session.push(x)
+            end
+            return x
         end
-        return x
-    end
-    """)
 
-    # Create tester space and on_replace trigger (for testing purposes).
-    srv.admin("""
-    box.schema.create_space(
-        'tester', {
-        format = {
-            {name = 'id', type = 'unsigned'},
-            {name = 'name', type = 'string'},
-        }
-    })
-    """)
-    srv.admin("""
-    box.space.tester:create_index(
-        'primary_index', {
-        parts = {
-            {field = 1, type = 'unsigned'},
-        }
-    })
-    """)
-    srv.admin("""
-    box.space.tester:create_index(
-        'primary_index', {
-        parts = {
-            {field = 1, type = 'unsigned'},
-        }
-    })
-    """)
-    srv.admin("""
-    function on_replace_callback()
-        x = {0,0}
-        while x[1] < 300 do
-            x[1] = x[1] + 100
-            box.session.push(x)
+        box.schema.create_space(
+            'tester', {
+            format = {
+                {name = 'id', type = 'unsigned'},
+                {name = 'name', type = 'string'},
+            }
+        })
+
+        box.space.tester:create_index(
+            'primary_index', {
+            parts = {
+                {field = 1, type = 'unsigned'},
+            },
+            if_not_exists = true,
+        })
+
+        function on_replace_callback()
+            x = {0,0}
+            while x[1] < 300 do
+                x[1] = x[1] + 100
+                box.session.push(x)
+            end
         end
-    end
+
+        box.space.tester:on_replace(
+            on_replace_callback
+        )
+
+        return true
     """)
-    srv.admin("""
-    box.space.tester:on_replace(
-        on_replace_callback
-    )
-    """)
+    assert_admin_success(resp)
 
     return srv
 
