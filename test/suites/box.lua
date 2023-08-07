@@ -19,3 +19,5 @@ box.cfg{
     pid_file     = "box.pid",
     auth_type    = (auth_type:len() > 0) and auth_type or nil,
 }
+
+rawset(_G, 'ready', true)

@@ -302,27 +302,22 @@ class TarantoolServer():
 
         return shlex.split(self.binary if not self.script else self.script_dst)
 
-    def wait_until_started(self):
+    def wait_until_ready(self):
         """
-        Wait until server is started.
+        Wait until server is configured and ready to work.
 
         Server consists of two parts:
         1) wait until server is listening on sockets
-        2) wait until server tells us his status
+        2) wait until server finishes executing its script
         """
 
         while True:
             try:
                 temp = TarantoolAdmin('0.0.0.0', self.args['admin'])
-                while True:
-                    ans = temp('box.info.status')[0]
-                    if ans in ('running', 'hot_standby', 'orphan') or ans.startswith('replica'):
-                        temp.disconnect()
-                        return True
-                    if ans in ('loading',):
-                        continue
-
-                    raise ValueError(f"Strange output for `box.info.status`: {ans}")
+                ans = temp('ready')[0]
+                temp.disconnect()
+                if isinstance(ans, bool) and ans:
+                    return True
             except socket.error as exc:
                 if exc.errno == errno.ECONNREFUSED:
                     time.sleep(0.1)
@@ -352,7 +347,7 @@ class TarantoolServer():
                                         cwd=self.vardir,
                                         stdout=self.log_des,
                                         stderr=self.log_des)
-        self.wait_until_started()
+        self.wait_until_ready()
 
     def stop(self):
         """

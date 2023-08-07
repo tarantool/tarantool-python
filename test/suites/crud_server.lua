@@ -91,3 +91,5 @@ if crud_imported == false or vshard_imported == false then
 else
     configure_crud_instance(primary_listen, crud, vshard)
 end
+
+rawset(_G, 'ready', true)
