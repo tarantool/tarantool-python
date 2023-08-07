@@ -262,16 +262,16 @@ jobs:
       - name: Setup WSL for tarantool
         uses: Vampire/setup-wsl@v2
         with:
-          distribution: Ubuntu-20.04
+          distribution: Ubuntu-22.04
 
       - name: Install tarantool ${{ matrix.tarantool }} for WSL (2.10 and newer)
-        shell: wsl-bash_Ubuntu-20.04 {0}
+        shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
           curl -L https://tarantool.io/release/2/installer.sh | bash -s
           sudo apt install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
 
       - name: Setup test tarantool instance
-        shell: wsl-bash_Ubuntu-20.04 {0}
+        shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
           rm -f ./tarantool.pid ./tarantool.log
           TNT_PID=$(tarantool ./test/suites/lib/tarantool_python_ci.lua > tarantool.log 2>&1 & echo $!)
@@ -286,7 +286,7 @@ jobs:
 
       - name: Stop test tarantool instance
         if: ${{ always() }}
-        shell: wsl-bash_Ubuntu-20.04 {0}
+        shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
           cat tarantool.log || true
           kill $(cat tarantool.pid) || true
@@ -334,16 +334,16 @@ jobs:
       - name: Setup WSL for tarantool
         uses: Vampire/setup-wsl@v2
         with:
-          distribution: Ubuntu-20.04
+          distribution: Ubuntu-22.04
 
       - name: Install tarantool ${{ matrix.tarantool }} for WSL
-        shell: wsl-bash_Ubuntu-20.04 {0}
+        shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
           curl -L https://tarantool.io/release/2/installer.sh | bash -s
           sudo apt install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
 
       - name: Setup test tarantool instance
-        shell: wsl-bash_Ubuntu-20.04 {0}
+        shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
           rm -f ./tarantool.pid ./tarantool.log
           TNT_PID=$(tarantool ./test/suites/lib/tarantool_python_ci.lua > tarantool.log 2>&1 & echo $!)
@@ -358,7 +358,7 @@ jobs:
 
       - name: Stop test tarantool instance
         if: ${{ always() }}
-        shell: wsl-bash_Ubuntu-20.04 {0}
+        shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
           cat tarantool.log || true
           kill $(cat tarantool.pid) || true
