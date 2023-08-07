@@ -16,6 +16,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test, skip_or_run_datetime_2_11_test
+from .utils import assert_admin_success
 
 
 class TestSuiteDatetime(unittest.TestCase):
@@ -28,25 +29,28 @@ class TestSuiteDatetime(unittest.TestCase):
         cls.srv.start()
 
         cls.adm = cls.srv.admin
-        cls.adm(r"""
+        resp = cls.adm("""
             _, datetime = pcall(require, 'datetime')
 
-            box.schema.space.create('test')
+            box.schema.space.create('test', {if_not_exists = true})
             box.space['test']:create_index('primary', {
                 type = 'tree',
                 parts = {1, 'string'},
-                unique = true})
+                unique = true,
+                if_not_exists = true})
 
             pcall(function()
                 box.schema.space.create('test_pk')
                 box.space['test_pk']:create_index('primary', {
                     type = 'tree',
                     parts = {1, 'datetime'},
-                    unique = true})
+                    unique = true,
+                if_not_exists = true})
             end)
 
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
-            box.schema.user.grant('test', 'read,write,execute', 'universe')
+            box.schema.user.grant('test', 'read,write,execute', 'universe',
+                                  nil, {if_not_exists = true})
 
             local function add(arg1, arg2)
                 return arg1 + arg2
@@ -57,7 +61,10 @@ class TestSuiteDatetime(unittest.TestCase):
                 return arg1 - arg2
             end
             rawset(_G, 'sub', sub)
+
+            return true
         """)
+        assert_admin_success(resp)
 
         cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'],
                                        user='test', password='test')
@@ -67,7 +74,11 @@ class TestSuiteDatetime(unittest.TestCase):
         if self.srv.is_started():
             self.srv.touch_lock()
 
-        self.adm("box.space['test']:truncate()")
+        resp = self.adm("""
+            box.space['test']:truncate()
+            return true
+        """)
+        assert_admin_success(resp)
 
     def test_datetime_class_api(self):
         datetime = tarantool.Datetime(year=2022, month=8, day=31, hour=18, minute=7, sec=54,

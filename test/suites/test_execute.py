@@ -9,6 +9,7 @@ import unittest
 import tarantool
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_sql_test
+from .utils import assert_admin_success
 
 
 class TestSuiteExecute(unittest.TestCase):
@@ -32,16 +33,20 @@ class TestSuiteExecute(unittest.TestCase):
         cls.srv.start()
         cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])
 
+        # grant full access to guest
+        resp = cls.srv.admin("""
+            box.schema.user.grant('guest', 'create,read,write,execute', 'universe',
+                                  nil, {if_not_exists = true})
+            return true
+        """)
+        assert_admin_success(resp)
+
     @skip_or_run_sql_test
     def setUp(self):
         # prevent a remote tarantool from clean our session
         if self.srv.is_started():
             self.srv.touch_lock()
         self.con.flush_schema()
-
-        # grant full access to guest
-        self.srv.admin("box.schema.user.grant('guest', 'create,read,write,"
-                       "execute', 'universe')")
 
     @classmethod
     def tearDownClass(cls):

@@ -26,6 +26,7 @@ from tarantool.msgpack_ext.types.interval import (
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_datetime_test
+from .utils import assert_admin_success
 
 
 class TestSuiteInterval(unittest.TestCase):
@@ -38,17 +39,19 @@ class TestSuiteInterval(unittest.TestCase):
         cls.srv.start()
 
         cls.adm = cls.srv.admin
-        cls.adm(r"""
+        resp = cls.adm("""
             _, datetime = pcall(require, 'datetime')
 
-            box.schema.space.create('test')
+            box.schema.space.create('test', {if_not_exists = true})
             box.space['test']:create_index('primary', {
                 type = 'tree',
                 parts = {1, 'string'},
-                unique = true})
+                unique = true,
+                if_not_exists = true})
 
             box.schema.user.create('test', {password = 'test', if_not_exists = true})
-            box.schema.user.grant('test', 'read,write,execute', 'universe')
+            box.schema.user.grant('test', 'read,write,execute', 'universe',
+                                  nil, {if_not_exists = true})
 
             local function add(arg1, arg2)
                 return arg1 + arg2
@@ -59,7 +62,10 @@ class TestSuiteInterval(unittest.TestCase):
                 return arg1 - arg2
             end
             rawset(_G, 'sub', sub)
+
+            return true
         """)
+        assert_admin_success(resp)
 
         cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'],
                                        user='test', password='test')
@@ -69,7 +75,11 @@ class TestSuiteInterval(unittest.TestCase):
         if self.srv.is_started():
             self.srv.touch_lock()
 
-        self.adm("box.space['test']:truncate()")
+        resp = self.adm("""
+            box.space['test']:truncate()
+            return true
+        """)
+        assert_admin_success(resp)
 
     def test_interval_positional_init(self):
         self.assertRaisesRegex(

@@ -16,18 +16,23 @@ from tarantool.error import (
     ClusterDiscoveryWarning,
 )
 from .lib.tarantool_server import TarantoolServer
+from .utils import assert_admin_success
 
 
 def create_server(_id):
     srv = TarantoolServer()
     srv.script = 'test/suites/box.lua'
     srv.start()
-    srv.admin("box.schema.user.create('test', {password = 'test', "
-              "if_not_exists = true})")
-    srv.admin("box.schema.user.grant('test', 'execute', 'universe')")
+    resp = srv.admin(f"""
+        box.schema.user.create('test', {{password = 'test', if_not_exists = true}})
+        box.schema.user.grant('test', 'execute', 'universe',
+                              nil, {{if_not_exists = true}})
 
-    # Create srv_id function (for testing purposes).
-    srv.admin(f"function srv_id() return {_id} end")
+        function srv_id() return {_id} end
+
+        return true
+    """)
+    assert_admin_success(resp)
     return srv
 
 
@@ -43,18 +48,22 @@ class TestSuiteMesh(unittest.TestCase):
             function {func_name}()
                 return {{{addresses_lua}}}
             end
+            return true
         """
         for srv in self.servers:
-            srv.admin(func_body)
+            resp = srv.admin(func_body)
+            assert_admin_success(resp)
 
     def define_custom_cluster_function(self, func_name, retval):
         func_body = f"""
             function {func_name}()
                 return {retval}
             end
+            return true
         """
         for srv in self.servers:
-            srv.admin(func_body)
+            resp = srv.admin(func_body)
+            assert_admin_success(resp)
 
     @classmethod
     def setUpClass(cls):
@@ -99,7 +108,11 @@ class TestSuiteMesh(unittest.TestCase):
             # Start instance#1, stop instance#2 -- response from
             # instance#1 again.
             self.srv.start()
-            self.srv.admin('function srv_id() return 1 end')
+            resp = self.srv.admin("""
+                function srv_id() return 1 end
+                return true
+            """)
+            assert_admin_success(resp)
             self.srv2.stop()
             assert_srv_id(con, 1)
 

@@ -20,31 +20,46 @@ from tarantool.error import (
 
 from .lib.skip import skip_or_run_sql_test
 from .lib.tarantool_server import TarantoolServer
+from .utils import assert_admin_success
 
 
 def create_server(_id):
     srv = TarantoolServer()
     srv.script = 'test/suites/box.lua'
     srv.start()
-    srv.admin("box.schema.user.create('test', {password = 'test', "
-              "if_not_exists = true})")
-    srv.admin("box.schema.user.grant('test', 'execute', 'universe')")
-    srv.admin("box.schema.space.create('test')")
-    srv.admin(r"box.space.test:format({"
-              r" { name = 'pk', type = 'string' },"
-              r" { name = 'id', type = 'number', is_nullable = true }"
-              r"})")
-    srv.admin(r"box.space.test:create_index('pk',"
-              r"{ unique = true,"
-              r"  parts = {{field = 1, type = 'string'}}})")
-    srv.admin(r"box.space.test:create_index('id',"
-              r"{ unique = true,"
-              r"  parts = {{field = 2, type = 'number', is_nullable=true}}})")
-    srv.admin("box.schema.user.grant('test', 'read,write', 'space', 'test')")
-    srv.admin("json = require('json')")
+    resp = srv.admin(f"""
+        box.schema.user.create('test', {{password = 'test', if_not_exists = true}})
+        box.schema.user.grant('test', 'execute', 'universe',
+                              nil, {{if_not_exists = true}})
+        box.schema.space.create('test', {{if_not_exists = true}})
+        box.space.test:format({{
+            {{ name = 'pk', type = 'string' }},
+            {{ name = 'id', type = 'number', is_nullable = true }}
+        }})
+        box.space.test:create_index('pk',
+            {{
+                unique = true,
+                parts = {{
+                    {{field = 1, type = 'string'}}
+                }},
+                if_not_exists = true,
+            }})
+        box.space.test:create_index('id',
+            {{
+                unique = true,
+                parts = {{
+                    {{field = 2, type = 'number', is_nullable=true}}
+                }},
+                if_not_exists = true,
+            }})
+        box.schema.user.grant('test', 'read,write', 'space', 'test', {{if_not_exists = true}})
+        json = require('json')
 
-    # Create srv_id function (for testing purposes).
-    srv.admin(f"function srv_id() return {_id} end")
+        function srv_id() return {_id} end
+
+        return true
+    """)
+    assert_admin_success(resp)
     return srv
 
 
@@ -53,11 +68,12 @@ def create_server(_id):
 class TestSuitePool(unittest.TestCase):
     def set_ro(self, srv, read_only):
         if read_only:
-            req = r'box.cfg{read_only = true}'
+            req = r'box.cfg{read_only = true}; return true'
         else:
-            req = r'box.cfg{read_only = false}'
+            req = r'box.cfg{read_only = false}; return true'
 
-        srv.admin(req)
+        resp = srv.admin(req)
+        assert_admin_success(resp)
 
     def set_cluster_ro(self, read_only_list):
         assert len(self.servers) == len(read_only_list)

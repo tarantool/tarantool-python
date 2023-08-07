@@ -10,6 +10,7 @@ from tarantool.error import DatabaseError
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_error_extra_info_test
+from .utils import assert_admin_success
 
 
 class TestSuiteRequest(unittest.TestCase):
@@ -22,29 +23,35 @@ class TestSuiteRequest(unittest.TestCase):
         cls.srv.start()
         cls.con = tarantool.Connection(cls.srv.host, cls.srv.args['primary'])
         cls.adm = cls.srv.admin
-        cls.space_created = cls.adm("box.schema.create_space('space_1')")
-        cls.adm("""
-        box.space['space_1']:create_index('primary', {
-            type = 'tree',
-            parts = {1, 'num'},
-            unique = true})
-        """.replace('\n', ' '))
-        cls.adm("""
-        box.space['space_1']:create_index('secondary', {
-            type = 'tree',
-            parts = {2, 'num', 3, 'str'},
-            unique = false})
-        """.replace('\n', ' '))
-        cls.space_created = cls.adm("box.schema.create_space('space_2')")
-        cls.adm("""
-        box.space['space_2']:create_index('primary', {
-            type = 'hash',
-            parts = {1, 'num'},
-            unique = true})
-        """.replace('\n', ' '))
-        cls.adm("json = require('json')")
-        cls.adm("fiber = require('fiber')")
-        cls.adm("uuid = require('uuid')")
+        cls.space_created = cls.adm("box.schema.create_space('space_1', {if_not_exists = true})")
+        resp = cls.adm("""
+            box.space['space_1']:create_index('primary', {
+                type = 'tree',
+                parts = {1, 'num'},
+                unique = true,
+                if_not_exists = true})
+
+            box.space['space_1']:create_index('secondary', {
+                type = 'tree',
+                parts = {2, 'num', 3, 'str'},
+                unique = false,
+                if_not_exists = true})
+
+            box.schema.create_space('space_2', {if_not_exists = true})
+
+            box.space['space_2']:create_index('primary', {
+                type = 'hash',
+                parts = {1, 'num'},
+                unique = true,
+                if_not_exists = true})
+
+            json = require('json')
+            fiber = require('fiber')
+            uuid = require('uuid')
+
+            return true
+        """)
+        assert_admin_success(resp)
 
         if not sys.platform.startswith("win"):
             cls.sock_srv = TarantoolServer(create_unix_socket=True)
@@ -60,10 +67,11 @@ class TestSuiteRequest(unittest.TestCase):
 
     def test_00_00_authenticate(self):
         self.assertIsNone(self.srv.admin("""
-        box.schema.user.create('test', { password = 'test' })
+        box.schema.user.create('test', { password = 'test', if_not_exists = true })
         """))
         self.assertIsNone(self.srv.admin("""
-        box.schema.user.grant('test', 'execute,read,write', 'universe')
+        box.schema.user.grant('test', 'execute,read,write', 'universe',
+                              nil, {if_not_exists = true})
         """))
         self.assertEqual(self.con.authenticate('test', 'test')._data, None)
 
@@ -311,7 +319,7 @@ class TestSuiteRequest(unittest.TestCase):
             space.select((), iterator=tarantool.const.ITERATOR_EQ)
 
     def test_12_update_fields(self):
-        self.srv.admin(
+        resp = self.srv.admin(
             """
             do
                 local sp = box.schema.create_space('sp', {
@@ -325,7 +333,9 @@ class TestSuiteRequest(unittest.TestCase):
                     parts = {1, 'unsigned'}
                 })
             end
+            return true
             """)
+        assert_admin_success(resp)
         self.con.insert('sp', [2, 'help', 4])
         self.assertSequenceEqual(
             self.con.update('sp', (2,), [('+', 'thi', 3)]),
