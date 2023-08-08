@@ -79,7 +79,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
                 if_not_exists = true,
             })
 
-            box.space.tester:insert({1, null})
+            box.space.tester:insert({1, nil})
 
             return true
         """)
