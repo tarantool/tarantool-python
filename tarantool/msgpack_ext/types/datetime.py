@@ -6,7 +6,6 @@ Tarantool `datetime`_ extension type implementation module.
 from calendar import monthrange
 from copy import deepcopy
 from datetime import datetime, timedelta
-import sys
 
 import pytz
 
@@ -314,13 +313,12 @@ class Datetime():
                     timestamp += nsec // NSEC_IN_SEC
                     nsec = nsec % NSEC_IN_SEC
 
-            if (sys.platform.startswith("win")) and (timestamp < 0):
-                # Fails to create a datetime from negative timestamp on Windows.
-                _datetime = _EPOCH + timedelta(seconds=timestamp)
-            else:
-                # Timezone-naive datetime objects are treated by many datetime methods
-                # as local times, so we represent time in UTC explicitly if not provided.
-                _datetime = datetime.fromtimestamp(timestamp, pytz.UTC)
+            # datetime.fromtimestamp may raise OverflowError, if the timestamp
+            # is out of the range of values supported by the platform C localtime()
+            # function, and OSError on localtime() failure. It’s common for this
+            # to be restricted to years from 1970 through 2038, yet we want
+            # to support a wider range.
+            _datetime = _EPOCH + timedelta(seconds=timestamp)
 
             if nsec is not None:
                 _datetime = _datetime.replace(microsecond=nsec // NSEC_IN_MKSEC)
