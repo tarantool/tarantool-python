@@ -22,6 +22,14 @@ def create_server():
     return srv
 
 
+def create_mock_server():
+    srv = TarantoolServer()
+    srv.script = 'test/suites/crud_mock_server.lua'
+    srv.start()
+
+    return srv
+
+
 @unittest.skipIf(sys.platform.startswith("win"),
                  "Crud tests on windows platform are not supported: "
                  "complexity of the vshard replicaset configuration")
@@ -33,14 +41,19 @@ class TestSuiteCrud(unittest.TestCase):
         print('-' * 70, file=sys.stderr)
         # Create server and extract helpful fields for tests.
         cls.srv = create_server()
+        cls.mock_srv = create_mock_server()
         cls.host = cls.srv.host
         cls.port = cls.srv.args['primary']
+        cls.mock_host = cls.mock_srv.host
+        cls.mock_port = cls.mock_srv.args['primary']
 
     def setUp(self):
         time.sleep(1)
         # Open connections to instance.
         self.conn = tarantool.Connection(host=self.host, port=self.port,
                                          user='guest', password='', fetch_schema=False)
+        self.mock_conn = tarantool.Connection(host=self.mock_host, port=self.mock_port,
+                                              user='guest', password='', fetch_schema=False)
         self.conn_mesh = tarantool.MeshConnection(host=self.host, port=self.port,
                                                   user='guest', password='', fetch_schema=False)
         self.conn_pool = tarantool.ConnectionPool([{'host': self.host, 'port': self.port}],
@@ -736,9 +749,15 @@ class TestSuiteCrud(unittest.TestCase):
                 # Exception try testing.
                 self._exception_operation_with_crud(testing_function, case, mode=tarantool.Mode.RW)
 
+    def test_error_rethrow(self):
+        self.assertRaisesRegex(
+            DatabaseError, "Unexpected connection error",
+            lambda: self.mock_conn.crud_replace('tester', [2, 100, 'Alice'], {'timeout': 10}))
+
     def tearDown(self):
         # Close connections to instance.
         self.conn.close()
+        self.mock_conn.close()
         self.conn_mesh.close()
         self.conn_pool.close()
 
@@ -747,3 +766,5 @@ class TestSuiteCrud(unittest.TestCase):
         # Stop instance.
         cls.srv.stop()
         cls.srv.clean()
+        cls.mock_srv.stop()
+        cls.mock_srv.clean()
