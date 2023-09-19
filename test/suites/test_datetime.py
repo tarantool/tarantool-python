@@ -153,6 +153,24 @@ class TestSuiteDatetime(unittest.TestCase):
             'type': ValueError,
             'msg': 'Failed to create datetime with ambiguous timezone "AET"'
         },
+        'under_min_timestamp_1': {
+            'args': [],
+            'kwargs': {'timestamp': -62135596801},
+            'type': OverflowError,
+            'msg': 'date value out of range'
+        },
+        'under_min_timestamp_2': {
+            'args': [],
+            'kwargs': {'timestamp': -62135596800, 'nsec': -1},
+            'type': OverflowError,
+            'msg': 'date value out of range'
+        },
+        'over_max_timestamp': {
+            'args': [],
+            'kwargs': {'timestamp': 253402300800},
+            'type': OverflowError,
+            'msg': 'date value out of range'
+        },
     }
 
     def test_datetime_class_invalid_init(self):
@@ -292,6 +310,28 @@ class TestSuiteDatetime(unittest.TestCase):
             'msgpack': (b'\x4a\x79\x0f\x63\x00\x00\x00\x00\x59\xff\x63\x12\xb4\x00\xb3\x03'),
             'tarantool': r"datetime.new({timestamp=1661969274, nsec=308543321, "
                          r"tz='Europe/Moscow'})",
+        },
+        'min_datetime': {  # Python datetime.MINYEAR is 1.
+            'python': tarantool.Datetime(year=1, month=1, day=1, hour=0, minute=0, sec=0),
+            'msgpack': (b'\x00\x09\x6e\x88\xf1\xff\xff\xff'),
+            'tarantool': r"datetime.new({year=1, month=1, day=1, hour=0, min=0, sec=0})",
+        },
+        'max_datetime': {  # Python datetime.MAXYEAR is 9999.
+            'python': tarantool.Datetime(year=9999, month=12, day=31, hour=23, minute=59, sec=59,
+                                         nsec=999999999),
+            'msgpack': (b'\x7f\x41\xf4\xff\x3a\x00\x00\x00\xff\xc9\x9a\x3b\x00\x00\x00\x00'),
+            'tarantool': r"datetime.new({year=9999, month=12, day=31, hour=23, min=59, sec=59,"
+                         r"nsec=999999999})",
+        },
+        'min_datetime_timestamp': {  # Python datetime.MINYEAR is 1.
+            'python': tarantool.Datetime(timestamp=-62135596800),
+            'msgpack': (b'\x00\x09\x6e\x88\xf1\xff\xff\xff'),
+            'tarantool': r"datetime.new({timestamp=-62135596800})",
+        },
+        'max_datetime_timestamp': {  # Python datetime.MAXYEAR is 9999.
+            'python': tarantool.Datetime(timestamp=253402300799, nsec=999999999),
+            'msgpack': (b'\x7f\x41\xf4\xff\x3a\x00\x00\x00\xff\xc9\x9a\x3b\x00\x00\x00\x00'),
+            'tarantool': r"datetime.new({timestamp=253402300799, nsec=999999999})",
         },
     }
 

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Exception rethrow in crud API (PR #310).
+- Work with timestamps larger than year 2038 for some platforms (like Windows) (PR #311).
+  It covers
+  - building new `tarantool.Datetime` objects from timestamp,
+  - parsing datetime objects received from Tarantool.
 
 ## 1.1.1 - 2023-07-19
 
