@@ -69,5 +69,6 @@ def call_crud(conn, *args):
         if exc.code in (ER_NO_SUCH_PROC, ER_ACCESS_DENIED):
             exc_msg = ". Ensure that you're calling crud.router and user has sufficient grants"
             raise DatabaseError(exc.code, exc.message + exc_msg, extra_info=exc.extra_info) from exc
+        raise exc
 
     return crud_resp
