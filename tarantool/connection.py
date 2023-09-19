@@ -2158,7 +2158,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.insert", space_name, values, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2192,7 +2192,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.insert_object", space_name, values, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2230,7 +2230,7 @@ class Connection(ConnectionInterface):
         if crud_resp[0] is not None:
             res = CrudResult(crud_resp[0])
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
@@ -2271,7 +2271,7 @@ class Connection(ConnectionInterface):
         if crud_resp[0] is not None:
             res = CrudResult(crud_resp[0])
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
@@ -2306,7 +2306,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.get", space_name, key, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2345,7 +2345,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.update", space_name, key, operations, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2377,7 +2377,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.delete", space_name, key, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2411,7 +2411,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.replace", space_name, values, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2445,7 +2445,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.replace_object", space_name, values, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2483,7 +2483,7 @@ class Connection(ConnectionInterface):
         if crud_resp[0] is not None:
             res = CrudResult(crud_resp[0])
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
@@ -2524,7 +2524,7 @@ class Connection(ConnectionInterface):
         if crud_resp[0] is not None:
             res = CrudResult(crud_resp[0])
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
@@ -2567,7 +2567,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.upsert", space_name, values, operations, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2608,7 +2608,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.upsert_object", space_name, values, operations, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2646,7 +2646,7 @@ class Connection(ConnectionInterface):
         if crud_resp[0] is not None:
             res = CrudResult(crud_resp[0])
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
@@ -2687,7 +2687,7 @@ class Connection(ConnectionInterface):
         if crud_resp[0] is not None:
             res = CrudResult(crud_resp[0])
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             errs = []
             for err in crud_resp[1]:
                 errs.append(CrudError(err))
@@ -2726,7 +2726,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.select", space_name, conditions, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2758,7 +2758,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.min", space_name, index_name, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2790,7 +2790,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.max", space_name, index_name, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return CrudResult(crud_resp[0])
@@ -2819,9 +2819,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.truncate", space_name, opts)
 
-        # In absence of an error, crud does not give
-        # variable err as nil (as in most cases).
-        if len(crud_resp) != 1:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return crud_resp[0]
@@ -2850,9 +2848,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.len", space_name, opts)
 
-        # In absence of an error, crud does not give
-        # variable err as nil (as in most cases).
-        if len(crud_resp) != 1:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return crud_resp[0]
@@ -2877,9 +2873,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.storage_info", opts)
 
-        # In absence of an error, crud does not give
-        # variable err as nil (as in most cases).
-        if len(crud_resp) != 1:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return crud_resp[0]
@@ -2915,7 +2909,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.count", space_name, conditions, opts)
 
-        if crud_resp[1] is not None:
+        if len(crud_resp) > 1 and crud_resp[1] is not None:
             raise CrudModuleError(None, CrudError(crud_resp[1]))
 
         return crud_resp[0]
@@ -2938,6 +2932,7 @@ class Connection(ConnectionInterface):
 
         crud_resp = call_crud(self, "crud.stats", space_name)
 
+        # There are no errors in `crud.stats`.
         res = None
         if len(crud_resp.data[0]) > 0:
             res = CrudResult(crud_resp.data[0])
