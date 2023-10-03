@@ -820,6 +820,7 @@ class ConnectionPool(ConnectionInterface):
 
         .. _replace: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/replace/
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'replace', space_name, values,
                           on_push=on_push, on_push_ctx=on_push_ctx)
@@ -850,6 +851,7 @@ class ConnectionPool(ConnectionInterface):
 
         .. _insert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/insert/
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'insert', space_name, values,
                           on_push=on_push, on_push_ctx=on_push_ctx)
@@ -883,6 +885,7 @@ class ConnectionPool(ConnectionInterface):
 
         .. _delete: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/delete/
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'delete', space_name, key, index=index,
                           on_push=on_push, on_push_ctx=on_push_ctx)
@@ -920,6 +923,7 @@ class ConnectionPool(ConnectionInterface):
 
         .. _upsert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/upsert/
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'upsert', space_name, tuple_value,
                           op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
@@ -957,6 +961,7 @@ class ConnectionPool(ConnectionInterface):
 
         .. _update: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/update/
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'update', space_name, key,
                           op_list, index=index, on_push=on_push, on_push_ctx=on_push_ctx)
@@ -1023,6 +1028,7 @@ class ConnectionPool(ConnectionInterface):
 
         .. _select: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/select/
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'select', space_name, key, offset=offset, limit=limit,
                           index=index, iterator=iterator, on_push=on_push, on_push_ctx=on_push_ctx)
@@ -1214,6 +1220,7 @@ class ConnectionPool(ConnectionInterface):
         :raise: :exc:`~tarantool.error.CrudModuleError`,
             :exc:`~tarantool.error.DatabaseError`
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'crud_update', space_name, key, operations, opts)
 
@@ -1379,6 +1386,7 @@ class ConnectionPool(ConnectionInterface):
         :raise: :exc:`~tarantool.error.CrudModuleError`,
             :exc:`~tarantool.error.DatabaseError`
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'crud_upsert', space_name, values, operations, opts)
 
@@ -1409,6 +1417,7 @@ class ConnectionPool(ConnectionInterface):
         :raise: :exc:`~tarantool.error.CrudModuleError`,
             :exc:`~tarantool.error.DatabaseError`
         """
+        # pylint: disable=too-many-arguments
 
         return self._send(mode, 'crud_upsert_object', space_name, values, operations, opts)
 
