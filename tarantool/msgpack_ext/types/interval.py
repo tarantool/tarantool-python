@@ -149,6 +149,7 @@ class Interval():
 
         :raise: :exc:`ValueError`
         """
+        # pylint: disable=too-many-arguments
 
         self.year = year
         self.month = month

@@ -215,6 +215,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         """
         Reference implementation: :meth:`~tarantool.Connection.delete`.
         """
+        # pylint: disable=too-many-arguments
 
         raise NotImplementedError
 
@@ -224,6 +225,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         """
         Reference implementation: :meth:`~tarantool.Connection.upsert`.
         """
+        # pylint: disable=too-many-arguments
 
         raise NotImplementedError
 
@@ -232,6 +234,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         """
         Reference implementation: :meth:`~tarantool.Connection.update`.
         """
+        # pylint: disable=too-many-arguments
 
         raise NotImplementedError
 
@@ -249,6 +252,7 @@ class ConnectionInterface(metaclass=abc.ABCMeta):
         """
         Reference implementation: :meth:`~tarantool.Connection.select`.
         """
+        # pylint: disable=too-many-arguments
 
         raise NotImplementedError
 
@@ -1618,6 +1622,7 @@ class Connection(ConnectionInterface):
 
         .. _delete: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/delete/
         """
+        # pylint: disable=too-many-arguments
 
         self._schemaful_connection_check()
 
@@ -1680,6 +1685,7 @@ class Connection(ConnectionInterface):
 
         .. _upsert: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/upsert/
         """
+        # pylint: disable=too-many-arguments
 
         self._schemaful_connection_check()
 
@@ -1771,6 +1777,7 @@ class Connection(ConnectionInterface):
 
         .. _update: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/update/
         """
+        # pylint: disable=too-many-arguments
 
         self._schemaful_connection_check()
 
@@ -1961,6 +1968,7 @@ class Connection(ConnectionInterface):
 
         .. _select: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_space/select/
         """
+        # pylint: disable=too-many-arguments
 
         self._schemaful_connection_check()
 
