@@ -616,7 +616,7 @@ class TestSuiteInterval(unittest.TestCase):
     }
 
     def test_out_of_range(self):
-        # pylint: disable=cell-var-from-loop
+        # pylint: disable=cell-var-from-loop,unnecessary-lambda
 
         for name, case in self.out_of_range_cases.items():
             with self.subTest(msg=name):
