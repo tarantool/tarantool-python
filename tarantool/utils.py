@@ -1,5 +1,5 @@
 """
-This module provides untility functions for the package.
+This module provides utility functions for the package.
 """
 
 from base64 import decodebytes as base64_decode
