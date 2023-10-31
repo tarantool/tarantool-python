@@ -15,6 +15,7 @@ from .test_pool import TestSuitePool
 from .test_execute import TestSuiteExecute
 from .test_dbapi import TestSuiteDBAPI
 from .test_encoding import TestSuiteEncoding
+from .test_socket_fd import TestSuiteSocketFD
 from .test_ssl import TestSuiteSsl
 from .test_decimal import TestSuiteDecimal
 from .test_uuid import TestSuiteUUID
@@ -33,7 +34,7 @@ test_cases = (TestSuiteSchemaUnicodeConnection,
               TestSuiteEncoding, TestSuitePool, TestSuiteSsl,
               TestSuiteDecimal, TestSuiteUUID, TestSuiteDatetime,
               TestSuiteInterval, TestSuitePackage, TestSuiteErrorExt,
-              TestSuitePush, TestSuiteConnection, TestSuiteCrud,)
+              TestSuitePush, TestSuiteConnection, TestSuiteCrud, TestSuiteSocketFD)
 
 
 def load_tests(loader, tests, pattern):

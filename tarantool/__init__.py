@@ -51,7 +51,7 @@ except ImportError:
     __version__ = '0.0.0-dev'
 
 
-def connect(host="localhost", port=33013, user=None, password=None,
+def connect(host="localhost", port=33013, socket_fd=None, user=None, password=None,
             encoding=ENCODING_DEFAULT, transport=DEFAULT_TRANSPORT,
             ssl_key_file=DEFAULT_SSL_KEY_FILE,
             ssl_cert_file=DEFAULT_SSL_CERT_FILE,
@@ -63,6 +63,8 @@ def connect(host="localhost", port=33013, user=None, password=None,
     :param host: Refer to :paramref:`~tarantool.Connection.params.host`.
 
     :param port: Refer to :paramref:`~tarantool.Connection.params.port`.
+
+    :param socket_fd: Refer to :paramref:`~tarantool.Connection.params.socket_fd`.
 
     :param user: Refer to :paramref:`~tarantool.Connection.params.user`.
 
@@ -93,6 +95,7 @@ def connect(host="localhost", port=33013, user=None, password=None,
     """
 
     return Connection(host, port,
+                      socket_fd=socket_fd,
                       user=user,
                       password=password,
                       socket_timeout=SOCKET_TIMEOUT,

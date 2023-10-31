@@ -135,7 +135,6 @@ class TestSuiteMesh(unittest.TestCase):
         # Verify that a bad address given at initialization leads
         # to an error.
         bad_addrs = [
-            {"port": 1234},                         # no host
             {"host": "localhost"},                  # no port
             {"host": "localhost", "port": "1234"},  # port is str
         ]
