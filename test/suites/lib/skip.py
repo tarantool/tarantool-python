@@ -306,3 +306,14 @@ def skip_or_run_iproto_basic_features_test(func):
 
     return skip_or_run_test_tarantool(func, '2.10.0',
                                       'does not support iproto ID and iproto basic features')
+
+
+def skip_or_run_box_session_new_tests(func):
+    """
+    Decorator to skip or run tests that use box.session.new.
+
+    Tarantool supports box.session.new only in current master since
+    commit 324872a.
+    See https://github.com/tarantool/tarantool/issues/8801.
+    """
+    return skip_or_run_test_tarantool(func, '3.0.0', 'does not support box.session.new')

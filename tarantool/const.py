@@ -103,6 +103,12 @@ IPROTO_FEATURE_PAGINATION = 4
 IPROTO_FEATURE_SPACE_AND_INDEX_NAMES = 5
 IPROTO_FEATURE_WATCH_ONCE = 6
 
+# Default value for host.
+DEFAULT_HOST = None
+# Default value for port.
+DEFAULT_PORT = None
+# Default value for socket_fd.
+DEFAULT_SOCKET_FD = None
 # Default value for connection timeout (seconds)
 CONNECTION_TIMEOUT = None
 # Default value for socket timeout (seconds)

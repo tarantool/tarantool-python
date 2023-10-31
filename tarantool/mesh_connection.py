@@ -28,6 +28,9 @@ from tarantool.const import (
     DEFAULT_SSL_PASSWORD,
     DEFAULT_SSL_PASSWORD_FILE,
     CLUSTER_DISCOVERY_DELAY,
+    DEFAULT_HOST,
+    DEFAULT_SOCKET_FD,
+    DEFAULT_PORT,
 )
 
 from tarantool.request import (
@@ -35,6 +38,9 @@ from tarantool.request import (
 )
 
 default_addr_opts = {
+    'host': DEFAULT_HOST,
+    'port': DEFAULT_PORT,
+    'socket_fd': DEFAULT_SOCKET_FD,
     'transport': DEFAULT_TRANSPORT,
     'ssl_key_file': DEFAULT_SSL_KEY_FILE,
     'ssl_cert_file': DEFAULT_SSL_CERT_FILE,
@@ -91,7 +97,8 @@ def parse_uri(uri):
         return parse_error(uri, 'port should be a number')
 
     for key, val in default_addr_opts.items():
-        result[key] = val
+        if key not in result:
+            result[key] = val
 
     if opts_str != "":
         for opt_str in opts_str.split('&'):
@@ -127,9 +134,6 @@ def prepare_address(address):
     if not isinstance(address, dict):
         return format_error(address, 'address must be a dict')
 
-    if 'port' not in address or address['port'] is None:
-        return format_error(address, 'port is not set or None')
-
     result = {}
     for key, val in address.items():
         result[key] = val
@@ -137,6 +141,17 @@ def prepare_address(address):
     for key, val in default_addr_opts.items():
         if key not in result:
             result[key] = val
+
+    if result['socket_fd'] is not None:
+        # Looks like socket fd.
+        if result['host'] is not None or result['port'] is not None:
+            return format_error(result,
+                                "specifying both socket_fd and host/port is not allowed")
+
+        if not isinstance(result['socket_fd'], int):
+            return format_error(result,
+                                'socket_fd must be an int')
+        return result, None
 
     if isinstance(result['port'], int):
         # Looks like an inet address.
@@ -192,6 +207,7 @@ def update_connection(conn, address):
 
     conn.host = address["host"]
     conn.port = address["port"]
+    conn.socket_fd = address["socket_fd"]
     conn.transport = address['transport']
     conn.ssl_key_file = address['ssl_key_file']
     conn.ssl_cert_file = address['ssl_cert_file']
@@ -268,7 +284,10 @@ class MeshConnection(Connection):
     Represents a connection to a cluster of Tarantool servers.
     """
 
-    def __init__(self, host=None, port=None,
+    def __init__(self,
+                 host=DEFAULT_HOST,
+                 port=DEFAULT_PORT,
+                 socket_fd=DEFAULT_SOCKET_FD,
                  user=None,
                  password=None,
                  socket_timeout=SOCKET_TIMEOUT,
@@ -299,6 +318,11 @@ class MeshConnection(Connection):
 
         :param port: Refer to
             :paramref:`~tarantool.Connection.params.port`.
+            Value would be used to add one more server in
+            :paramref:`~tarantool.MeshConnection.params.addrs` list.
+
+        :param socket_fd: Refer to
+            :paramref:`~tarantol.Connection.params.socket_fd`.
             Value would be used to add one more server in
             :paramref:`~tarantool.MeshConnection.params.addrs` list.
 
@@ -447,9 +471,10 @@ class MeshConnection(Connection):
             # Don't change user provided arguments.
             addrs = addrs[:]
 
-        if host and port:
+        if (host and port) or socket_fd:
             addrs.insert(0, {'host': host,
                              'port': port,
+                             'socket_fd': socket_fd,
                              'transport': transport,
                              'ssl_key_file': ssl_key_file,
                              'ssl_cert_file': ssl_cert_file,
@@ -484,6 +509,7 @@ class MeshConnection(Connection):
         super().__init__(
             host=addr['host'],
             port=addr['port'],
+            socket_fd=addr['socket_fd'],
             user=user,
             password=password,
             socket_timeout=socket_timeout,
@@ -604,6 +630,7 @@ class MeshConnection(Connection):
         # an instance list and connect to one of new instances.
         current_addr = {'host': self.host,
                         'port': self.port,
+                        'socket_fd': self.socket_fd,
                         'transport': self.transport,
                         'ssl_key_file': self.ssl_key_file,
                         'ssl_cert_file': self.ssl_cert_file,

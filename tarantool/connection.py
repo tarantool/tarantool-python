@@ -4,6 +4,7 @@ This module provides API for interaction with a Tarantool server.
 # pylint: disable=too-many-lines,duplicate-code
 
 import os
+import select
 import time
 import errno
 from enum import Enum
@@ -51,6 +52,9 @@ from tarantool.const import (
     RECONNECT_DELAY,
     DEFAULT_TRANSPORT,
     SSL_TRANSPORT,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    DEFAULT_SOCKET_FD,
     DEFAULT_SSL_KEY_FILE,
     DEFAULT_SSL_CERT_FILE,
     DEFAULT_SSL_CA_FILE,
@@ -594,7 +598,10 @@ class Connection(ConnectionInterface):
     :value: :exc:`~tarantool.error.CrudModuleError`
     """
 
-    def __init__(self, host, port,
+    def __init__(self,
+                 host=DEFAULT_HOST,
+                 port=DEFAULT_PORT,
+                 socket_fd=DEFAULT_SOCKET_FD,
                  user=None,
                  password=None,
                  socket_timeout=SOCKET_TIMEOUT,
@@ -623,8 +630,11 @@ class Connection(ConnectionInterface):
             Unix sockets.
         :type host: :obj:`str` or :obj:`None`
 
-        :param port: Server port or Unix socket path.
-        :type port: :obj:`int` or :obj:`str`
+        :param port: Server port, or Unix socket path.
+        :type port: :obj:`int` or :obj:`str` or :obj:`None`
+
+        :param socket_fd: socket fd number.
+        :type socket_fd: :obj:`int` or :obj:`None`
 
         :param user: User name for authentication on the Tarantool
             server.
@@ -804,6 +814,18 @@ class Connection(ConnectionInterface):
         """
         # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
 
+        if host is None and port is None and socket_fd is None:
+            raise ConfigurationError("need to specify host/port, "
+                                     "port (in case of Unix sockets) "
+                                     "or socket_fd")
+
+        if socket_fd is not None and (host is not None or port is not None):
+            raise ConfigurationError("specifying both socket_fd and host/port is not allowed")
+
+        if host is not None and port is None:
+            raise ConfigurationError("when specifying host, "
+                                     "it is also necessary to specify port")
+
         if msgpack.version >= (1, 0, 0) and encoding not in (None, 'utf-8'):
             raise ConfigurationError("msgpack>=1.0.0 only supports None and "
                                      + "'utf-8' encoding option values")
@@ -820,6 +842,7 @@ class Connection(ConnectionInterface):
         recv.restype = ctypes.c_int
         self.host = host
         self.port = port
+        self.socket_fd = socket_fd
         self.user = user
         self.password = password
         self.socket_timeout = socket_timeout
@@ -897,10 +920,37 @@ class Connection(ConnectionInterface):
         :meta private:
         """
 
-        if self.host is None:
-            self.connect_unix()
-        else:
+        if self.socket_fd is not None:
+            self.connect_socket_fd()
+        elif self.host is not None:
             self.connect_tcp()
+        else:
+            self.connect_unix()
+
+    def connect_socket_fd(self):
+        """
+        Establish a connection using an existing socket fd.
+
+            +---------------------+--------------------------+-------------------------+
+            | socket_fd / timeout |         >= 0             |         `None`          |
+            +=====================+==========================+=========================+
+            |      blocking       | Set non-blocking socket  | Don't change, `select`  |
+            |                     | lib call `select`        | isn't needed            |
+            +---------------------+--------------------------+-------------------------+
+            |     non-blocking    | Don't change, socket lib | Don't change, call      |
+            |                     | call `select`            | `select` ourselves      |
+            +---------------------+--------------------------+-------------------------+
+
+        :meta private:
+        """
+
+        self.connected = True
+        if self._socket:
+            self._socket.close()
+
+        self._socket = socket.socket(fileno=self.socket_fd)
+        if self.socket_timeout is not None:
+            self._socket.settimeout(self.socket_timeout)
 
     def connect_tcp(self):
         """
@@ -1124,6 +1174,11 @@ class Connection(ConnectionInterface):
         while to_read > 0:
             try:
                 tmp = self._socket.recv(to_read)
+            except BlockingIOError:
+                ready, _, _ = select.select([self._socket.fileno()], [], [], self.socket_timeout)
+                if not ready:
+                    raise NetworkError(TimeoutError())  # pylint: disable=raise-missing-from
+                continue
             except OverflowError as exc:
                 self._socket.close()
                 err = socket.error(
@@ -1163,6 +1218,41 @@ class Connection(ConnectionInterface):
         # Read the packet
         return self._recv(length)
 
+    def _sendall(self, bytes_to_send):
+        """
+        Sends bytes to the transport (socket).
+
+        :param bytes_to_send: Message to send.
+        :type bytes_to_send: :obj:`bytes`
+
+        :raise: :exc:`~tarantool.error.NetworkError`
+
+        :meta private:
+        """
+
+        total_sent = 0
+        while total_sent < len(bytes_to_send):
+            try:
+                sent = self._socket.send(bytes_to_send[total_sent:])
+                if sent == 0:
+                    err = socket.error(
+                        errno.ECONNRESET,
+                        "Lost connection to server during query"
+                    )
+                    raise NetworkError(err)
+                total_sent += sent
+            except BlockingIOError as exc:
+                total_sent += exc.characters_written
+                _, ready, _ = select.select([], [self._socket.fileno()], [], self.socket_timeout)
+                if not ready:
+                    raise NetworkError(TimeoutError())  # pylint: disable=raise-missing-from
+            except socket.error as exc:
+                err = socket.error(
+                    errno.ECONNRESET,
+                    "Lost connection to server during query"
+                )
+                raise NetworkError(err) from exc
+
     def _send_request_wo_reconnect(self, request, on_push=None, on_push_ctx=None):
         """
         Send request without trying to reconnect.
@@ -1191,7 +1281,7 @@ class Connection(ConnectionInterface):
         response = None
         while True:
             try:
-                self._socket.sendall(bytes(request))
+                self._sendall(bytes(request))
                 response = request.response_class(self, self._read_response())
                 break
             except SchemaReloadException as exc:

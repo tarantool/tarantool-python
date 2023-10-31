@@ -115,7 +115,7 @@ class PoolUnit():
 
     addr: dict
     """
-    ``{"host": host, "port": port}`` info.
+    ``{"host": host, "port": port, "socket_fd": socket_fd}`` info.
 
     :type: :obj:`dict`
     """
@@ -160,6 +160,14 @@ class PoolUnit():
 
     :type: :obj:`bool`
     """
+
+    def get_address(self):
+        """
+        Get an address string representation.
+        """
+        if self.addr['socket_fd'] is not None:
+            return f'fd://{self.addr["socket_fd"]}'
+        return f'{self.addr["host"]}:{self.addr["port"]}'
 
 
 # Based on https://realpython.com/python-interface/
@@ -398,6 +406,7 @@ class ConnectionPool(ConnectionInterface):
                 {
                     "host': "str" or None,     # mandatory
                     "port": int or "str",      # mandatory
+                    "socket_fd": int,          # optional
                     "transport": "str",        # optional
                     "ssl_key_file": "str",     # optional
                     "ssl_cert_file": "str",    # optional
@@ -499,6 +508,7 @@ class ConnectionPool(ConnectionInterface):
                 conn=Connection(
                     host=addr['host'],
                     port=addr['port'],
+                    socket_fd=addr['socket_fd'],
                     user=user,
                     password=password,
                     socket_timeout=socket_timeout,
@@ -529,15 +539,16 @@ class ConnectionPool(ConnectionInterface):
         """
         Make a unique key for a server based on its address.
 
-        :param addr: `{"host": host, "port": port}` dictionary.
+        :param addr: `{"host": host, "port": port, "socket_fd": socket_fd}` dictionary.
         :type addr: :obj:`dict`
 
         :rtype: :obj:`str`
 
         :meta private:
         """
-
-        return f"{addr['host']}:{addr['port']}"
+        if addr['socket_fd'] is None:
+            return f"{addr['host']}:{addr['port']}"
+        return addr['socket_fd']
 
     def _get_new_state(self, unit):
         """
@@ -557,7 +568,7 @@ class ConnectionPool(ConnectionInterface):
             try:
                 conn.connect()
             except NetworkError as exc:
-                msg = (f"Failed to connect to {unit.addr['host']}:{unit.addr['port']}, "
+                msg = (f"Failed to connect to {unit.get_address()}, "
                        f"reason: {repr(exc)}")
                 warn(msg, ClusterConnectWarning)
                 return InstanceState(Status.UNHEALTHY)
@@ -565,7 +576,7 @@ class ConnectionPool(ConnectionInterface):
         try:
             resp = conn.call('box.info')
         except NetworkError as exc:
-            msg = (f"Failed to get box.info for {unit.addr['host']}:{unit.addr['port']}, "
+            msg = (f"Failed to get box.info for {unit.get_address()}, "
                    f"reason: {repr(exc)}")
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
@@ -573,7 +584,7 @@ class ConnectionPool(ConnectionInterface):
         try:
             read_only = resp.data[0]['ro']
         except (IndexError, KeyError) as exc:
-            msg = (f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
+            msg = (f"Incorrect box.info response from {unit.get_address()}"
                    f"reason: {repr(exc)}")
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
@@ -582,11 +593,11 @@ class ConnectionPool(ConnectionInterface):
             status = resp.data[0]['status']
 
             if status != 'running':
-                msg = f"{unit.addr['host']}:{unit.addr['port']} instance status is not 'running'"
+                msg = f"{unit.get_address()} instance status is not 'running'"
                 warn(msg, PoolTolopogyWarning)
                 return InstanceState(Status.UNHEALTHY)
         except (IndexError, KeyError) as exc:
-            msg = (f"Incorrect box.info response from {unit.addr['host']}:{unit.addr['port']}"
+            msg = (f"Incorrect box.info response from {unit.get_address()}"
                    f"reason: {repr(exc)}")
             warn(msg, PoolTolopogyWarning)
             return InstanceState(Status.UNHEALTHY)
