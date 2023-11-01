@@ -298,7 +298,7 @@ class MeshConnection(Connection):
             :paramref:`~tarantool.MeshConnection.params.addrs` list.
 
         :param port: Refer to
-            :paramref:`~tarantool.Connection.params.host`.
+            :paramref:`~tarantool.Connection.params.port`.
             Value would be used to add one more server in
             :paramref:`~tarantool.MeshConnection.params.addrs` list.
 
