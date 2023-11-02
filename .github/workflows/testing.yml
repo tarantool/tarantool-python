@@ -27,6 +27,7 @@ jobs:
           - '2.8'
           - '2.10'
           - '2.11'
+          - 'master'
         python:
           - '3.6'
           - '3.7'
@@ -57,10 +58,44 @@ jobs:
       - name: Clone the connector
         uses: actions/checkout@v3
 
+      - name: Setup tt
+        run: |
+          curl -L https://tarantool.io/release/2/installer.sh | sudo bash
+          sudo apt install -y tt
+          tt version
+          tt init 
+
       - name: Install tarantool ${{ matrix.tarantool }}
+        if: matrix.tarantool != 'master'
         uses: tarantool/setup-tarantool@v2
         with:
           tarantool-version: ${{ matrix.tarantool }}
+
+      - name: Get Tarantool master latest commit
+        if: matrix.tarantool == 'master'
+        run: |
+          commit_hash=$(git ls-remote https://github.com/tarantool/tarantool.git --branch master | head -c 8)
+          echo "LATEST_COMMIT=${commit_hash}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Cache Tarantool master
+        if: matrix.tarantool == 'master'
+        id: cache-latest
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ github.workspace }}/bin
+            ${{ github.workspace }}/include
+          key: cache-latest-${{ env.LATEST_COMMIT }}
+
+      - name: Setup Tarantool master
+        if: matrix.tarantool == 'master' && steps.cache-latest.outputs.cache-hit != 'true'
+        run: |
+          tt install tarantool master
+
+      - name: Add Tarantool master to PATH
+        if: matrix.tarantool == 'master'
+        run: echo "${GITHUB_WORKSPACE}/bin" >> $GITHUB_PATH
 
       - name: Setup Python for tests
         uses: actions/setup-python@v4
@@ -86,8 +121,6 @@ jobs:
 
       - name: Install the crud module for testing purposes
         run: |
-          curl -L https://tarantool.io/release/2/installer.sh | bash
-          sudo apt install -y tt
           tt rocks install crud
 
       - name: Run tests
