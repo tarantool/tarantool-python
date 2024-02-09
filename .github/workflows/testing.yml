@@ -151,7 +151,7 @@ jobs:
             path: 'release/linux/x86_64/2.8/'
           - bundle: 'sdk-gc64-2.10.7-0-r563.linux.x86_64'
             path: 'release/linux/x86_64/2.10/'
-          - bundle: 'sdk-gc64-2.11.0-0-r563.linux.x86_64'
+          - bundle: 'sdk-gc64-2.11.2-0-r609.linux.x86_64'
             path: 'release/linux/x86_64/2.11/'
         python: ['3.6', '3.11']
 
