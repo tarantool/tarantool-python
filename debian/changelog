@@ -1,3 +1,15 @@
+python3-tarantool (1.2.0-0) unstable; urgency=medium
+
+    ## Overview
+
+    This release introduces socket fd connect support.
+
+    ## Added
+
+    - The ability to connect to the Tarantool using an existing socket fd (#304).
+
+ -- Georgy Moiseev <georgy.moiseev@tarantool.org>  Wed, 27 Mar 2024 11:00:00 +0300
+
 python3-tarantool (1.1.2-0) unstable; urgency=medium
 
     ## Overview
