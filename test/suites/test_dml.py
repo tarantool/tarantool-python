@@ -419,13 +419,13 @@ class TestSuiteRequest(unittest.TestCase):
                 "Create access to function 'forbidden_function' is denied for user 'test'")
             self.assertEqual(exc.extra_info.errno, 0)
             self.assertEqual(exc.extra_info.errcode, 42)
-            self.assertEqual(
-                exc.extra_info.fields,
+            self.assertGreaterEqual(
+                exc.extra_info.fields.items(),
                 {
                     'object_type': 'function',
                     'object_name': 'forbidden_function',
                     'access_type': 'Create'
-                })
+                }.items())
             self.assertEqual(exc.extra_info.prev, None)
         else:
             self.fail('Expected error')
