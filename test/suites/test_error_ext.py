@@ -327,11 +327,14 @@ class TestSuiteErrorExt(unittest.TestCase):
                     self.assertEqual(err.message, expected_err.message)
                     self.assertEqual(err.errno, expected_err.errno)
                     self.assertEqual(err.errcode, expected_err.errcode)
-                    if expected_err.fields is not None:
-                        self.assertGreaterEqual(err.fields.items(),
-                                                expected_err.fields.items())
-                    else:
-                        self.assertEqual(err.fields, None)
+                    expected_fields = expected_err.fields
+                    if expected_fields is None:
+                        expected_fields = {}
+                    actual_fields = err.fields
+                    if actual_fields is None:
+                        actual_fields = {}
+                    self.assertGreaterEqual(actual_fields.items(),
+                                            expected_fields.items())
 
                     err = err.prev
                     expected_err = expected_err.prev

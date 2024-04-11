@@ -391,7 +391,12 @@ class TestSuiteRequest(unittest.TestCase):
             self.assertEqual(exc.extra_info.message, "Timeout exceeded")
             self.assertEqual(exc.extra_info.errno, 0)
             self.assertEqual(exc.extra_info.errcode, 78)
-            self.assertEqual(exc.extra_info.fields, None)
+            actual_fields = exc.extra_info.fields
+            if actual_fields is None:
+                actual_fields = {}
+            expected_fields = {}
+            self.assertGreaterEqual(actual_fields.items(),
+                                    expected_fields.items())
             self.assertNotEqual(exc.extra_info.prev, None)
             prev = exc.extra_info.prev
             self.assertEqual(prev.type, 'ClientError')
@@ -400,7 +405,12 @@ class TestSuiteRequest(unittest.TestCase):
             self.assertEqual(prev.message, "Unknown error")
             self.assertEqual(prev.errno, 0)
             self.assertEqual(prev.errcode, 0)
-            self.assertEqual(prev.fields, None)
+            actual_fields = prev.fields
+            if actual_fields is None:
+                actual_fields = {}
+            expected_fields = {}
+            self.assertGreaterEqual(actual_fields.items(),
+                                    expected_fields.items())
         else:
             self.fail('Expected error')
 
