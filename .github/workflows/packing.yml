@@ -414,6 +414,7 @@ jobs:
 
       - name: Install deb packing tools
         run: |
+          sudo apt update
           sudo apt install -y devscripts equivs
 
       - name: Make changelog entry for non-release build
