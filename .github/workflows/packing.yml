@@ -16,7 +16,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -61,7 +61,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -184,7 +184,7 @@ jobs:
       - run_tests_pip_package_linux
       - run_tests_pip_package_windows
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -222,7 +222,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     container:
       image: ${{ matrix.target.os }}:${{ matrix.target.dist }}
@@ -289,7 +289,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     container:
       image: ${{ matrix.target.os }}:${{ matrix.target.dist }}
@@ -350,7 +350,7 @@ jobs:
     needs:
       - run_tests_rpm
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -400,7 +400,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -448,7 +448,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     container:
       image: ${{ matrix.target.os }}:${{ matrix.target.dist }}
@@ -517,7 +517,7 @@ jobs:
     needs:
       - run_tests_deb
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
