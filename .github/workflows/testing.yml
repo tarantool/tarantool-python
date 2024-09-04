@@ -33,7 +33,6 @@ jobs:
           - '2.11'
           - 'master'
         python:
-          - '3.6'
           - '3.7'
           - '3.8'
           - '3.9'
@@ -157,7 +156,7 @@ jobs:
             path: 'release/linux/x86_64/2.10/'
           - bundle: 'sdk-gc64-2.11.0-0-r563.linux.x86_64'
             path: 'release/linux/x86_64/2.11/'
-        python: ['3.6', '3.11']
+        python: ['3.7', '3.11']
 
     steps:
       - name: Clone the connector
@@ -225,7 +224,7 @@ jobs:
         tarantool:
           - '2.11'
         python:
-          - '3.6'
+          - '3.7'
           - '3.11'
     steps:
       - name: Clone the connector repo
@@ -278,7 +277,7 @@ jobs:
         tarantool:
           - '2.11.0.g247a9a418-1'
         python:
-          - '3.6'
+          - '3.7'
           - '3.11'
 
     steps:
@@ -348,7 +347,7 @@ jobs:
         tarantool:
           - '2.11.0.g247a9a418-1'
         python:
-          - '3.6'
+          - '3.7'
           - '3.11'
     steps:
       - name: Clone the connector repo
