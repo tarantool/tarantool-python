@@ -324,7 +324,7 @@ jobs:
 
       - name: Install tarantool
         run: |
-          curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
+          curl -L https://tarantool.io/release/2/installer.sh | bash
           dnf install -y tarantool tarantool-devel
 
       - name: Download RPM artifacts
@@ -488,7 +488,7 @@ jobs:
       - name: Install tarantool ${{ matrix.tarantool }}
         run: |
           apt install -y curl
-          curl -L https://tarantool.io/yeohchA/release/2/installer.sh | bash
+          curl -L https://tarantool.io/release/2/installer.sh | bash
           apt install -y tarantool tarantool-dev
         env:
           DEBIAN_FRONTEND: noninteractive
