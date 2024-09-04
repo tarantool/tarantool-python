@@ -7,7 +7,7 @@ Package setup commands.
 import codecs
 import os
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py
 
 # Extra commands for documentation management
