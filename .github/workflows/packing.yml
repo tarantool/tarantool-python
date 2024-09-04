@@ -43,7 +43,7 @@ jobs:
         run: make pip-dist-check
 
       - name: Archive pip artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.0
         with:
           name: pip_dist
           path: pip_dist
@@ -84,7 +84,7 @@ jobs:
           tarantool-version: '2.11'
 
       - name: Download pip package artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: pip_dist
           path: pip_dist
@@ -134,7 +134,7 @@ jobs:
         run: python3 .github/scripts/remove_source_code.py
 
       - name: Download pip package artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: pip_dist
           path: pip_dist
@@ -202,7 +202,7 @@ jobs:
         run: pip3 install twine
 
       - name: Download pip package artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: pip_dist
           path: pip_dist
@@ -271,7 +271,7 @@ jobs:
         run: make rpm-dist-check
 
       - name: Archive RPM artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.0
         with:
           name: rpm_dist_${{ matrix.target.os }}_${{ matrix.target.dist }}
           path: rpm_dist
@@ -324,7 +324,7 @@ jobs:
           dnf install -y tarantool tarantool-devel
 
       - name: Download RPM artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: rpm_dist_${{ matrix.target.os }}_${{ matrix.target.dist }}
           path: rpm_dist
@@ -372,7 +372,7 @@ jobs:
         run: sudo apt install -y curl make
 
       - name: Download RPM artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: rpm_dist_${{ matrix.target.os }}_${{ matrix.target.dist }}
           path: rpm_dist
@@ -433,7 +433,7 @@ jobs:
         run: make deb-dist-check
 
       - name: Archive deb artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.0
         with:
           name: deb_dist
           path: deb_dist
@@ -490,7 +490,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
 
       - name: Download deb artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: deb_dist
           path: deb_dist
@@ -542,7 +542,7 @@ jobs:
         run: sudo apt install -y curl make
 
       - name: Download deb artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: deb_dist
           path: deb_dist
