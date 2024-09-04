@@ -112,7 +112,7 @@ setup(
     command_options=command_options,
     install_requires=get_dependencies('requirements.txt'),
     setup_requires=[
-        'setuptools_scm==6.4.2',
+        'setuptools_scm==7.1.0',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )
