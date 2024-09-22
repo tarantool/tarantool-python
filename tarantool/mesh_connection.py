@@ -463,7 +463,7 @@ class MeshConnection(Connection):
             :class:`~tarantool.Connection` exceptions,
             :class:`~tarantool.MeshConnection.connect` exceptions
         """
-        # pylint: disable=too-many-arguments,too-many-locals
+        # pylint: disable=too-many-arguments,too-many-locals,too-many-positional-arguments
 
         if addrs is None:
             addrs = []

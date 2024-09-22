@@ -1,7 +1,7 @@
 """
 This package provides API for interaction with a Tarantool server.
 """
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 
 from tarantool.connection import Connection
 from tarantool.mesh_connection import MeshConnection

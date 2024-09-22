@@ -269,7 +269,7 @@ class RequestAuthenticate(Request):
         :param auth_type: Refer to :paramref:`~tarantool.Connection.auth_type`.
         :type auth_type: :obj:`str`, optional
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
 
         super().__init__(conn)
 
@@ -405,7 +405,7 @@ class RequestSelect(Request):
 
         :raise: :exc:`~AssertionError`
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
 
         super().__init__(conn)
         request_body = self._dumps({IPROTO_SPACE_ID: space_no,
@@ -446,7 +446,7 @@ class RequestUpdate(Request):
 
         :raise: :exc:`~AssertionError`
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
 
         super().__init__(conn)
 
@@ -569,7 +569,7 @@ class RequestUpsert(Request):
 
         :raise: :exc:`~AssertionError`
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
 
         super().__init__(conn)
 
