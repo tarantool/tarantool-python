@@ -6,3 +6,8 @@ good-names=i,j,k,ex,Run,_,ok,t,tz
 [FORMAT]
 # Allow links in docstings, allow tables
 ignore-long-lines=^(?:\s*(# )?(?:\.\.\s.+?:)?\s*<?https?://\S+>?)|(\s\+.+\+)|(\s\|.+\|)$
+
+[MESSAGES CONTROL]
+# Ignore unknown options to support per-entity ignores for newest warnings/errors
+# which are not supported for older versions.
+disable=unknown-option-value
