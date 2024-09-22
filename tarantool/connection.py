@@ -812,7 +812,7 @@ class Connection(ConnectionInterface):
         .. _mp_bin: https://github.com/msgpack/msgpack/blob/master/spec.md#bin-format-family
         .. _mp_array: https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family
         """
-        # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
+        # pylint: disable=too-many-arguments,too-many-locals,too-many-statements,too-many-positional-arguments
 
         if host is None and port is None and socket_fd is None:
             raise ConfigurationError("need to specify host/port, "
