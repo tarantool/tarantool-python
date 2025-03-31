@@ -20,14 +20,14 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         # Checkout all tags for correct version computation.
         with:
           fetch-depth: 0
@@ -38,7 +38,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install tools for packing and verification
-        run: pip3 install wheel twine
+        run: |
+          pip3 install wheel twine
+          pip3 install --upgrade setuptools
 
       - name: Pack source and binary files
         run: make pip-dist
@@ -65,14 +67,14 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -83,7 +85,7 @@ jobs:
         run: python3 .github/scripts/remove_source_code.py
 
       - name: Install tarantool
-        uses: tarantool/setup-tarantool@v2
+        uses: tarantool/setup-tarantool@v3
         with:
           tarantool-version: '2.11'
 
@@ -99,10 +101,13 @@ jobs:
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
 
+      # Installation of the specific CMake version is a hotfix for
+      # https://github.com/tarantool/checks/issues/64
       - name: Install the crud module for testing purposes
         run: |
           curl -L https://tarantool.io/release/2/installer.sh | bash
           sudo apt install -y tt
+          pip3 install cmake==3.15.3
           tt rocks install crud
 
       - name: Run tests
@@ -127,7 +132,7 @@ jobs:
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -188,14 +193,14 @@ jobs:
       - run_tests_pip_package_linux
       - run_tests_pip_package_windows
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python and basic packing tools
         uses: actions/setup-python@v4
@@ -226,7 +231,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     container:
       image: ${{ matrix.target.os }}:${{ matrix.target.dist }}
@@ -250,7 +255,7 @@ jobs:
         run: dnf install -y git
 
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         # Checkout all tags for correct version computation.
         with:
           fetch-depth: 0
@@ -293,7 +298,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     container:
       image: ${{ matrix.target.os }}:${{ matrix.target.dist }}
@@ -312,7 +317,7 @@ jobs:
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python and test running tools
         # cmake rocks fail to install as expected without findutils:
@@ -343,6 +348,7 @@ jobs:
         run: |
           curl -L https://tarantool.io/release/2/installer.sh | bash
           sudo dnf install -y tt
+          pip3 install cmake==3.15.3
           tt rocks install crud
 
       - name: Run tests
@@ -354,7 +360,7 @@ jobs:
     needs:
       - run_tests_rpm
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
@@ -370,7 +376,7 @@ jobs:
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install tools for package publishing
         run: sudo apt install -y curl make
@@ -404,14 +410,14 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         # Checkout all tags for correct version computation
         with:
           fetch-depth: 0
@@ -420,6 +426,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y devscripts equivs
+          sudo apt install python3-setuptools python3-stdeb dh-python
 
       - name: Make changelog entry for non-release build
         if: startsWith(github.ref, 'refs/tags') != true
@@ -453,7 +460,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     container:
       image: ${{ matrix.target.os }}:${{ matrix.target.dist }}
@@ -463,18 +470,20 @@ jobs:
 
       matrix:
         target:
+        - os: debian
+          dist: bullseye # 11
+        - os: debian
+          dist: bookworm # 12
         - os: ubuntu
           dist: focal # 20.04
         - os: ubuntu
           dist: jammy # 22.04
-        - os: debian
-          dist: buster # 10
-        - os: debian
-          dist: bullseye # 11
+        - os: ubuntu
+          dist: noble # 24.04
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Prepare apt
         run: apt update
@@ -504,17 +513,48 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
 
+      # Usage of venv is mandatory starting with Debian 12 and Ubuntu 24.04.
+      - name: Create venv
+        run: |
+          apt install -y python3-venv
+          python3 -m venv .venv
+
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
+        if: matrix.target.dist != 'bookworm' && matrix.target.dist != 'noble'
+
+      - name: Install test requirements
+        run: |
+          . .venv/bin/activate
+          pip3 install -r requirements-test.txt
+        if: matrix.target.dist == 'bookworm' || matrix.target.dist == 'noble'
 
       - name: Install the crud module for testing purposes
         run: |
           curl -L https://tarantool.io/release/2/installer.sh | bash
           apt install -y tt
           tt rocks install crud
+        if: matrix.target.dist != 'bookworm' && matrix.target.dist != 'noble'
+      
+      - name: Install the crud module for testing purposes
+        run: |
+          . .venv/bin/activate
+          curl -L https://tarantool.io/release/3/installer.sh | bash
+          apt install -y tt
+          tt rocks install crud
+        if: matrix.target.dist == 'bookworm' || matrix.target.dist == 'noble'
 
       - name: Run tests
         run: make test-pure-install
+        if: matrix.target.dist != 'bookworm' && matrix.target.dist != 'noble'
+
+      - name: Run tests
+        run: |
+          . .venv/bin/activate
+          export PYTHONPATH=$PYTHONPATH:/usr/lib/python3.11:/usr/lib/python3.12:/usr/bin:/usr/lib/python3/dist-packages
+          export PATH=$PATH:/usr/lib/python3/dist-packages
+          make test-pure-install
+        if: matrix.target.dist == 'bookworm' || matrix.target.dist == 'noble'
 
   publish_deb:
     if: startsWith(github.ref, 'refs/tags')
@@ -522,7 +562,7 @@ jobs:
     needs:
       - run_tests_deb
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
@@ -533,14 +573,18 @@ jobs:
           dist: focal # 20.04
         - os: ubuntu
           dist: jammy # 22.04
+        - os: ubuntu
+          dist: noble # 24.04
         - os: debian
           dist: buster # 10
         - os: debian
           dist: bullseye # 11
+        - os: debian
+          dist: bookworm # 12
 
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install tools for package publishing
         run: sudo apt install -y curl make

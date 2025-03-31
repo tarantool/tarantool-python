@@ -11,7 +11,7 @@ on:
 
 jobs:
   run_tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Clone the tarantool-python connector
         uses: actions/checkout@v4
@@ -43,6 +43,7 @@ jobs:
         run: |
           curl -L https://tarantool.io/release/2/installer.sh | bash
           sudo apt install -y tt
+          pip3 install cmake==3.15.3
           tt rocks install crud
 
       - run: make test

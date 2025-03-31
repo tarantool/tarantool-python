@@ -1,5 +1,5 @@
 git+https://github.com/baztian/dbapi-compliance.git@ea7cb1b4#egg=dbapi-compliance
-pyyaml==6.0
+pyyaml >= 6.0.2
 importlib-metadata >= 1.0 ; python_version < '3.8'
 pylint == 3.3.0 ; python_version >= '3.9'
 pylint == 3.2.7 ; python_version == '3.8'
@@ -8,3 +8,4 @@ flake8 == 6.1.0 ; python_version >= '3.8'
 flake8 == 5.0.4 ; python_version < '3.8'
 codespell == 2.3.0 ; python_version >= '3.8'
 codespell == 2.2.5 ; python_version < '3.8'
+setuptools >= 75.3.2

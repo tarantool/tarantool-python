@@ -21,20 +21,16 @@ jobs:
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
       matrix:
         tarantool:
-          - '1.10'
-          - '2.8'
-          - '2.10'
           - '2.11'
+          - '3.3'
           - 'master'
         python:
-          - '3.7'
-          - '3.8'
           - '3.9'
           - '3.10'
           - '3.11'
@@ -47,30 +43,35 @@ jobs:
         # "This page is taking too long to load." error. Thus we use
         # pairwise testing.
         include:
-          - tarantool: '2.11'
+          - tarantool: '3.3'
             python: '3.11'
             msgpack-deps: 'msgpack==0.5.0'
-          - tarantool: '2.11'
+          - tarantool: '3.3'
             python: '3.11'
             msgpack-deps: 'msgpack==0.6.2'
-          - tarantool: '2.11'
+          - tarantool: '3.3'
             python: '3.11'
             msgpack-deps: 'msgpack==1.0.4'
 
     steps:
       - name: Clone the connector
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup tt
         run: |
-          curl -L https://tarantool.io/release/2/installer.sh | sudo bash
+          curl -L https://tarantool.io/release/3/installer.sh | sudo bash
           sudo apt install -y tt
           tt version
-          tt init 
+          tt init
+
+      # Installation of the specific CMake version is a hotfix for
+      # https://github.com/tarantool/checks/issues/64
+      - name: Install old CMake
+        run: pip3 install cmake==3.15.3
 
       - name: Install tarantool ${{ matrix.tarantool }}
         if: matrix.tarantool != 'master'
-        uses: tarantool/setup-tarantool@v2
+        uses: tarantool/setup-tarantool@v3
         with:
           tarantool-version: ${{ matrix.tarantool }}
 
@@ -123,8 +124,7 @@ jobs:
         run: pip3 install -r requirements-test.txt
 
       - name: Install the crud module for testing purposes
-        run: |
-          tt rocks install crud
+        run: tt rocks install crud
 
       - name: Run tests
         run: make test
@@ -142,34 +142,30 @@ jobs:
         github.event.pull_request.head.repo.full_name != github.repository &&
         github.event.label.name == 'full-ci')
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
       matrix:
         tarantool:
-          - bundle: 'sdk-1.10.15-0-r563'
-            path: 'release/linux/x86_64/1.10/'
-          - bundle: 'sdk-2.8.4-0-r563'
-            path: 'release/linux/x86_64/2.8/'
-          - bundle: 'sdk-gc64-2.10.7-0-r563.linux.x86_64'
-            path: 'release/linux/x86_64/2.10/'
           - bundle: 'sdk-gc64-2.11.0-0-r563.linux.x86_64'
             path: 'release/linux/x86_64/2.11/'
-        python: ['3.7', '3.11']
+          - bundle: 'sdk-gc64-3.3.1-0-r55.linux.x86_64'
+            path: 'release/linux/x86_64/3.3/'
+        python: ['3.9', '3.11']
 
     steps:
       - name: Clone the connector
         # `ref` as merge request is needed for pull_request_target because this
         # target runs in the context of the base commit of the pull request.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: github.event_name == 'pull_request_target'
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
 
       - name: Clone the connector
         if: github.event_name != 'pull_request_target'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Tarantool EE SDK
         run: |
@@ -194,8 +190,9 @@ jobs:
         # See more here: https://github.com/tarantool/tt/issues/282
         run: |
           source tarantool-enterprise/env.sh
-          curl -L https://tarantool.io/release/2/installer.sh | bash
+          curl -L https://tarantool.io/release/3/installer.sh | bash
           sudo apt install -y tt
+          pip3 install cmake==3.15.3
           tt rocks install crud TARANTOOL_DIR=$PWD/tarantool-enterprise
 
       - name: Run tests
@@ -215,7 +212,7 @@ jobs:
     if: (github.event_name == 'push') ||
       (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name != github.repository)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -223,15 +220,15 @@ jobs:
       matrix:
         tarantool:
           - '2.11'
+          - '3.3'
         python:
-          - '3.7'
           - '3.11'
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install tarantool ${{ matrix.tarantool }}
-        uses: tarantool/setup-tarantool@v2
+        uses: tarantool/setup-tarantool@v3
         with:
           tarantool-version: ${{ matrix.tarantool }}
 
@@ -246,13 +243,19 @@ jobs:
       - name: Install the package with pip
         run: pip3 install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_REF
 
+      # Installation of the specific CMake version is a hotfix for
+      # https://github.com/tarantool/checks/issues/64
+      - name: Install old CMake
+        run: pip3 install cmake==3.15.3
+
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
 
       - name: Install the crud module for testing purposes
         run: |
-          curl -L https://tarantool.io/release/2/installer.sh | bash
+          curl -L https://tarantool.io/release/3/installer.sh | bash
           sudo apt install -y tt
+          pip3 install cmake==3.15.3
           tt rocks install crud
 
       - name: Run tests
@@ -275,14 +278,14 @@ jobs:
       matrix:
         # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
+          # https://github.com/tarantool/tarantool-python/issues/331
           - '2.11.0.g247a9a418-1'
         python:
-          - '3.7'
           - '3.11'
 
     steps:
       - name: Clone the connector
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python for tests
         uses: actions/setup-python@v4
@@ -345,13 +348,13 @@ jobs:
       matrix:
         # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
+          # https://github.com/tarantool/tarantool-python/issues/331
           - '2.11.0.g247a9a418-1'
         python:
-          - '3.7'
           - '3.11'
     steps:
       - name: Clone the connector repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python for tests
         uses: actions/setup-python@v4
