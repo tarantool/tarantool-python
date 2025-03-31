@@ -4,7 +4,7 @@ Section: python
 Priority: optional
 # See https://github.com/astraw/stdeb/issues/175 for dependencies
 Build-Depends: python3, python3-dev, python3-pip, python3-setuptools,
-  python3-distutils, python3-wheel, python3-stdeb, dh-python,
+  python3-wheel, python3-stdeb, dh-python,
   debhelper (>= 10)
 Standards-Version: 3.9.1
 Homepage: https://github.com/tarantool/tarantool-python

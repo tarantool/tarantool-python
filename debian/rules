@@ -18,3 +18,7 @@ override_dh_auto_install:
 
 override_dh_python2:
 	dh_python2 --no-guessing-versions
+
+# Force `xz` compression for older system with dpkg version < 1.15.6
+override_dh_builddeb:
+	dh_builddeb -- -Zxz
