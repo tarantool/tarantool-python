@@ -7,7 +7,6 @@ import sys
 import unittest
 import uuid
 
-import pkg_resources
 import msgpack
 
 import tarantool
@@ -16,6 +15,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_uuid_test
+from .lib.version import parse_version
 from .utils import assert_admin_success
 
 
@@ -47,7 +47,7 @@ class TestSuiteUUID(unittest.TestCase):
         """)
         assert_admin_success(resp)
 
-        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.4.1'):
+        if cls.srv.admin.tnt_version >= parse_version('2.4.1'):
             resp = cls.adm("""
                 box.schema.space.create('test_pk', {if_not_exists = true})
                 box.space['test_pk']:create_index('primary', {

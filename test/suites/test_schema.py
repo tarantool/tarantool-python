@@ -5,13 +5,13 @@ This module tests space and index schema fetch.
 
 import sys
 import unittest
-import pkg_resources
 
 import tarantool
 from tarantool.error import NotSupportedError
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_constraints_test
+from .lib.version import parse_version
 from .utils import assert_admin_success
 
 
@@ -118,7 +118,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
             end
         """)
 
-        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
+        if cls.srv.admin.tnt_version >= parse_version('2.10.0'):
             resp = cls.srv.admin("""
                 box.schema.create_space(
                     'constr_tester_1', {
@@ -464,7 +464,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
     def _run_test_schema_fetch_disable(self, con, mode=None):
         # Enable SQL test case for tarantool 2.* and higher.
         if int(str(self.srv.admin.tnt_version)[0]) > 1:
-            if self.srv.admin.tnt_version >= pkg_resources.parse_version('2.11.0'):
+            if self.srv.admin.tnt_version >= parse_version('2.11.0'):
                 # SEQSCAN keyword is explicitly allowing to use seqscan
                 # https://github.com/tarantool/tarantool/commit/77648827326ad268ec0ffbcd620c2371b65ef2b4
                 # It was introduced in 2.11.0-rc1. If compat.sql_seq_scan_default
@@ -612,7 +612,7 @@ class TestSuiteSchemaAbstract(unittest.TestCase):
     def tearDownClass(cls):
         # We need to drop spaces with foreign keys with predetermined order,
         # otherwise remote server clean() will fail to clean up resources.
-        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.10.0'):
+        if cls.srv.admin.tnt_version >= parse_version('2.10.0'):
             resp = cls.srv.admin("""
                 box.space.constr_tester_2:drop()
                 box.space.constr_tester_1:drop()

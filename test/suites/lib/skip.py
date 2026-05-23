@@ -5,7 +5,7 @@ This module provides helpers to skip specific tests.
 import functools
 import sys
 
-import pkg_resources
+from .version import parse_version
 
 
 def fetch_tarantool_version(self):
@@ -39,7 +39,7 @@ def skip_or_run_test_tarantool_impl(self, required_tt_version, msg):
     """
     fetch_tarantool_version(self)
 
-    support_version = pkg_resources.parse_version(required_tt_version)
+    support_version = parse_version(required_tt_version)
 
     if self.tnt_version < support_version:
         self.skipTest(f'Tarantool {self.tnt_version} {msg}')
@@ -90,7 +90,7 @@ def skip_or_run_test_tarantool_lt_impl(self, unsupported_tt_version, msg):
     """
     fetch_tarantool_version(self)
 
-    unsupported_version = pkg_resources.parse_version(unsupported_tt_version)
+    unsupported_version = parse_version(unsupported_tt_version)
 
     if self.tnt_version >= unsupported_version:
         self.skipTest(f'Tarantool {self.tnt_version} {msg}')
@@ -167,8 +167,8 @@ def skip_or_run_test_python(func, required_python_version, msg):
 
         ver = sys.version_info
         python_version_str = f'{ver.major}.{ver.minor}'
-        python_version = pkg_resources.parse_version(python_version_str)
-        support_version = pkg_resources.parse_version(required_python_version)
+        python_version = parse_version(python_version_str)
+        support_version = parse_version(required_python_version)
         if python_version < support_version:
             self.skipTest(f'Python {python_version} connector {msg}')
 

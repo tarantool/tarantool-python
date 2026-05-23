@@ -57,7 +57,7 @@ class RemoteTarantoolServer():
 
         deadline = time.time() + AWAIT_TIME
         while True:
-            res = self.admin.execute(f'return acquire_lock("{ self.whoami}")')
+            res = self.admin.execute(f'return acquire_lock("{self.whoami}")')
             ok = res[0]
             err = res[1] if not ok else None
             if ok:

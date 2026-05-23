@@ -5,13 +5,13 @@ This module tests various type encoding cases.
 
 import sys
 import unittest
-import pkg_resources
 
 import tarantool
 from tarantool.error import DatabaseError
 
 from .lib.skip import skip_or_run_varbinary_test, skip_or_run_error_extra_info_test
 from .lib.tarantool_server import TarantoolServer
+from .lib.version import parse_version
 from .utils import assert_admin_success
 
 
@@ -53,7 +53,7 @@ class TestSuiteEncoding(unittest.TestCase):
         """)
         assert_admin_success(resp)
 
-        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.2.1'):
+        if cls.srv.admin.tnt_version >= parse_version('2.2.1'):
             resp = cls.srv.admin("""
                 box.schema.create_space('space_varbin', {if_not_exists = true})
                 box.space['space_varbin']:format({

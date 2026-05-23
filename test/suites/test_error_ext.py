@@ -5,7 +5,6 @@ This module tests work with extended error type.
 
 import sys
 import unittest
-import pkg_resources
 
 import msgpack
 
@@ -15,6 +14,7 @@ from tarantool.msgpack_ext.unpacker import ext_hook as unpacker_ext_hook
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_error_ext_type_test
+from .lib.version import parse_version
 from .utils import assert_admin_success
 
 
@@ -55,7 +55,7 @@ class TestSuiteErrorExt(unittest.TestCase):
             user='test', password='test',
             encoding=None)
 
-        if cls.adm.tnt_version >= pkg_resources.parse_version('2.10.0'):
+        if cls.adm.tnt_version >= parse_version('2.10.0'):
             cls.conn_encoding_utf8.eval(r"""
                 local err = box.error.new(box.error.UNKNOWN)
                 rawset(_G, 'simple_error', err)
