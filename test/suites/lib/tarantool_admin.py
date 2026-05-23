@@ -5,8 +5,9 @@ This module provides helpers to setup running Tarantool server.
 import socket
 import re
 
-import pkg_resources
 import yaml
+
+from .version import parse_version
 
 
 class TarantoolAdmin():
@@ -104,6 +105,6 @@ class TarantoolAdmin():
             r'[\d.]+', self.execute('box.info.version')[0]
         ).group()
 
-        self._tnt_version = pkg_resources.parse_version(raw_version)
+        self._tnt_version = parse_version(raw_version)
 
         return self._tnt_version

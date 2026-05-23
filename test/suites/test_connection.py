@@ -7,7 +7,6 @@ import sys
 import unittest
 import decimal
 
-import pkg_resources
 import msgpack
 
 import tarantool
@@ -15,6 +14,7 @@ import tarantool.msgpack_ext.decimal as ext_decimal
 
 from .lib.skip import skip_or_run_decimal_test, skip_or_run_varbinary_test
 from .lib.tarantool_server import TarantoolServer
+from .lib.version import parse_version
 from .utils import assert_admin_success
 
 
@@ -37,7 +37,7 @@ class TestSuiteConnection(unittest.TestCase):
         """)
         assert_admin_success(resp)
 
-        if cls.srv.admin.tnt_version >= pkg_resources.parse_version('2.2.1'):
+        if cls.srv.admin.tnt_version >= parse_version('2.2.1'):
             resp = cls.adm("""
                 box.schema.create_space('space_varbin', {if_not_exists = true})
 

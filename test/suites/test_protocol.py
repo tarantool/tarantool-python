@@ -7,8 +7,6 @@ import sys
 import unittest
 import uuid
 
-import pkg_resources
-
 import tarantool
 from tarantool.const import (
     IPROTO_FEATURE_STREAMS,
@@ -24,6 +22,7 @@ from tarantool.utils import greeting_decode, version_id
 
 from .lib.tarantool_server import TarantoolServer
 from .lib.skip import skip_or_run_iproto_basic_features_test
+from .lib.version import parse_version
 
 
 class TestSuiteProtocol(unittest.TestCase):
@@ -86,7 +85,7 @@ class TestSuiteProtocol(unittest.TestCase):
         # was introduced between 2.10.0-beta2 and 2.10.0-rc1 and reverted
         # back to version 3 in the same version interval.
         # Tarantool 2.10.3 still has version 3.
-        if self.adm.tnt_version >= pkg_resources.parse_version('2.10.0'):
+        if self.adm.tnt_version >= parse_version('2.10.0'):
             self.assertTrue(self.con._protocol_version >= 3)
             self.assertEqual(self.con._features[IPROTO_FEATURE_ERROR_EXTENSION], True)
         else:
