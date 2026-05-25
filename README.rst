@@ -132,11 +132,11 @@ On Linux:
 
 On Windows:
 
-* Setup a Linux machine with Tarantool installed.
+* Setup a Linux machine with Tarantool and ``tt`` installed.
   This machine will be referred to as ``remote`` in this instruction.
 * (On ``remote``) Copy ``test/suites/lib/tarantool_python_ci.lua`` to
   ``/etc/tarantool/instances.available``.
-* (On ``remote``) Run ``tarantoolctl start tarantool_python_ci``.
+* (On ``remote``) Run ``tt start tarantool_python_ci``.
 * Set the following environment variables:
   * ``REMOTE_TARANTOOL_HOST=...``,
   * ``REMOTE_TARANTOOL_CONSOLE_PORT=3302``.
