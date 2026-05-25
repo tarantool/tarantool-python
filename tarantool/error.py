@@ -309,20 +309,25 @@ class ClusterConnectWarning(UserWarning):
     """
 
 
-class PoolTolopogyWarning(UserWarning):
+class PoolTopologyWarning(UserWarning):
     """
     Warning related to unsatisfying `box.info.ro`_ state of
     pool instances.
     """
 
 
-class PoolTolopogyError(DatabaseError):
+class PoolTopologyError(DatabaseError):
     """
     Exception raised due to unsatisfying `box.info.ro`_ state of
     pool instances.
 
     .. _box.info.ro: https://www.tarantool.io/en/doc/latest/reference/reference_lua/box_info/
     """
+
+
+# Backward-compatible aliases for the previously exposed misspelled names.
+PoolTolopogyWarning = PoolTopologyWarning
+PoolTolopogyError = PoolTopologyError
 
 
 class CrudModuleError(DatabaseError):
