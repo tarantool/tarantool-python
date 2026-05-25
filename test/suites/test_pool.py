@@ -15,6 +15,8 @@ from tarantool.error import (
     ClusterConnectWarning,
     DatabaseError,
     NetworkWarning,
+    PoolTopologyError,
+    PoolTopologyWarning,
     PoolTolopogyError,
     PoolTolopogyWarning,
 )
@@ -22,6 +24,12 @@ from tarantool.error import (
 from .lib.skip import skip_or_run_sql_test
 from .lib.tarantool_server import TarantoolServer
 from .utils import assert_admin_success
+
+
+class TestSuitePoolErrorAliases(unittest.TestCase):  # pylint: disable=too-few-public-methods
+    def test_pool_topology_error_aliases(self):
+        self.assertIs(PoolTolopogyError, PoolTopologyError)
+        self.assertIs(PoolTolopogyWarning, PoolTopologyWarning)
 
 
 def create_server(_id):
@@ -189,7 +197,7 @@ class TestSuitePool(unittest.TestCase):
 
         # Expect RW to fail if there are no RW.
         def expect_rw_to_fail_if_there_are_no_rw():
-            with self.assertRaises(PoolTolopogyError):
+            with self.assertRaises(PoolTopologyError):
                 self.pool.eval('return box.cfg.listen', mode=tarantool.Mode.RW)
 
         self.retry(func=expect_rw_to_fail_if_there_are_no_rw)
@@ -209,7 +217,7 @@ class TestSuitePool(unittest.TestCase):
 
         # Expect RO to fail if there are no RO.
         def expect_ro_to_fail_if_there_are_no_ro():
-            with self.assertRaises(PoolTolopogyError):
+            with self.assertRaises(PoolTopologyError):
                 self.pool.eval('return box.cfg.listen', mode=tarantool.Mode.RO)
 
         self.retry(func=expect_ro_to_fail_if_there_are_no_ro)
@@ -515,7 +523,7 @@ class TestSuitePool(unittest.TestCase):
 
     def test_13_failover(self):
         warnings.simplefilter('ignore', category=NetworkWarning)
-        warnings.simplefilter('ignore', category=PoolTolopogyWarning)
+        warnings.simplefilter('ignore', category=PoolTopologyWarning)
 
         self.set_cluster_ro([False, True, True, True, True])
         self.pool = tarantool.ConnectionPool(

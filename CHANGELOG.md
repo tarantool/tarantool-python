@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   queued requests (PR #336).
 - Recover `ConnectionPool` instances after a cluster restart
   (PR #343).
+- Fix typo in the name: PoolTolopogy -> PoolTopology. Ensured
+  backward compatibility using aliases (PR #345).
 
 ## 1.2.0 - 2024-03-27
 

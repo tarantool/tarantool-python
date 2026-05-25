@@ -22,8 +22,8 @@ from tarantool.const import (
 )
 from tarantool.error import (
     ClusterConnectWarning,
-    PoolTolopogyError,
-    PoolTolopogyWarning,
+    PoolTopologyError,
+    PoolTopologyWarning,
     ConfigurationError,
     DatabaseError,
     NetworkError,
@@ -295,14 +295,14 @@ class RoundRobinStrategy(StrategyInterface):
 
         :rtype: :class:`~tarantool.connection_pool.PoolUnit`
 
-        :raise: :exc:`~tarantool.error.PoolTolopogyError`
+        :raise: :exc:`~tarantool.error.PoolTopologyError`
 
         :meta private:
         """
         for itr in iters:
             if itr is not None:
                 return next(itr)
-        raise PoolTolopogyError(err_msg)
+        raise PoolTopologyError(err_msg)
 
     def getnext(self, mode):
         """
@@ -313,7 +313,7 @@ class RoundRobinStrategy(StrategyInterface):
 
         :rtype: :class:`~tarantool.connection_pool.PoolUnit`
 
-        :raise: :exc:`~tarantool.error.PoolTolopogyError`
+        :raise: :exc:`~tarantool.error.PoolTopologyError`
         """
 
         if self.rebuild_needed:
@@ -579,7 +579,7 @@ class ConnectionPool(ConnectionInterface):
         except DatabaseError as exc:
             msg = (f"Failed to get box.info for {unit.get_address()}, "
                    f"reason: {repr(exc)}")
-            warn(msg, PoolTolopogyWarning)
+            warn(msg, PoolTopologyWarning)
             return InstanceState(Status.UNHEALTHY)
 
         try:
@@ -587,7 +587,7 @@ class ConnectionPool(ConnectionInterface):
         except (IndexError, KeyError) as exc:
             msg = (f"Incorrect box.info response from {unit.get_address()}"
                    f"reason: {repr(exc)}")
-            warn(msg, PoolTolopogyWarning)
+            warn(msg, PoolTopologyWarning)
             return InstanceState(Status.UNHEALTHY)
 
         try:
@@ -595,12 +595,12 @@ class ConnectionPool(ConnectionInterface):
 
             if status != 'running':
                 msg = f"{unit.get_address()} instance status is not 'running'"
-                warn(msg, PoolTolopogyWarning)
+                warn(msg, PoolTopologyWarning)
                 return InstanceState(Status.UNHEALTHY)
         except (IndexError, KeyError) as exc:
             msg = (f"Incorrect box.info response from {unit.get_address()}"
                    f"reason: {repr(exc)}")
-            warn(msg, PoolTolopogyWarning)
+            warn(msg, PoolTopologyWarning)
             return InstanceState(Status.UNHEALTHY)
 
         return InstanceState(Status.HEALTHY, read_only)
