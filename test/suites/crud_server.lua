@@ -84,7 +84,6 @@ if crud_imported == false or vshard_imported == false then
     local fail_msg = 'The crud/vshard modules are not detected, ' ..
                      'installation via rocks install is required ' ..
                      'for CRUD testing purposes. You can use ' ..
-                     '<tarantoolctl rocks install crud> or ' ..
                      '<tt rocks install crud> to install modules'
     -- The print output will be captured in the logs.
     print(fail_msg)

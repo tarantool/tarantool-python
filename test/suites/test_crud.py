@@ -65,7 +65,6 @@ class TestSuiteCrud(unittest.TestCase):
             raise unittest.SkipTest('The crud/vshard modules are not detected, '
                                     'installation via rocks install is required '
                                     'for CRUD testing purposes. You can use '
-                                    '<tarantoolctl rocks install crud> or '
                                     '<tt rocks install crud> to install modules')
 
     crud_test_cases = {
