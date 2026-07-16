@@ -660,8 +660,12 @@ class ConnectionPool(ConnectionInterface):
         """
 
         while unit.request_processing_enabled:
-            if not unit.input_queue.empty():
-                task = unit.input_queue.get()
+            try:
+                task = unit.input_queue.get(timeout=self.refresh_delay)
+            except queue.Empty:
+                task = None
+
+            if task:
                 method = getattr(Connection, task.method_name)
                 try:
                     resp = method(unit.conn, *task.args, **task.kwargs)
