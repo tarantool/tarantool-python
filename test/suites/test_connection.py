@@ -3,6 +3,7 @@ This module tests basic connection behavior.
 """
 # pylint: disable=missing-class-docstring,missing-function-docstring,duplicate-code
 
+import socket
 import sys
 import unittest
 import decimal
@@ -12,6 +13,7 @@ import msgpack
 
 import tarantool
 import tarantool.msgpack_ext.decimal as ext_decimal
+from tarantool.error import DatabaseError, NetworkError
 
 from .lib.skip import skip_or_run_decimal_test, skip_or_run_varbinary_test
 from .lib.tarantool_server import TarantoolServer
@@ -170,6 +172,29 @@ class TestSuiteConnection(unittest.TestCase):
 
         resp = self.con.eval("return {1, 2, 3}")
         self.assertIsInstance(resp[0], tuple)
+
+    def test_failed_connect_closes_socket(self):
+        con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
+                                   user='nosuchuser', password='wrongpassword',
+                                   connect_now=False)
+
+        with self.assertRaises(NetworkError):
+            con.connect()
+
+        self.assertTrue(con.is_closed())
+
+    def test_failed_handshake_on_reconnect_closes_socket(self):
+        self.con = tarantool.Connection(self.srv.host, self.srv.args['primary'],
+                                        user='test', password='test')
+        self.assertFalse(self.con.is_closed())
+
+        self.con.user = 'nosuchuser'
+        self.con._socket.shutdown(socket.SHUT_RDWR)  # pylint: disable=protected-access
+
+        with self.assertRaises(DatabaseError):
+            self.con.call('box.info')
+
+        self.assertTrue(self.con.is_closed())
 
     def tearDown(self):
         if self.con:

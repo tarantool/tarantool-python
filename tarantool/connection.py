@@ -1155,6 +1155,7 @@ class Connection(ConnectionInterface):
             raise exc
         except Exception as exc:
             self.connected = False
+            self.close()
             raise NetworkError(exc) from exc
 
     def _recv(self, to_read):
@@ -1271,7 +1272,8 @@ class Connection(ConnectionInterface):
 
         :raise: :exc:`~AssertionError`,
             :exc:`~tarantool.error.SchemaError`,
-            :exc:`~tarantool.error.NetworkError`
+            :exc:`~tarantool.error.NetworkError`,
+            :exc:`~tarantool.error.DatabaseError`
 
         :meta private:
         """
@@ -1365,7 +1367,12 @@ class Connection(ConnectionInterface):
             attempt += 1
         if self.transport == SSL_TRANSPORT:
             self.wrap_socket_ssl()
-        self.handshake()
+        try:
+            self.handshake()
+        except Exception:
+            self.connected = False
+            self.close()
+            raise
 
     def _send_request(self, request, on_push=None, on_push_ctx=None):
         """

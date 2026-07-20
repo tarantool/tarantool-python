@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set upper bound for version of setuptools (PR #342).
 - Reduce idle CPU usage in `ConnectionPool` while waiting for
   queued requests (PR #336).
+- Recover `ConnectionPool` instances after a cluster restart
+  (PR #343).
 
 ## 1.2.0 - 2024-03-27
 

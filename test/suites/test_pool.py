@@ -10,6 +10,7 @@ import unittest
 import warnings
 
 import tarantool
+from tarantool.connection_pool import Status
 from tarantool.error import (
     ClusterConnectWarning,
     DatabaseError,
@@ -580,6 +581,52 @@ class TestSuitePool(unittest.TestCase):
         self.pool.close()
 
         self.assertEqual(self.pool.is_closed(), True)
+
+    def test_17_instance_bootstrap_error_does_not_kill_refresh(self):
+        warnings.simplefilter('ignore', category=PoolTolopogyWarning)
+
+        self.set_cluster_ro([False, True, True, True, True])
+
+        self.pool = tarantool.ConnectionPool(
+            addrs=self.addrs,
+            user='test',
+            password='test',
+            refresh_delay=0.2)
+
+        self.pool.ping(mode=tarantool.Mode.RW)
+
+        unit = self.pool.pool[f"{self.addrs[0]['host']}:{self.addrs[0]['port']}"]
+
+        # Simulate an instance which is up, but has not finished its
+        # bootstrap yet: box.info fails with a plain DatabaseError
+        # instead of a NetworkError.
+        resp = self.servers[0].admin(r"""
+            rawset(_G, 'box_info_backup', box.info)
+            box.info = function()
+                box.error({code = 116,
+                           reason = "Instance bootstrap hasn't finished yet"})
+            end
+            return true
+        """)
+        assert_admin_success(resp)
+
+        def expect_instance_unhealthy_and_refresh_alive():
+            self.assertTrue(unit.thread.is_alive(),
+                            'refresh thread died on a DatabaseError')
+            self.assertEqual(unit.state.status, Status.UNHEALTHY)
+
+        self.retry(func=expect_instance_unhealthy_and_refresh_alive)
+
+        resp = self.servers[0].admin(r"""
+            box.info = box_info_backup
+            return true
+        """)
+        assert_admin_success(resp)
+
+        def expect_rw_request_succeed():
+            self.pool.ping(mode=tarantool.Mode.RW)
+
+        self.retry(func=expect_rw_request_succeed)
 
     def tearDown(self):
         if self.pool:

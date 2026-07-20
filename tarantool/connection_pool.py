@@ -25,6 +25,7 @@ from tarantool.error import (
     PoolTolopogyError,
     PoolTolopogyWarning,
     ConfigurationError,
+    DatabaseError,
     NetworkError,
     warn
 )
@@ -575,7 +576,7 @@ class ConnectionPool(ConnectionInterface):
 
         try:
             resp = conn.call('box.info')
-        except NetworkError as exc:
+        except DatabaseError as exc:
             msg = (f"Failed to get box.info for {unit.get_address()}, "
                    f"reason: {repr(exc)}")
             warn(msg, PoolTolopogyWarning)
