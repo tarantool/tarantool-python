@@ -278,8 +278,7 @@ jobs:
       matrix:
         # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
-          # https://github.com/tarantool/tarantool-python/issues/331
-          - '2.11.0.g247a9a418-1'
+          - '3.3.1-1'
         python:
           - '3.11'
 
@@ -303,10 +302,10 @@ jobs:
         with:
           distribution: Ubuntu-22.04
 
-      - name: Install tarantool ${{ matrix.tarantool }} for WSL (2.10 and newer)
+      - name: Install tarantool ${{ matrix.tarantool }} for WSL
         shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
-          curl -L https://tarantool.io/release/2/installer.sh | bash -s
+          curl -L https://tarantool.io/release/3/installer.sh | bash -s
           sudo apt install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
 
       - name: Setup test tarantool instance
@@ -348,8 +347,7 @@ jobs:
       matrix:
         # Use reduced test matrix cause Windows pipelines are long.
         tarantool:
-          # https://github.com/tarantool/tarantool-python/issues/331
-          - '2.11.0.g247a9a418-1'
+          - '3.3.1-1'
         python:
           - '3.11'
     steps:
@@ -378,7 +376,7 @@ jobs:
       - name: Install tarantool ${{ matrix.tarantool }} for WSL
         shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
-          curl -L https://tarantool.io/release/2/installer.sh | bash -s
+          curl -L https://tarantool.io/release/3/installer.sh | bash -s
           sudo apt install -y tarantool=${{ matrix.tarantool }} tarantool-dev=${{ matrix.tarantool }}
 
       - name: Setup test tarantool instance
