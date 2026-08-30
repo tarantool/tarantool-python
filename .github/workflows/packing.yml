@@ -162,7 +162,7 @@ jobs:
       - name: Install tarantool
         shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
-          curl -L https://tarantool.io/release/2/installer.sh | bash -s
+          curl -L https://tarantool.io/release/3/installer.sh | bash -s
           sudo apt install -y tarantool tarantool-dev
 
       - name: Setup test tarantool instance
