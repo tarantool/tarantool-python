@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
  
 ### Fixed
+- Measure `ping()` response time with `time.perf_counter()` instead of
+  `time.time()`. On Windows with Python 3.12 and older the latter has a
+  resolution of 15.6 ms, so `ping()` could return `0.0` (PR #350).
 
 ## [1.3.0] - 2026-08-17
 

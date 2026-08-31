@@ -1910,9 +1910,9 @@ class Connection(ConnectionInterface):
         """
 
         request = RequestPing(self)
-        start_time = time.time()
+        start_time = time.perf_counter()
         self._send_request(request)
-        finish_time = time.time()
+        finish_time = time.perf_counter()
 
         if notime:
             return "Success"
