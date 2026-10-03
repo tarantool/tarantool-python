@@ -398,7 +398,8 @@ class ConnectionPool(ConnectionInterface):
                  connection_timeout=CONNECTION_TIMEOUT,
                  strategy_class=RoundRobinStrategy,
                  refresh_delay=POOL_REFRESH_DELAY,
-                 fetch_schema=True):
+                 fetch_schema=True,
+                 additional_health_check=None):
         """
         :param addrs: List of dictionaries describing server addresses:
 
@@ -476,6 +477,17 @@ class ConnectionPool(ConnectionInterface):
         :param fetch_schema: Refer to
             :paramref:`~tarantool.Connection.params.fetch_schema`.
 
+        :param additional_health_check: An additional health check for each
+            pool instance. It is called with the instance connection after
+            the built-in checks succeed.
+            Return :attr:`Status.UNHEALTHY` to exclude the
+            instance from request routing until the next successful health
+            check; return :attr:`Status.HEALTHY` to keep it available. The
+            check is performed when the pool connects and during periodic
+            state refreshes. It should be fast and must not raise exceptions;
+            the pool does not handle callback errors.
+        :type additional_health_check: :obj:`typing.Callable[[Connection], Status]`, optional
+
         :raise: :exc:`~tarantool.error.ConfigurationError`,
             :class:`~tarantool.Connection` exceptions
 
@@ -496,6 +508,8 @@ class ConnectionPool(ConnectionInterface):
                 raise ConfigurationError(msg)
             new_addrs.append(new_addr)
         self.addrs = new_addrs
+
+        self.additional_health_check = additional_health_check
 
         # Create connections
         self.pool = {}
@@ -551,6 +565,52 @@ class ConnectionPool(ConnectionInterface):
             return f"{addr['host']}:{addr['port']}"
         return addr['socket_fd']
 
+    def _status_check(self, conn, unit):
+        """
+        Check the status of the connection using ``box.info``.
+
+        :param conn: Connection to the instance.
+        :type conn: :class:`~tarantool.Connection`
+
+        :param unit: Instance metainfo.
+        :type unit: :class:`~tarantool.connection_pool.PoolUnit`
+
+        :return: A pair containing the read-only flag and health status.
+        :rtype: :obj:`tuple[bool, ~tarantool.connection_pool.Status]`
+
+        :meta private:
+        """
+        try:
+            resp = conn.call('box.info')
+        except DatabaseError as exc:
+            msg = (f"Failed to get box.info for {unit.get_address()}, "
+                   f"reason: {repr(exc)}")
+            warn(msg, PoolTopologyWarning)
+            return False, Status.UNHEALTHY
+
+        try:
+            read_only = resp.data[0]['ro']
+        except (IndexError, KeyError) as exc:
+            msg = (f"Incorrect box.info response from {unit.get_address()}"
+                   f"reason: {repr(exc)}")
+            warn(msg, PoolTopologyWarning)
+            return False, Status.UNHEALTHY
+
+        try:
+            status = resp.data[0]['status']
+
+            if status != 'running':
+                msg = f"{unit.get_address()} instance status is not 'running'"
+                warn(msg, PoolTopologyWarning)
+                return read_only, Status.UNHEALTHY
+        except (IndexError, KeyError) as exc:
+            msg = (f"Incorrect box.info response from {unit.get_address()}"
+                   f"reason: {repr(exc)}")
+            warn(msg, PoolTopologyWarning)
+            return read_only, Status.UNHEALTHY
+
+        return read_only, Status.HEALTHY
+
     def _get_new_state(self, unit):
         """
         Get new pool server state.
@@ -574,34 +634,15 @@ class ConnectionPool(ConnectionInterface):
                 warn(msg, ClusterConnectWarning)
                 return InstanceState(Status.UNHEALTHY)
 
-        try:
-            resp = conn.call('box.info')
-        except DatabaseError as exc:
-            msg = (f"Failed to get box.info for {unit.get_address()}, "
-                   f"reason: {repr(exc)}")
-            warn(msg, PoolTopologyWarning)
+        read_only, status = self._status_check(conn, unit)
+        if status == Status.UNHEALTHY:
             return InstanceState(Status.UNHEALTHY)
 
-        try:
-            read_only = resp.data[0]['ro']
-        except (IndexError, KeyError) as exc:
-            msg = (f"Incorrect box.info response from {unit.get_address()}"
-                   f"reason: {repr(exc)}")
-            warn(msg, PoolTopologyWarning)
-            return InstanceState(Status.UNHEALTHY)
+        if self.additional_health_check is not None:
+            status = self.additional_health_check(conn)
 
-        try:
-            status = resp.data[0]['status']
-
-            if status != 'running':
-                msg = f"{unit.get_address()} instance status is not 'running'"
-                warn(msg, PoolTopologyWarning)
+            if status == Status.UNHEALTHY:
                 return InstanceState(Status.UNHEALTHY)
-        except (IndexError, KeyError) as exc:
-            msg = (f"Incorrect box.info response from {unit.get_address()}"
-                   f"reason: {repr(exc)}")
-            warn(msg, PoolTopologyWarning)
-            return InstanceState(Status.UNHEALTHY)
 
         return InstanceState(Status.HEALTHY, read_only)
 

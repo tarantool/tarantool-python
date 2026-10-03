@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
  
 ### Added
- 
+
+- Support additional health check for pool instances (PR #348).
+
 ### Changed
  
 ### Fixed
