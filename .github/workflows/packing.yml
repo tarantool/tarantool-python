@@ -471,11 +471,7 @@ jobs:
       matrix:
         target:
         - os: debian
-          dist: bullseye # 11
-        - os: debian
           dist: bookworm # 12
-        - os: ubuntu
-          dist: focal # 20.04
         - os: ubuntu
           dist: jammy # 22.04
         - os: ubuntu
@@ -570,15 +566,9 @@ jobs:
       matrix:
         target:
         - os: ubuntu
-          dist: focal # 20.04
-        - os: ubuntu
           dist: jammy # 22.04
         - os: ubuntu
           dist: noble # 24.04
-        - os: debian
-          dist: buster # 10
-        - os: debian
-          dist: bullseye # 11
         - os: debian
           dist: bookworm # 12
 
