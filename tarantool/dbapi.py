@@ -6,8 +6,11 @@ Python DB API implementation, refer to `PEP-249`_.
 # pylint: disable=fixme,unused-import,bad-option-value,no-self-use
 # flake8: noqa: F401
 
+import typing
+
 from tarantool.connection import Connection as BaseConnection
 from tarantool.error import (
+    ConfigurationError,
     Error,
     InterfaceError,
     DatabaseError,
@@ -17,6 +20,7 @@ from tarantool.error import (
     ProgrammingError,
     NotSupportedError,
 )
+from tarantool.utils import parse_dsn
 
 Warning = Warning  # pylint: disable=redefined-builtin,self-assigning-variable
 
@@ -400,9 +404,10 @@ def connect(dsn=None, host=None, port=None,
     """
     Constructor for creating a connection to the database.
 
-    :param dsn: **Not implemented**. Tarantool server URI:
-        ``[[[username[:password]@]host:]port``.
-    :type dsn: :obj:`str`
+    :param dsn: Tarantool server DSN, refer to
+        :func:`~tarantool.utils.parse_dsn`. Parameters set explicitly
+        take precedence over the ones from the DSN.
+    :type dsn: :obj:`str`, optional
 
     :param host: Refer to :paramref:`~tarantool.Connection.params.host`.
 
@@ -415,14 +420,18 @@ def connect(dsn=None, host=None, port=None,
 
     :rtype: :class:`~tarantool.Connection`
 
-    :raise:  :exc:`~NotImplementedError`,
+    :raise: :exc:`~tarantool.error.InterfaceError`,
         :class:`~tarantool.Connection` exceptions
     """
 
+    params: typing.Dict[str, typing.Any] = {}
+
     if dsn:
-        raise NotImplementedError("dsn param is not implemented in"
-                                  "this version of dbapi module")
-    params = {}
+        try:
+            params = parse_dsn(dsn)
+        except ConfigurationError as exc:
+            raise InterfaceError(str(exc)) from exc
+
     if host:
         params["host"] = host
     if port:
@@ -432,6 +441,6 @@ def connect(dsn=None, host=None, port=None,
     if password:
         params["password"] = password
 
-    kwargs.update(params)
+    params.update(kwargs)
 
-    return Connection(**kwargs)
+    return Connection(**params)

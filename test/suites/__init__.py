@@ -26,6 +26,8 @@ from .test_error_ext import TestSuiteErrorExt
 from .test_push import TestSuitePush
 from .test_connection import TestSuiteConnection
 from .test_crud import TestSuiteCrud
+from .test_dsn import TestSuiteDsnParse
+from .test_dsn import TestSuiteDsnConnect
 
 test_cases = (TestSuiteSchemaUnicodeConnection,
               TestSuiteSchemaBinaryConnection,
@@ -34,7 +36,8 @@ test_cases = (TestSuiteSchemaUnicodeConnection,
               TestSuiteEncoding, TestSuitePool, TestSuiteSsl,
               TestSuiteDecimal, TestSuiteUUID, TestSuiteDatetime,
               TestSuiteInterval, TestSuitePackage, TestSuiteErrorExt,
-              TestSuitePush, TestSuiteConnection, TestSuiteCrud, TestSuiteSocketFD)
+              TestSuitePush, TestSuiteConnection, TestSuiteCrud, TestSuiteSocketFD,
+              TestSuiteDsnParse, TestSuiteDsnConnect)
 
 
 def load_tests(loader, tests, pattern):
