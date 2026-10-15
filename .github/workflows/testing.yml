@@ -64,11 +64,6 @@ jobs:
           tt version
           tt init
 
-      # Installation of the specific CMake version is a hotfix for
-      # https://github.com/tarantool/checks/issues/64
-      - name: Install old CMake
-        run: pip3 install cmake==3.15.3
-
       - name: Install tarantool ${{ matrix.tarantool }}
         if: matrix.tarantool != 'master'
         uses: tarantool/setup-tarantool@v3
@@ -192,7 +187,6 @@ jobs:
           source tarantool-enterprise/env.sh
           curl -L https://tarantool.io/release/3/installer.sh | bash
           sudo apt install -y tt
-          pip3 install cmake==3.15.3
           tt rocks install crud TARANTOOL_DIR=$PWD/tarantool-enterprise
 
       - name: Run tests
@@ -243,11 +237,6 @@ jobs:
       - name: Install the package with pip
         run: pip3 install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_REF
 
-      # Installation of the specific CMake version is a hotfix for
-      # https://github.com/tarantool/checks/issues/64
-      - name: Install old CMake
-        run: pip3 install cmake==3.15.3
-
       - name: Install test requirements
         run: pip3 install -r requirements-test.txt
 
@@ -255,7 +244,6 @@ jobs:
         run: |
           curl -L https://tarantool.io/release/3/installer.sh | bash
           sudo apt install -y tt
-          pip3 install cmake==3.15.3
           tt rocks install crud
 
       - name: Run tests
