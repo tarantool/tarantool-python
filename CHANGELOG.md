@@ -8,11 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  
 ### Added
 
+- Support for a DSN in `tarantool.dbapi.connect()`. The expected format
+  is `[scheme://][user[:password]@]host:port[?option=value&...]`, where
+  a Unix socket address is either `unix/:path` or an absolute path, and
+  an IPv6 address is enclosed in `[]`. The scheme, if any, is ignored,
+  as Tarantool itself ignores it. Allowed options are the Tarantool URI
+  parameters: `transport`, `ssl_key_file`, `ssl_cert_file`,
+  `ssl_ca_file`, `ssl_ciphers`, `ssl_password`, `ssl_password_file` and
+  `auth_type`. Parameters set explicitly take precedence over the ones
+  from the DSN (PR #351).
 - Support additional health check for pool instances (PR #348).
 
 ### Changed
  
 ### Fixed
+- Measure `ping()` response time with `time.perf_counter()` instead of
+  `time.time()`. On Windows with Python 3.12 and older the latter has a
+  resolution of 15.6 ms, so `ping()` could return `0.0` (PR #350).
 
 ## [1.3.0] - 2026-08-17
 

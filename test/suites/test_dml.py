@@ -171,9 +171,6 @@ class TestSuiteRequest(unittest.TestCase):
         # Simple ping test
         # * No exceptions are raised
         # * Ping time > 0
-        if sys.platform.startswith("win"):
-            self.skipTest("Windows clock precision causes test to fail sometimes, see #214")
-
         self.assertTrue(self.con.ping() > 0)
         self.assertEqual(self.con.ping(notime=True), "Success")
 

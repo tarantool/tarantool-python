@@ -194,7 +194,7 @@ class TarantoolServer():
         # pylint: disable=unused-argument
 
         if os.name == 'nt':
-            return RemoteTarantoolServer()
+            return RemoteTarantoolServer(sql_seq_scan_default=sql_seq_scan_default)
         return super(TarantoolServer, cls).__new__(cls)
 
     def __init__(self,

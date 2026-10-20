@@ -162,7 +162,7 @@ jobs:
       - name: Install tarantool
         shell: wsl-bash_Ubuntu-22.04 {0}
         run: |
-          curl -L https://tarantool.io/release/2/installer.sh | bash -s
+          curl -L https://tarantool.io/release/3/installer.sh | bash -s
           sudo apt install -y tarantool tarantool-dev
 
       - name: Setup test tarantool instance
@@ -471,11 +471,7 @@ jobs:
       matrix:
         target:
         - os: debian
-          dist: bullseye # 11
-        - os: debian
           dist: bookworm # 12
-        - os: ubuntu
-          dist: focal # 20.04
         - os: ubuntu
           dist: jammy # 22.04
         - os: ubuntu
@@ -570,15 +566,9 @@ jobs:
       matrix:
         target:
         - os: ubuntu
-          dist: focal # 20.04
-        - os: ubuntu
           dist: jammy # 22.04
         - os: ubuntu
           dist: noble # 24.04
-        - os: debian
-          dist: buster # 10
-        - os: debian
-          dist: bullseye # 11
         - os: debian
           dist: bookworm # 12
 

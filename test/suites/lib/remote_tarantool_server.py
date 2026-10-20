@@ -31,8 +31,9 @@ class RemoteTarantoolServer():
     Class to work with remote Tarantool server.
     """
 
-    def __init__(self):
+    def __init__(self, sql_seq_scan_default=None):
         self.host = os.environ['REMOTE_TARANTOOL_HOST']
+        self.sql_seq_scan_default = sql_seq_scan_default
 
         self.args = {}
         self.args['primary'] = BINARY_PORT
@@ -95,6 +96,24 @@ class RemoteTarantoolServer():
             raise RuntimeError(f'can not release "{self.whoami}" lock: {str(err)}')
         self.lock_is_acquired = False
 
+    def set_sql_seq_scan_default(self, value):
+        """
+        Set compat.sql_seq_scan_default on the remote server. The
+        option affects sessions created after the call, so it must be
+        set before the test connects to the server.
+        """
+
+        res = self.admin.execute(f"""
+            local is_compat, compat = pcall(require, 'compat')
+            if is_compat then
+                compat.sql_seq_scan_default = '{value}'
+            end
+            return true
+        """)
+        if res != [True]:
+            raise RuntimeError(
+                f'can not set compat.sql_seq_scan_default to "{value}": {str(res)}')
+
     def start(self):
         """
         Initialize the work with the remote server.
@@ -102,6 +121,8 @@ class RemoteTarantoolServer():
 
         if not self.lock_is_acquired:
             self.acquire_lock()
+        if self.sql_seq_scan_default is not None:
+            self.set_sql_seq_scan_default(self.sql_seq_scan_default)
         self.admin.execute(f'box.cfg{{listen = "0.0.0.0:{self.args["primary"]}"}}')
 
     def stop(self):
@@ -110,6 +131,8 @@ class RemoteTarantoolServer():
         """
 
         self.admin.execute('box.cfg{listen = box.NULL}')
+        if self.sql_seq_scan_default is not None:
+            self.set_sql_seq_scan_default('default')
         self.release_lock()
 
     def is_started(self):
