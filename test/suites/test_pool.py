@@ -594,14 +594,24 @@ class TestSuitePool(unittest.TestCase):
         warnings.simplefilter('ignore', category=PoolTolopogyWarning)
 
         self.set_cluster_ro([False, True, True, True, True])
+        callback_calls = 0
+        target_port = self.addrs[0]['port']
+
+        def additional_health_check(conn):
+            nonlocal callback_calls
+            if conn.port == target_port:
+                callback_calls += 1
+            return Status.HEALTHY
 
         self.pool = tarantool.ConnectionPool(
             addrs=self.addrs,
             user='test',
             password='test',
-            refresh_delay=0.2)
+            refresh_delay=0.2,
+            additional_health_check=additional_health_check)
 
         self.pool.ping(mode=tarantool.Mode.RW)
+        callback_calls = 0
 
         unit = self.pool.pool[f"{self.addrs[0]['host']}:{self.addrs[0]['port']}"]
 
@@ -622,6 +632,7 @@ class TestSuitePool(unittest.TestCase):
             self.assertTrue(unit.thread.is_alive(),
                             'refresh thread died on a DatabaseError')
             self.assertEqual(unit.state.status, Status.UNHEALTHY)
+            self.assertEqual(callback_calls, 0)
 
         self.retry(func=expect_instance_unhealthy_and_refresh_alive)
 
@@ -635,6 +646,72 @@ class TestSuitePool(unittest.TestCase):
             self.pool.ping(mode=tarantool.Mode.RW)
 
         self.retry(func=expect_rw_request_succeed)
+
+    def test_18_additional_health_check_excludes_and_recovers_instance(self):
+        self.set_cluster_ro([False, False, True, False, False])
+        target_addr = self.addrs[2]
+        target_key = f"{target_addr['host']}:{target_addr['port']}"
+        unhealthy = True
+
+        def additional_health_check(conn):
+            if unhealthy and conn.port == target_addr['port']:
+                return Status.UNHEALTHY
+            return Status.HEALTHY
+
+        self.pool = tarantool.ConnectionPool(
+            addrs=self.addrs,
+            user='test',
+            password='test',
+            refresh_delay=0.2,
+            additional_health_check=additional_health_check)
+
+        self.assertEqual(self.pool.pool[target_key].state.status,
+                         Status.UNHEALTHY)
+        with self.assertRaises(PoolTopologyError):
+            self.pool.ping(mode=tarantool.Mode.RO)
+
+        unhealthy = False
+
+        def expect_instance_recovered():
+            self.assertEqual(self.pool.pool[target_key].state.status,
+                             Status.HEALTHY)
+            self.pool.ping(mode=tarantool.Mode.RO)
+
+        self.retry(func=expect_instance_recovered)
+
+    def test_19_additional_health_check_not_called_before_running(self):
+        warnings.simplefilter('ignore', category=PoolTopologyWarning)
+
+        self.set_cluster_ro([False, True, True, True, True])
+        target_addr = self.addrs[0]
+        callback_calls = 0
+
+        resp = self.servers[0].admin(r"""
+            rawset(_G, 'box_info_backup', box.info)
+            box.info = function()
+                local info = box_info_backup()
+                return {ro = info.ro, status = 'loading'}
+            end
+            return true
+        """)
+        assert_admin_success(resp)
+
+        def additional_health_check(conn):
+            nonlocal callback_calls
+            if conn.port == target_addr['port']:
+                callback_calls += 1
+            return Status.HEALTHY
+
+        self.pool = tarantool.ConnectionPool(
+            addrs=self.addrs,
+            user='test',
+            password='test',
+            additional_health_check=additional_health_check)
+
+        self.assertEqual(callback_calls, 0)
+        self.assertEqual(
+            self.pool.pool[f"{target_addr['host']}:{target_addr['port']}"].state.status,
+            Status.UNHEALTHY)
 
     def tearDown(self):
         if self.pool:

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
  
 ### Added
+
 - Support for a DSN in `tarantool.dbapi.connect()`. The expected format
   is `[scheme://][user[:password]@]host:port[?option=value&...]`, where
   a Unix socket address is either `unix/:path` or an absolute path, and
@@ -16,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ssl_ca_file`, `ssl_ciphers`, `ssl_password`, `ssl_password_file` and
   `auth_type`. Parameters set explicitly take precedence over the ones
   from the DSN (PR #351).
- 
+- Support additional health check for pool instances (PR #348).
+
 ### Changed
  
 ### Fixed
