@@ -14,6 +14,7 @@ from .test_mesh import TestSuiteMesh
 from .test_pool import TestSuitePool
 from .test_execute import TestSuiteExecute
 from .test_dbapi import TestSuiteDBAPI
+from .test_dbapi import TestSuiteDBAPIExceptions
 from .test_encoding import TestSuiteEncoding
 from .test_socket_fd import TestSuiteSocketFD
 from .test_ssl import TestSuiteSsl
@@ -32,7 +33,7 @@ from .test_dsn import TestSuiteDsnConnect
 test_cases = (TestSuiteSchemaUnicodeConnection,
               TestSuiteSchemaBinaryConnection,
               TestSuiteRequest, TestSuiteProtocol, TestSuiteReconnect,
-              TestSuiteMesh, TestSuiteExecute, TestSuiteDBAPI,
+              TestSuiteMesh, TestSuiteExecute, TestSuiteDBAPI, TestSuiteDBAPIExceptions,
               TestSuiteEncoding, TestSuitePool, TestSuiteSsl,
               TestSuiteDecimal, TestSuiteUUID, TestSuiteDatetime,
               TestSuiteInterval, TestSuitePackage, TestSuiteErrorExt,

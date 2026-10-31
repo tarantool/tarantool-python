@@ -15,6 +15,14 @@ from .lib.skip import skip_or_run_sql_test
 from .utils import assert_admin_success
 
 
+class TestSuiteDBAPIExceptions(unittest.TestCase):
+    def test_data_error(self):
+        self.assertIs(dbapi.DataError, tarantool.error.DataError)
+        self.assertTrue(issubclass(dbapi.DataError, dbapi.DatabaseError))
+        with self.assertRaises(dbapi.DataError):
+            raise tarantool.error.DataError('invalid data')
+
+
 class TestSuiteDBAPI(dbapi20.DatabaseAPI20Test):
     table_prefix = 'dbapi20test_'  # If you need to specify a prefix for tables
 

@@ -14,6 +14,7 @@ from tarantool.error import (
     Error,
     InterfaceError,
     DatabaseError,
+    DataError,
     OperationalError,
     IntegrityError,
     InternalError,
